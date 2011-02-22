@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical" android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+
+  <Button android:layout_height="wrap_content" android:id="@+id/buttonAdd80211"
+    android:text="Add an 802.11 Network" android:layout_width="match_parent"></Button>
+  <Button android:layout_height="wrap_content" android:id="@+id/buttonManageNets"
+    android:text="Manage Networks" android:layout_width="match_parent"></Button>
+  <Button android:layout_height="wrap_content" android:id="@+id/buttonManageDevs"
+    android:text="Manage Devices" android:layout_width="match_parent"></Button>
+  <ScrollView android:id="@+id/ScrollView01"
+    android:layout_width="wrap_content" android:layout_height="wrap_content">
+    <TextView android:layout_width="fill_parent"
+      android:layout_height="wrap_content" android:id="@+id/textStatus"
+      android:text="Results:" />
+  </ScrollView>
+
+</LinearLayout>
