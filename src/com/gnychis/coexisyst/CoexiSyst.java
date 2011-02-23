@@ -117,7 +117,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		    	if(managed) {	// Cannot add a network that is already managed
 		    		Toast.makeText(getApplicationContext(), sr.SSID + " is already managed.", Toast.LENGTH_SHORT).show();
 		    	} else {		// Add the network the list of managed networks 
-		    		long res = db.insertNetDev(sr.BSSID, sr.SSID, db.PTYPE_80211, 0);
+		    		long res = db.insertNetDev(sr.BSSID, sr.SSID, DBAdapter.PTYPE_80211, 0);
 		    		if(res == -1) {
 		    			Toast.makeText(getApplicationContext(), "Error inserting " + sr.SSID + " in to the database.", Toast.LENGTH_SHORT).show();
 		    		}
