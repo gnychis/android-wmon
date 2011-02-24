@@ -27,23 +27,43 @@ public class DBAdapter
     // Protocol types
     public static final int PTYPE_80211 = 0;
     public static final int PTYPE_BTOOTH = 1;
+    
+    // Networks
+    public static final String DB_TABLE_NETS = "networks";
+    public static final String NETKEY_NET_ID = "id";
+    public static final String NETKEY_NET_NAME = "net_name";
+    public static final String NETKEY_NET_ESSID = "essid";
+    public static final String NETKEY_NET_MASTER = "mac";
+    public static final String NETKEY_PROTOCOL = "protocol";
+    public static final String NETKEY_PROTOCOL_VER = "protocol_ver";
+    private static final String DBT_CREATE_NETS =
+        "create table " + DB_TABLE_NETS 
+        + " (" 
+        + NETKEY_NET_ID + " integer primary key autoincrement, "
+        + NETKEY_NET_NAME + " varchar2, "
+        + NETKEY_NET_ESSID + " varchar2 not null, "
+        + NETKEY_NET_MASTER + " char(23), "
+        + NETKEY_PROTOCOL + " tinyint not null, "
+        + NETKEY_PROTOCOL_VER + " tinyint not null);";
 
 	// Attempting to be generic across technologies
 	// For main network/device management
 	// The key is DEVKEY_MAC
     public static final String DB_TABLE_DEVICES = "devices";
+    public static final String DEVKEY_NETID = "net_id";	// the network the device is a part of, allowing devices to be parts of multiple networks
     public static final String DEVKEY_MAC = "mac";	// the "host" of the network's mac, can be used to lookup protocol
-    public static final String DEVKEY_NET_NAME = "net_name";
-    public static final String DEVKEY_PROTOCOL = "protocol";
+    public static final String DEVKEY_NAME = "name";
+    public static final String DEVKEY_PROTOCOL = "protocol";		  // devices can support a different subset of protocols than the network
     public static final String DEVKEY_PROTOCOL_VER = "protocol_ver";  // can be used as a bitmask to represent protocol versions
     private static final String DBT_CREATE_DEVICES =
         "create table " + DB_TABLE_DEVICES 
         + " (" 
+        + DEVKEY_NETID + " integer not null, "
         + DEVKEY_MAC + " char(23) not null, "
-        + DEVKEY_NET_NAME + " varchar2 not null, "
+        + DEVKEY_NAME + " varchar2 not null, "
         + DEVKEY_PROTOCOL + " tinyint not null, "
         + DEVKEY_PROTOCOL_VER + " tinyint not null, "
-        + "CONSTRAINT dev_id PRIMARY KEY (" + DEVKEY_MAC + "));";
+        + "CONSTRAINT dev_id PRIMARY KEY (" + DEVKEY_MAC + "," + DEVKEY_NETID + "));";
     
     // Frequency list
     public static final String DB_TABLE_FREQS = "freqs";
@@ -114,11 +134,13 @@ public class DBAdapter
         public void onCreate(SQLiteDatabase db) 
         {
         	Log.d(TAG,"Creating databases...");
+        	Log.d(TAG,DB_TABLE_NETS);
         	Log.d(TAG,DBT_CREATE_DEVICES);
         	Log.d(TAG,DBT_CREATE_FREQS);
         	Log.d(TAG,DBT_CREATE_MEASUREMENTS);
         	Log.d(TAG,DBT_CREATE_SPECVIEWS);
         	
+        	db.execSQL(DBT_CREATE_NETS);
             db.execSQL(DBT_CREATE_DEVICES);
             db.execSQL(DBT_CREATE_FREQS);
             db.execSQL(DBT_CREATE_MEASUREMENTS);
@@ -132,6 +154,7 @@ public class DBAdapter
             Log.w(TAG, "Upgrading database from version " + oldVersion 
                     + " to "
                     + newVersion + ", which will destroy all old data");
+            db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_NETS);
             db.execSQL("DROP TABLE IF EXISTS " + DBT_CREATE_DEVICES);
             db.execSQL("DROP TABLE IF EXISTS " + DBT_CREATE_FREQS);
             db.execSQL("DROP TABLE IF EXISTS " + DBT_CREATE_MEASUREMENTS);
@@ -155,35 +178,61 @@ public class DBAdapter
         DBHelper.close();
     }
     
-    // Insert a device and network in to the management database
-    public long insertNetDev(String mac, String net_name, int protocol, int protocol_ver)
+    // Insert a network in to the management database
+    public long insertNetwork(String name, String master, String essid, int protocol, int protocol_ver)
     {
+    	long r=-1;
     	ContentValues initialValues = new ContentValues();
-    	initialValues.put(DEVKEY_MAC, mac);
-    	initialValues.put(DEVKEY_NET_NAME, net_name);
-    	initialValues.put(DEVKEY_PROTOCOL, protocol);
-    	initialValues.put(DEVKEY_PROTOCOL_VER, protocol_ver);
-    	return db.insert(DB_TABLE_DEVICES, null, initialValues);
+    	//initialValues.put(NETKEY_NET_ID, );  // auto-increment
+    	initialValues.put(NETKEY_NET_NAME, name);
+    	initialValues.put(NETKEY_NET_MASTER, master);
+    	initialValues.put(NETKEY_NET_ESSID, essid);
+    	initialValues.put(NETKEY_PROTOCOL, protocol);
+    	initialValues.put(NETKEY_PROTOCOL_VER, protocol_ver);
+    	
+    	try {
+    	    r = db.insertOrThrow(DB_TABLE_NETS, null, initialValues);
+    	} catch (Exception e) {
+    	    Log.e(TAG, "exception while adding to network database", e);
+    	}
+    	return r;
     }
     
-    // Check if a network is managed
-    public boolean isNetManaged(String mac, String net_name)
+    // Insert a device in to the management database
+    public long insertNetDev(int netid, String mac, String dev_name, int protocol, int protocol_ver)
     {
-    	String qry = String.format("SELECT COUNT(*) FROM %s WHERE %s='%s' and %s='%s';", 
-    			DB_TABLE_DEVICES, DEVKEY_MAC, mac, DEVKEY_NET_NAME, net_name);
-    	Log.d(TAG,DBT_CREATE_DEVICES);
+    	long r = -1;
+    	ContentValues initialValues = new ContentValues();
+    	initialValues.put(DEVKEY_NETID, netid);
+    	initialValues.put(DEVKEY_MAC, mac);
+    	initialValues.put(DEVKEY_NAME, dev_name);
+    	initialValues.put(DEVKEY_PROTOCOL, protocol);
+    	initialValues.put(DEVKEY_PROTOCOL_VER, protocol_ver);
+    	try {
+    		r = db.insert(DB_TABLE_DEVICES, null, initialValues);
+    	} catch(Exception e) {
+    		Log.e(TAG,"exception while adding to device database", e);
+    	}
+    	return r;
+    }
+    
+    // Check if a network is managed, get the ID if it is, otherwise return -1
+    public int getNetwork(String mac, String essid)
+    {
+    	String qry = String.format("SELECT %s FROM %s WHERE %s='%s' and %s='%s';", 
+    			NETKEY_NET_ID, DB_TABLE_NETS, NETKEY_NET_MASTER, mac, NETKEY_NET_ESSID, essid);
     	
     	Cursor res = db.rawQuery(qry,null);
         if (res != null) {
             res.moveToFirst();
         }
+        
+        if(res.getCount()==0)
+        	return -1;
     	
     	Log.d(TAG, "Result: " + res.getString(0));
     	
-    	if(res.getInt(0) == 1)  // TODO: make not be safe...
-    		return true;
-    	else
-    		return false;
+    	return res.getInt(0);
     }
     
     public List<String> getAllDevices() {
@@ -204,28 +253,13 @@ public class DBAdapter
         return devices;
     }
     
-    public List<String> getDevicesInNet(String network) {
-    	List<String> devices = new ArrayList<String>();
-    	
-    	String qry = String.format("SELECT * FROM %s WHERE %s='%s';", 
-    			DB_TABLE_DEVICES, DEVKEY_NET_NAME,network);
-    	
-    	Cursor res = db.rawQuery(qry,null);
-        if (res != null) {
-            res.moveToFirst();
-        }
-        
-        do {
-        	devices.add(res.getString(0));
-        } while (res.moveToNext());
-           
-        return devices;
-    }
+
     
+    /*
     public String getProtocolOfNet(String network) {
     	
     	String qry = String.format("SELECT %s FROM %s WHERE %s='%s';", 
-    			DEVKEY_PROTOCOL, DB_TABLE_DEVICES, DEVKEY_NET_NAME, network);
+    			NETKEY_PROTOCOL, DB_TABLE_NETS, NETKEY_, network);
     	
     	Cursor res = db.rawQuery(qry,null);
         if (res != null) {
@@ -241,34 +275,67 @@ public class DBAdapter
         	return "Unknown";
         }
     	
+    }*/
+    
+    public Cursor getNetworks() {
+    	
+	    Cursor mCursor =
+	            db.query(true, DB_TABLE_NETS, new String[] {
+	            		NETKEY_NET_ID,
+	            		NETKEY_NET_NAME, 
+	            		NETKEY_NET_ESSID,
+	            		NETKEY_NET_MASTER,
+	            		NETKEY_PROTOCOL,
+	            		NETKEY_PROTOCOL_VER
+	            		}, 
+	            		null, 
+	            		null,
+	            		null, 
+	            		null, 
+	            		null, 
+	            		null);
+	    if (mCursor != null) {
+	        mCursor.moveToFirst();
+	    }
+	    return mCursor;
     }
     
-    public List<String> getNetworks() {
+    public Cursor getDevicesInNet(int netid) {
     	
-    	List<String> networks = new ArrayList<String>();
-    	
-    	String qry = String.format("SELECT DISTINCT(%s) FROM %s;", 
-    			DEVKEY_NET_NAME, DB_TABLE_DEVICES);
-    	
-    	Cursor res = db.rawQuery(qry,null);
-        if (res != null) {
-            res.moveToFirst();
+	    Cursor mCursor =
+	            db.query(true, DB_TABLE_DEVICES, new String[] {
+	            		DEVKEY_NETID,
+	            		DEVKEY_MAC, 
+	            		DEVKEY_NAME,
+	            		DEVKEY_PROTOCOL,
+	            		DEVKEY_PROTOCOL_VER
+	            		}, 
+	            		DEVKEY_NETID + "=" + netid, 
+	            		null,
+	            		null, 
+	            		null, 
+	            		null, 
+	            		null);
+	    if (mCursor != null) {
+	        mCursor.moveToFirst();
+	    }
+	    return mCursor;
+    }
+    
+    
+    public boolean deleteDevice(String netid, String mac) {
+    	boolean r = false;    	
+        r = db.delete(DB_TABLE_DEVICES, DEVKEY_MAC + "='" + mac + "' and " + DEVKEY_NETID + "=" + netid, null) > 0;
+        
+        // Purge networks with no devices
+        if(r) {
+        	Cursor dev = getDevicesInNet(Integer.parseInt(netid));
+        	if(dev.getCount()==0) {
+        		r = db.delete(DB_TABLE_NETS, NETKEY_NET_ID + "=" + netid.toString(), null) > 0;
+        	}
         }
-        
-        if(res.getCount()==0)
-        	return networks;
-        
-        do {
-        	networks.add(res.getString(0));
-        } while (res.moveToNext());
-           
-        return networks;
-    }
-    
-    public boolean deleteDevice(String mac) {
-    	    	
-        return db.delete(DB_TABLE_DEVICES, DEVKEY_MAC + 
-        		"= '" + mac + "'", null) > 0;
+        	
+        return r;
     }
     
     /*

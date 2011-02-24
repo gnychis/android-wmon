@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,16 +24,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	private static final String TAG = "WiFiDemo";
 
-	
 	// Make instances of our helper classes
 	WifiManager wifi;
 	BroadcastReceiver receiver;
 	DBAdapter db;
 	//SelectNetDev snetdev;
-
+	
 	TextView textStatus;
 	Button buttonScan; 
-	Button buttonManageNets; 
+	//Button buttonManageNets; 
 	Button buttonManageDevs;
 	
 	// Network and Device lists
@@ -51,10 +51,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
 		buttonScan = (Button) findViewById(R.id.buttonAdd80211);
-		buttonManageNets = (Button) findViewById(R.id.buttonManageNets);
+		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets);
 		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs);
 		buttonScan.setOnClickListener(this);
-		buttonManageNets.setOnClickListener(this);
+//		buttonManageNets.setOnClickListener(this);
 		buttonManageDevs.setOnClickListener(this);
 
 		// Setup WiFi
@@ -109,19 +109,28 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			
 			// Wait for a user to click on an item in the list
 		    public void onClick(DialogInterface dialog, int item) {
-		    	
+		    			    	
 		    	// First, do a lookup on the table to see if it exists
 		    	ScanResult sr = netlist_80211.get(item);
-		    	boolean managed = db.isNetManaged(sr.BSSID, sr.SSID);
+		    	int managed = db.getNetwork(sr.BSSID, sr.SSID);
 		    	
-		    	if(managed) {	// Cannot add a network that is already managed
+		    	// TODO: add the ability to remanage the master by adding the network
+		    	
+		    	if(managed!=-1) {	// Cannot add a network that is already managed
 		    		Toast.makeText(getApplicationContext(), sr.SSID + " is already managed.", Toast.LENGTH_SHORT).show();
 		    	} else {		// Add the network the list of managed networks 
-		    		long res = db.insertNetDev(sr.BSSID, sr.SSID, DBAdapter.PTYPE_80211, 0);
+		    		
+		    		long res = db.insertNetwork(null, sr.BSSID, sr.SSID, DBAdapter.PTYPE_80211, 0);
 		    		if(res == -1) {
 		    			Toast.makeText(getApplicationContext(), "Error inserting " + sr.SSID + " in to the database.", Toast.LENGTH_SHORT).show();
+		    		} else {
+		    			Toast.makeText(getApplicationContext(), "CoexiSyst is now managing " + sr.SSID, Toast.LENGTH_SHORT).show();
+		    			// Since we successfully added the network, let's add the access point as a device
+		    			int netid = db.getNetwork(sr.BSSID, sr.SSID);
+		    			if(db.insertNetDev(netid, sr.BSSID, "Access Point", DBAdapter.PTYPE_80211, 0)==-1) {
+		    				Toast.makeText(getApplicationContext(), "Error inserting access point", Toast.LENGTH_SHORT).show();
+		    			}
 		    		}
-		    		Toast.makeText(getApplicationContext(), "CoexiSyst is now managing " + sr.SSID, Toast.LENGTH_SHORT).show();
 		    	}
 		        
 		        startScans();	// We can start scanning again
@@ -130,10 +139,16 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
 		AlertDialog alert = builder.create();
 		alert.show();
+		
+		
+	}
+	
+	public void getUserText() {
+	
 	}
 	
 	public void clickManageNets() {
-	
+		
 	}
 	
 	public void clickManageDevs() {
@@ -149,9 +164,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		if (view.getId() == R.id.buttonAdd80211) {
 			clickAdd80211();
 		}
-		if(view.getId() == R.id.buttonManageNets) {
-			clickManageNets();
-		}
+		//if(view.getId() == R.id.buttonManageNets) {
+		//	clickManageNets();
+		//}
 		if(view.getId() == R.id.buttonManageDevs) {
 			clickManageDevs();
 		}
@@ -168,4 +183,30 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		}
 		return nets_str;
 	}
+	
+	/* 
+	 	AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle("Title");
+		alert.setMessage("Message");
+
+		// Set an EditText view to get user input 
+		final EditText input = new EditText(this);
+		alert.setView(input);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface dialog, int whichButton) {
+		  String value = input.getText().toString();
+		  // Do something with value!
+		  }
+		});
+
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		  public void onClick(DialogInterface dialog, int whichButton) {
+		    // Canceled.
+		  }
+		});
+
+		alert.show();
+		*/
 }

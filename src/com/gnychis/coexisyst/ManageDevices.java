@@ -8,6 +8,7 @@ import java.util.Map;
 import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -22,6 +23,7 @@ public class ManageDevices extends ExpandableListActivity {
 	private static final String TAG = "ManageDevices";
     private static final String NAME = "NAME";
     private static final String MAC = "MAC";
+    private static final String NETID = "NETID";
     private static final String CMAC = "CMAC";
     private static final String PROTOCOL = "PROTOCOL";
     
@@ -52,27 +54,34 @@ public class ManageDevices extends ExpandableListActivity {
         childData = new ArrayList<List<Map<String, String>>>();
         
         // Make groups out of the networks
-        List<String> networks = db.getNetworks();
-        for( String net : networks ) {
-        	String proto = db.getProtocolOfNet(net);
-            Map<String, String> curGroupMap = new HashMap<String, String>();
-            groupData.add(curGroupMap);
-            curGroupMap.put(NAME, net);  
-            curGroupMap.put(PROTOCOL, "Network Type: " + proto);
-            
-            // Get all of the devices in the network
-            List<String> devices = db.getDevicesInNet(net);
-            List<Map<String, String>> children = new ArrayList<Map<String, String>>();
-            for (String dev : devices) {
-                Map<String, String> curChildMap = new HashMap<String, String>();
-                children.add(curChildMap);
-                curChildMap.put(NAME, "Name: Access Point");
-                curChildMap.put(MAC, "MAC Address: " + dev);
-                curChildMap.put(CMAC, dev);
-            }
-            childData.add(children);
+        Cursor networks = db.getNetworks();
+        if(networks.getCount() > 0) {
+	        do {
+	        	String net = networks.getString(networks.getColumnIndex(DBAdapter.NETKEY_NET_ESSID));
+	        	String proto = "802.11";
+	            Map<String, String> curGroupMap = new HashMap<String, String>();
+	            groupData.add(curGroupMap);
+	            curGroupMap.put(NAME, net);  
+	            curGroupMap.put(PROTOCOL, "Network Type: " + proto);
+	        	
+	            // Get all of the devices in the network
+	            Cursor dev = db.getDevicesInNet(networks.getInt(networks.getColumnIndex(DBAdapter.NETKEY_NET_ID)));
+	            List<Map<String, String>> children = new ArrayList<Map<String, String>>();
+	            if(dev.getCount() > 0) {
+		            do {
+		                Map<String, String> curChildMap = new HashMap<String, String>();
+		                children.add(curChildMap);
+		                curChildMap.put(NAME, "Name: " + dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_NAME)));
+		                curChildMap.put(MAC, "MAC Address: " + dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_MAC)));
+		                curChildMap.put(CMAC, dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_MAC)));
+		                curChildMap.put(NETID, networks.getString(networks.getColumnIndex(DBAdapter.NETKEY_NET_ID)));
+		            } while(dev.moveToNext());
+	            }
+	            childData.add(children);
+	            
+	        } while(networks.moveToNext());
         }
-        
+
         // Set up our adapter
         mAdapter = new SimpleExpandableListAdapter(
                 this,
@@ -131,10 +140,17 @@ public class ManageDevices extends ExpandableListActivity {
     
     // Use the last clicked item (device) to determine what to unmanage
     boolean unmanage() {
+    	boolean r = false;
     	String mac = childData.get(last_group).get(last_child).get(CMAC);
+    	String netid = childData.get(last_group).get(last_child).get(NETID);
     	//Log.d(TAG, "Unmanging from network: " + groupData.get(last_group).get(NAME));
     	Log.d(TAG, "Unamanging device: " + mac);
-    	return db.deleteDevice(mac);
+    	try {
+    	 r = db.deleteDevice(netid, mac);
+    	} catch(Exception e) {		
+    		Log.e(TAG, "Exception trying to delete device", e);
+    	}
+    	return r;
     }
 	
 	
