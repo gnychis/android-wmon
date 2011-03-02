@@ -49,25 +49,27 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     coexisyst.netlist_80211 = coexisyst.wifi.getScanResults();
     Collections.sort(coexisyst.netlist_80211, comp);
     
-    String ts = String.format("Results (%d)\n", scans);
-    coexisyst.textStatus.setText(ts);
+    
+    //String ts = String.format("Results (%d)\n", scans);
+    //coexisyst.textStatus.setText(ts);
 
     for (ScanResult result : coexisyst.netlist_80211) {
       if (bestSignal == null
           || WifiManager.compareSignalLevel(bestSignal.level, result.level) < 0)
         bestSignal = result;
       String curr = String.format("(%d) %s, %s MHz, %d dBm, %s\n", i, result.SSID, result.frequency, result.level, result.BSSID);
-      coexisyst.textStatus.append(curr);
+      //coexisyst.textStatus.append(curr);
       i++;
     }
 
     if(bestSignal != null) {
 	    String message = String.format("%s networks found. %s is the strongest with %d dBm.",
 	    		coexisyst.netlist_80211.size(), bestSignal.SSID, bestSignal.level);
-	    Toast.makeText(coexisyst, message, Toast.LENGTH_LONG).show();
+	    //Toast.makeText(coexisyst, message, Toast.LENGTH_LONG).show();
 	
 	    Log.d(TAG, "onReceive() message: " + message);
     }
+    
   }
 
 }

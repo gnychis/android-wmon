@@ -5,6 +5,7 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -94,10 +95,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void startScans() {
 		registerReceiver(rcvr_80211, new IntentFilter(
 				WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));	
+		registerReceiver(rcvr_BTooth, new IntentFilter(
+				BluetoothDevice.ACTION_FOUND));
 	}
 	
 	public void stopScans() {
 		unregisterReceiver(rcvr_80211);	
+		unregisterReceiver(rcvr_BTooth);
 	}
 	
 	public void clickAdd80211() {
