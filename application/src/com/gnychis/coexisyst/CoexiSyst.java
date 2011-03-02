@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,7 +17,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,10 +25,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	private static final String TAG = "WiFiDemo";
 
 	// Make instances of our helper classes
-	WifiManager wifi;
-	BroadcastReceiver receiver;
 	DBAdapter db;
-	//SelectNetDev snetdev;
+	WifiManager wifi;
+	BluetoothAdapter bt;
+	
+	// Receivers
+	BroadcastReceiver rcvr_80211;
+	BroadcastReceiver rcvr_BTooth;
+
 	
 	TextView textStatus;
 	Button buttonScan; 
@@ -57,12 +61,18 @@ public class CoexiSyst extends Activity implements OnClickListener {
 //		buttonManageNets.setOnClickListener(this);
 		buttonManageDevs.setOnClickListener(this);
 
-		// Setup WiFi
+		// Setup wireless devices
 		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		bt = BluetoothAdapter.getDefaultAdapter();
+		
+		if (!bt.isEnabled()) {
+		    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+		    startActivityForResult(enableBtIntent, 1);
+		}
 
 		// Register Broadcast Receiver
-		if (receiver == null)
-			receiver = new WiFiScanReceiver(this);
+		if (rcvr_80211 == null)
+			rcvr_80211 = new WiFiScanReceiver(this);
 
 		Log.d(TAG, "onCreate()");
 		startScans();
@@ -82,12 +92,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	}
 	
 	public void startScans() {
-		registerReceiver(receiver, new IntentFilter(
+		registerReceiver(rcvr_80211, new IntentFilter(
 				WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));	
 	}
 	
 	public void stopScans() {
-		unregisterReceiver(receiver);	
+		unregisterReceiver(rcvr_80211);	
 	}
 	
 	public void clickAdd80211() {
