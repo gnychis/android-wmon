@@ -25,18 +25,13 @@ public class BluetoothManager extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         // When discovery finds a device
-        Toast.makeText(coexisyst, "got a callback", Toast.LENGTH_LONG).show();
         if (BluetoothDevice.ACTION_FOUND.equals(action)) {
             // Get the BluetoothDevice object from the Intent
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             // Add the name and address to an array adapter to show in a ListView
             //mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-            String str = String.format("%s - %s", device.getName(), device.getAddress());
+            String str = String.format("%s - %s\n", device.getName(), device.getAddress());
             coexisyst.textStatus.append(str);
-            
-    	    String message = String.format("Found Bluetooth device %s with address %s.",
-    	    		device.getName(), device.getAddress());
-    	    Toast.makeText(coexisyst, message, Toast.LENGTH_LONG).show();
         }
 		
 	}
