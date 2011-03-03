@@ -74,6 +74,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// Register Broadcast Receiver
 		if (rcvr_80211 == null)
 			rcvr_80211 = new WiFiScanReceiver(this);
+		if (rcvr_BTooth == null)
+			rcvr_BTooth = new BluetoothManager(this);
+
 
 		Log.d(TAG, "onCreate()");
 		startScans();
@@ -83,25 +86,45 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void onStop() {
 		super.onStop();
 		stopScans();
-		//db.close();
 	}
 	
 	public void onResume() {
 		super.onResume();
 		startScans();
-		//db.open();
+	}
+	
+	public void onPause() {
+		super.onPause();
+		stopScans();
+	}
+	public void onDestroy() {
+		super.onDestroy();
+		stopScans();
 	}
 	
 	public void startScans() {
+		try {
 		registerReceiver(rcvr_80211, new IntentFilter(
 				WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));	
 		registerReceiver(rcvr_BTooth, new IntentFilter(
 				BluetoothDevice.ACTION_FOUND));
+		
+		wifi.startScan();
+		bt.startDiscovery();
+		} catch (Exception e) {
+			Log.e(TAG, "Exception trying to register scan receivers");
+		}
 	}
 	
 	public void stopScans() {
+		try {
 		unregisterReceiver(rcvr_80211);	
 		unregisterReceiver(rcvr_BTooth);
+		
+		bt.cancelDiscovery();
+		} catch (Exception e) {
+			Log.e(TAG, "Exception trying to unregister scan receivers");
+		}
 	}
 	
 	public void clickAdd80211() {
