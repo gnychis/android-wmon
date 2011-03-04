@@ -1,5 +1,6 @@
 package com.gnychis.coexisyst;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -9,7 +10,6 @@ import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.util.Log;
-import android.widget.Toast;
 
 public class WiFiScanReceiver extends BroadcastReceiver {
   private static final String TAG = "WiFiScanReceiver";
@@ -46,7 +46,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     scans++;
 	
 	// Pull the results in
-    coexisyst.netlist_80211 = coexisyst.wifi.getScanResults();
+    coexisyst.netlist_80211 = new ArrayList<ScanResult>(coexisyst.wifi.getScanResults());
     Collections.sort(coexisyst.netlist_80211, comp);
     
     
@@ -57,7 +57,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
       if (bestSignal == null
           || WifiManager.compareSignalLevel(bestSignal.level, result.level) < 0)
         bestSignal = result;
-      String curr = String.format("(%d) %s, %s MHz, %d dBm, %s\n", i, result.SSID, result.frequency, result.level, result.BSSID);
+      //String curr = String.format("(%d) %s, %s MHz, %d dBm, %s\n", i, result.SSID, result.frequency, result.level, result.BSSID);
       //coexisyst.textStatus.append(curr);
       i++;
     }

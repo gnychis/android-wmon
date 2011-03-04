@@ -1,6 +1,6 @@
 package com.gnychis.coexisyst;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -39,7 +39,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	Button buttonManageDevs;
 	
 	// Network and Device lists
-	List<ScanResult> netlist_80211;
+	ArrayList<ScanResult> netlist_80211;
 	
     /** Called when the activity is first created. */
     @Override
@@ -139,6 +139,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		try {
 			Log.d(TAG,"Trying to load add networks window");
 			Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
+			
+			//ArrayList<ScanResult> n80211 = new ArrayList(netlist_80211);
+			i.putExtra("com.gnychis.coexisyst.80211", netlist_80211);
+			
 			startActivity(i);
 		} catch (Exception e) {
 			Log.e(TAG, "Exception trying to load network add window",e);
