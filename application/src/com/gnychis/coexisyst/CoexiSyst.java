@@ -31,7 +31,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// Receivers
 	BroadcastReceiver rcvr_80211;
 	BroadcastReceiver rcvr_BTooth;
-
 	
 	TextView textStatus;
 	Button buttonScan; 
