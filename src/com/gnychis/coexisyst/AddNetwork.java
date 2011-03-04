@@ -24,8 +24,10 @@ public class AddNetwork extends ExpandableListActivity {
     private static final String MAC = "MAC";
     private static final String NETID = "NETID";
     private static final String CMAC = "CMAC";
-    private static final String PROTOCOL = "PROTOCOL";
+    //private static final String PROTOCOL = "PROTOCOL";
     private static final String DESCRIPTION = "DESCRIPTION";
+    private static final String RSSI = "RSSI";
+
     
     public List<Map<String, String>> groupData;
     public List<List<Map<String, String>>> childData;
@@ -53,11 +55,17 @@ public class AddNetwork extends ExpandableListActivity {
         groupData = new ArrayList<Map<String, String>>();
         childData = new ArrayList<List<Map<String, String>>>();
         
-    	//String proto = "802.11";
         Map<String, String> curGroupMap = new HashMap<String, String>();
         groupData.add(curGroupMap);
         curGroupMap.put(NAME, "WiFi");  
         curGroupMap.put(DESCRIPTION, "Description: 802.11 networks");
+        
+        /*
+		for(ScanResult result : coexisyst.netlist_80211) {
+		      curr = String.format("%s (%d dBm)", result.SSID, result.level);
+		      nets_str[i] = curr;
+		      i++;
+		}*/
         
         // Make groups out of the networks
         /*Cursor networks = db.getNetworks();
@@ -93,7 +101,7 @@ public class AddNetwork extends ExpandableListActivity {
                 new int[] { android.R.id.text1, android.R.id.text2 },
                 childData,
                 android.R.layout.simple_expandable_list_item_2,
-                new String[] { NAME, MAC },
+                new String[] { NAME, MAC, RSSI },
                 new int[] { android.R.id.text1, android.R.id.text2 }
                 );
         
