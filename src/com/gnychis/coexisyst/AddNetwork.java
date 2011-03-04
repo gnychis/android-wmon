@@ -12,6 +12,7 @@ import android.net.wifi.ScanResult;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
@@ -40,7 +41,7 @@ public class AddNetwork extends ExpandableListActivity {
     public int last_child;
     
     private ExpandableListAdapter mAdapter;
-
+    
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	  super.onCreate(savedInstanceState);
@@ -69,10 +70,20 @@ public class AddNetwork extends ExpandableListActivity {
             children.add(curChildMap);
             curChildMap.put(NAME, result.SSID);
             curChildMap.put(MAC, "MAC: " + result.BSSID);
-            curChildMap.put(RSSI, "RSSI: " + result.level);
+            curChildMap.put(RSSI, "RSSI: " + result.level + "dBm");
+            curChildMap.put(CMAC, result.BSSID);	// clear string mac
 		}
 		childData.add(children);
 
+        //////////////// 802.15.4 Networks
+        curGroupMap = new HashMap<String, String>();
+        groupData.add(curGroupMap);
+        curGroupMap.put(NAME, "ZigBee");  
+        curGroupMap.put(DESCRIPTION, "Description: 802.15.4 networks");
+        children = new ArrayList<Map<String, String>>();
+        childData.add(children);
+        
+		
         // Set up our adapter
         mAdapter = new SimpleExpandableListAdapter(
                 this,
@@ -100,31 +111,52 @@ public class AddNetwork extends ExpandableListActivity {
     	last_group = groupPosition;
     	last_child = childPosition;
     	
-		final String[] options = {"Contending Networks", "Contending Devices", "Unmanage"};
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Choose an Action");
-		builder.setItems(options, new DialogInterface.OnClickListener() {
+	 	AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle("Name the Network");
+		//alert.setMessage("Message");
+
+		// Set an EditText view to get user input 
+		final EditText input = new EditText(this);
+		input.setText(childData.get(last_group).get(last_child).get(NAME));
+		alert.setView(input);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface dialog, int whichButton) {
+			String user_input = input.getText().toString();
+			String ssid = childData.get(last_group).get(last_child).get(NAME);
+			String bssid = childData.get(last_group).get(last_child).get(CMAC);
+		  
+			// First, do a lookup on the table to see if it exists
+			int managed = db.getNetwork(bssid, ssid);
 			
-			// Wait for a user to click on an item in the list
-		    public void onClick(DialogInterface dialog, int item) {
-		    	switch(item) {
-		    	case 0:
-		    		Toast.makeText(getApplicationContext(), "Computing contending networks...", Toast.LENGTH_SHORT).show();
-		    		break;
-		    	case 1:
-		    		Toast.makeText(getApplicationContext(), "Computing contending devices...", Toast.LENGTH_SHORT).show();
-		    		break;
-		    	case 2:
-		    		if(unmanage())
-		    			Toast.makeText(getApplicationContext(), "Device is now unmanaged...", Toast.LENGTH_SHORT).show();
-		    		else 
-		    			Toast.makeText(getApplicationContext(), "Error unmanaging device!", Toast.LENGTH_SHORT).show();
-		    		setup_groups();
-		    		break;
-		    	}
-		    }
+			// TODO: add the ability to remanage the master by adding the network
+			
+			if(managed!=-1) {	// Cannot add a network that is already managed
+				Toast.makeText(getApplicationContext(), ssid + " is already managed.", Toast.LENGTH_LONG).show();
+			} else {		// Add the network the list of managed networks 
+				
+				long res = db.insertNetwork(user_input, bssid, ssid, DBAdapter.PTYPE_80211, 0);
+				if(res == -1) {
+					Toast.makeText(getApplicationContext(), "Error inserting " + ssid + " in to the database.", Toast.LENGTH_LONG).show();
+				} else {
+					Toast.makeText(getApplicationContext(), "CoexiSyst is now managing " + user_input, Toast.LENGTH_LONG).show();
+					// Since we successfully added the network, let's add the access point as a device
+					int netid = db.getNetwork(bssid, ssid);
+					if(db.insertNetDev(netid, bssid, "Access Point", DBAdapter.PTYPE_80211, 0)==-1) {
+						Toast.makeText(getApplicationContext(), "Error inserting access point", Toast.LENGTH_LONG).show();
+					}
+				}
+			}
+		  }
 		});
-		AlertDialog alert = builder.create();
+
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		  public void onClick(DialogInterface dialog, int whichButton) {
+		    return;
+		  }
+		});
+
 		alert.show();
         return true;
     }
@@ -143,33 +175,4 @@ public class AddNetwork extends ExpandableListActivity {
     	}
     	return r;
     }
-	
-	
-	/*
-	public void setup_list() {
-		Log.d(TAG, "Setting up the list...");
-		String t[] = new String[5];
-		t[0] = "First";
-		t[1] = "Second";
-		t[2] = "Third";
-		t[3] = "Fourth";
-		t[4] = "Fifth";
-		
-		//t = coexisyst.netlts_80211();
-		setListAdapter(new ArrayAdapter<String>(this, R.layout.devices_list_item1 , t));
-		
-		ListView lv = getListView();
-		lv.setTextFilterEnabled(true);
-		lv.setOnItemClickListener(new OnItemClickListener() {
-			 public void onItemClick(AdapterView<?> parent, View view,
-					 	int position, long id) {
-			      // When clicked, show a toast with the TextView text
-			      Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
-			          Toast.LENGTH_SHORT).show();
-			 }
-		});
-			  
-	}*/
-	
-	
 }
