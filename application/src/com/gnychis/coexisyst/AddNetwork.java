@@ -81,9 +81,9 @@ public class AddNetwork extends ExpandableListActivity {
                 new String[] { NAME, DESCRIPTION },
                 new int[] { android.R.id.text1, android.R.id.text2 },
                 childData,
-                android.R.layout.simple_expandable_list_item_2,
-                new String[] { NAME, MAC },
-                new int[] { android.R.id.text1, android.R.id.text2 }
+                R.layout.three_line_list_item,
+                new String[] { NAME, MAC, RSSI },
+                new int[] { R.id.text1, R.id.text2, R.id.text3 }
                 );
         
         setListAdapter(mAdapter);
