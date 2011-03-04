@@ -8,6 +8,7 @@ import java.util.Map;
 import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
 import android.content.DialogInterface;
+import android.net.wifi.ScanResult;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -27,8 +28,9 @@ public class AddNetwork extends ExpandableListActivity {
     //private static final String PROTOCOL = "PROTOCOL";
     private static final String DESCRIPTION = "DESCRIPTION";
     private static final String RSSI = "RSSI";
-
     
+    ArrayList<ScanResult> netlist_80211;
+
     public List<Map<String, String>> groupData;
     public List<List<Map<String, String>>> childData;
     
@@ -42,8 +44,8 @@ public class AddNetwork extends ExpandableListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	  super.onCreate(savedInstanceState);
-	  //setContentView(R.layout.devlist);
-	  //setup_list();
+	  Bundle i = getIntent().getExtras();
+	  netlist_80211 = (ArrayList<ScanResult>)i.get("com.gnychis.coexisyst.80211");
 	  db = new DBAdapter(this);
 	  db.open();
 	  setup_groups();
@@ -55,42 +57,21 @@ public class AddNetwork extends ExpandableListActivity {
         groupData = new ArrayList<Map<String, String>>();
         childData = new ArrayList<List<Map<String, String>>>();
         
+        //////////////// 802.11 Networks
         Map<String, String> curGroupMap = new HashMap<String, String>();
         groupData.add(curGroupMap);
         curGroupMap.put(NAME, "WiFi");  
         curGroupMap.put(DESCRIPTION, "Description: 802.11 networks");
         
-        /*
-		for(ScanResult result : coexisyst.netlist_80211) {
-		      curr = String.format("%s (%d dBm)", result.SSID, result.level);
-		      nets_str[i] = curr;
-		      i++;
-		}*/
-        
-        // Make groups out of the networks
-        /*Cursor networks = db.getNetworks();
-        if(networks.getCount() > 0) {
-	        do {
-	        	String net = networks.getString(networks.getColumnIndex(DBAdapter.NETKEY_NET_ESSID));
-
-	        	
-	            // Get all of the devices in the network
-	            Cursor dev = db.getDevicesInNet(networks.getInt(networks.getColumnIndex(DBAdapter.NETKEY_NET_ID)));
-	            List<Map<String, String>> children = new ArrayList<Map<String, String>>();
-	            if(dev.getCount() > 0) {
-		            do {
-		                Map<String, String> curChildMap = new HashMap<String, String>();
-		                children.add(curChildMap);
-		                curChildMap.put(NAME, "Name: " + dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_NAME)));
-		                curChildMap.put(MAC, "MAC Address: " + dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_MAC)));
-		                curChildMap.put(CMAC, dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_MAC)));
-		                curChildMap.put(NETID, networks.getString(networks.getColumnIndex(DBAdapter.NETKEY_NET_ID)));
-		            } while(dev.moveToNext());
-	            }
-	            childData.add(children);
-	            
-	        } while(networks.moveToNext());
-        }*/
+        List<Map<String, String>> children = new ArrayList<Map<String, String>>();
+		for(ScanResult result : netlist_80211) {
+            Map<String, String> curChildMap = new HashMap<String, String>();
+            children.add(curChildMap);
+            curChildMap.put(NAME, result.SSID);
+            curChildMap.put(MAC, "MAC: " + result.BSSID);
+            curChildMap.put(RSSI, "RSSI: " + result.level);
+		}
+		childData.add(children);
 
         // Set up our adapter
         mAdapter = new SimpleExpandableListAdapter(
@@ -101,7 +82,7 @@ public class AddNetwork extends ExpandableListActivity {
                 new int[] { android.R.id.text1, android.R.id.text2 },
                 childData,
                 android.R.layout.simple_expandable_list_item_2,
-                new String[] { NAME, MAC, RSSI },
+                new String[] { NAME, MAC },
                 new int[] { android.R.id.text1, android.R.id.text2 }
                 );
         
