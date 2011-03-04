@@ -22,6 +22,7 @@ public class ManageNetworks extends ExpandableListActivity {
 
 	private static final String TAG = "ManageDevices";
     private static final String NAME = "NAME";
+    private static final String SSID = "SSID";
     private static final String MAC = "MAC";
     private static final String NETID = "NETID";
     private static final String CMAC = "CMAC";
@@ -57,11 +58,13 @@ public class ManageNetworks extends ExpandableListActivity {
         Cursor networks = db.getNetworks();
         if(networks.getCount() > 0) {
 	        do {
-	        	String net = networks.getString(networks.getColumnIndex(DBAdapter.NETKEY_NET_ESSID));
+	        	String ssid = networks.getString(networks.getColumnIndex(DBAdapter.NETKEY_NET_ESSID));
+	        	String netname = networks.getString(networks.getColumnIndex(DBAdapter.NETKEY_NET_NAME));
 	        	String proto = "802.11";
 	            Map<String, String> curGroupMap = new HashMap<String, String>();
 	            groupData.add(curGroupMap);
-	            curGroupMap.put(NAME, net);  
+	            curGroupMap.put(NAME, netname);  
+	            curGroupMap.put(SSID, "ESSID: " + ssid);
 	            curGroupMap.put(PROTOCOL, "Network Type: " + proto);
 	        	
 	            // Get all of the devices in the network
@@ -71,7 +74,7 @@ public class ManageNetworks extends ExpandableListActivity {
 		            do {
 		                Map<String, String> curChildMap = new HashMap<String, String>();
 		                children.add(curChildMap);
-		                curChildMap.put(NAME, "Name: " + dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_NAME)));
+		                curChildMap.put(NAME, dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_NAME)));
 		                curChildMap.put(MAC, "MAC Address: " + dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_MAC)));
 		                curChildMap.put(CMAC, dev.getString(dev.getColumnIndex(DBAdapter.DEVKEY_MAC)));
 		                curChildMap.put(NETID, networks.getString(networks.getColumnIndex(DBAdapter.NETKEY_NET_ID)));
@@ -86,9 +89,9 @@ public class ManageNetworks extends ExpandableListActivity {
         mAdapter = new SimpleExpandableListAdapter(
                 this,
                 groupData,
-                android.R.layout.simple_expandable_list_item_2,
-                new String[] { NAME, PROTOCOL },
-                new int[] { android.R.id.text1, android.R.id.text2 },
+                R.layout.three_line_list_item,
+                new String[] { NAME, SSID, PROTOCOL },
+                new int[] { R.id.text1, R.id.text2, R.id.text3 },
                 childData,
                 android.R.layout.simple_expandable_list_item_2,
                 new String[] { NAME, MAC },
@@ -152,33 +155,4 @@ public class ManageNetworks extends ExpandableListActivity {
     	}
     	return r;
     }
-	
-	
-	/*
-	public void setup_list() {
-		Log.d(TAG, "Setting up the list...");
-		String t[] = new String[5];
-		t[0] = "First";
-		t[1] = "Second";
-		t[2] = "Third";
-		t[3] = "Fourth";
-		t[4] = "Fifth";
-		
-		//t = coexisyst.netlts_80211();
-		setListAdapter(new ArrayAdapter<String>(this, R.layout.devices_list_item1 , t));
-		
-		ListView lv = getListView();
-		lv.setTextFilterEnabled(true);
-		lv.setOnItemClickListener(new OnItemClickListener() {
-			 public void onItemClick(AdapterView<?> parent, View view,
-					 	int position, long id) {
-			      // When clicked, show a toast with the TextView text
-			      Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
-			          Toast.LENGTH_SHORT).show();
-			 }
-		});
-			  
-	}*/
-	
-	
 }

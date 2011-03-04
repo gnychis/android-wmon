@@ -150,50 +150,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
         
         startScans();	// We can start scanning again
         
-		/*
-
-		
-		
-		// Create a string representation of the network names and present them to the user
-		final String[] netl80211 = netlts_80211();
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Select your 802.11 network");
-		builder.setItems(netl80211, new DialogInterface.OnClickListener() {
-			
-			// Wait for a user to click on an item in the list
-		    public void onClick(DialogInterface dialog, int item) {
-		    			    	
-		    	// First, do a lookup on the table to see if it exists
-		    	ScanResult sr = netlist_80211.get(item);
-		    	int managed = db.getNetwork(sr.BSSID, sr.SSID);
-		    	
-		    	// TODO: add the ability to remanage the master by adding the network
-		    	
-		    	if(managed!=-1) {	// Cannot add a network that is already managed
-		    		Toast.makeText(getApplicationContext(), sr.SSID + " is already managed.", Toast.LENGTH_SHORT).show();
-		    	} else {		// Add the network the list of managed networks 
-		    		
-		    		long res = db.insertNetwork(null, sr.BSSID, sr.SSID, DBAdapter.PTYPE_80211, 0);
-		    		if(res == -1) {
-		    			Toast.makeText(getApplicationContext(), "Error inserting " + sr.SSID + " in to the database.", Toast.LENGTH_SHORT).show();
-		    		} else {
-		    			Toast.makeText(getApplicationContext(), "CoexiSyst is now managing " + sr.SSID, Toast.LENGTH_SHORT).show();
-		    			// Since we successfully added the network, let's add the access point as a device
-		    			int netid = db.getNetwork(sr.BSSID, sr.SSID);
-		    			if(db.insertNetDev(netid, sr.BSSID, "Access Point", DBAdapter.PTYPE_80211, 0)==-1) {
-		    				Toast.makeText(getApplicationContext(), "Error inserting access point", Toast.LENGTH_SHORT).show();
-		    			}
-		    		}
-		    	}
-		        
-		        startScans();	// We can start scanning again
-		    }
-		});
-
-		AlertDialog alert = builder.create();
-		alert.show();*/
-		
-		
 	}
 	
 	public void getUserText() {
