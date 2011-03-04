@@ -3,12 +3,10 @@ package com.gnychis.coexisyst;
 import java.util.List;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
@@ -55,7 +53,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
       
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
-		buttonScan = (Button) findViewById(R.id.buttonAdd80211);
+		buttonScan = (Button) findViewById(R.id.buttonAddNetwork);
 		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets);
 		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs);
 		buttonScan.setOnClickListener(this);
@@ -123,11 +121,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		bt.cancelDiscovery();
 		} catch (Exception e) {
-			Log.e(TAG, "Exception trying to unregister scan receivers");
+			Log.e(TAG, "Exception trying to unregister scan receivers",e);
 		}
 	}
 	
-	public void clickAdd80211() {
+	public void clickAddNetwork() {
 		
 		// Bail ship if there is no 802.11 networks within range, there is nothing to do!
 		if(netlist_80211 == null || netlist_80211.size() == 0) {
@@ -137,6 +135,21 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		}
 		
 		stopScans();	// Make sure that this is atomic, networks are not changing
+
+		try {
+			Log.d(TAG,"Trying to load add networks window");
+			Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
+			startActivity(i);
+		} catch (Exception e) {
+			Log.e(TAG, "Exception trying to load network add window",e);
+			return;
+		}
+        
+        startScans();	// We can start scanning again
+        
+		/*
+
+		
 		
 		// Create a string representation of the network names and present them to the user
 		final String[] netl80211 = netlts_80211();
@@ -175,7 +188,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		});
 
 		AlertDialog alert = builder.create();
-		alert.show();
+		alert.show();*/
 		
 		
 	}
@@ -189,8 +202,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	}
 	
 	public void clickManageDevs() {
-		Log.d(TAG,"Trying to load manage devices window");
-        Intent i = new Intent(CoexiSyst.this, ManageDevices.class);
+		Log.d(TAG,"Trying to load manage networks window");
+        Intent i = new Intent(CoexiSyst.this, ManageNetworks.class);
         startActivity(i);
 	}
 
@@ -198,8 +211,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		Log.d(TAG,"Got a click");
 		
-		if (view.getId() == R.id.buttonAdd80211) {
-			clickAdd80211();
+		if (view.getId() == R.id.buttonAddNetwork) {
+			clickAddNetwork();
 		}
 		//if(view.getId() == R.id.buttonManageNets) {
 		//	clickManageNets();

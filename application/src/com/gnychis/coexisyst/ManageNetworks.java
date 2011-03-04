@@ -18,7 +18,7 @@ import android.widget.SimpleExpandableListAdapter;
 import android.widget.Toast;
 
 
-public class ManageDevices extends ExpandableListActivity {
+public class ManageNetworks extends ExpandableListActivity {
 
 	private static final String TAG = "ManageDevices";
     private static final String NAME = "NAME";
