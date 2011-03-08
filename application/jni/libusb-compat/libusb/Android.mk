@@ -1,4 +1,3 @@
-
 LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
@@ -7,25 +6,26 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES:= \
 	core.c \
-	descriptor.c \
-	io.c \
-	sync.c \
-	os/linux_usbfs.c
+	
 
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../android \
 	$(LOCAL_PATH)/libusb \
-	$(LOCAL_PATH)/libusb/os 
+	external/libusb-1.0.0/libusb
 
 LOCAL_CFLAGS += 
 LOCAL_CFLAGS += -fPIC -DPIC
+
+
+LOCAL_SHARED_LIBRARIES := libusb
 
 
 ifeq ($(TARGET_BUILD_TYPE),release)
 	LOCAL_CFLAGS += -O2
 endif
 
-LOCAL_MODULE:= libusb
+LOCAL_MODULE:= libusb-compat
 
 LOCAL_PRELINK_MODULE := false 
 include $(BUILD_SHARED_LIBRARY)
+
