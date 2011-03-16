@@ -49,6 +49,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
         // Setup the database
     	db = new DBAdapter(this);
     	db.open();
+    	
+    	// Load the libusb related libraries
+    	try {
+    		System.loadLibrary("usb");
+    		System.loadLibrary("usb-compat");
+    		System.loadLibrary("coexisyst");
+    	} catch (Exception e) {
+    		Log.e(TAG, "error trying to load a USB related library", e);
+    	}
       
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
@@ -74,6 +83,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		if (rcvr_BTooth == null)
 			rcvr_BTooth = new BluetoothManager(this);
 
+		textStatus.setText(stringFromJNI());
 
 		Log.d(TAG, "onCreate()");
 		startScans();
@@ -192,6 +202,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		}
 		return nets_str;
 	}
+	
+	public native String  stringFromJNI();
 	
 	/* 
 	 	AlertDialog.Builder alert = new AlertDialog.Builder(this);

@@ -17,8 +17,8 @@ public class BluetoothManager extends BroadcastReceiver {
 		scans = 0;
 		this.coexisyst = coexisyst;
 		Log.d(TAG, "startup of BT manager successful");
-        String ts = String.format("Results (%d)\n", scans);
-        coexisyst.textStatus.setText(ts);
+       // String ts = String.format("Results (%d)\n", scans);
+       // coexisyst.textStatus.setText(ts);
 	}
 	
 	public void onReceive(Context context, Intent intent) {
@@ -29,8 +29,8 @@ public class BluetoothManager extends BroadcastReceiver {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             // Add the name and address to an array adapter to show in a ListView
             //mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-            String str = String.format("%s - %s\n", device.getName(), device.getAddress());
-            coexisyst.textStatus.append(str);
+           // String str = String.format("%s - %s\n", device.getName(), device.getAddress());
+           // coexisyst.textStatus.append(str);
         }
 		
 	}
