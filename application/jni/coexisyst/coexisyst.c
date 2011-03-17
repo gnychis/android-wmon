@@ -25,8 +25,19 @@
  *   apps/samples/hello-jni/project/src/com/example/HelloJni/HelloJni.java
  */
 jstring
-Java_com_gnychis_coexisyst_CoexiSyst_stringFromJNI( JNIEnv* env,
-												 jobject thiz )
+Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
 {
-    return (*env)->NewStringUTF(env, "Hello from CoexiSyst system library...");
+	usb_init();
+    return (*env)->NewStringUTF(env, "CoexiSyst system library and USB enabled...");
+}
+
+jobjectArray
+Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
+{
+	jobjectArray ret;
+
+	usb_find_busses();
+	usb_find_devices();
+
+	return ret;
 }

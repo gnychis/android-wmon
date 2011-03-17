@@ -83,7 +83,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		if (rcvr_BTooth == null)
 			rcvr_BTooth = new BluetoothManager(this);
 
-		textStatus.setText(stringFromJNI());
+		textStatus.setText("Debug:\n");
+		textStatus.append("\t" + initUSB());
 
 		Log.d(TAG, "onCreate()");
 		startScans();
@@ -203,7 +204,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		return nets_str;
 	}
 	
-	public native String  stringFromJNI();
+	public native String  initUSB();
 	
 	/* 
 	 	AlertDialog.Builder alert = new AlertDialog.Builder(this);
