@@ -38,6 +38,22 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 
 	usb_find_busses();
 	usb_find_devices();
+    int i;
 
-	return ret;
+    char *message[5]= {"first", 
+	"second", 
+	"third", 
+	"fourth", 
+	"fifth"};
+
+    ret= (jobjectArray)(*env)->NewObjectArray(5,
+         (*env)->FindClass("java/lang/String"),
+         (*env)->NewStringUTF(""));
+
+    for(i=0;i<5;i++) {
+        env->SetObjectArrayElement(
+		ret,i,env->NewStringUTF(env, message[i]));
+    }
+
+	return (ret);
 }
