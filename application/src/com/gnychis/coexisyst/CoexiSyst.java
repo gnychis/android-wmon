@@ -85,7 +85,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
 		textStatus.setText("Debug:\n");
 		textStatus.append("\t" + initUSB());
-
+		
+		// Print out the USB device names
+		textStatus.append("\n\nUSB Devices:\n");
+		String devices[] = getDeviceNames();
+		for (int i=0; i<devices.length; i++)
+			textStatus.append("\t" + devices[i]);
+			
 		Log.d(TAG, "onCreate()");
 		startScans();
     }
@@ -205,6 +211,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	}
 	
 	public native String  initUSB();
+	public native String[] getDeviceNames();
 	
 	/* 
 	 	AlertDialog.Builder alert = new AlertDialog.Builder(this);
