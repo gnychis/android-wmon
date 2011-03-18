@@ -34,26 +34,23 @@ Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
 jobjectArray
 Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 {
-	jobjectArray ret;
+	struct usb_bus *bus;
+  	jobjectArray names = 0;
 
-	usb_find_busses();
+	jstring      str;
+  	jsize        len = 5;
+	char*        sa[] = { "Hello,", "world!", "JNI", "is", "fun" };
+	int          i=0;
+  
+  	usb_find_busses();
 	usb_find_devices();
-    int i;
-
-    char *message[5]= {"first", 
-	"second", 
-	"third", 
-	"fourth", 
-	"fifth"};
-
-    ret= (jobjectArray)(*env)->NewObjectArray(5,
-         (*env)->FindClass("java/lang/String"),
-         (*env)->NewStringUTF(""));
-
-    for(i=0;i<5;i++) {
-        env->SetObjectArrayElement(
-		ret,i,env->NewStringUTF(env, message[i]));
-    }
-
-	return (ret);
+  
+	names = (*env)->NewObjectArray(env, len, (*env)->FindClass(env, "java/lang/String"), 0);
+ 	for( i=0; i < len; i++ )
+	{
+		str = (*env)->NewStringUTF( env, sa[i] );
+		(*env)->SetObjectArrayElement(env, names, i, str);
+	}
+	
+	return names;
 }
