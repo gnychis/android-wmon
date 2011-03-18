@@ -61,6 +61,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
       
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
+		textStatus.setText("");
 		buttonScan = (Button) findViewById(R.id.buttonAddNetwork);
 		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets);
 		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs);
@@ -83,14 +84,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		if (rcvr_BTooth == null)
 			rcvr_BTooth = new BluetoothManager(this);
 
-		textStatus.setText("Debug:\n");
-		textStatus.append("\t" + initUSB());
+		textStatus.append(initUSB());
 		
 		// Print out the USB device names
 		textStatus.append("\n\nUSB Devices:\n");
 		String devices[] = getDeviceNames();
 		for (int i=0; i<devices.length; i++)
-			textStatus.append("\t" + devices[i]);
+			textStatus.append("\t* " + devices[i] + "\n");
 			
 		Log.d(TAG, "onCreate()");
 		startScans();
