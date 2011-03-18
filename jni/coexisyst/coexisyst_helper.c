@@ -44,7 +44,7 @@ int get_device_name(struct usb_device *dev, int level, char *rbuf)
     snprintf(description, sizeof(description), "%04X - %04X",
              dev->descriptor.idVendor, dev->descriptor.idProduct);
 
-  sprintf(rbuf, "%.*sDev #%d: %s\n", level * 2, "                    ", dev->devnum,
+  sprintf(rbuf, "%.*sDev #%d: %s", level * 2, "                    ", dev->devnum,
          description);
 
   if (udev)
