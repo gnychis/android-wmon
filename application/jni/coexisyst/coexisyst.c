@@ -17,6 +17,8 @@
 #include <string.h>
 #include <jni.h>
 #include <usb.h>
+#include <android/log.h> 
+#define LOG_TAG "CoexisystDriver" // text for log tag 
 
 /* This is a trivial JNI example where we use a native method
  * to return a new VM String. See the corresponding Java source
@@ -39,6 +41,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 	jstring      str;
   	jsize        len = 0;
 	int          i=0;
+	
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, 
+            "in getDeviceNames() within driver"); 
   
 	// Get the busses and save the head
   	usb_find_busses();
@@ -50,7 +55,10 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 	for (bus = usb_busses; bus; bus = bus->next)
 		if (bus->root_dev)
 			len++;
-  
+ 
+ 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, 
+            "the number of USB devices: %d", len); 
+ 
   	// Create an array for the devices
 	names = (*env)->NewObjectArray(env, len, (*env)->FindClass(env, "java/lang/String"), 0);
 
@@ -61,9 +69,11 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 			char name_buf[512];
 			get_device_name(bus->root_dev, 0, name_buf);
 			str = (*env)->NewStringUTF( env, name_buf );
-			(*env)->SetObjectArrayElement(env, names, i, str);
+			(*env)->SetObjectArrayElement(env, names, i, str);	
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, 
+            	"has USB device: %s", name_buf); 
 		}
-	}	
+	}
 	
 	return names;
 }
