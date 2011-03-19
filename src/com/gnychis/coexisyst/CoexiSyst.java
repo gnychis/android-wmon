@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -27,6 +28,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	DBAdapter db;
 	WifiManager wifi;
 	BluetoothAdapter bt;
+	protected USBMon usbmon;
 	
 	// Receivers
 	BroadcastReceiver rcvr_80211;
@@ -92,6 +94,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		for (int i=0; i<devices.length; i++)
 			textStatus.append("\t* " + devices[i] + "\n");
 			
+		usbmon = new USBMon();
+		usbmon.execute (this);
 		Log.d(TAG, "onCreate()");
 		startScans();
     }
@@ -212,6 +216,26 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public native String  initUSB();
 	public native String[] getDeviceNames();
+	
+	// A class to handle USB worker like things
+	protected class USBMon extends AsyncTask<Context, Integer, String>
+	{
+		
+		@Override
+		protected String doInBackground( Context... params )
+		{
+			while(true) {
+				try {
+					Thread.sleep( 50 );
+					Log.d(TAG, "in background USB thread");
+				} catch (Exception e) {
+					
+					Log.e(TAG, "exception trying to sleep", e);
+				}
+			}
+
+		}
+	}
 	
 	/* 
 	 	AlertDialog.Builder alert = new AlertDialog.Builder(this);
