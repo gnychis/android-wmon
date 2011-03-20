@@ -64,6 +64,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	try {
     		System.loadLibrary("usb");
     		System.loadLibrary("usb-compat");
+    		System.loadLibrary("wispy");
     		System.loadLibrary("coexisyst");
     	} catch (Exception e) {
     		Log.e(TAG, "error trying to load a USB related library", e);
@@ -226,6 +227,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native String[] getDeviceNames();
 	public native int getWiSpy();
 	public native int USBcheckForDevice(int vid, int pid);
+	public native String[] getWiSpyList();
 	
 	// A class to handle USB worker like things
 	protected class USBMon extends AsyncTask<Context, Integer, String>
@@ -249,7 +251,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					}
 					
 					Thread.sleep( 2000 );
-					Log.d(TAG, "in background USB thread");
 				} catch (Exception e) {
 					
 					Log.e(TAG, "exception trying to sleep", e);
@@ -268,6 +269,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				Toast.makeText(parent, "WiSpy device connected",
 						Toast.LENGTH_LONG).show();	
 				coexisyst.wispy_connected=true;
+				
+				// List the wispy devices
+				coexisyst.textStatus.append("\n\nWiSpy Devices:\n");
+				String devices[] = getWiSpyList();
+				for (int i=0; i<devices.length; i++)
+					textStatus.append(devices[i] + "\n");
+				
 			}
 			else if(event == CoexiSyst.WISPY_DISCONNECT) {
 				Log.d(TAG, "got update that WiSpy was connected");
