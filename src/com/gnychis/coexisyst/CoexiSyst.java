@@ -228,6 +228,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native int getWiSpy();
 	public native int USBcheckForDevice(int vid, int pid);
 	public native String[] getWiSpyList();
+	public native int initWiSpyDevices();
 	
 	// A class to handle USB worker like things
 	protected class USBMon extends AsyncTask<Context, Integer, String>
@@ -276,6 +277,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				for (int i=0; i<devices.length; i++)
 					textStatus.append(devices[i] + "\n");
 				
+				// Init the wispy devices
+				if(initWiSpyDevices()==1) {
+					coexisyst.textStatus.append("... initialized devices\n");
+				} else {
+					coexisyst.textStatus.append("... failed to initialize devices\n");
+				}
 			}
 			else if(event == CoexiSyst.WISPY_DISCONNECT) {
 				Log.d(TAG, "got update that WiSpy was connected");
