@@ -40,7 +40,8 @@
  /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/alloca.h \
  /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/strings.h \
  /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/memory.h \
- /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/dirent.h
+ /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/dirent.h \
+ /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h
 
 /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/string.h:
 
@@ -123,3 +124,5 @@ jni/libusb-compat/libusb/usb.h:
 /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/memory.h:
 
 /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/dirent.h:
+
+/Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h:

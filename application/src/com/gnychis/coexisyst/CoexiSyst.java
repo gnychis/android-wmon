@@ -23,6 +23,8 @@ import android.widget.Toast;
 public class CoexiSyst extends Activity implements OnClickListener {
 	
 	private static final String TAG = "WiFiDemo";
+	public static final int WISPY_CONNECT = 0;
+	public static final int WISPY_DISCONNECT = 1;
 
 	// Make instances of our helper classes
 	DBAdapter db;
@@ -42,11 +44,17 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// Network and Device lists
 	ArrayList<ScanResult> netlist_80211;
 	
+	// USB device related
+	boolean wispy_connected;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
+        // USB device initialization
+        wispy_connected=false;
         
         // Setup the database
     	db = new DBAdapter(this);
@@ -216,50 +224,57 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public native String  initUSB();
 	public native String[] getDeviceNames();
+	public native int getWiSpy();
+	public native int USBcheckForDevice(int vid, int pid);
 	
 	// A class to handle USB worker like things
 	protected class USBMon extends AsyncTask<Context, Integer, String>
 	{
+		Context parent;
+		CoexiSyst coexisyst;
 		
 		@Override
 		protected String doInBackground( Context... params )
 		{
+			parent = params[0];
+			coexisyst = (CoexiSyst) params[0];
 			while(true) {
 				try {
-					Thread.sleep( 50 );
+					
+					if(USBcheckForDevice(0x1781, 0x083f)==1 && coexisyst.wispy_connected==false) {
+						publishProgress(CoexiSyst.WISPY_CONNECT);
+					}
+					if(USBcheckForDevice(0x1781, 0x083f)==0 && coexisyst.wispy_connected==true) {
+						publishProgress(CoexiSyst.WISPY_DISCONNECT);
+					}
+					
+					Thread.sleep( 2000 );
 					Log.d(TAG, "in background USB thread");
 				} catch (Exception e) {
 					
 					Log.e(TAG, "exception trying to sleep", e);
 				}
 			}
-
+		}
+		
+		@Override
+		protected void onProgressUpdate(Integer... values)
+		{
+			super.onProgressUpdate(values);
+			int event = values[0];
+			
+			if(event == CoexiSyst.WISPY_CONNECT) {
+				Log.d(TAG, "got update that WiSpy was connected");
+				Toast.makeText(parent, "WiSpy device connected",
+						Toast.LENGTH_LONG).show();	
+				coexisyst.wispy_connected=true;
+			}
+			else if(event == CoexiSyst.WISPY_DISCONNECT) {
+				Log.d(TAG, "got update that WiSpy was connected");
+				Toast.makeText(parent, "WiSpy device has been disconnected",
+						Toast.LENGTH_LONG).show();
+				coexisyst.wispy_connected=false;
+			}
 		}
 	}
-	
-	/* 
-	 	AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
-		alert.setTitle("Title");
-		alert.setMessage("Message");
-
-		// Set an EditText view to get user input 
-		final EditText input = new EditText(this);
-		alert.setView(input);
-
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-		public void onClick(DialogInterface dialog, int whichButton) {
-		  String value = input.getText().toString();
-		  // Do something with value!
-		  }
-		});
-
-		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-		  public void onClick(DialogInterface dialog, int whichButton) {
-		    // Canceled.
-		  }
-		});
-
-		alert.show();
-		*/
 }

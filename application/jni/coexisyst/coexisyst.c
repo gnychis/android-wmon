@@ -20,6 +20,8 @@
 #include <android/log.h> 
 #define LOG_TAG "CoexisystDriver" // text for log tag 
 
+static struct libusb_device_handle *devh = NULL;
+
 /* This is a trivial JNI example where we use a native method
  * to return a new VM String. See the corresponding Java source
  * file located at:
@@ -31,6 +33,46 @@ Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
 {
 	usb_init();
     return (*env)->NewStringUTF(env, "CoexiSyst system library and USB enabled...");
+}
+
+jint
+Java_com_gnychis_coexisyst_CoexiSyst_getWiSpy( JNIEnv* env, jobject thiz)
+{
+	devh = libusb_open_device_with_vid_pid(NULL, 0x1781, 0x083f);
+	return devh ? 1 : -1;
+}
+
+jobjectArray
+Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thiz, jint vid, jint pid )
+{
+	struct usb_bus *bus;
+  	jobjectArray names = 0;
+	jstring      str;
+  	jsize        len = 0;
+  
+  	if(usb_find_busses()<0)
+  		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB busses"); 	 
+	if(usb_find_devices()<0)
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB devices"); 
+		
+	// Loop through and get all of the devices
+	for (bus = usb_busses; bus; bus = bus->next) {
+		if (bus->root_dev) { 	
+			struct usb_device *dev;
+			dev = bus->root_dev;
+			if(dev->descriptor.idVendor==vid && dev->descriptor.idProduct==pid)
+				return 1;
+		} else {
+      		struct usb_device *dev;
+
+      		for (dev = bus->devices; dev; dev = dev->next) {
+				if(dev->descriptor.idVendor==vid && dev->descriptor.idProduct==pid)
+					return 1;
+      		}
+		}
+	}
+	
+	return 0;
 }
 
 jobjectArray
