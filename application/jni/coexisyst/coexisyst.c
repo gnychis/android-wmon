@@ -37,6 +37,62 @@ Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
     return (*env)->NewStringUTF(env, "CoexiSyst system library and USB enabled...");
 }
 
+jint
+Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz )
+{
+	wispy_device_list list;
+	wispy_phy *pi;
+	wispy_phy *devs = NULL;
+	int ndev = 0;
+	int x;
+	int *rangeset = NULL;
+	
+	ndev = wispy_device_scan(&list);
+	
+	// Make sure that a device is connected
+	if(ndev <= 0) {
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error trying to initialize WiSpy device, none found");
+		return 0;
+	}
+
+	if (ndev > 0) {
+    	rangeset = (int *) malloc(sizeof(int) * ndev);
+    	memset(rangeset, 0, sizeof(int) * ndev);
+  	}
+		
+	// Initialize each of the devices
+	for(x = 0; x < ndev; x++) {
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Initializing WiSPY device %s id %u",
+			list.list[x].name, list.list[x].device_id);
+			
+		pi = (wispy_phy *) malloc(WISPY_PHY_SIZE);
+		pi->next = devs;
+		devs = pi;
+		
+		if(wispy_device_init(pi, &(list.list[x])) < 0) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error trying to initialize WiSpy device %s id %u",
+			list.list[x].name, list.list[x].device_id);
+			return 0;
+		}
+		
+		if(wispy_phy_open(pi) < 0) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error opening WiSpy device %s id %u",
+			list.list[x].name, list.list[x].device_id);
+			return 0;		
+		}
+		
+		wispy_phy_setcalibration(pi, 1);
+		
+		// Configure the default sweep block
+		// TODO: can we change this?
+		wispy_phy_setposition(pi, rangeset[x],0,0);
+	}
+	
+	wispy_device_scan_free(&list);
+		
+	return 1;
+}
+
 jobjectArray
 Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
 {
@@ -89,6 +145,8 @@ Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
 	  (*env)->SetObjectArrayElement(env, names, x, str1);
 	  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "WiSpy description: %s", tname);
     }
+    
+    wispy_device_scan_free(&list);
 
 	return names;
 }
