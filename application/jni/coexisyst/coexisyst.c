@@ -22,7 +22,15 @@
 #include "spectool_net_client.h"
 #define LOG_TAG "CoexisystDriver" // text for log tag 
 
+// For keeping track of the devices, made global to handle callbacks and still
+// have the device information
 static struct libusb_device_handle *devh = NULL;
+wispy_device_list list;
+wispy_phy *pi;
+wispy_phy *devs = NULL;
+int ndev = 0;
+int *rangeset = NULL;
+
 
 /* This is a trivial JNI example where we use a native method
  * to return a new VM String. See the corresponding Java source
@@ -40,12 +48,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
 jint
 Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz )
 {
-	wispy_device_list list;
-	wispy_phy *pi;
-	wispy_phy *devs = NULL;
-	int ndev = 0;
 	int x;
-	int *rangeset = NULL;
 	
 	ndev = wispy_device_scan(&list);
 	
@@ -77,7 +80,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 		
 		if(wispy_phy_open(pi) < 0) {
 			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error opening WiSpy device %s id %u",
-			list.list[x].name, list.list[x].device_id);
+				list.list[x].name, list.list[x].device_id);
 			return 0;		
 		}
 		
@@ -93,18 +96,115 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 	return 1;
 }
 
+jint
+Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
+{
+	int x,r;
+	fd_set rfds;
+	fd_set wfds;
+	int maxfd = 0;
+	struct timeval tm;
+	wispy_sample_sweep *sb;
+	
+	pi = devs;
+	while(pi != NULL) {
+		if(wispy_phy_getpollfd(pi) >= 0) {
+			FD_SET(wispy_phy_getpollfd(pi), &rfds);
+			
+			if(wispy_phy_getpollfd(pi) > maxfd)
+				maxfd = wispy_phy_getpollfd(pi);
+		}
+		pi = pi->next;
+	}
+	
+	// Polling timeout, which also ratelimits the higher layer java function calling it
+	tm.tv_sec = 0;
+	tm.tv_usec = 10000;
+	
+	if(select(maxfd + 1, &rfds, &wfds, NULL, &tm) < 0) {
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wispy_raw select() error: %s",
+			strerror(errno));
+		return 0;
+	}
+	
+	while(pi != NULL) {
+		wispy_phy *di = pi;
+		pi = pi->next;
+		
+		if(wispy_phy_getpollfd(di) < 0) {
+			if(wispy_get_state(di) == WISPY_STATE_ERROR) {
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error polling WiSpy device %s",
+					wispy_phy_getname(di));
+				return 0;
+			}
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error polling WiSpy device, not state error %s",
+				wispy_phy_getname(di));
+			continue;
+		}
+
+	
+		if(FD_ISSET(wispy_phy_getpollfd(di), &rfds) == 0) {
+			continue;
+		}
+		
+		do {
+			r = wispy_phy_poll(di);
+			
+			if((r & WISPY_POLL_CONFIGURED)) {
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Configured device %u (%s)",
+					wispy_phy_getdevid(di),
+					wispy_phy_getname(di));
+					
+				wispy_sample_sweep *ran = wispy_phy_getcurprofile(di);
+				
+				if(ran==NULL) {
+					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error - no current profile?");
+					continue;
+				}
+				
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG,
+					"    %d%s-%d%s @ %0.2f%s, %d samples",
+	               ran->start_khz > 1000 ?
+	               ran->start_khz / 1000 : ran->start_khz,
+	               ran->start_khz > 1000 ? "MHz" : "KHz",
+	               ran->end_khz > 1000 ? ran->end_khz / 1000 : ran->end_khz,
+	               ran->end_khz > 1000 ? "MHz" : "KHz",
+	               (ran->res_hz / 1000) > 1000 ?
+	                ((float) ran->res_hz / 1000) / 1000 : ran->res_hz / 1000,
+	               (ran->res_hz / 1000) > 1000 ? "MHz" : "KHz",
+	               ran->num_samples);	
+	             
+	             continue;
+			} else if((r & WISPY_POLL_ERROR)) {
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error polling device - %s",
+					wispy_phy_getname(di));
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "... error: %s", wispy_get_error(di));
+				return 0;
+			} else if((r & WISPY_POLL_SWEEPCOMPLETE)) {
+				sb = wispy_phy_getsweep(di);
+				if(sb==NULL)
+					continue;
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s: ", wispy_phy_getname(di));
+				for(r = 0; r < sb->num_samples; r++) {
+					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%d ",
+						WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]));
+				}
+			}
+			
+		} while ((r & WISPY_POLL_ADDITIONAL));
+	}
+	return 1;
+}
+
 jobjectArray
 Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
 {
 	jobjectArray names = 0;
-	wispy_device_list list;
-	wispy_phy *devs = NULL;
 	int ndev = 0;
 	int x,r;
 	jstring str1, str2, str3;
 	
 	ndev = wispy_device_scan(&list);
-	int *rangeset = NULL;
 	if (ndev > 0) {
     	rangeset = (int *) malloc(sizeof(int) * ndev);
     	memset(rangeset, 0, sizeof(int) * ndev);
