@@ -334,6 +334,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+    // check to be able to poll
 		pi = devs;
 		while (pi != NULL) {
 			wispy_phy *di = pi;
@@ -354,6 +355,7 @@ int main(int argc, char *argv[]) {
 				continue;
 			}
 
+      // do every poll
 			do {
 				r = wispy_phy_poll(di);
 
