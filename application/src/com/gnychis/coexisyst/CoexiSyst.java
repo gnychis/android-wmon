@@ -313,11 +313,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
 				if(pollWiSpy()==1) {
 					Toast.makeText(parent, "WiSpy poll successful",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
 					coexisyst.wispy_polling = true;
 				} else {
 					Toast.makeText(parent, "WiSpy poll was not successful",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
 					coexisyst.wispy_polling = false;
 				}
 			}
@@ -334,7 +334,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					//coexisyst.wispy_polling = true;
 				} else {
 					Toast.makeText(parent, "WiSpy poll was not successful",
-							Toast.LENGTH_LONG).show();
+							Toast.LENGTH_SHORT).show();
 					//coexisyst.wispy_polling = false;
 				}				
 			}
