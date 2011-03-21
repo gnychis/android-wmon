@@ -192,8 +192,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	}
 	
 	public void clickViewSpectrum() {
-		Intent i = new Intent(CoexiSyst.this, GraphWispy.class);
-		startActivity(i);
+		try {
+			Intent i = null;
+			i = wispyGraph.execute(this);
+			startActivity(i);
+		} catch(Exception e) {
+			Log.e(TAG, "error trying to load spectrum view", e);
+		}
 	}
 	
 	public void getUserText() {

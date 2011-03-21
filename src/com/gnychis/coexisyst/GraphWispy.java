@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
+import android.util.Log;
 
 /**
  * Average temperature demo chart.
@@ -57,6 +58,7 @@ public class GraphWispy extends AbstractDemoChart {
    * @return the built intent
    */
   public Intent execute(Context context) {
+	Log.d("GraphWispy", "Inside execute() of GraphWispy()");
     String[] titles = new String[] { "Crete", "Corfu", "Thassos", "Skiathos" };
     List<double[]> x = new ArrayList<double[]>();
     for (int i = 0; i < titles.length; i++) {
