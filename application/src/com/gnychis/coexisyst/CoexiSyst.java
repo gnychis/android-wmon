@@ -25,6 +25,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	private static final String TAG = "WiFiDemo";
 	public static final int WISPY_CONNECT = 0;
 	public static final int WISPY_DISCONNECT = 1;
+	public static final int WISPY_POLL = 2;
 
 	// Make instances of our helper classes
 	DBAdapter db;
@@ -46,6 +47,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	// USB device related
 	boolean wispy_connected;
+	boolean wispy_polling;
 	
     /** Called when the activity is first created. */
     @Override
@@ -55,6 +57,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
         
         // USB device initialization
         wispy_connected=false;
+        wispy_polling=false;
         
         // Setup the database
     	db = new DBAdapter(this);
@@ -251,6 +254,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					if(USBcheckForDevice(0x1781, 0x083f)==0 && coexisyst.wispy_connected==true) {
 						publishProgress(CoexiSyst.WISPY_DISCONNECT);
 					}
+					if(coexisyst.wispy_connected==true && coexisyst.wispy_polling==true) {
+						publishProgress(CoexiSyst.WISPY_POLL);
+					}
 					
 					Thread.sleep( 2000 );
 				} catch (Exception e) {
@@ -285,19 +291,33 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					coexisyst.textStatus.append("... failed to initialize devices\n");
 				}
 				
-				// Give it a single poll for now.
-				if(pollWiSpy()==1)
+
+				if(pollWiSpy()==1) {
 					Toast.makeText(parent, "WiSpy poll successful",
 							Toast.LENGTH_LONG).show();
-				else
+					coexisyst.wispy_polling = true;
+				} else {
 					Toast.makeText(parent, "WiSpy poll was not successful",
-							Toast.LENGTH_LONG).show();					
+							Toast.LENGTH_LONG).show();
+					coexisyst.wispy_polling = false;
+				}
 			}
 			else if(event == CoexiSyst.WISPY_DISCONNECT) {
 				Log.d(TAG, "got update that WiSpy was connected");
 				Toast.makeText(parent, "WiSpy device has been disconnected",
 						Toast.LENGTH_LONG).show();
 				coexisyst.wispy_connected=false;
+			}
+			else if(event == CoexiSyst.WISPY_POLL){
+				if(pollWiSpy()==1) {
+					//Toast.makeText(parent, "WiSpy poll successful",
+					//		Toast.LENGTH_LONG).show();
+					//coexisyst.wispy_polling = true;
+				} else {
+					Toast.makeText(parent, "WiSpy poll was not successful",
+							Toast.LENGTH_LONG).show();
+					//coexisyst.wispy_polling = false;
+				}				
 			}
 		}
 	}
