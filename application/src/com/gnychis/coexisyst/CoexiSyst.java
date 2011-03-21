@@ -41,6 +41,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	Button buttonScan; 
 	//Button buttonManageNets; 
 	Button buttonManageDevs;
+	Button buttonViewSpectrum;
 	
 	// Network and Device lists
 	ArrayList<ScanResult> netlist_80211;
@@ -48,6 +49,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// USB device related
 	boolean wispy_connected;
 	boolean wispy_polling;
+	IChart wispyGraph;
 	
     /** Called when the activity is first created. */
     @Override
@@ -77,11 +79,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		textStatus = (TextView) findViewById(R.id.textStatus);
 		textStatus.setText("");
 		buttonScan = (Button) findViewById(R.id.buttonAddNetwork);
+		buttonViewSpectrum = (Button) findViewById(R.id.buttonViewSpectrum);
 		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets);
 		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs);
 		buttonScan.setOnClickListener(this);
 //		buttonManageNets.setOnClickListener(this);
 		buttonManageDevs.setOnClickListener(this);
+		buttonViewSpectrum.setOnClickListener(this);
+		
+		wispyGraph = new GraphWispy();
 
 		// Setup wireless devices
 		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -185,6 +191,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
         
 	}
 	
+	public void clickViewSpectrum() {
+		Intent i = new Intent(CoexiSyst.this, GraphWispy.class);
+		startActivity(i);
+	}
+	
 	public void getUserText() {
 	
 	}
@@ -211,6 +222,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		//}
 		if(view.getId() == R.id.buttonManageDevs) {
 			clickManageDevs();
+		}
+		if(view.getId() == R.id.buttonViewSpectrum) {
+			clickViewSpectrum();
 		}
 	}
 	
