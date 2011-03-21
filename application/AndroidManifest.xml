@@ -17,7 +17,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="org.achartengine.chartdemo.demo.chart.XYChartBuilder" />
+        <activity android:name="org.achartengine.GraphicalActivity" />
+		<activity android:name=".GeneratedChartDemo" />
         <activity android:name="ManageNetworks" class=".ManageDevices" android:label="Device Management"></activity>
         <activity android:name="AddNetwork" class=".AddNetwork" android:label="Add Network"></activity>
+        <activity android:name="GraphWispy" class=".GraphWispy" android:label="Graph Wispy"></activity>
     </application>
 </manifest>
