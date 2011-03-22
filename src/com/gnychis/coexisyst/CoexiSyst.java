@@ -269,15 +269,16 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					
 					if(USBcheckForDevice(0x1781, 0x083f)==1 && coexisyst.wispy_connected==false) {
 						publishProgress(CoexiSyst.WISPY_CONNECT);
+						Thread.sleep( 2000 );
 					}
 					if(USBcheckForDevice(0x1781, 0x083f)==0 && coexisyst.wispy_connected==true) {
 						publishProgress(CoexiSyst.WISPY_DISCONNECT);
+						Thread.sleep( 2000 );
 					}
 					if(coexisyst.wispy_connected==true && coexisyst.wispy_polling==true) {
 						publishProgress(CoexiSyst.WISPY_POLL);
 					}
 					
-					Thread.sleep( 2000 );
 				} catch (Exception e) {
 					
 					Log.e(TAG, "exception trying to sleep", e);
@@ -329,13 +330,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			}
 			else if(event == CoexiSyst.WISPY_POLL){
 				if(pollWiSpy()==1) {
-					//Toast.makeText(parent, "WiSpy poll successful",
-					//		Toast.LENGTH_LONG).show();
-					//coexisyst.wispy_polling = true;
+					Toast.makeText(parent, "WiSpy poll successful",
+							Toast.LENGTH_SHORT).show();
+					coexisyst.wispy_polling = true;
 				} else {
 					Toast.makeText(parent, "WiSpy poll was not successful",
 							Toast.LENGTH_SHORT).show();
-					//coexisyst.wispy_polling = false;
+					coexisyst.wispy_polling = false;
 				}				
 			}
 		}
