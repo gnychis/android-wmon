@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
+import android.os.Bundle;
 import android.util.Log;
 
 /**
@@ -41,6 +42,7 @@ public class GraphWispy extends AbstractDemoChart {
   public String getName() {
     return "Average temperature";
   }
+  int maxresults[];
 
   /**
    * Returns the chart description.
@@ -58,19 +60,22 @@ public class GraphWispy extends AbstractDemoChart {
    * @return the built intent
    */
   public Intent execute(Context context) {
+	CoexiSyst coexisyst = (CoexiSyst)context;
 	Log.d("GraphWispy", "Inside execute() of GraphWispy()");
-    String[] titles = new String[] { "Crete", "Corfu", "Thassos", "Skiathos" };
+    String[] titles = new String[] { "2.4GHz" };
     List<double[]> x = new ArrayList<double[]>();
     for (int i = 0; i < titles.length; i++) {
-      x.add(new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 });
+      double d[] = new double[256];
+      for(int j=0; j<256; j++)
+    	  d[j]=j;
+      x.add(d);
     }
     List<double[]> values = new ArrayList<double[]>();
-    values.add(new double[] { 12.3, 12.5, 13.8, 16.8, 20.4, 24.4, 26.4, 26.1, 23.6, 20.3, 17.2,
-        13.9 });
-    values.add(new double[] { 10, 10, 12, 15, 20, 24, 26, 26, 23, 18, 14, 11 });
-    values.add(new double[] { 5, 5.3, 8, 12, 17, 22, 24.2, 24, 19, 15, 9, 6 });
-    values.add(new double[] { 9, 10, 11, 15, 19, 23, 26, 25, 22, 18, 13, 10 });
-    int[] colors = new int[] { Color.BLUE, Color.GREEN, Color.CYAN, Color.YELLOW };
+    double d2[] = new double[256];
+    for(int j=0; j<256; j++)
+    	d2[j] = coexisyst.maxresults[j];
+    values.add(d2);
+    int[] colors = new int[] { Color.BLUE};
     PointStyle[] styles = new PointStyle[] { PointStyle.CIRCLE, PointStyle.DIAMOND,
         PointStyle.TRIANGLE, PointStyle.SQUARE };
     XYMultipleSeriesRenderer renderer = buildRenderer(colors, styles);
@@ -78,7 +83,7 @@ public class GraphWispy extends AbstractDemoChart {
     for (int i = 0; i < length; i++) {
       ((XYSeriesRenderer) renderer.getSeriesRendererAt(i)).setFillPoints(true);
     }
-    setChartSettings(renderer, "Average temperature", "Month", "Temperature", 0.5, 12.5, 0, 32,
+    setChartSettings(renderer, "2.4GHz Spectrum", "bin", "RSSI", 0, 256, -120, -45,
         Color.LTGRAY, Color.LTGRAY);
     renderer.setXLabels(12);
     renderer.setYLabels(10);
@@ -88,7 +93,7 @@ public class GraphWispy extends AbstractDemoChart {
     renderer.setPanLimits(new double[] { -10, 20, -10, 40 });
     renderer.setZoomLimits(new double[] { -10, 20, -10, 40 });
     Intent intent = ChartFactory.getLineChartIntent(context, buildDataset(titles, x, values),
-        renderer, "Average temperature");
+        renderer, "2.4GHz Spectrum");
     return intent;
   }
 

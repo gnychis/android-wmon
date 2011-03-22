@@ -50,6 +50,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	boolean wispy_connected;
 	boolean wispy_polling;
 	IChart wispyGraph;
+	int maxresults[];
 	
     /** Called when the activity is first created. */
     @Override
@@ -60,6 +61,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
         // USB device initialization
         wispy_connected=false;
         wispy_polling=false;
+        maxresults = new int[256];
+        for(int i=0; i<256; i++)
+        	maxresults[i]=-200;
         
         // Setup the database
     	db = new DBAdapter(this);
@@ -194,7 +198,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void clickViewSpectrum() {
 		try {
 			Intent i = null;
+			usbmon.cancel(true);
 			i = wispyGraph.execute(this);
+			i.putExtra("com.gnychis.coexisyst.results", maxresults);
 			startActivity(i);
 		} catch(Exception e) {
 			Log.e(TAG, "error trying to load spectrum view", e);
@@ -334,10 +340,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				//int res = pollWiSpy();
 				if(res!=null) {
 					coexisyst.wispy_polling = true;
+					
 					// What to do once we get a response!
 					if(res.length==256) {
-						
-						
+						for(int i=0; i<res.length; i++)
+							if(res[i] > maxresults[i])
+								maxresults[i] = res[i];
+						Log.d(TAG, "have a set of results!");
 					}
 				} else {
 					coexisyst.wispy_polling = false;
