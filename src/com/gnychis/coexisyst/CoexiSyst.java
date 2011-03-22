@@ -1,5 +1,6 @@
 package com.gnychis.coexisyst;
 
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -27,6 +28,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public static final int WISPY_DISCONNECT = 1;
 	public static final int WISPY_POLL = 2;
 
+	// For root
+	Process proc;
+	DataOutputStream os;
+
 	// Make instances of our helper classes
 	DBAdapter db;
 	WifiManager wifi;
@@ -42,6 +47,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	//Button buttonManageNets; 
 	Button buttonManageDevs;
 	Button buttonViewSpectrum;
+	Button buttonADB;
 	
 	// Network and Device lists
 	ArrayList<ScanResult> netlist_80211;
@@ -57,6 +63,21 @@ public class CoexiSyst extends Activity implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
+        // Request root
+        try {
+        	proc = Runtime.getRuntime().exec("su");
+        	os = new DataOutputStream(proc.getOutputStream());  
+        	os.writeBytes("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
+        	os.writeBytes("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
+        	//os.writeBytes("setprop service.adb.tcp.port 5555\n");
+        	//os.writeBytes("stop adbd");
+        	//os.writeBytes("start adbd");
+        } catch(Exception e) {
+        	Log.e(TAG, "failure gaining root access", e);
+			Toast.makeText(this, "Failure gaining root access...",
+					Toast.LENGTH_LONG).show();		
+        }
         
         // USB device initialization
         wispy_connected=false;
@@ -86,10 +107,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		buttonViewSpectrum = (Button) findViewById(R.id.buttonViewSpectrum);
 		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets);
 		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs);
+		buttonADB = (Button) findViewById(R.id.buttonAdb);
 		buttonScan.setOnClickListener(this);
 //		buttonManageNets.setOnClickListener(this);
 		buttonManageDevs.setOnClickListener(this);
 		buttonViewSpectrum.setOnClickListener(this);
+		buttonADB.setOnClickListener(this);
 		
 		wispyGraph = new GraphWispy();
 
@@ -237,6 +260,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		if(view.getId() == R.id.buttonViewSpectrum) {
 			clickViewSpectrum();
 		}
+		if(view.getId() == R.id.buttonAdb) {
+			try {
+				os.writeBytes("setprop service.adb.tcp.port 5555\n");
+				os.writeBytes("stop adbd\n");
+				os.writeBytes("start adbd\n");
+			} catch(Exception e) {
+				Log.e(TAG, "failured to switch ADB to TCP", e);
+			}
+		}
 	}
 	
 	public String[] netlts_80211() {
@@ -346,7 +378,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 						for(int i=0; i<res.length; i++)
 							if(res[i] > maxresults[i])
 								maxresults[i] = res[i];
-						Log.d(TAG, "have a set of results!");
+						//Log.d(TAG, "have a set of results!");
 					}
 				} else {
 					coexisyst.wispy_polling = false;
