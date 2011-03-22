@@ -96,7 +96,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 	return 1;
 }
 
-jint
+jintArray
 Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 {
 	int x,r;
@@ -105,6 +105,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 	int maxfd = 0;
 	struct timeval tm;
 	wispy_sample_sweep *sb;
+  jintArray result = 0;
 	
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "in pollWiSpy() now");
 	
@@ -128,7 +129,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 	if(select(maxfd + 1, &rfds, &wfds, NULL, &tm) < 0) {
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wispy_raw select() error: %s",
 			strerror(errno));
-		return 0;
+		return result;
 	}
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "gotten past wispy_raw select()");
 	
@@ -143,7 +144,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 			if(wispy_get_state(di) == WISPY_STATE_ERROR) {
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error polling WiSpy device %s",
 					wispy_phy_getname(di));
-				return 0;
+				return result;
 			}
 			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error polling WiSpy device, not state error %s",
 				wispy_phy_getname(di));
@@ -190,21 +191,26 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error polling device - %s",
 					wispy_phy_getname(di));
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "... error: %s", wispy_get_error(di));
-				return 0;
+				return result;
 			} else if((r & WISPY_POLL_SWEEPCOMPLETE)) {
 				sb = wispy_phy_getsweep(di);
 				if(sb==NULL)
 					continue;
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s: ", wispy_phy_getname(di));
+
+        // Create an array for the results
+        result = (jintArray)(*env)->NewIntArray(env, sb->num_samples);
+        int *fill = (int *)malloc(sizeof(int) * sb->num_samples);
+
 				for(r = 0; r < sb->num_samples; r++) {
-					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%d ",
-						WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]));
+						fill[r] = WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]);
 				}
+        (*env)->SetIntArrayRegion(env, result, 0, sb->num_samples, fill);
 			}
 			
 		} while ((r & WISPY_POLL_ADDITIONAL));
 	}
-	return 1;
+	return result;
 }
 
 jobjectArray
