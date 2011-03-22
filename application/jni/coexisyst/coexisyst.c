@@ -96,6 +96,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 	return 1;
 }
 
+//jint
 jintArray
 Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 {
@@ -106,8 +107,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 	struct timeval tm;
 	wispy_sample_sweep *sb;
   jintArray result = 0;
+  //jint result = 0;
 	
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "in pollWiSpy() now");
+	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "in pollWiSpy() now");
 	
 	pi = devs;
 	while(pi != NULL) {
@@ -118,9 +120,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 				maxfd = wispy_phy_getpollfd(pi);
 		}
 		pi = pi->next;
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "going to pi->next");
+		//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "going to pi->next");
 	}
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "have done FD_SET for the devices");
+	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "have done FD_SET for the devices");
 	
 	// Polling timeout, which also ratelimits the higher layer java function calling it
 	tm.tv_sec = 0;
@@ -131,14 +133,14 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 			strerror(errno));
 		return result;
 	}
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "gotten past wispy_raw select()");
+	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "gotten past wispy_raw select()");
 	
 	pi = devs;
 	while(pi != NULL) {
 		wispy_phy *di = pi;
 		pi = pi->next;
 		
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "pi was != to NULL");
+		//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "pi was != to NULL");
 		
 		if(wispy_phy_getpollfd(di) < 0) {
 			if(wispy_get_state(di) == WISPY_STATE_ERROR) {
@@ -151,11 +153,11 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 			continue;
 		}
 		
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ran the following: wispy_phy_getpollfd(di)");
+		//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ran the following: wispy_phy_getpollfd(di)");
 
 	
 		if(FD_ISSET(wispy_phy_getpollfd(di), &rfds) == 0) {
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "continued on FD_ISSET(wispy_phy_getpollfd())");
+			//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "continued on FD_ISSET(wispy_phy_getpollfd())");
 			continue;
 		}
 		
@@ -196,21 +198,30 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 				sb = wispy_phy_getsweep(di);
 				if(sb==NULL)
 					continue;
-				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s: ", wispy_phy_getname(di));
+				//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s: ", wispy_phy_getname(di));
 
         // Create an array for the results
         result = (jintArray)(*env)->NewIntArray(env, sb->num_samples);
-        int *fill = (int *)malloc(sizeof(int) * sb->num_samples);
+        jint *fill = (int *)malloc(sizeof(int) * sb->num_samples);
+        //__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "sb->num_samples is %d ", sb->num_samples);
 
 				for(r = 0; r < sb->num_samples; r++) {
 						fill[r] = WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]);
 				}
-        (*env)->SetIntArrayRegion(env, result, 0, sb->num_samples, fill);
+        (*env)->SetIntArrayRegion(env, (jintArray)result, (jsize)0, (jsize)sb->num_samples, fill);
+        free(fill);
 			}
 			
 		} while ((r & WISPY_POLL_ADDITIONAL));
 	}
+
+  if(result==NULL) {
+    result = (jintArray)(*env)->NewIntArray(env, 1);
+    //__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "don't want to return null");
+  }
+
 	return result;
+//  return 1;
 }
 
 jobjectArray

@@ -251,7 +251,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native int USBcheckForDevice(int vid, int pid);
 	public native String[] getWiSpyList();
 	public native int initWiSpyDevices();
-	public native int pollWiSpy();
+	public native int[] pollWiSpy();
+	//public native int pollWiSpy();
 	
 	// A class to handle USB worker like things
 	protected class USBMon extends AsyncTask<Context, Integer, String>
@@ -312,7 +313,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				}
 				
 
-				if(pollWiSpy()==1) {
+				if(pollWiSpy()!=null) {
 					Toast.makeText(parent, "WiSpy poll successful",
 							Toast.LENGTH_SHORT).show();
 					coexisyst.wispy_polling = true;
@@ -329,13 +330,16 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				coexisyst.wispy_connected=false;
 			}
 			else if(event == CoexiSyst.WISPY_POLL){
-				if(pollWiSpy()==1) {
-					Toast.makeText(parent, "WiSpy poll successful",
-							Toast.LENGTH_SHORT).show();
+				int[] res = pollWiSpy();
+				//int res = pollWiSpy();
+				if(res!=null) {
 					coexisyst.wispy_polling = true;
+					// What to do once we get a response!
+					if(res.length==256) {
+						
+						
+					}
 				} else {
-					Toast.makeText(parent, "WiSpy poll was not successful",
-							Toast.LENGTH_SHORT).show();
 					coexisyst.wispy_polling = false;
 				}				
 			}
