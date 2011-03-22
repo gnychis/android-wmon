@@ -76,22 +76,22 @@ public class GraphWispy extends AbstractDemoChart {
     	d2[j] = coexisyst.maxresults[j];
     values.add(d2);
     int[] colors = new int[] { Color.BLUE};
-    PointStyle[] styles = new PointStyle[] { PointStyle.CIRCLE, PointStyle.DIAMOND,
-        PointStyle.TRIANGLE, PointStyle.SQUARE };
+    PointStyle[] styles = new PointStyle[] { PointStyle.POINT, PointStyle.POINT,
+        PointStyle.POINT, PointStyle.POINT };
     XYMultipleSeriesRenderer renderer = buildRenderer(colors, styles);
     int length = renderer.getSeriesRendererCount();
     for (int i = 0; i < length; i++) {
       ((XYSeriesRenderer) renderer.getSeriesRendererAt(i)).setFillPoints(true);
     }
-    setChartSettings(renderer, "2.4GHz Spectrum", "bin", "RSSI", 0, 256, -120, -45,
+    setChartSettings(renderer, "2.4GHz Spectrum", "bin", "RSSI", 0, 256, -120, -20,
         Color.LTGRAY, Color.LTGRAY);
     renderer.setXLabels(12);
     renderer.setYLabels(10);
     renderer.setShowGrid(true);
     renderer.setXLabelsAlign(Align.RIGHT);
     renderer.setYLabelsAlign(Align.RIGHT);
-    renderer.setPanLimits(new double[] { -10, 20, -10, 40 });
-    renderer.setZoomLimits(new double[] { -10, 20, -10, 40 });
+    renderer.setPanLimits(new double[] { -50, 300, -150, 0 });
+    renderer.setZoomLimits(new double[] { -50, 300, -150, 0 });
     Intent intent = ChartFactory.getLineChartIntent(context, buildDataset(titles, x, values),
         renderer, "2.4GHz Spectrum");
     return intent;
