@@ -401,6 +401,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 							wispyPrint.print("\n");
 							wispyPrint.flush();
 							wispyOut.flush();
+							Log.d(TAG, "got new results");
 						} catch(Exception e) {
 							Log.e(TAG, "error writing to SD card", e);
 						}
