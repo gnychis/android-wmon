@@ -1,6 +1,9 @@
 package com.gnychis.coexisyst;
 
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -14,6 +17,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,6 +35,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// For root
 	Process proc;
 	DataOutputStream os;
+	File root;
+	FileOutputStream wispyOut;
+	PrintStream wispyPrint;
+
 
 	// Make instances of our helper classes
 	DBAdapter db;
@@ -70,9 +78,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
         	os = new DataOutputStream(proc.getOutputStream());  
         	os.writeBytes("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
         	os.writeBytes("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
-        	//os.writeBytes("setprop service.adb.tcp.port 5555\n");
-        	//os.writeBytes("stop adbd");
-        	//os.writeBytes("start adbd");
         } catch(Exception e) {
         	Log.e(TAG, "failure gaining root access", e);
 			Toast.makeText(this, "Failure gaining root access...",
@@ -85,6 +90,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
         maxresults = new int[256];
         for(int i=0; i<256; i++)
         	maxresults[i]=-200;
+        
+        // For writing to SD card
+        try {
+	        root = Environment.getExternalStorageDirectory();
+	        wispyOut = new FileOutputStream(new File(root, "wispy.dat"));
+	        wispyPrint = new PrintStream(wispyOut);
+        } catch(Exception e) {
+        	Log.e(TAG, "Error opening output file", e);
+        }
         
         // Setup the database
     	db = new DBAdapter(this);
@@ -376,9 +390,20 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					// What to do once we get a response!
 					if(res.length==256) {
 						for(int i=0; i<res.length; i++)
-							if(res[i] > maxresults[i])
+							if(res[i] > maxresults[i]) 
 								maxresults[i] = res[i];
-						//Log.d(TAG, "have a set of results!");
+						
+						try {	
+							for(int i=0; i<res.length; i++) {
+								wispyPrint.print(maxresults[i]);
+								wispyPrint.print(" ");
+							}
+							wispyPrint.print("\n");
+							wispyPrint.flush();
+							wispyOut.flush();
+						} catch(Exception e) {
+							Log.e(TAG, "error writing to SD card", e);
+						}
 					}
 				} else {
 					coexisyst.wispy_polling = false;
