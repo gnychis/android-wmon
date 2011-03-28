@@ -213,6 +213,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
             fprintf(fh, "%d ", fill[r]);
 				}
         fprintf(fh, "\n");
+        fflush(fh);
         (*env)->SetIntArrayRegion(env, (jintArray)result, (jsize)0, (jsize)sb->num_samples, fill);
         free(fill);
 			}
