@@ -351,7 +351,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					
 					try {	
 						for(int i=0; i<scan_res.length; i++) {
-							wispyPrint.print(maxresults[i]);
+							wispyPrint.print(scan_res[i]);
 							wispyPrint.print(" ");
 						}
 						wispyPrint.print("\n");
@@ -408,7 +408,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 						publishProgress(CoexiSyst.WISPY_CONNECT);
 					else if(wispy_in_devlist==0 && coexisyst.wispy_connected==true)
 						publishProgress(CoexiSyst.WISPY_DISCONNECT);
-					else if(wispy_in_devlist==1 && coexisyst.wispy_connected==true && coexisyst.wispy_polling==false && coexisyst.wispyscan.getStatus()!=Status.RUNNING)
+					else if(wispy_in_devlist==1 && coexisyst.wispy_connected==true && coexisyst.wispy_polling==false && coexisyst.wispyscan.getStatus()==Status.FINISHED)
 						publishProgress(CoexiSyst.WISPY_POLL);
 					
 					Thread.sleep( 2000 );
@@ -451,11 +451,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
 			}
 			else if(event == CoexiSyst.WISPY_POLL) {
-				Toast.makeText(parent, "Re-trying polling",
-						Toast.LENGTH_LONG).show();
+				//Toast.makeText(parent, "Re-trying polling",
+				//		Toast.LENGTH_LONG).show();
 				coexisyst.wispyscan.cancel(true);
-				coexisyst.wispyscan.execute(coexisyst);
-				coexisyst.wispy_polling = true;
+				//coexisyst.wispyscan = new WiSpyScan();
+				//coexisyst.wispyscan.execute(coexisyst);
+				//coexisyst.wispy_polling = true;
 			}
 		}
 	}
