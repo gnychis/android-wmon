@@ -53,7 +53,13 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 	
 	ndev = wispy_device_scan(&list);
 
-//  fh = fopen("/sdcard/coexisyst_raw.txt","rw");
+	fh = fopen("/sdcard/coexisyst_raw.txt","rw");
+	if(fh!=NULL)
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in opening file on sdcard");
+	else
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: error, file handle is null");
+		
+		
 	
 	// Make sure that a device is connected
 	if(ndev <= 0) {
@@ -209,13 +215,16 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
         //__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "sb->num_samples is %d ", sb->num_samples);
 
 				for(r = 0; r < sb->num_samples; r++) {
-						fill[r] = WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]);
-//            fprintf(fh, "%d ", fill[r]);
+					fill[r] = WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]);
+					fprintf(fh, "%d ", fill[r]);
 				}
-//        fprintf(fh, "\n");
-//        fflush(fh);
-        (*env)->SetIntArrayRegion(env, (jintArray)result, (jsize)0, (jsize)sb->num_samples, fill);
-        free(fill);
+				if(fprintf(fh, "\n")<0) 
+            __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE error writing out to file, fh: 0x%x", fh);
+        else
+          __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in writing to file");
+        fflush(fh);
+				(*env)->SetIntArrayRegion(env, (jintArray)result, (jsize)0, (jsize)sb->num_samples, fill);
+				free(fill);
 			}
 			
 		} while ((r & WISPY_POLL_ADDITIONAL));
