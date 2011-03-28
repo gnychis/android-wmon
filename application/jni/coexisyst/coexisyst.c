@@ -53,7 +53,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 	
 	ndev = wispy_device_scan(&list);
 
-  fh = fopen("/sdcard/coexisyst_raw.txt","rw");
+//  fh = fopen("/sdcard/coexisyst_raw.txt","rw");
 	
 	// Make sure that a device is connected
 	if(ndev <= 0) {
@@ -210,10 +210,10 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 
 				for(r = 0; r < sb->num_samples; r++) {
 						fill[r] = WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]);
-            fprintf(fh, "%d ", fill[r]);
+//            fprintf(fh, "%d ", fill[r]);
 				}
-        fprintf(fh, "\n");
-        fflush(fh);
+//        fprintf(fh, "\n");
+//        fflush(fh);
         (*env)->SetIntArrayRegion(env, (jintArray)result, (jsize)0, (jsize)sb->num_samples, fill);
         free(fill);
 			}
