@@ -32,6 +32,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public static final int WISPY_DISCONNECT = 1;
 	public static final int WISPY_POLL = 2;
 	public static final int WISPY_POLL_FAIL = 3;
+	public static final int WISPY_POLL_THREAD = 4;
 
 	// For root
 	Process proc;
@@ -323,7 +324,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			
-			publishProgress(CoexiSyst.WISPY_POLL);
+			publishProgress(CoexiSyst.WISPY_POLL_THREAD);
+			
+			if(initWiSpyDevices()==1) {
+				publishProgress(CoexiSyst.WISPY_POLL);
+			} else {
+				publishProgress(CoexiSyst.WISPY_POLL_FAIL);
+				coexisyst.wispy_polling = false;
+				return "FAIL";
+			}
 			
 			while(true) {
 				int[] scan_res = pollWiSpy();
@@ -364,12 +373,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			super.onProgressUpdate(values);
 			int event = values[0];
 			
-			if(event==CoexiSyst.WISPY_POLL_FAIL) {
+			if(event==CoexiSyst.WISPY_POLL_THREAD) {
+				Toast.makeText(parent, "In WiSpy poll thread...",
+						Toast.LENGTH_LONG).show();
+			}
+			else if(event==CoexiSyst.WISPY_POLL) {
 				Toast.makeText(parent, "WiSpy started polling...",
 						Toast.LENGTH_LONG).show();
 			}
-			
-			if(event==CoexiSyst.WISPY_POLL_FAIL) {
+			else if(event==CoexiSyst.WISPY_POLL_FAIL) {
 				Toast.makeText(parent, "--- WiSpy poll failed ---",
 						Toast.LENGTH_LONG).show();
 			}
@@ -394,8 +406,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					
 					if(wispy_in_devlist==1 && coexisyst.wispy_connected==false)
 						publishProgress(CoexiSyst.WISPY_CONNECT);
-					if(wispy_in_devlist==0 && coexisyst.wispy_connected==true)
+					else if(wispy_in_devlist==0 && coexisyst.wispy_connected==true)
 						publishProgress(CoexiSyst.WISPY_DISCONNECT);
+					else if(wispy_in_devlist==1 && coexisyst.wispy_connected==true && coexisyst.wispy_polling==false && coexisyst.wispyscan.getStatus()!=Status.RUNNING)
+						publishProgress(CoexiSyst.WISPY_POLL);
 					
 					Thread.sleep( 2000 );
 
@@ -424,13 +438,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				for (int i=0; i<devices.length; i++)
 					textStatus.append(devices[i] + "\n");
 				
-				// Init the wispy devices
-				if(initWiSpyDevices()==1) {
-					coexisyst.textStatus.append("... initialized devices\n");
-				} else {
-					coexisyst.textStatus.append("... failed to initialize devices\n");
-				}
-				
 				// Start the poll thread now
 				coexisyst.wispyscan.execute(coexisyst);
 				coexisyst.wispy_polling = true;
@@ -442,6 +449,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 						Toast.LENGTH_LONG).show();
 				coexisyst.wispy_connected=false;
 				coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
+			}
+			else if(event == CoexiSyst.WISPY_POLL) {
+				Toast.makeText(parent, "Re-trying polling",
+						Toast.LENGTH_LONG).show();
+				coexisyst.wispyscan.cancel(true);
+				coexisyst.wispyscan.execute(coexisyst);
+				coexisyst.wispy_polling = true;
 			}
 		}
 	}
