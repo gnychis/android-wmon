@@ -31,6 +31,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public static final int WISPY_CONNECT = 0;
 	public static final int WISPY_DISCONNECT = 1;
 	public static final int WISPY_POLL = 2;
+	public static final int WISPY_POLL_FAIL = 3;
 
 	// For root
 	Process proc;
@@ -45,6 +46,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	WifiManager wifi;
 	BluetoothAdapter bt;
 	protected USBMon usbmon;
+	protected WiSpyScan wispyscan;
 	
 	// Receivers
 	BroadcastReceiver rcvr_80211;
@@ -153,8 +155,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		for (int i=0; i<devices.length; i++)
 			textStatus.append("\t* " + devices[i] + "\n");
 			
+		// Start the USB monitor thread, but only instantiate the wispy scan
+		wispyscan = new WiSpyScan();
 		usbmon = new USBMon();
 		usbmon.execute (this);
+		
 		Log.d(TAG, "onCreate()");
 		startScans();
     }
@@ -307,6 +312,71 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	//public native int pollWiSpy();
 	
 	// A class to handle USB worker like things
+	protected class WiSpyScan extends AsyncTask<Context, Integer, String>
+	{
+		Context parent;
+		CoexiSyst coexisyst;	
+		
+		@Override
+		protected String doInBackground( Context... params )
+		{
+			parent = params[0];
+			coexisyst = (CoexiSyst) params[0];
+			
+			publishProgress(CoexiSyst.WISPY_POLL);
+			
+			while(true) {
+				int[] scan_res = pollWiSpy();
+			
+				if(scan_res==null) {
+					publishProgress(CoexiSyst.WISPY_POLL_FAIL);
+					coexisyst.wispy_polling = false;
+					break;
+				}
+									
+				// What to do once we get a response!
+				if(scan_res.length==256) {
+					for(int i=0; i<scan_res.length; i++)
+						if(scan_res[i] > maxresults[i]) 
+							maxresults[i] = scan_res[i];
+					
+					try {	
+						for(int i=0; i<scan_res.length; i++) {
+							wispyPrint.print(maxresults[i]);
+							wispyPrint.print(" ");
+						}
+						wispyPrint.print("\n");
+						wispyPrint.flush();
+						wispyOut.flush();
+						Log.d(TAG, "got new results");
+					} catch(Exception e) {
+						Log.e(TAG, "error writing to SD card", e);
+					}
+				}
+			}
+			
+			return "OK";
+		}
+		
+		@Override
+		protected void onProgressUpdate(Integer... values)
+		{
+			super.onProgressUpdate(values);
+			int event = values[0];
+			
+			if(event==CoexiSyst.WISPY_POLL_FAIL) {
+				Toast.makeText(parent, "WiSpy started polling...",
+						Toast.LENGTH_LONG).show();
+			}
+			
+			if(event==CoexiSyst.WISPY_POLL_FAIL) {
+				Toast.makeText(parent, "--- WiSpy poll failed ---",
+						Toast.LENGTH_LONG).show();
+			}
+		}
+	}
+	
+	// A class to handle USB worker like things
 	protected class USBMon extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
@@ -320,18 +390,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			while(true) {
 				try {
 					
-					if(USBcheckForDevice(0x1781, 0x083f)==1 && coexisyst.wispy_connected==false) {
-						publishProgress(CoexiSyst.WISPY_CONNECT);
-						Thread.sleep( 2000 );
-					}
-					if(USBcheckForDevice(0x1781, 0x083f)==0 && coexisyst.wispy_connected==true) {
-						publishProgress(CoexiSyst.WISPY_DISCONNECT);
-						Thread.sleep( 2000 );
-					}
-					if(coexisyst.wispy_connected==true && coexisyst.wispy_polling==true) {
-						publishProgress(CoexiSyst.WISPY_POLL);
-					}
+					int wispy_in_devlist=USBcheckForDevice(0x1781, 0x083f);
 					
+					if(wispy_in_devlist==1 && coexisyst.wispy_connected==false)
+						publishProgress(CoexiSyst.WISPY_CONNECT);
+					if(wispy_in_devlist==0 && coexisyst.wispy_connected==true)
+						publishProgress(CoexiSyst.WISPY_DISCONNECT);
+					
+					Thread.sleep( 2000 );
+
 				} catch (Exception e) {
 					
 					Log.e(TAG, "exception trying to sleep", e);
@@ -364,51 +431,17 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					coexisyst.textStatus.append("... failed to initialize devices\n");
 				}
 				
+				// Start the poll thread now
+				coexisyst.wispyscan.execute(coexisyst);
+				coexisyst.wispy_polling = true;
 
-				if(pollWiSpy()!=null) {
-					Toast.makeText(parent, "WiSpy poll successful",
-							Toast.LENGTH_SHORT).show();
-					coexisyst.wispy_polling = true;
-				} else {
-					Toast.makeText(parent, "WiSpy poll was not successful",
-							Toast.LENGTH_SHORT).show();
-					coexisyst.wispy_polling = false;
-				}
 			}
 			else if(event == CoexiSyst.WISPY_DISCONNECT) {
 				Log.d(TAG, "got update that WiSpy was connected");
 				Toast.makeText(parent, "WiSpy device has been disconnected",
 						Toast.LENGTH_LONG).show();
 				coexisyst.wispy_connected=false;
-			}
-			else if(event == CoexiSyst.WISPY_POLL){
-				int[] res = pollWiSpy();
-				//int res = pollWiSpy();
-				if(res!=null) {
-					coexisyst.wispy_polling = true;
-					
-					// What to do once we get a response!
-					if(res.length==256) {
-						for(int i=0; i<res.length; i++)
-							if(res[i] > maxresults[i]) 
-								maxresults[i] = res[i];
-						
-						try {	
-							for(int i=0; i<res.length; i++) {
-								wispyPrint.print(maxresults[i]);
-								wispyPrint.print(" ");
-							}
-							wispyPrint.print("\n");
-							wispyPrint.flush();
-							wispyOut.flush();
-							Log.d(TAG, "got new results");
-						} catch(Exception e) {
-							Log.e(TAG, "error writing to SD card", e);
-						}
-					}
-				} else {
-					coexisyst.wispy_polling = false;
-				}				
+				coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
 			}
 		}
 	}
