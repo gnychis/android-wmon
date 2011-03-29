@@ -331,6 +331,8 @@ int main(int argc, char *argv[]) {
     // check to be able to poll
 		pi = devs;
 		while (pi != NULL) {
+			printf("x");
+			fflush(stdout);
 			wispy_phy *di = pi;
 			pi = pi->next;
 
@@ -351,6 +353,8 @@ int main(int argc, char *argv[]) {
 
       // do every poll
 			do {
+				printf(".");
+				fflush(stdout);
 				r = wispy_phy_poll(di);
 
 				if ((r & WISPY_POLL_CONFIGURED)) {
