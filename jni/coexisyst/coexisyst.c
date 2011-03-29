@@ -57,16 +57,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 	ndev = wispy_device_scan(&list);
 
 	fh = fopen("/sdcard/coexisyst_raw.txt","w+");
-	if(fh!=NULL)
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in opening file on sdcard, fh: 0x%x", fh);
-	else
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: error, file handle is null");
-		
-		
 	
 	// Make sure that a device is connected
 	if(ndev <= 0) {
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error trying to initialize WiSpy device, none found");
 		return 0;
 	}
 
@@ -77,22 +70,16 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 		
 	// Initialize each of the devices
 	for(x = 0; x < ndev; x++) {
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Initializing WiSPY device %s id %u",
-			list.list[x].name, list.list[x].device_id);
 			
 		pi = (wispy_phy *) malloc(WISPY_PHY_SIZE);
 		pi->next = devs;
 		devs = pi;
 		
 		if(wispy_device_init(pi, &(list.list[x])) < 0) {
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error trying to initialize WiSpy device %s id %u",
-			list.list[x].name, list.list[x].device_id);
 			return 0;
 		}
 		
 		if(wispy_phy_open(pi) < 0) {
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error opening WiSpy device %s id %u",
-				list.list[x].name, list.list[x].device_id);
 			return 0;		
 		}
 		
@@ -111,7 +98,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 }
 
 //jint
-jintArray
+jint
 Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 {
 	int x,r;
@@ -120,7 +107,6 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 	int maxfd = 0;
 	struct timeval tm;
 	wispy_sample_sweep *sb;
-  jintArray result = 0;
 
 	FD_ZERO(&rfds);
 	FD_ZERO(&wfds);
@@ -141,9 +127,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 	tm.tv_usec = 10000;
 	
 	if(select(maxfd + 1, &rfds, &wfds, NULL, &tm) < 0) {
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wispy_raw select() error: %s",
-			strerror(errno));
-		return result;
+		return -1;
 	}
 	
 	pi = devs;
@@ -153,12 +137,8 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 		
 		if(wispy_phy_getpollfd(di) < 0) {
 			if(wispy_get_state(di) == WISPY_STATE_ERROR) {
-				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error polling WiSpy device %s",
-					wispy_phy_getname(di));
-				return result;
+				return -1;
 			}
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error polling WiSpy device, not state error %s",
-				wispy_phy_getname(di));
 			continue;
 		}
 		
@@ -170,70 +150,40 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 			r = wispy_phy_poll(di);
 			
 			if((r & WISPY_POLL_CONFIGURED)) {
-				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Configured device %u (%s)",
-					wispy_phy_getdevid(di),
-					wispy_phy_getname(di));
 					
 				wispy_sample_sweep *ran = wispy_phy_getcurprofile(di);
 				
 				if(ran==NULL) {
-					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error - no current profile?");
 					continue;
 				}
 				
-				__android_log_print(ANDROID_LOG_INFO, LOG_TAG,
-					"    %d%s-%d%s @ %0.2f%s, %d samples",
-	               ran->start_khz > 1000 ?
-	               ran->start_khz / 1000 : ran->start_khz,
-	               ran->start_khz > 1000 ? "MHz" : "KHz",
-	               ran->end_khz > 1000 ? ran->end_khz / 1000 : ran->end_khz,
-	               ran->end_khz > 1000 ? "MHz" : "KHz",
-	               (ran->res_hz / 1000) > 1000 ?
-	                ((float) ran->res_hz / 1000) / 1000 : ran->res_hz / 1000,
-	               (ran->res_hz / 1000) > 1000 ? "MHz" : "KHz",
-	               ran->num_samples);	
-	             
 	             continue;
 			} else if((r & WISPY_POLL_ERROR)) {
-				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error polling device - %s",
-					wispy_phy_getname(di));
-				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "... error: %s", wispy_get_error(di));
-				return result;
+				return -1;
 			} else if((r & WISPY_POLL_SWEEPCOMPLETE)) {
 				sb = wispy_phy_getsweep(di);
 				if(sb==NULL)
 					continue;
 
         // Create an array for the results
-        result = (jintArray)(*env)->NewIntArray(env, sb->num_samples);
-        jint *fill = (int *)malloc(sizeof(int) * sb->num_samples);
+        int *fill = (int *)malloc(sizeof(int) * sb->num_samples);
 
 				for(r = 0; r < sb->num_samples; r++) {
 					int v = WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]);
-					fill[r] = (jint)v;
+					fill[r] = v;
 					fprintf(fh, "%d ", v);
 				}
+				fprintf(fh, "\n");
 				
-				if(fprintf(fh, "\n")<0) {
-           			 __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE error writing out to file, fh: 0x%x", fh);
-           			 __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "... error: %s", strerror(errno));
-       			} else {
-          			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in writing to file (%d)", sample++);
-          		}
 				fflush(fh);
-				(*env)->SetIntArrayRegion(env, (jintArray)result, (jsize)0, (jsize)sb->num_samples, fill);
 				free(fill);
-				return result;
+				return 1;
 			}
 			
 		} while ((r & WISPY_POLL_ADDITIONAL));
 	}
 
-  if(result==NULL) {
-    result = (jintArray)(*env)->NewIntArray(env, 1);
-  }
-
-	return result;
+	return 1;
 }
 
 jobjectArray

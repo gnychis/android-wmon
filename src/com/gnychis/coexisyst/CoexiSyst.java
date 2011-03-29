@@ -309,8 +309,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native int USBcheckForDevice(int vid, int pid);
 	public native String[] getWiSpyList();
 	public native int initWiSpyDevices();
-	public native int[] pollWiSpy();
-	//public native int pollWiSpy();
+	//public native int[] pollWiSpy();
+	public native int pollWiSpy();
 	
 	// A class to handle USB worker like things
 	protected class WiSpyScan extends AsyncTask<Context, Integer, String>
@@ -335,16 +335,18 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			}
 			
 			while(true) {
-				int[] scan_res = pollWiSpy();
-			
-				if(scan_res==null) {
+				//int[] scan_res = pollWiSpy();
+				int scan_res = pollWiSpy();
+				
+				//if(scan_res==null) {
+				if(scan_res==-1) {
 					publishProgress(CoexiSyst.WISPY_POLL_FAIL);
 					coexisyst.wispy_polling = false;
 					break;
 				}
 									
 				// What to do once we get a response!
-				if(scan_res.length==256) {
+				/*if(scan_res.length==256) {
 					for(int i=0; i<scan_res.length; i++)
 						if(scan_res[i] > maxresults[i]) 
 							maxresults[i] = scan_res[i];
@@ -362,6 +364,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 						Log.e(TAG, "error writing to SD card", e);
 					}
 				}
+				*/
 			}
 			
 			return "OK";
@@ -374,12 +377,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			int event = values[0];
 			
 			if(event==CoexiSyst.WISPY_POLL_THREAD) {
-				Toast.makeText(parent, "In WiSpy poll thread...",
-						Toast.LENGTH_LONG).show();
+				//Toast.makeText(parent, "In WiSpy poll thread...",
+				//		Toast.LENGTH_LONG).show();
 			}
 			else if(event==CoexiSyst.WISPY_POLL) {
-				Toast.makeText(parent, "WiSpy started polling...",
-						Toast.LENGTH_LONG).show();
+				//Toast.makeText(parent, "WiSpy started polling...",
+				//		Toast.LENGTH_LONG).show();
 			}
 			else if(event==CoexiSyst.WISPY_POLL_FAIL) {
 				Toast.makeText(parent, "--- WiSpy poll failed ---",
@@ -404,9 +407,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					
 					int wispy_in_devlist=USBcheckForDevice(0x1781, 0x083f);
 					
-					if(wispy_in_devlist==1 && coexisyst.wispy_connected==false)
+					if(wispy_in_devlist==1 && coexisyst.wispy_connected==false) {
 						publishProgress(CoexiSyst.WISPY_CONNECT);
-					else if(wispy_in_devlist==0 && coexisyst.wispy_connected==true)
+						return "DONE!";
+					} else if(wispy_in_devlist==0 && coexisyst.wispy_connected==true)
 						publishProgress(CoexiSyst.WISPY_DISCONNECT);
 					else if(wispy_in_devlist==1 && coexisyst.wispy_connected==true && coexisyst.wispy_polling==false && coexisyst.wispyscan.getStatus()==Status.FINISHED)
 						publishProgress(CoexiSyst.WISPY_POLL);
