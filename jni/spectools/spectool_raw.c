@@ -138,8 +138,6 @@ int main(int argc, char *argv[]) {
 			exit(1);
 		}
 
-		printf("Found %d devices...\n", ndev);
-
 		for (x = 0; x < ndev; x++) {
 			printf("Device %d: %s id %u\n", 
 				   x, list.list[x].name, list.list[x].device_id);
@@ -196,11 +194,7 @@ int main(int argc, char *argv[]) {
 			exit(1);
 		}
 
-		printf("Found %d wispy devices...\n", ndev);
-
 		for (x = 0; x < ndev; x++) {
-			printf("Initializing WiSPY device %s id %u\n", 
-				   list.list[x].name, list.list[x].device_id);
 
 			pi = (wispy_phy *) malloc(WISPY_PHY_SIZE);
 			pi->next = devs;
@@ -360,10 +354,6 @@ int main(int argc, char *argv[]) {
 				r = wispy_phy_poll(di);
 
 				if ((r & WISPY_POLL_CONFIGURED)) {
-					printf("Configured device %u (%s)\n", 
-						   wispy_phy_getdevid(di), 
-						   wispy_phy_getname(di),
-						   di->device_spec->num_sweep_ranges);
 
 					wispy_sample_sweep *ran = 
 						wispy_phy_getcurprofile(di);
@@ -373,16 +363,16 @@ int main(int argc, char *argv[]) {
 						continue;
 					}
 
-					printf("    %d%s-%d%s @ %0.2f%s, %d samples\n", 
-						   ran->start_khz > 1000 ? 
-						   ran->start_khz / 1000 : ran->start_khz,
-						   ran->start_khz > 1000 ? "MHz" : "KHz",
-						   ran->end_khz > 1000 ? ran->end_khz / 1000 : ran->end_khz,
-						   ran->end_khz > 1000 ? "MHz" : "KHz",
-						   (ran->res_hz / 1000) > 1000 ? 
-						   	((float) ran->res_hz / 1000) / 1000 : ran->res_hz / 1000,
-						   (ran->res_hz / 1000) > 1000 ? "MHz" : "KHz",
-						   ran->num_samples);
+//					printf("    %d%s-%d%s @ %0.2f%s, %d samples\n", 
+//						   ran->start_khz > 1000 ? 
+//						   ran->start_khz / 1000 : ran->start_khz,
+//						   ran->start_khz > 1000 ? "MHz" : "KHz",
+//						   ran->end_khz > 1000 ? ran->end_khz / 1000 : ran->end_khz,
+//						   ran->end_khz > 1000 ? "MHz" : "KHz",
+//						   (ran->res_hz / 1000) > 1000 ? 
+//						   	((float) ran->res_hz / 1000) / 1000 : ran->res_hz / 1000,
+//						   (ran->res_hz / 1000) > 1000 ? "MHz" : "KHz",
+//						   ran->num_samples);
 
 					continue;
 				} else if ((r & WISPY_POLL_ERROR)) {
@@ -394,7 +384,6 @@ int main(int argc, char *argv[]) {
 					sb = wispy_phy_getsweep(di);
 					if (sb == NULL)
 						continue;
-					printf("%s: ", wispy_phy_getname(di));
 					for (r = 0; r < sb->num_samples; r++) {
 						printf("%d ", 
 							WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,
