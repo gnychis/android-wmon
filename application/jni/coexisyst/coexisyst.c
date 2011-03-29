@@ -20,6 +20,7 @@
 #include <android/log.h>
 #include "spectool_container.h" 
 #include "spectool_net_client.h"
+#include <errno.h>
 #define LOG_TAG "CoexisystDriver" // text for log tag 
 
 // For keeping track of the devices, made global to handle callbacks and still
@@ -53,9 +54,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 	
 	ndev = wispy_device_scan(&list);
 
-	fh = fopen("/sdcard/coexisyst_raw.txt","rw");
+	fh = fopen("/sdcard/coexisyst_raw.txt","w+");
 	if(fh!=NULL)
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in opening file on sdcard");
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in opening file on sdcard, fh: 0x%x", fh);
 	else
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: error, file handle is null");
 		
@@ -218,11 +219,14 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 					fill[r] = WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]);
 					fprintf(fh, "%d ", fill[r]);
 				}
-				if(fprintf(fh, "\n")<0) 
-            __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE error writing out to file, fh: 0x%x", fh);
-        else
-          __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in writing to file");
-        fflush(fh);
+				
+				if(fprintf(fh, "\n")<0) {
+           			 __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE error writing out to file, fh: 0x%x", fh);
+           			 __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "... error: %s", strerror(errno));
+       			} else {
+          			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in writing to file");
+          		}
+				fflush(fh);
 				(*env)->SetIntArrayRegion(env, (jintArray)result, (jsize)0, (jsize)sb->num_samples, fill);
 				free(fill);
 			}
