@@ -1,0 +1,112 @@
+# spectrum-tools
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+ETC	= ${DESTDIR}@sysconfdir@
+BIN	= ${DESTDIR}@bindir@
+SHARE = ${DESTDIR}@datadir@
+MAN = ${DESTDIR}@mandir@
+LIB = ${DESTDIR}@libdir@
+INCLUDE = ${DESTDIR}@includedir@
+
+CC = @CC@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@ 
+CURSLIBS = @CURSLIBS@
+GTKLIBS = @GTKLIBS@
+HILDLIBS = @HILDLIBS@
+CFLAGS = -I./ @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+
+GTK_CONFIG=@GTK_CONFIG@
+
+RAWOBJS = spectool_container.o wispy_hw_gen1.o wispy_hw_24x.o wispy_hw_dbx.o \
+	spectool_net_client.o spectool_raw.o
+RAWBIN = spectool_raw
+
+CURSOBJS = spectool_container.o wispy_hw_gen1.o wispy_hw_24x.o wispy_hw_dbx.o \
+	spectool_net_client.o spectool_curses.o
+CURSBIN = spectool_curses
+
+NETOBJS = spectool_container.o wispy_hw_gen1.o wispy_hw_24x.o wispy_hw_dbx.o \
+	spectool_net_server.o
+NETBIN = spectool_net
+
+GTKOBJS = spectool_container.o wispy_hw_gen1.o wispy_hw_24x.o wispy_hw_dbx.o \
+	spectool_net_client.o \
+	spectool_gtk_hw_registry.o spectool_gtk_widget.o spectool_gtk_channel.o \
+	spectool_gtk_planar.o spectool_gtk_spectral.o spectool_gtk_topo.o \
+	spectool_gtk.o
+GTKBIN = spectool_gtk
+
+HILDOBJS = spectool_container.o wispy_hw_gen1.o wispy_hw_24x.o wispy_hw_dbx.o \
+	spectool_net_client.o \
+	spectool_gtk_hw_registry.o spectool_gtk_widget.o spectool_gtk_channel.o \
+	spectool_gtk_planar.o spectool_gtk_spectral.o spectool_gtk_topo.o \
+	spectool_hildon.o
+HILDBIN = spectool_hildon
+
+HILDUSBOBJS = maemo_usb_helper.o
+HILDUSBBIN = usbcontrol
+
+DEPEND	= .depend
+
+all:	$(DEPEND) @TARGETS@
+
+$(RAWBIN):	$(RAWOBJS)
+	$(CC) $^ -o $(RAWBIN) $(LDFLAGS) $(LIBS)
+
+$(CURSBIN):	$(CURSOBJS)
+	$(CC) $^ -o $(CURSBIN) $(LDFLAGS) $(LIBS) $(CURSLIBS)
+
+$(NETBIN):	$(NETOBJS)
+	$(CC) $^ -o $(NETBIN) $(LDFLAGS) $(LIBS)
+
+$(GTKBIN):	$(GTKOBJS)
+	$(CC) $^ -o $(GTKBIN) $(LDFLAGS) $(GTKLIBS)
+
+$(HILDUSBBIN):	$(HILDUSBOBJS)
+	$(CC) $^ -o $(HILDUSBBIN) $(LDFLAGS)
+
+$(HILDBIN):	$(HILDOBJS) $(HILDUSBBIN)
+	$(CC) $(HILDOBJS) -o $(HILDBIN) $(LDFLAGS) $(GTKLIBS) $(HILDLIBS)
+
+install:	@TARGETS@
+	install -d -m 755 $(BIN)
+	if [ -e $(RAWBIN) ]; then install -m 755 $(RAWBIN) $(BIN)/$(RAWBIN); fi
+	if [ -e $(NETBIN) ]; then install -m 755 $(NETBIN) $(BIN)/$(NETBIN); fi
+	if [ -e $(GTKBIN) ]; then install -m 755 $(GTKBIN) $(BIN)/$(GTKBIN); fi
+	if [ -e $(CURSBIN) ]; then install -m 755 $(CURSBIN) $(BIN)/$(CURSBIN); fi
+	# No make install for hildon binaries, they should be packaged
+
+clean:
+	@-rm *.o
+	@-rm $(RAWBIN) $(GTKBIN) $(NETBIN) $(CURSBIN) $(HILDBIN) $(HILDUSBBIN)
+
+distclean:
+	@-make clean
+	@-rm -f $(DEPEND)
+	@-rm -f config.status
+	@-rm -f config.h
+	@-rm -f config.log
+	@-rm -f Makefile
+
+dep:
+	@$(MAKE) depend
+
+depend:
+	@$(MAKE) $(DEPEND)
+
+$(DEPEND):
+	@-rm -f $(DEPEND)
+	@echo "Generating dependencies... "
+	@echo > $(DEPEND)
+	@$(CXX) $(CFLAGS) -MM \
+		`echo $(RAWOBJS) $(GTKOBJS) $(CUROBJS) $(NETOBJS) \
+		| sed -e "s/\.o/\.c/g"` >> $(DEPEND)
+
+include $(DEPEND)
+
+.c.o:	$(DEPEND)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $*.c -o $@
+
