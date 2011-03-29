@@ -33,11 +33,15 @@ int sample = 0;
 
 int main()
 {
-	initWiSpyDevices();
+	if(initWiSpyDevices()==0)
+		exit(-1);
 
 	while(1) {
 		if(pollWiSpy() == -1)
 			exit(-1);
+
+		printf(".");
+		fflush(stdout);
 	}
 }
 
@@ -63,19 +67,16 @@ int initWiSpyDevices()
 		
 	// Initialize each of the devices
 	for(x = 0; x < ndev; x++) {
-			list.list[x].name, list.list[x].device_id);
 			
 		pi = (wispy_phy *) malloc(WISPY_PHY_SIZE);
 		pi->next = devs;
 		devs = pi;
 		
 		if(wispy_device_init(pi, &(list.list[x])) < 0) {
-			list.list[x].name, list.list[x].device_id);
 			return 0;
 		}
 		
 		if(wispy_phy_open(pi) < 0) {
-				list.list[x].name, list.list[x].device_id);
 			return 0;		
 		}
 		
@@ -121,7 +122,6 @@ int pollWiSpy()
 	tm.tv_usec = 10000;
 	
 	if(select(maxfd + 1, &rfds, &wfds, NULL, &tm) < 0) {
-			strerror(errno));
 		return -1;
 	}
 	
@@ -132,10 +132,8 @@ int pollWiSpy()
 		
 		if(wispy_phy_getpollfd(di) < 0) {
 			if(wispy_get_state(di) == WISPY_STATE_ERROR) {
-					wispy_phy_getname(di));
 				return -1;
 			}
-				wispy_phy_getname(di));
 			continue;
 		}
 		
@@ -147,8 +145,6 @@ int pollWiSpy()
 			r = wispy_phy_poll(di);
 			
 			if((r & WISPY_POLL_CONFIGURED)) {
-					wispy_phy_getdevid(di),
-					wispy_phy_getname(di));
 					
 				wispy_sample_sweep *ran = wispy_phy_getcurprofile(di);
 				
@@ -158,7 +154,6 @@ int pollWiSpy()
 				
 	             continue;
 			} else if((r & WISPY_POLL_ERROR)) {
-					wispy_phy_getname(di));
 				return -1;
 			} else if((r & WISPY_POLL_SWEEPCOMPLETE)) {
 				sb = wispy_phy_getsweep(di);
@@ -166,13 +161,14 @@ int pollWiSpy()
 					continue;
 
         // Create an array for the results
-        jint *fill = (int *)malloc(sizeof(int) * sb->num_samples);
+        int *fill = (int *)malloc(sizeof(int) * sb->num_samples);
 
 				for(r = 0; r < sb->num_samples; r++) {
 					int v = WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]);
-					fill[r] = (jint)v;
+					fill[r] = v;
 					fprintf(fh, "%d ", v);
 				}
+				fprintf(fh, "\n");
 				
 				fflush(fh);
 				free(fill);
