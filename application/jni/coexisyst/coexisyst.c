@@ -32,6 +32,7 @@ wispy_phy *devs = NULL;
 int ndev = 0;
 int *rangeset = NULL;
 FILE *fh;
+int sample = 0;
 
 
 /* This is a trivial JNI example where we use a native method
@@ -51,6 +52,7 @@ jint
 Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz )
 {
 	int x;
+	sample = 0;
 	
 	ndev = wispy_device_scan(&list);
 
@@ -224,7 +226,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
            			 __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE error writing out to file, fh: 0x%x", fh);
            			 __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "... error: %s", strerror(errno));
        			} else {
-          			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in writing to file");
+          			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "FILE: success in writing to file (%d)", sample++);
           		}
 				fflush(fh);
 				(*env)->SetIntArrayRegion(env, (jintArray)result, (jsize)0, (jsize)sb->num_samples, fill);
@@ -350,8 +352,8 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, 
             "in getDeviceNames() within driver"); 
   
-  	if(usb_find_busses()<0)
-  		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB busses"); 	 
+  if(usb_find_busses()<0)
+  	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB busses"); 	 
 	if(usb_find_devices()<0)
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB devices"); 
 		
