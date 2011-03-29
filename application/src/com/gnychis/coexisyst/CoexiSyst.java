@@ -324,7 +324,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			
-			publishProgress(CoexiSyst.WISPY_POLL_THREAD);
+			//publishProgress(CoexiSyst.WISPY_POLL_THREAD);
 			
 			if(initWiSpyDevices()==1) {
 				publishProgress(CoexiSyst.WISPY_POLL);
