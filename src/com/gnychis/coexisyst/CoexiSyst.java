@@ -18,6 +18,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.AsyncTask.Status;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -136,7 +137,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
     
 	@Override
 	public void onStop() { super.onStop(); Log.d(TAG, "onStop()");}
-	public void onResume() { super.onResume(); Log.d(TAG, "onResume()"); }
+	public void onResume() { super.onResume(); Log.d(TAG, "onResume()");
+		if(usbmon == null || usbmon.getStatus()!=Status.RUNNING){ 
+			Log.d(TAG, "resuming a USB monitoring thread");
+			usbmon = new USBMon();
+			usbmon.execute (this);
+		} else {
+			Log.d(TAG, "not resuming USB monitoring, already running?");
+		}
+	}
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 	
@@ -219,7 +228,21 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void clickViewSpectrum() {
 		try {
 			Intent i = null;
-			usbmon.cancel(true);
+			
+			if(wispyscan.getStatus()==Status.RUNNING) {
+				wispyscan.cancel(true);
+				wispy._is_polling=false;
+				Log.d(TAG, "canceling wispy scan");
+			}
+			
+			if(usbmon.getStatus()==Status.RUNNING) {
+				if(usbmon.cancel(true))
+					Log.d(TAG, "canceled USB monitor");
+				else
+					Log.d(TAG, "error trying to cancel USB monitor");	
+				usbmon = null;
+			}
+			
 			i = wispyGraph.execute(this);
 			i.putExtra("com.gnychis.coexisyst.results", wispy._maxresults);
 			startActivity(i);
@@ -374,10 +397,17 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		CoexiSyst coexisyst;
 		
 		@Override
+		protected void onCancelled()
+		{
+			Log.d(TAG, "USB monitor thread successfully canceled");
+		}
+		
+		@Override
 		protected String doInBackground( Context... params )
 		{
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
+			Log.d(TAG, "a new USB monitor was started");
 			while(true) {
 				try {
 					
@@ -394,11 +424,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					}
 					
 					Thread.sleep( 2000 );
-					//Log.d(TAG, "checking for USB devices");
+					Log.d(TAG, "checking for USB devices");
 
 				} catch (Exception e) {
 					
 					Log.e(TAG, "exception trying to sleep", e);
+					return "OUT";
 				}
 			}
 		}
