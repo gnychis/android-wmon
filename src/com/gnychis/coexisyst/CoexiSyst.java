@@ -54,9 +54,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	BroadcastReceiver rcvr_BTooth;
 	
 	TextView textStatus;
-	Button buttonScan; 
-	//Button buttonManageNets; 
+	
+	Button buttonAddNetwork; 
+	Button buttonManageNets; 
 	Button buttonManageDevs;
+	Button buttonScanSpectrum;
 	Button buttonViewSpectrum;
 	Button buttonADB;
 	
@@ -66,6 +68,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// USB device related
 	boolean wispy_connected;
 	boolean wispy_polling;
+	boolean wispy_reset_max;
+	boolean wispy_save_scans;
+	int wispy_poll_count;
 	IChart wispyGraph;
 	int maxresults[];
 	
@@ -86,10 +91,23 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Toast.makeText(this, "Failure gaining root access...",
 					Toast.LENGTH_LONG).show();		
         }
+    	
+    	// Load the libusb related libraries
+    	try {
+    		System.loadLibrary("usb");
+    		System.loadLibrary("usb-compat");
+    		System.loadLibrary("wispy");
+    		System.loadLibrary("coexisyst");
+    	} catch (Exception e) {
+    		Log.e(TAG, "error trying to load a USB related library", e);
+    	}
         
         // USB device initialization
         wispy_connected=false;
         wispy_polling=false;
+        wispy_reset_max=false;
+        wispy_poll_count=0;
+        wispy_save_scans=false;
         maxresults = new int[256];
         for(int i=0; i<256; i++)
         	maxresults[i]=-200;
@@ -106,41 +124,22 @@ public class CoexiSyst extends Activity implements OnClickListener {
         // Setup the database
     	db = new DBAdapter(this);
     	db.open();
-    	
-    	// Load the libusb related libraries
-    	try {
-    		System.loadLibrary("usb");
-    		System.loadLibrary("usb-compat");
-    		System.loadLibrary("wispy");
-    		System.loadLibrary("coexisyst");
-    	} catch (Exception e) {
-    		Log.e(TAG, "error trying to load a USB related library", e);
-    	}
       
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
 		textStatus.setText("");
-		buttonScan = (Button) findViewById(R.id.buttonAddNetwork);
-		buttonViewSpectrum = (Button) findViewById(R.id.buttonViewSpectrum);
-		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets);
-		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs);
-		buttonADB = (Button) findViewById(R.id.buttonAdb);
-		buttonScan.setOnClickListener(this);
-//		buttonManageNets.setOnClickListener(this);
-		buttonManageDevs.setOnClickListener(this);
-		buttonViewSpectrum.setOnClickListener(this);
-		buttonADB.setOnClickListener(this);
+		buttonAddNetwork = (Button) findViewById(R.id.buttonAddNetwork); buttonAddNetwork.setOnClickListener(this);
+		buttonViewSpectrum = (Button) findViewById(R.id.buttonViewSpectrum); buttonViewSpectrum.setOnClickListener(this);
+		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets); buttonManageNets.setOnClickListener(this);
+		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs); buttonManageDevs.setOnClickListener(this);
+		buttonADB = (Button) findViewById(R.id.buttonAdb); buttonADB.setOnClickListener(this);
+		buttonScanSpectrum = (Button) findViewById(R.id.buttonScan); buttonScanSpectrum.setOnClickListener(this);
 		
 		wispyGraph = new GraphWispy();
 
 		// Setup wireless devices
 		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		bt = BluetoothAdapter.getDefaultAdapter();
-		
-		if (!bt.isEnabled()) {
-		    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-		    startActivityForResult(enableBtIntent, 1);
-		}
 
 		// Register Broadcast Receiver
 		if (rcvr_80211 == null)
@@ -162,38 +161,42 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		usbmon.execute (this);
 		
 		Log.d(TAG, "onCreate()");
-		startScans();
+		stopScans();
     }
     
 	@Override
-	public void onStop() {
-		super.onStop();
-		stopScans();
-	}
+	public void onStop() { super.onStop();  }
+	public void onResume() { super.onResume();  }
+	public void onPause() { super.onPause();  }
+	public void onDestroy() { super.onDestroy();  }
 	
-	public void onResume() {
-		super.onResume();
-		startScans();
-	}
-	
-	public void onPause() {
-		super.onPause();
-		stopScans();
-	}
-	public void onDestroy() {
-		super.onDestroy();
-		stopScans();
+	public void scanSpectrum() {
+		// Disable interfaces first, and get the raw power in the spectrum from WiSpy
+		wifi.setWifiEnabled(false);
+		bt.disable();
+		
+		// Get the WiSpy data
+		wispy_reset_max=true;
+		wispy_save_scans=true;
+		if(wispy_poll_count>=10)
+			wispy_save_scans=false;
+		
 	}
 	
 	public void startScans() {
 		try {
-		registerReceiver(rcvr_80211, new IntentFilter(
-				WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));	
-		registerReceiver(rcvr_BTooth, new IntentFilter(
-				BluetoothDevice.ACTION_FOUND));
 		
-		wifi.startScan();
-		bt.startDiscovery();
+			// Enable interfaces
+			bt.enable();
+			wifi.setWifiEnabled(true);
+			
+			registerReceiver(rcvr_80211, new IntentFilter(
+					WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));	
+			registerReceiver(rcvr_BTooth, new IntentFilter(
+					BluetoothDevice.ACTION_FOUND));
+			
+			wifi.startScan();
+			bt.startDiscovery();
 		} catch (Exception e) {
 			Log.e(TAG, "Exception trying to register scan receivers");
 		}
@@ -208,6 +211,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		} catch (Exception e) {
 			Log.e(TAG, "Exception trying to unregister scan receivers",e);
 		}
+		
+		// Disable interfaces
+		wifi.setWifiEnabled(false);
+		bt.disable();
+		
+		// Need to disable wispy also?
 	}
 	
 	public void clickAddNetwork() {
@@ -277,6 +286,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		if(view.getId() == R.id.buttonManageDevs) {
 			clickManageDevs();
 		}
+		if(view.getId() == R.id.buttonScan) {
+			scanSpectrum();
+		}
 		if(view.getId() == R.id.buttonViewSpectrum) {
 			clickViewSpectrum();
 		}
@@ -336,6 +348,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			while(true) {
 				int[] scan_res = pollWiSpy();
 				
+				// If main thread is signaling to reset the max results
+				if(coexisyst.wispy_reset_max) {
+					coexisyst.wispy_poll_count=0;
+					coexisyst.wispy_reset_max=false;
+					for(int i=0; i<256; i++)
+			        	maxresults[i]=-200;
+				}
+				
 				if(scan_res==null) {
 					publishProgress(CoexiSyst.WISPY_POLL_FAIL);
 					coexisyst.wispy_polling = false;
@@ -345,11 +365,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				//publishProgress(CoexiSyst.WISPY_POLL);		
 				
 				// What to do once we get a response!
-				if(scan_res.length==256) {
+				if(scan_res.length==256 && coexisyst.wispy_save_scans) {
 					for(int i=0; i<scan_res.length; i++)
 						if(scan_res[i] > maxresults[i]) 
 							maxresults[i] = scan_res[i];
 					
+					coexisyst.wispy_poll_count++;
 					try {	
 						if(false) {
 							for(int i=0; i<scan_res.length; i++) {
