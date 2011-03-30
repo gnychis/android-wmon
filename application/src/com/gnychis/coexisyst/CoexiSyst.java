@@ -308,7 +308,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				publishProgress(Wispy.WISPY_POLL);
 			} else {
 				publishProgress(Wispy.WISPY_POLL_FAIL);
-				wispy._wispy_polling = false;
+				wispy._is_polling = false;
 				return "FAIL";
 			}
 			
@@ -316,28 +316,28 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				int[] scan_res = pollWiSpy();
 				
 				// If main thread is signaling to reset the max results
-				if(wispy._wispy_reset_max) {
-					wispy._wispy_poll_count=0;
-					wispy._wispy_reset_max=false;
+				if(wispy._reset_max) {
+					wispy._poll_count=0;
+					wispy._reset_max=false;
 					for(int i=0; i<256; i++)
 			        	wispy._maxresults[i]=-200;
 				}
 				
 				if(scan_res==null) {
 					publishProgress(Wispy.WISPY_POLL_FAIL);
-					wispy._wispy_polling = false;
+					wispy._is_polling = false;
 					break;
 				}
 				
 				//publishProgress(CoexiSyst.WISPY_POLL);		
 				
 				// What to do once we get a response!
-				if(scan_res.length==256 && wispy._wispy_save_scans) {
+				if(scan_res.length==256 && wispy._save_scans) {
 					for(int i=0; i<scan_res.length; i++)
 						if(scan_res[i] > wispy._maxresults[i]) 
 							wispy._maxresults[i] = scan_res[i];
 					
-					wispy._wispy_poll_count++;
+					wispy._poll_count++;
 					try {	
 						if(false) {
 							for(int i=0; i<scan_res.length; i++) {
@@ -396,11 +396,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					
 					int wispy_in_devlist=USBcheckForDevice(0x1781, 0x083f);
 					
-					if(wispy_in_devlist==1 && wispy._wispy_connected==false) {
+					if(wispy_in_devlist==1 && wispy._device_connected==false) {
 						publishProgress(Wispy.WISPY_CONNECT);
-					} else if(wispy_in_devlist==0 && wispy._wispy_connected==true) {
+					} else if(wispy_in_devlist==0 && wispy._device_connected==true) {
 						publishProgress(Wispy.WISPY_DISCONNECT);
-					} else if(wispy_in_devlist==1 && wispy._wispy_connected==true && wispy._wispy_polling==false) {
+					} else if(wispy_in_devlist==1 && wispy._device_connected==true && wispy._is_polling==false) {
 						//Log.d(TAG, "determined that a re-poll is needed");
 						//Thread.sleep( 1000 );
 						//publishProgress(CoexiSyst.WISPY_POLL);
@@ -429,7 +429,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				Log.d(TAG, "got update that WiSpy was connected");
 				Toast.makeText(parent, "WiSpy device connected",
 						Toast.LENGTH_LONG).show();	
-				wispy._wispy_connected=true;
+				wispy._device_connected=true;
 				
 				// List the wispy devices
 				coexisyst.textStatus.append("\n\nWiSpy Devices:\n");
@@ -439,14 +439,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				
 				// Start the poll thread now
 				coexisyst.wispyscan.execute(coexisyst);
-				wispy._wispy_polling = true;
+				wispy._is_polling = true;
 
 			}
 			else if(event == Wispy.WISPY_DISCONNECT) {
 				Log.d(TAG, "got update that WiSpy was connected");
 				Toast.makeText(parent, "WiSpy device has been disconnected",
 						Toast.LENGTH_LONG).show();
-				wispy._wispy_connected=false;
+				wispy._device_connected=false;
 				coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
 			}
 			else if(event == Wispy.WISPY_POLL) {
@@ -456,7 +456,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				coexisyst.wispyscan.cancel(true);
 				coexisyst.wispyscan = new WiSpyScan();
 				coexisyst.wispyscan.execute(coexisyst);
-				wispy._wispy_polling = true;
+				wispy._is_polling = true;
 			}
 		}
 	}

@@ -19,19 +19,19 @@ public class Wispy {
 	FileOutputStream _wispyOut;
 	PrintStream _wispyPrint;
 	
-	boolean _wispy_connected;
-	boolean _wispy_polling;
-	boolean _wispy_reset_max;
-	boolean _wispy_save_scans;
-	int _wispy_poll_count;
+	boolean _device_connected;
+	boolean _is_polling;
+	boolean _reset_max;
+	boolean _save_scans;
+	int _poll_count;
 	int _maxresults[];
 	
 	public Wispy(){
-        _wispy_connected=false;
-        _wispy_polling=false;
-        _wispy_reset_max=false;
-        _wispy_poll_count=0;
-        _wispy_save_scans=false;
+        _device_connected=false;
+        _is_polling=false;
+        _reset_max=false;
+        _poll_count=0;
+        _save_scans=false;
         _maxresults = new int[256];
         for(int i=0; i<256; i++)
         	_maxresults[i]=-200;
