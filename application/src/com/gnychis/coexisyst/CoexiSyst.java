@@ -349,14 +349,16 @@ public class CoexiSyst extends Activity implements OnClickListener {
 							maxresults[i] = scan_res[i];
 					
 					try {	
-						for(int i=0; i<scan_res.length; i++) {
-							wispyPrint.print(scan_res[i]);
-							wispyPrint.print(" ");
+						if(false) {
+							for(int i=0; i<scan_res.length; i++) {
+								wispyPrint.print(scan_res[i]);
+								wispyPrint.print(" ");
+							}
+							wispyPrint.print("\n");
+							wispyPrint.flush();
+							wispyOut.flush();
+							//Log.d(TAG, "got new results");
 						}
-						wispyPrint.print("\n");
-						wispyPrint.flush();
-						wispyOut.flush();
-						//Log.d(TAG, "got new results");
 					} catch(Exception e) {
 						Log.e(TAG, "error writing to SD card", e);
 					}
