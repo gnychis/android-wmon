@@ -413,13 +413,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					} else if(wispy_in_devlist==0 && coexisyst.wispy_connected==true) {
 						publishProgress(CoexiSyst.WISPY_DISCONNECT);
 					} else if(wispy_in_devlist==1 && coexisyst.wispy_connected==true && coexisyst.wispy_polling==false) {
-						Log.d(TAG, "determined that a re-poll is needed");
-						Thread.sleep( 1000 );
-						publishProgress(CoexiSyst.WISPY_POLL);
+						//Log.d(TAG, "determined that a re-poll is needed");
+						//Thread.sleep( 1000 );
+						//publishProgress(CoexiSyst.WISPY_POLL);
 					}
 					
 					Thread.sleep( 2000 );
-					Log.d(TAG, "checking for USB devices");
+					//Log.d(TAG, "checking for USB devices");
 
 				} catch (Exception e) {
 					
