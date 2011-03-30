@@ -11,6 +11,8 @@
     android:text="Manage Networks and Devices" android:layout_width="match_parent"></Button>
   <Button android:layout_height="wrap_content" android:id="@+id/buttonNetworkDiag"
     android:text="Diagnose Network Problem" android:layout_width="match_parent"></Button>
+  <Button android:layout_height="wrap_content" android:id="@+id/buttonScan"
+    android:text="Scan Spectrum" android:layout_width="match_parent"></Button>
   <Button android:layout_height="wrap_content" android:id="@+id/buttonViewSpectrum"
     android:text="View Spectrum" android:layout_width="match_parent"></Button>
   <Button android:layout_height="wrap_content" android:id="@+id/buttonAdb"
