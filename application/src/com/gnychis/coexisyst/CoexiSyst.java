@@ -341,7 +341,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					coexisyst.wispy_polling = false;
 					break;
 				}
-									
+				
+				//publishProgress(CoexiSyst.WISPY_POLL);		
+				
 				// What to do once we get a response!
 				if(scan_res.length==256) {
 					for(int i=0; i<scan_res.length; i++)
@@ -381,6 +383,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			else if(event==CoexiSyst.WISPY_POLL) {
 				//Toast.makeText(parent, "WiSpy started polling...",
 				//		Toast.LENGTH_LONG).show();
+				//textStatus.append(".");
 			}
 			else if(event==CoexiSyst.WISPY_POLL_FAIL) {
 				Toast.makeText(parent, "--- WiSpy poll failed ---",
@@ -407,13 +410,16 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					
 					if(wispy_in_devlist==1 && coexisyst.wispy_connected==false) {
 						publishProgress(CoexiSyst.WISPY_CONNECT);
-						return "DONE!";
-					} else if(wispy_in_devlist==0 && coexisyst.wispy_connected==true)
+					} else if(wispy_in_devlist==0 && coexisyst.wispy_connected==true) {
 						publishProgress(CoexiSyst.WISPY_DISCONNECT);
-					else if(wispy_in_devlist==1 && coexisyst.wispy_connected==true && coexisyst.wispy_polling==false && coexisyst.wispyscan.getStatus()==Status.FINISHED)
+					} else if(wispy_in_devlist==1 && coexisyst.wispy_connected==true && coexisyst.wispy_polling==false) {
+						Log.d(TAG, "determined that a re-poll is needed");
+						Thread.sleep( 1000 );
 						publishProgress(CoexiSyst.WISPY_POLL);
+					}
 					
 					Thread.sleep( 2000 );
+					Log.d(TAG, "checking for USB devices");
 
 				} catch (Exception e) {
 					
@@ -422,6 +428,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			}
 		}
 		
+		/* (non-Javadoc)
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
 		@Override
 		protected void onProgressUpdate(Integer... values)
 		{
@@ -453,12 +462,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
 			}
 			else if(event == CoexiSyst.WISPY_POLL) {
-				//Toast.makeText(parent, "Re-trying polling",
-				//		Toast.LENGTH_LONG).show();
+				Log.d(TAG, "trying to re-poll the WiSpy device");
+				Toast.makeText(parent, "Re-trying polling",
+						Toast.LENGTH_LONG).show();
 				coexisyst.wispyscan.cancel(true);
-				//coexisyst.wispyscan = new WiSpyScan();
-				//coexisyst.wispyscan.execute(coexisyst);
-				//coexisyst.wispy_polling = true;
+				coexisyst.wispyscan = new WiSpyScan();
+				coexisyst.wispyscan.execute(coexisyst);
+				coexisyst.wispy_polling = true;
 			}
 		}
 	}
