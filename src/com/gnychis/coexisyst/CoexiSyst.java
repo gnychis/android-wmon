@@ -146,7 +146,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		bt.disable();
 		
 		// Get the WiSpy data
-
+		wispy.getResultsBlock(10);
 		
 	}
 	
@@ -315,14 +315,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			while(true) {
 				int[] scan_res = pollWiSpy();
 				
-				// If main thread is signaling to reset the max results
-				if(wispy._reset_max) {
-					wispy._poll_count=0;
-					wispy._reset_max=false;
-					for(int i=0; i<256; i++)
-			        	wispy._maxresults[i]=-200;
-				}
-				
 				if(scan_res==null) {
 					publishProgress(Wispy.WISPY_POLL_FAIL);
 					wispy._is_polling = false;
@@ -332,26 +324,18 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				//publishProgress(CoexiSyst.WISPY_POLL);		
 				
 				// What to do once we get a response!
-				if(scan_res.length==256 && wispy._save_scans) {
-					for(int i=0; i<scan_res.length; i++)
-						if(scan_res[i] > wispy._maxresults[i]) 
-							wispy._maxresults[i] = scan_res[i];
-					
-					wispy._poll_count++;
-					try {	
-						if(false) {
-							for(int i=0; i<scan_res.length; i++) {
-								wispy._wispyPrint.print(scan_res[i]);
-								wispy._wispyPrint.print(" ");
-							}
-							wispy._wispyPrint.print("\n");
-							wispy._wispyPrint.flush();
-							wispy._wispyOut.flush();
-							//Log.d(TAG, "got new results");
-						}
-					} catch(Exception e) {
-						Log.e(TAG, "error writing to SD card", e);
+				try {
+					wispy._lock.acquire();
+					if(scan_res.length==256 && wispy._save_scans) {
+						for(int i=0; i<scan_res.length; i++)
+							if(scan_res[i] > wispy._maxresults[i]) 
+								wispy._maxresults[i] = scan_res[i];
+						
+						wispy._poll_count++;
 					}
+					wispy._lock.release();
+				} catch (Exception e) {
+					Log.e(TAG, "exception trying to claim lock to save new results",e);
 				}
 			}
 			

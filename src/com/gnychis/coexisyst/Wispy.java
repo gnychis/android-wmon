@@ -1,9 +1,9 @@
 package com.gnychis.coexisyst;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.Semaphore;
 
 import android.os.Environment;
 import android.util.Log;
@@ -26,7 +26,9 @@ public class Wispy {
 	int _poll_count;
 	int _maxresults[];
 	
-	public Wispy(){
+	Semaphore _lock;
+	
+	public Wispy() {
         _device_connected=false;
         _is_polling=false;
         _reset_max=false;
@@ -44,6 +46,39 @@ public class Wispy {
         } catch(Exception e) {
         	//Log.e(TAG, "Error opening output file", e);
         }
+	}
+	
+	public void getResultsBlock(int count_length) {
+		
+		// Reset everything here, making sure not to conflict with the polling thread
+		try {
+			_lock.acquire();
+
+			_poll_count=0;
+			_reset_max=false;
+			for(int i=0; i<256; i++)
+	        	_maxresults[i]=-200;
+			_save_scans=true;
+			_lock.release();
+		} catch (Exception e) {
+			Log.d("wispy", "error acquiring lock to reset results");
+		}
+
+		// Take a second lock which 
+		try {
+			while(true) {
+				_lock.acquire();
+				if(_poll_count==count_length) {
+					_save_scans=false;
+					break;
+				}
+				_lock.release();
+			}
+			_lock.release();
+		} catch (Exception e) {
+			Log.d("wispy", "error acquiring lock to not save any more scans");
+		}
+		
 	}
 
 }
