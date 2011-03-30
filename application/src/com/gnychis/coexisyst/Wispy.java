@@ -15,6 +15,8 @@ public class Wispy {
 	public static final int WISPY_POLL_FAIL = 3;
 	public static final int WISPY_POLL_THREAD = 4;
 	
+	public static final int PASSES = 20;
+	
 	File _root;
 	FileOutputStream _wispyOut;
 	PrintStream _wispyPrint;
@@ -29,6 +31,7 @@ public class Wispy {
 	Semaphore _lock;
 	
 	public Wispy() {
+		_lock = new Semaphore(1,true);
         _device_connected=false;
         _is_polling=false;
         _reset_max=false;
@@ -50,6 +53,7 @@ public class Wispy {
 	
 	public void getResultsBlock(int count_length) {
 		
+		Log.d("wispy", "attempting to get results");
 		// Reset everything here, making sure not to conflict with the polling thread
 		try {
 			_lock.acquire();
@@ -78,7 +82,7 @@ public class Wispy {
 		} catch (Exception e) {
 			Log.d("wispy", "error acquiring lock to not save any more scans");
 		}
-		
+		Log.d("wispy", "finished getting results!");
 	}
 
 }
