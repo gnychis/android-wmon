@@ -135,10 +135,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
     }
     
 	@Override
-	public void onStop() { super.onStop();  }
-	public void onResume() { super.onResume();  }
-	public void onPause() { super.onPause();  }
-	public void onDestroy() { super.onDestroy();  }
+	public void onStop() { super.onStop(); Log.d(TAG, "onStop()");}
+	public void onResume() { super.onResume(); Log.d(TAG, "onResume()"); }
+	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
+	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 	
 	public void scanSpectrum() {
 		// Disable interfaces first, and get the raw power in the spectrum from WiSpy
@@ -146,7 +146,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		bt.disable();
 		
 		// Get the WiSpy data
-		wispy.getResultsBlock(10);
+		Log.d(TAG, "Waiting for results from WiSpy...");
+		wispy.getResultsBlock(Wispy.PASSES);
+		Log.d(TAG, "Got results from the WiSpy");
 		
 	}
 	
@@ -332,6 +334,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 								wispy._maxresults[i] = scan_res[i];
 						
 						wispy._poll_count++;
+						Log.d("wispy_thread", "saved result from wispy thread");
 					}
 					wispy._lock.release();
 				} catch (Exception e) {
