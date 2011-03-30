@@ -28,18 +28,10 @@ import android.widget.Toast;
 public class CoexiSyst extends Activity implements OnClickListener {
 	
 	private static final String TAG = "WiFiDemo";
-	public static final int WISPY_CONNECT = 0;
-	public static final int WISPY_DISCONNECT = 1;
-	public static final int WISPY_POLL = 2;
-	public static final int WISPY_POLL_FAIL = 3;
-	public static final int WISPY_POLL_THREAD = 4;
 
 	// For root
 	Process proc;
 	DataOutputStream os;
-	File root;
-	FileOutputStream wispyOut;
-	PrintStream wispyPrint;
 
 
 	// Make instances of our helper classes
@@ -66,13 +58,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	ArrayList<ScanResult> netlist_80211;
 	
 	// USB device related
-	boolean wispy_connected;
-	boolean wispy_polling;
-	boolean wispy_reset_max;
-	boolean wispy_save_scans;
-	int wispy_poll_count;
+	Wispy wispy;
 	IChart wispyGraph;
-	int maxresults[];
 	
     /** Called when the activity is first created. */
     @Override
@@ -101,25 +88,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	} catch (Exception e) {
     		Log.e(TAG, "error trying to load a USB related library", e);
     	}
-        
-        // USB device initialization
-        wispy_connected=false;
-        wispy_polling=false;
-        wispy_reset_max=false;
-        wispy_poll_count=0;
-        wispy_save_scans=false;
-        maxresults = new int[256];
-        for(int i=0; i<256; i++)
-        	maxresults[i]=-200;
-        
-        // For writing to SD card
-        try {
-	        root = Environment.getExternalStorageDirectory();
-	        wispyOut = new FileOutputStream(new File(root, "wispy.dat"));
-	        wispyPrint = new PrintStream(wispyOut);
-        } catch(Exception e) {
-        	Log.e(TAG, "Error opening output file", e);
-        }
+       
+    	wispy = new Wispy();
         
         // Setup the database
     	db = new DBAdapter(this);
@@ -176,10 +146,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		bt.disable();
 		
 		// Get the WiSpy data
-		wispy_reset_max=true;
-		wispy_save_scans=true;
-		if(wispy_poll_count>=10)
-			wispy_save_scans=false;
+
 		
 	}
 	
@@ -252,7 +219,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Intent i = null;
 			usbmon.cancel(true);
 			i = wispyGraph.execute(this);
-			i.putExtra("com.gnychis.coexisyst.results", maxresults);
+			i.putExtra("com.gnychis.coexisyst.results", wispy._maxresults);
 			startActivity(i);
 		} catch(Exception e) {
 			Log.e(TAG, "error trying to load spectrum view", e);
@@ -338,10 +305,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			//publishProgress(CoexiSyst.WISPY_POLL_THREAD);
 			
 			if(initWiSpyDevices()==1) {
-				publishProgress(CoexiSyst.WISPY_POLL);
+				publishProgress(Wispy.WISPY_POLL);
 			} else {
-				publishProgress(CoexiSyst.WISPY_POLL_FAIL);
-				coexisyst.wispy_polling = false;
+				publishProgress(Wispy.WISPY_POLL_FAIL);
+				wispy._wispy_polling = false;
 				return "FAIL";
 			}
 			
@@ -349,37 +316,37 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				int[] scan_res = pollWiSpy();
 				
 				// If main thread is signaling to reset the max results
-				if(coexisyst.wispy_reset_max) {
-					coexisyst.wispy_poll_count=0;
-					coexisyst.wispy_reset_max=false;
+				if(wispy._wispy_reset_max) {
+					wispy._wispy_poll_count=0;
+					wispy._wispy_reset_max=false;
 					for(int i=0; i<256; i++)
-			        	maxresults[i]=-200;
+			        	wispy._maxresults[i]=-200;
 				}
 				
 				if(scan_res==null) {
-					publishProgress(CoexiSyst.WISPY_POLL_FAIL);
-					coexisyst.wispy_polling = false;
+					publishProgress(Wispy.WISPY_POLL_FAIL);
+					wispy._wispy_polling = false;
 					break;
 				}
 				
 				//publishProgress(CoexiSyst.WISPY_POLL);		
 				
 				// What to do once we get a response!
-				if(scan_res.length==256 && coexisyst.wispy_save_scans) {
+				if(scan_res.length==256 && wispy._wispy_save_scans) {
 					for(int i=0; i<scan_res.length; i++)
-						if(scan_res[i] > maxresults[i]) 
-							maxresults[i] = scan_res[i];
+						if(scan_res[i] > wispy._maxresults[i]) 
+							wispy._maxresults[i] = scan_res[i];
 					
-					coexisyst.wispy_poll_count++;
+					wispy._wispy_poll_count++;
 					try {	
 						if(false) {
 							for(int i=0; i<scan_res.length; i++) {
-								wispyPrint.print(scan_res[i]);
-								wispyPrint.print(" ");
+								wispy._wispyPrint.print(scan_res[i]);
+								wispy._wispyPrint.print(" ");
 							}
-							wispyPrint.print("\n");
-							wispyPrint.flush();
-							wispyOut.flush();
+							wispy._wispyPrint.print("\n");
+							wispy._wispyPrint.flush();
+							wispy._wispyOut.flush();
 							//Log.d(TAG, "got new results");
 						}
 					} catch(Exception e) {
@@ -397,16 +364,16 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			super.onProgressUpdate(values);
 			int event = values[0];
 			
-			if(event==CoexiSyst.WISPY_POLL_THREAD) {
+			if(event==Wispy.WISPY_POLL_THREAD) {
 				//Toast.makeText(parent, "In WiSpy poll thread...",
 				//		Toast.LENGTH_LONG).show();
 			}
-			else if(event==CoexiSyst.WISPY_POLL) {
+			else if(event==Wispy.WISPY_POLL) {
 				//Toast.makeText(parent, "WiSpy started polling...",
 				//		Toast.LENGTH_LONG).show();
 				//textStatus.append(".");
 			}
-			else if(event==CoexiSyst.WISPY_POLL_FAIL) {
+			else if(event==Wispy.WISPY_POLL_FAIL) {
 				Toast.makeText(parent, "--- WiSpy poll failed ---",
 						Toast.LENGTH_LONG).show();
 			}
@@ -429,11 +396,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					
 					int wispy_in_devlist=USBcheckForDevice(0x1781, 0x083f);
 					
-					if(wispy_in_devlist==1 && coexisyst.wispy_connected==false) {
-						publishProgress(CoexiSyst.WISPY_CONNECT);
-					} else if(wispy_in_devlist==0 && coexisyst.wispy_connected==true) {
-						publishProgress(CoexiSyst.WISPY_DISCONNECT);
-					} else if(wispy_in_devlist==1 && coexisyst.wispy_connected==true && coexisyst.wispy_polling==false) {
+					if(wispy_in_devlist==1 && wispy._wispy_connected==false) {
+						publishProgress(Wispy.WISPY_CONNECT);
+					} else if(wispy_in_devlist==0 && wispy._wispy_connected==true) {
+						publishProgress(Wispy.WISPY_DISCONNECT);
+					} else if(wispy_in_devlist==1 && wispy._wispy_connected==true && wispy._wispy_polling==false) {
 						//Log.d(TAG, "determined that a re-poll is needed");
 						//Thread.sleep( 1000 );
 						//publishProgress(CoexiSyst.WISPY_POLL);
@@ -458,11 +425,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			super.onProgressUpdate(values);
 			int event = values[0];
 			
-			if(event == CoexiSyst.WISPY_CONNECT) {
+			if(event == Wispy.WISPY_CONNECT) {
 				Log.d(TAG, "got update that WiSpy was connected");
 				Toast.makeText(parent, "WiSpy device connected",
 						Toast.LENGTH_LONG).show();	
-				coexisyst.wispy_connected=true;
+				wispy._wispy_connected=true;
 				
 				// List the wispy devices
 				coexisyst.textStatus.append("\n\nWiSpy Devices:\n");
@@ -472,24 +439,24 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				
 				// Start the poll thread now
 				coexisyst.wispyscan.execute(coexisyst);
-				coexisyst.wispy_polling = true;
+				wispy._wispy_polling = true;
 
 			}
-			else if(event == CoexiSyst.WISPY_DISCONNECT) {
+			else if(event == Wispy.WISPY_DISCONNECT) {
 				Log.d(TAG, "got update that WiSpy was connected");
 				Toast.makeText(parent, "WiSpy device has been disconnected",
 						Toast.LENGTH_LONG).show();
-				coexisyst.wispy_connected=false;
+				wispy._wispy_connected=false;
 				coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
 			}
-			else if(event == CoexiSyst.WISPY_POLL) {
+			else if(event == Wispy.WISPY_POLL) {
 				Log.d(TAG, "trying to re-poll the WiSpy device");
 				Toast.makeText(parent, "Re-trying polling",
 						Toast.LENGTH_LONG).show();
 				coexisyst.wispyscan.cancel(true);
 				coexisyst.wispyscan = new WiSpyScan();
 				coexisyst.wispyscan.execute(coexisyst);
-				coexisyst.wispy_polling = true;
+				wispy._wispy_polling = true;
 			}
 		}
 	}
