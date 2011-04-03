@@ -24,6 +24,6 @@ LOCAL_SRC_FILES:=\
 LOCAL_CFLAGS:=-O2 -g
 LOCAL_CFLAGS+=-DHAVE_CONFIG_H -D_U_="__attribute__((unused))" -Dlinux -D__GLIBC__ -D_GNU_SOURCE
 
-LOCAL_MODULE:= libpcap
+LOCAL_MODULE:= liboldpcap
 
 include $(BUILD_SHARED_LIBRARY)
