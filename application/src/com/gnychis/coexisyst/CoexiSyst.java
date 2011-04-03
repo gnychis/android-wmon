@@ -85,6 +85,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     		System.loadLibrary("usb");
     		System.loadLibrary("usb-compat");
     		System.loadLibrary("wispy");
+    		System.loadLibrary("pcap");
     		System.loadLibrary("coexisyst");
     	} catch (Exception e) {
     		Log.e(TAG, "error trying to load a USB related library", e);
@@ -130,6 +131,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		wispyscan = new WiSpyScan();
 		usbmon = new USBMon();
 		usbmon.execute (this);
+		
+		// Check the pcap interfaces
+		pcapGetInterfaces();
 		
 		Log.d(TAG, "onCreate()");
 		stopScans();
@@ -314,6 +318,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native String[] getWiSpyList();
 	public native int initWiSpyDevices();
 	public native int[] pollWiSpy();
+	public native int pcapGetInterfaces();
 	
 	// A class to handle USB worker like things
 	protected class WiSpyScan extends AsyncTask<Context, Integer, String>
