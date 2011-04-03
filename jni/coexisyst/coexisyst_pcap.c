@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <pcap.h>
 #include <android/log.h>
+#include <jni.h>
 #define LOG_TAG "PcapDriver" // text for log tag 
 
-int pcap_get_interfaces()
+jint 
+Java_com_gnychis_coexisyst_CoexiSyst_pcapGetInterfaces( JNIEnv* env, jobject thiz )
 {
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
@@ -20,4 +22,5 @@ int pcap_get_interfaces()
 	for(d=alldevs;d;d=d->next) {
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "   %s", d->name);
 	}		
+	return 1;
 }
