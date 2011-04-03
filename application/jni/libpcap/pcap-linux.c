@@ -251,7 +251,7 @@ static const char rcsid[] _U_ =
 #endif
 
 #ifndef HAVE_SOCKLEN_T
-typedef int		socklen_t;
+//typedef int		socklen_t;
 #endif
 
 #ifndef MSG_TRUNC
