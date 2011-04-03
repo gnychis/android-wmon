@@ -5,6 +5,7 @@ subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk, \
     wispy \
     spectools \
     standalone \
+    platform_external_libpcap \
     coexisyst \
 ))
 include $(subdirs)
