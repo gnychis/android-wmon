@@ -80,6 +80,12 @@ int main (int argc, char *argv[])
 			break;
 		}
 		printf("Got a packet with length [%d]\n", header.len);
+
+		// Send the pcap header over the socket interface
+		if(send(sd_current, (char *) &header, sizeof(struct pcap_pkthdr), 0) == -1) {
+			perror("error trying to send header over");
+			return -1;
+		}
 	}
 	
 	pcap_close(handle);
