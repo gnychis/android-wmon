@@ -133,10 +133,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		usbmon.execute (this);
 		
 		// Check the pcap interfaces
-		pcapGetInterfaces();
+		//pcapGetInterfaces();
 		
 		Log.d(TAG, "onCreate()");
-		stopScans();
+		//stopScans();
+		startScans();
     }
     
 	@Override
@@ -155,13 +156,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public void scanSpectrum() {
 		// Disable interfaces first, and get the raw power in the spectrum from WiSpy
-		wifi.setWifiEnabled(false);
-		bt.disable();
+		stopScans();
 		
 		// Get the WiSpy data
 		Log.d(TAG, "Waiting for results from WiSpy...");
 		wispy.getResultsBlock(Wispy.PASSES);
 		Log.d(TAG, "Got results from the WiSpy");
+		
+		startScans();
 		
 	}
 	
