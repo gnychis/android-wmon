@@ -150,6 +150,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		} else {
 			Log.d(TAG, "not resuming USB monitoring, already running?");
 		}
+		startScans();
 	}
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
