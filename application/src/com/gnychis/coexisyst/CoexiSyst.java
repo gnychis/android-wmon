@@ -1,5 +1,6 @@
 package com.gnychis.coexisyst;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,11 +31,8 @@ import android.widget.Toast;
 public class CoexiSyst extends Activity implements OnClickListener {
 	
 	private static final String TAG = "WiFiDemo";
-
-	// For root
-	Process proc;
-	DataOutputStream os_out;
-
+	
+	SubSystem system;
 
 	// Make instances of our helper classes
 	DBAdapter db;
@@ -69,42 +67,17 @@ public class CoexiSyst extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        // Request root
-        try {
-        	proc = Runtime.getRuntime().exec("su");
-        	os_out = new DataOutputStream(proc.getOutputStream());  
-        	os_out.writeBytes("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
-        	os_out.writeBytes("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
-        	os_out.writeBytes("cd /system/lib/modules\n");
-        	os_out.writeBytes("insmod cfg80211.ko\n");
-        	os_out.writeBytes("insmod crc7.ko\n");
-        	os_out.writeBytes("insmod mac80211.ko\n");
-        	os_out.writeBytes("insmod zd1211rw.ko\n");
-        	os_out.writeBytes("mkdir /data/data/com.gnychis.coexisyst/bin\n");
-        	
-        	// Copy in iwconfig
-        	File outFile = new File("/data/data/com.gnychis.coexisyst/iwconfig");
-        	InputStream is = this.getResources().openRawResource(R.raw.iwconfig);
-        	byte buf[] = new byte[1024];
-            int len;
-            try {
-            	OutputStream out = new FileOutputStream(outFile);
-            	while((len = is.read(buf))>0) {
-    				out.write(buf,0,len);
-    			}
-            	out.close();
-            	is.close();
-    		} catch (IOException e) {
-    			Log.e(TAG, "Unable to install iwconfig", e);
-    		}
-    		os_out.writeBytes("mv /data/data/com.gnychis.coexisyst/iwconfig /data/data/com.gnychis.coexisyst/bin/\n");
-    		os_out.writeBytes("chmod 0755 /data/data/com.gnychis.coexisyst/bin/iwconfig\n");
-        	
-        } catch(Exception e) {
-        	Log.e(TAG, "failure gaining root access", e);
-			Toast.makeText(this, "Failure gaining root access...",
-					Toast.LENGTH_LONG).show();		
-        }
+        system = new SubSystem(this);
+    	system.cmd("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
+    	system.cmd("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
+    	system.cmd("cd /system/lib/modules\n");
+    	system.cmd("insmod cfg80211.ko\n");
+    	system.cmd("insmod crc7.ko\n");
+    	system.cmd("insmod mac80211.ko\n");
+    	system.cmd("insmod zd1211rw.ko\n");
+    	system.cmd("mkdir /data/data/com.gnychis.coexisyst/bin\n");
+    	
+    	system.install_bin("iwconfig", R.raw.iwconfig);
     	
     	// Load the libusb related libraries
     	try {
