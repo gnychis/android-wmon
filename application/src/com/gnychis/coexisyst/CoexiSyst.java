@@ -136,7 +136,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		Log.d(TAG, "onCreate()");
 		//stopScans();
-		startScans();
+		//startScans();
     }
     
 	@Override
@@ -292,9 +292,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		}
 		if(view.getId() == R.id.buttonAdb) {
 			try {
-				os_out.writeBytes("setprop service.adb.tcp.port 5555\n");
-				os_out.writeBytes("stop adbd\n");
-				os_out.writeBytes("start adbd\n");
+				system.cmd("setprop service.adb.tcp.port 5555\n");
+				system.cmd("stop adbd\n");
+				system.cmd("start adbd\n");
 			} catch(Exception e) {
 				Log.e(TAG, "failured to switch ADB to TCP", e);
 			}
