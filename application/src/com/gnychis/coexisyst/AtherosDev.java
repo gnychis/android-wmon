@@ -16,6 +16,8 @@ public class AtherosDev {
     	coexisyst.system.cmd("insmod /system/lib/modules/crc7.ko\n");
     	coexisyst.system.cmd("insmod /system/lib/modules/mac80211.ko\n");
     	coexisyst.system.cmd("insmod /system/lib/modules/zd1211rw.ko\n");
+    	coexisyst.system.cmd("cd /system/etc/firmware");
+    	coexisyst.system.cmd("busybox unzip /data/data/com.gnychis.coexisyst/bin/zd_firmware.zip");
 	}
 	
 	public void connected() {

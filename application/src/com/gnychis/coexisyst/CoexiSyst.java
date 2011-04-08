@@ -68,6 +68,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	
     	system.install_bin("iwconfig", R.raw.iwconfig);
     	system.install_bin("lsusb", R.raw.lsusb);
+    	system.install_bin("zd_firmware.zip", R.raw.zd_firmware);
     	
     	// Load the libusb related libraries
     	try {
