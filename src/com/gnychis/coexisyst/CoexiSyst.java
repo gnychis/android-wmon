@@ -3,7 +3,9 @@ package com.gnychis.coexisyst;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -16,9 +18,8 @@ import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Environment;
 import android.os.AsyncTask.Status;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -79,6 +80,24 @@ public class CoexiSyst extends Activity implements OnClickListener {
         	os.writeBytes("insmod crc7.ko\n");
         	os.writeBytes("insmod mac80211.ko\n");
         	os.writeBytes("insmod zd1211rw.ko\n");
+        	os.writeBytes("mkdir /data/data/com.gnychis.coexisyst/bin\n");
+        	
+        	// Copy in iwconfig
+        	File outFile = new File("/data/data/com.gnychis.coexisyst/bin/iwconfig");
+        	InputStream is = this.getResources().openRawResource(R.raw.iwconfig);
+        	byte buf[] = new byte[1024];
+            int len;
+            try {
+            	OutputStream out = new FileOutputStream(outFile);
+            	while((len = is.read(buf))>0) {
+    				out.write(buf,0,len);
+    			}
+            	out.close();
+            	is.close();
+    		} catch (IOException e) {
+    			Log.e(TAG, "Unable to install iwconfig", e);
+    		}
+    		os.writeBytes("chmod 0755 /data/data/com.gnychis.coexisyst/bin/iwconfig\n");
         	
         } catch(Exception e) {
         	Log.e(TAG, "failure gaining root access", e);
