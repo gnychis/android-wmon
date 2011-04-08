@@ -74,6 +74,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
         	os = new DataOutputStream(proc.getOutputStream());  
         	os.writeBytes("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
         	os.writeBytes("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
+        	os.writeBytes("cd /system/lib/modules\n");
+        	os.writeBytes("insmod cfg80211.ko\n");
+        	os.writeBytes("insmod crc7.ko\n");
+        	os.writeBytes("insmod mac80211.ko\n");
+        	os.writeBytes("insmod zd1211rw.ko\n");
+        	
         } catch(Exception e) {
         	Log.e(TAG, "failure gaining root access", e);
 			Toast.makeText(this, "Failure gaining root access...",
