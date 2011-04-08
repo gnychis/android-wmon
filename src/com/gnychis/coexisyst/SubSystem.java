@@ -29,11 +29,20 @@ public class SubSystem {
 	}
 	
 	public void cmd(String c) {
+		String in_data;
 		try {
 			_out.writeBytes(c);
 		} catch (Exception e) {
 			Log.e("SYSTEM", "exception trying to run command",e);
 		}
+		
+		/*try {
+			while(true) {
+				in_data = _in.readLine();
+			}
+		} catch (Exception e) {
+			Log.e("SYSTEM", "error trying to read after command", e);
+		}*/
 	}
 	
 	public void install_bin(String b, int resource) {
