@@ -33,7 +33,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
 	// For root
 	Process proc;
-	DataOutputStream os;
+	DataOutputStream os_out;
 
 
 	// Make instances of our helper classes
@@ -72,18 +72,18 @@ public class CoexiSyst extends Activity implements OnClickListener {
         // Request root
         try {
         	proc = Runtime.getRuntime().exec("su");
-        	os = new DataOutputStream(proc.getOutputStream());  
-        	os.writeBytes("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
-        	os.writeBytes("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
-        	os.writeBytes("cd /system/lib/modules\n");
-        	os.writeBytes("insmod cfg80211.ko\n");
-        	os.writeBytes("insmod crc7.ko\n");
-        	os.writeBytes("insmod mac80211.ko\n");
-        	os.writeBytes("insmod zd1211rw.ko\n");
-        	os.writeBytes("mkdir /data/data/com.gnychis.coexisyst/bin\n");
+        	os_out = new DataOutputStream(proc.getOutputStream());  
+        	os_out.writeBytes("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
+        	os_out.writeBytes("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
+        	os_out.writeBytes("cd /system/lib/modules\n");
+        	os_out.writeBytes("insmod cfg80211.ko\n");
+        	os_out.writeBytes("insmod crc7.ko\n");
+        	os_out.writeBytes("insmod mac80211.ko\n");
+        	os_out.writeBytes("insmod zd1211rw.ko\n");
+        	os_out.writeBytes("mkdir /data/data/com.gnychis.coexisyst/bin\n");
         	
         	// Copy in iwconfig
-        	File outFile = new File("/data/data/com.gnychis.coexisyst/bin/iwconfig");
+        	File outFile = new File("/data/data/com.gnychis.coexisyst/iwconfig");
         	InputStream is = this.getResources().openRawResource(R.raw.iwconfig);
         	byte buf[] = new byte[1024];
             int len;
@@ -97,7 +97,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
     		} catch (IOException e) {
     			Log.e(TAG, "Unable to install iwconfig", e);
     		}
-    		os.writeBytes("chmod 0755 /data/data/com.gnychis.coexisyst/bin/iwconfig\n");
+    		os_out.writeBytes("mv /data/data/com.gnychis.coexisyst/iwconfig /data/data/com.gnychis.coexisyst/bin/\n");
+    		os_out.writeBytes("chmod 0755 /data/data/com.gnychis.coexisyst/bin/iwconfig\n");
         	
         } catch(Exception e) {
         	Log.e(TAG, "failure gaining root access", e);
@@ -318,9 +319,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		}
 		if(view.getId() == R.id.buttonAdb) {
 			try {
-				os.writeBytes("setprop service.adb.tcp.port 5555\n");
-				os.writeBytes("stop adbd\n");
-				os.writeBytes("start adbd\n");
+				os_out.writeBytes("setprop service.adb.tcp.port 5555\n");
+				os_out.writeBytes("stop adbd\n");
+				os_out.writeBytes("start adbd\n");
 			} catch(Exception e) {
 				Log.e(TAG, "failured to switch ADB to TCP", e);
 			}
