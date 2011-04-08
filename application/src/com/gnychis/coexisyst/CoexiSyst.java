@@ -52,6 +52,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	// USB device related
 	Wispy wispy;
+	AtherosDev ath;
 	IChart wispyGraph;
 	
     /** Called when the activity is first created. */
@@ -63,14 +64,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
         system = new SubSystem(this);
     	system.cmd("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
     	system.cmd("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
-    	system.cmd("cd /system/lib/modules\n");
-    	system.cmd("insmod cfg80211.ko\n");
-    	system.cmd("insmod crc7.ko\n");
-    	system.cmd("insmod mac80211.ko\n");
-    	system.cmd("insmod zd1211rw.ko\n");
     	system.cmd("mkdir /data/data/com.gnychis.coexisyst/bin\n");
     	
     	system.install_bin("iwconfig", R.raw.iwconfig);
+    	system.install_bin("busybox", R.raw.busybox);
     	
     	// Load the libusb related libraries
     	try {
@@ -123,6 +120,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		wispyscan = new WiSpyScan();
 		usbmon = new USBMon();
 		usbmon.execute (this);
+		ath = new AtherosDev(this);
 		
 		// Check the pcap interfaces
 		//pcapGetInterfaces();
@@ -412,7 +410,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				try {
 					
 					int wispy_in_devlist=USBcheckForDevice(0x1781, 0x083f);
+					int atheros_in_devlist=USBcheckForDevice(0x083a,0x4505);
 					
+					// Wispy related checks
 					if(wispy_in_devlist==1 && wispy._device_connected==false) {
 						publishProgress(Wispy.WISPY_CONNECT);
 					} else if(wispy_in_devlist==0 && wispy._device_connected==true) {
@@ -422,6 +422,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 						//Thread.sleep( 1000 );
 						//publishProgress(CoexiSyst.WISPY_POLL);
 					}
+					
+					// Atheros related checks
+					if(atheros_in_devlist==1 && ath._device_connected==false) {
+						publishProgress(AtherosDev.ATHEROS_CONNECT);
+					} else if(atheros_in_devlist==0 && ath._device_connected==true) {
+						publishProgress(AtherosDev.ATHEROS_DISCONNECT);
+					}
+					
 					
 					Thread.sleep( 2000 );
 					Log.d(TAG, "checking for USB devices");
@@ -458,7 +466,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				// Start the poll thread now
 				coexisyst.wispyscan.execute(coexisyst);
 				wispy._is_polling = true;
-
 			}
 			else if(event == Wispy.WISPY_DISCONNECT) {
 				Log.d(TAG, "got update that WiSpy was connected");
@@ -475,6 +482,18 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				coexisyst.wispyscan = new WiSpyScan();
 				coexisyst.wispyscan.execute(coexisyst);
 				wispy._is_polling = true;
+			}
+			
+			// Handling events of Atheros device
+			if(event == AtherosDev.ATHEROS_CONNECT) {
+				Log.d(TAG, "got update that Atheros card was connected");
+				Toast.makeText(parent, "Atheros device connected", Toast.LENGTH_LONG).show();
+				ath.connected();
+			}
+			else if(event == AtherosDev.ATHEROS_DISCONNECT) {
+				Log.d(TAG, "Atheros card now disconnected");
+				Toast.makeText(parent, "Atheros device disconnected", Toast.LENGTH_LONG).show();
+				ath.disconnected();
 			}
 		}
 	}

@@ -1,0 +1,32 @@
+package com.gnychis.coexisyst;
+
+public class AtherosDev {
+	public static final int ATHEROS_CONNECT = 100;
+	public static final int ATHEROS_DISCONNECT = 101;
+	
+	CoexiSyst coexisyst;
+	
+	boolean _device_connected;
+	
+	
+	public AtherosDev(CoexiSyst c) {
+		coexisyst = c;
+    	//coexisyst.system.cmd("cd /system/lib/modules\n");
+    	coexisyst.system.cmd("insmod /system/lib/modules/cfg80211.ko\n");
+    	coexisyst.system.cmd("insmod /system/lib/modules/crc7.ko\n");
+    	coexisyst.system.cmd("insmod /system/lib/modules/mac80211.ko\n");
+    	coexisyst.system.cmd("insmod /system/lib/modules/zd1211rw.ko\n");
+	}
+	
+	public void connected() {
+		_device_connected=true;
+		coexisyst.system.local_cmd("busybox ifconfig wlan0 down");
+		coexisyst.system.local_cmd("iwconfig wlan0 mode monitor");
+		coexisyst.system.local_cmd("busybox ifconfig wlan0 up");
+	}
+	
+	public void disconnected() {
+		_device_connected=false;
+	}
+	
+}
