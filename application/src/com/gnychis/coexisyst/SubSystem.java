@@ -12,7 +12,6 @@ import android.util.Log;
 
 public class SubSystem {
 	DataOutputStream _out;
-	DataInputStream _in;
 	Process _proc;
 	CoexiSyst _coexisyst;
 
@@ -21,7 +20,6 @@ public class SubSystem {
 		try {
         	_proc = Runtime.getRuntime().exec("su");
         	_out = new DataOutputStream(_proc.getOutputStream()); 
-        	_in = new DataInputStream(_proc.getInputStream());
 		} catch(Exception e) {
 			Log.e("SYSTEM", "exception trying to get data streams",e);
 		}
@@ -45,6 +43,7 @@ public class SubSystem {
 	}
 	
 	public void install_bin(String b, int resource) {
+		Log.d("SYSTEM", "Working to install: " + b);
     	// Copy in iwconfig
     	File outFile = new File("/data/data/com.gnychis.coexisyst/" + b);
     	InputStream is = _coexisyst.getResources().openRawResource(resource);
@@ -58,9 +57,10 @@ public class SubSystem {
         	out.close();
         	is.close();
 		} catch (IOException e) {
-			Log.e("SYSTEM", "Unable to install iwconfig", e);
+			Log.e("SYSTEM", "Unable to install bin " + b, e);
 		}
-		cmd("mv /data/data/com.gnychis.coexisyst/" + b + " /data/data/com.gnychis.coexisyst/bin/\n");
-		cmd("chmod 0755 /data/data/com.gnychis.coexisyst/bin/" + b + "\n");		
+		cmd("busybox whoami > /data/data/com.gnychis.coexisyst/me");
+		cmd("mv /data/data/com.gnychis.coexisyst/" + b + " /data/data/com.gnychis.coexisyst/bin/");
+		cmd("chmod 0755 /data/data/com.gnychis.coexisyst/bin/" + b);		
 	}
 }

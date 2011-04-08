@@ -20,9 +20,9 @@ public class AtherosDev {
 	
 	public void connected() {
 		_device_connected=true;
-		coexisyst.system.local_cmd("busybox ifconfig wlan0 down");
+		coexisyst.system.cmd("netcfg wlan0 down");
 		coexisyst.system.local_cmd("iwconfig wlan0 mode monitor");
-		coexisyst.system.local_cmd("busybox ifconfig wlan0 up");
+		coexisyst.system.cmd("netcfg wlan0 up");
 	}
 	
 	public void disconnected() {

@@ -67,7 +67,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	system.cmd("mkdir /data/data/com.gnychis.coexisyst/bin\n");
     	
     	system.install_bin("iwconfig", R.raw.iwconfig);
-    	system.install_bin("busybox", R.raw.busybox);
+    	system.install_bin("lsusb", R.raw.lsusb);
     	
     	// Load the libusb related libraries
     	try {
@@ -140,7 +140,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		} else {
 			Log.d(TAG, "not resuming USB monitoring, already running?");
 		}
-		startScans();
+		//startScans();
 	}
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
