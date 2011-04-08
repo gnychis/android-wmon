@@ -30,10 +30,18 @@ public class SubSystem {
 	
 	public void cmd(String c) {
 		try {
-			_out.writeBytes(c);
+			_out.writeBytes(c + "\n");
 		} catch (Exception e) {
 			Log.e("SYSTEM", "exception trying to run command",e);
 		}
+	}
+	
+	public void local_cmd(String c) {
+		try {
+			_out.writeBytes("/data/data/com.gnychis.coexisyst/bin/" + c + "\n");
+		} catch (Exception e) {
+			Log.e("SYSTEM", "exception trying to run command",e);
+		}		
 	}
 	
 	public void install_bin(String b, int resource) {
