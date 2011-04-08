@@ -37,9 +37,9 @@ public class SubSystem {
 		}
 		
 		/*try {
-			while(true) {
+			do {
 				in_data = _in.readLine();
-			}
+			} while(in_data != null);
 		} catch (Exception e) {
 			Log.e("SYSTEM", "error trying to read after command", e);
 		}*/
