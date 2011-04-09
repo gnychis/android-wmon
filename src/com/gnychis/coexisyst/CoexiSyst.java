@@ -1,5 +1,8 @@
 package com.gnychis.coexisyst;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -69,6 +72,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	system.install_bin("iwconfig", R.raw.iwconfig);
     	system.install_bin("lsusb", R.raw.lsusb);
     	system.install_bin("zd_firmware.zip", R.raw.zd_firmware);
+    	system.install_bin("pcapd", R.raw.pcapd);
     	
     	// Load the libusb related libraries
     	try {
@@ -386,6 +390,46 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				Toast.makeText(parent, "--- WiSpy poll failed ---",
 						Toast.LENGTH_LONG).show();
 			}
+		}
+	}
+	
+	protected class WifiMon extends AsyncTask<Context, Integer, String>
+	{
+		Context parent;
+		CoexiSyst coexisyst;
+		SubSystem wifi_subsystem;
+		Socket skt;
+		private int PCAPD_WIFI_PORT = 2000;
+		BufferedReader skt_in;
+		
+		@Override
+		protected String doInBackground( Context ... params )
+		{
+			parent = params[0];
+			coexisyst = (CoexiSyst) params[0];
+			Log.d(TAG, "a new Wifi monitor thread was started");
+			
+			// Attempt to create capture process spawned in the background
+			// which we will connect to for pcap information.
+			coexisyst.system.local_cmd("pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
+			try { Thread.sleep(100); } catch (Exception e) {} // give some time for the process
+			
+			// Attempt to connect to the socket via TCP for the PCAP info
+			try {
+				skt = new Socket("localhost", PCAPD_WIFI_PORT);
+			} catch(Exception e) {
+				Log.e(TAG, "exception trying to connect to wifi socket for pcap", e);
+			}
+			
+			try {
+				skt_in = new BufferedReader(new InputStreamReader(skt.getInputStream()));
+			} catch(Exception e) {
+				Log.e(TAG, "exception trying to get inputbuffer from socket stream");
+			}
+			
+			//skt_in.read
+			
+			return "OK";
 		}
 	}
 	
