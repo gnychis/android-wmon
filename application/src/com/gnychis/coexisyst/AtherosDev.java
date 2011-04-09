@@ -7,6 +7,7 @@ public class AtherosDev {
 	CoexiSyst coexisyst;
 	
 	boolean _device_connected;
+	CoexiSyst.WifiMon _monitor_thread;
 	
 	
 	public AtherosDev(CoexiSyst c) {
