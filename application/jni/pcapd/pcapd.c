@@ -79,7 +79,6 @@ int main (int argc, char *argv[])
 			fprintf(stderr, "Error trying to read packet");
 			break;
 		}
-		printf("Got a packet with length [%d]\n", header.len);
 
 		// Send the pcap header over the socket interface
 		if(send(sd_current, (char *) &header, sizeof(struct pcap_pkthdr), 0) == -1) {
