@@ -68,6 +68,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	system.cmd("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
     	system.cmd("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
     	system.cmd("mkdir /data/data/com.gnychis.coexisyst/bin\n");
+    	system.cmd("busybox cp /data/data/com.gnychis.coexisyst/lib/*.so /system/lib/");
     	
     	system.install_bin("iwconfig", R.raw.iwconfig);
     	system.install_bin("lsusb", R.raw.lsusb);
@@ -401,32 +402,34 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		Socket skt;
 		private int PCAPD_WIFI_PORT = 2000;
 		BufferedReader skt_in;
+		private static final String WIMON_TAG = "WiFiMonitor";
 		
 		@Override
 		protected String doInBackground( Context ... params )
 		{
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
-			Log.d(TAG, "a new Wifi monitor thread was started");
+			Log.d(WIMON_TAG, "a new Wifi monitor thread was started");
 			
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
-			coexisyst.system.local_cmd("pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
+			//coexisyst.system.local_cmd("pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
+			coexisyst.system.cmd("/data/data/com.gnychis.coexisyst/bin/pcapd wlan0 2000 &");
 			try { Thread.sleep(100); } catch (Exception e) {} // give some time for the process
 			
 			// Attempt to connect to the socket via TCP for the PCAP info
 			try {
 				skt = new Socket("localhost", PCAPD_WIFI_PORT);
 			} catch(Exception e) {
-				Log.e(TAG, "exception trying to connect to wifi socket for pcap", e);
+				Log.e(WIMON_TAG, "exception trying to connect to wifi socket for pcap", e);
 			}
 			
 			try {
 				skt_in = new BufferedReader(new InputStreamReader(skt.getInputStream()));
 			} catch(Exception e) {
-				Log.e(TAG, "exception trying to get inputbuffer from socket stream");
+				Log.e(WIMON_TAG, "exception trying to get inputbuffer from socket stream");
 			}
-			
+			Log.d(WIMON_TAG, "successfully connected to ");
 			//skt_in.read
 			
 			return "OK";
@@ -535,6 +538,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				Toast.makeText(parent, "Atheros device connected", Toast.LENGTH_LONG).show();
 				ath.connected();
 				ath._monitor_thread = new WifiMon();
+				ath._monitor_thread.execute(coexisyst);
 				
 			}
 			else if(event == AtherosDev.ATHEROS_DISCONNECT) {
