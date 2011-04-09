@@ -534,11 +534,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				Log.d(TAG, "got update that Atheros card was connected");
 				Toast.makeText(parent, "Atheros device connected", Toast.LENGTH_LONG).show();
 				ath.connected();
+				ath._monitor_thread = new WifiMon();
+				
 			}
 			else if(event == AtherosDev.ATHEROS_DISCONNECT) {
 				Log.d(TAG, "Atheros card now disconnected");
 				Toast.makeText(parent, "Atheros device disconnected", Toast.LENGTH_LONG).show();
 				ath.disconnected();
+				ath._monitor_thread.cancel(true);
 			}
 		}
 	}
