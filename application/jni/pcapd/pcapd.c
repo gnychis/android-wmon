@@ -73,6 +73,8 @@ int main (int argc, char *argv[])
 		return -1;
 	}
 
+	printf("Accepted connection\n");
+
 	while(1) {
 		packet = pcap_next(handle, &header);
 		if(packet == NULL) {
