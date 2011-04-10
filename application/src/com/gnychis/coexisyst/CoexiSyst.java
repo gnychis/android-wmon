@@ -5,6 +5,9 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import org.jnetpcap.PcapHeader;
+import org.jnetpcap.nio.JBuffer;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -411,6 +414,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		private int PCAPD_WIFI_PORT = 2000;
 		BufferedReader skt_in;
 		private static final String WIMON_TAG = "WiFiMonitor";
+		private int PCAP_HDR_SIZE = 16;
 		
 		@Override
 		protected String doInBackground( Context ... params )
@@ -423,7 +427,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			// which we will connect to for pcap information.
 			//coexisyst.system.local_cmd("pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
 			try {
-				RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/pcapd wlan0 2000 &");
+				//RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/pcapd wlan0 2000 &");
 			} catch(Exception e) {
 				Log.e(TAG, "error trying to start pcap daemon",e);
 				return "FAIL";
@@ -444,10 +448,19 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				Log.e(WIMON_TAG, "exception trying to get inputbuffer from socket stream");
 				return "FAIL";
 			}
-			Log.d(WIMON_TAG, "successfully connected to ");
-			//skt_in.read
+			Log.d(WIMON_TAG, "successfully connected to pcapd");
 			
-			return "OK";
+			while(true) {
+				byte[] rawph = new byte[PCAP_HDR_SIZE];
+				try {
+				for(int i=0; i<PCAP_HDR_SIZE; i++)
+					rawph[i] = (byte)skt_in.read();
+				} catch(Exception e) { Log.e(TAG, "unable to read from pcapd buffer",e); }
+				PcapHeader header = new PcapHeader();
+				JBuffer headerBuffer = new JBuffer(rawph);  
+				header.peer(headerBuffer, 0);
+				Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
+			}
 		}
 	}
 	
