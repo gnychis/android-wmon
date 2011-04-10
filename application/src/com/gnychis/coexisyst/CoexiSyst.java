@@ -4,9 +4,6 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import org.jnetpcap.PcapHeader;
-import org.jnetpcap.nio.JBuffer;
-
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -472,10 +469,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					}
 				}
 				try {
-					PcapHeader header = new PcapHeader();
-					JBuffer headerBuffer = new JBuffer(rawph);  
-					header.peer(headerBuffer,0);
-					Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
+					//Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
 				} catch(Exception e) {
 					Log.e(TAG, "exception trying to read pcap header",e);
 				}

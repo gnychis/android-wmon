@@ -4,7 +4,6 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="lib" path="libs/achartengine-0.6.0.jar"/>
-	<classpathentry kind="lib" path="libs/jnetpcap.jar"/>
 	<classpathentry kind="lib" path="libs/RootTools-0.8-sdk3-generic.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
