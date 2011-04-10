@@ -288,13 +288,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			clickViewSpectrum();
 		}
 		if(view.getId() == R.id.buttonAdb) {
-			try {
-				system.cmd("setprop service.adb.tcp.port 5555");
-				system.cmd("stop adbd");
-				system.cmd("start adbd");
-			} catch(Exception e) {
-				Log.e(TAG, "failured to switch ADB to TCP", e);
-			}
+			system.cmd("setprop service.adb.tcp.port 5555");
+			system.cmd("stop adbd");
+			system.cmd("start adbd");
+			Log.d(TAG,"ADB set for TCP");
 		}
 	}
 	

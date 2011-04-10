@@ -28,7 +28,9 @@ public class SubSystem {
 	
 	public void cmd(String c) {
 		try {
-			_out.writeBytes(c + "\n");
+			String fullc = c + "\n";
+			_out.writeBytes(fullc);
+			Log.d("SYSTEM", "running command: " + fullc);
 		} catch (Exception e) {
 			Log.e("SYSTEM", "exception trying to run command",e);
 		}
@@ -36,7 +38,9 @@ public class SubSystem {
 	
 	public void local_cmd(String c) {
 		try {
-			_out.writeBytes("/data/data/com.gnychis.coexisyst/bin/" + c + "\n");
+			String fullc = "/data/data/com.gnychis.coexisyst/bin/" + c + "\n";
+			_out.writeBytes(fullc);
+			Log.d("SYSTEM", "running command: " + fullc);
 		} catch (Exception e) {
 			Log.e("SYSTEM", "exception trying to run command",e);
 		}		
@@ -59,7 +63,7 @@ public class SubSystem {
 		} catch (IOException e) {
 			Log.e("SYSTEM", "Unable to install bin " + b, e);
 		}
-		cmd("busybox whoami > /data/data/com.gnychis.coexisyst/me");
+		//cmd("busybox whoami > /data/data/com.gnychis.coexisyst/me");
 		cmd("mv /data/data/com.gnychis.coexisyst/" + b + " /data/data/com.gnychis.coexisyst/bin/");
 		cmd("chmod 0755 /data/data/com.gnychis.coexisyst/bin/" + b);		
 	}
