@@ -4,8 +4,6 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import org.jnetstream.capture.file.pcap.PcapPacketRecord;
-
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
