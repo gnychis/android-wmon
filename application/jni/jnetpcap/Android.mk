@@ -26,6 +26,9 @@ LOCAL_SRC_FILES :=\
     packet_jscan.cpp\
     jnetpcap_pcap100.cpp\
     util_checksum.cpp\
+		util_debug.cpp\
+		util_crc16.c\
+		util_crc32.c\
     packet_jpacket.cpp\
     winpcap_ids.cpp\
     jnetpcap_bpf.cpp
