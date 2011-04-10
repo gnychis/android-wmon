@@ -31,6 +31,7 @@ public class SubSystem {
 		try {
 			String fullc = c + "\n";
 			_out.writeBytes(fullc);
+			_out.flush();
 			Log.d("SYSTEM", "running command: " + fullc);
 			_cmdfh.print(fullc);
 			_cmdfh.flush();
@@ -43,6 +44,7 @@ public class SubSystem {
 		try {
 			String fullc = "/data/data/com.gnychis.coexisyst/bin/" + c + "\n";
 			_out.writeBytes(fullc);
+			_out.flush();
 			_cmdfh.print(fullc);
 			_cmdfh.flush();
 			Log.d("SYSTEM", "running command: " + fullc);
