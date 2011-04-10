@@ -78,6 +78,7 @@ int main (int argc, char *argv[])
 	printf("Accepted connection\n");
 
 	while(1) {
+		int k,towrite,wrote,total;
 		packet = pcap_next(handle, &header);
 		if(packet == NULL) {
 			fprintf(stderr, "Error trying to read packet");
@@ -85,11 +86,22 @@ int main (int argc, char *argv[])
 		}
 
 		// Send the pcap header over the socket interface
-		if(send(sd_current, (char *) &header, sizeof(struct pcap_pkthdr), 0) == -1) {
-			perror("error trying to send header over");
-			return -1;
+		towrite = sizeof(struct pcap_pkthdr);
+		total = 0;
+		//memset((char *) &header, 0x41, sizeof(struct pcap_pkthdr));
+		while(total < towrite) {
+			if((wrote = send(sd_current, (char *) &header + total, sizeof(struct pcap_pkthdr)-total, 0)) == -1) {
+				perror("error trying to send header over");
+				return -1;
+			}
+			total += wrote;
 		}
 		printf("Packet size: %d\n", header.len);
+		for(k=0; k<sizeof(struct pcap_pkthdr); k++) {
+			char *hp = (char *)&header + k;
+			printf("byte[%d]: 0x%x\n", k, *hp);
+		}
+		return 1;
 	}
 	
 	pcap_close(handle);

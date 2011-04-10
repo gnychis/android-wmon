@@ -1,12 +1,9 @@
 package com.gnychis.coexisyst;
 
-import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
-
-import org.jnetpcap.PcapHeader;
-import org.jnetpcap.nio.JBuffer;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -411,8 +408,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		CoexiSyst coexisyst;
 		SubSystem wifi_subsystem;
 		Socket skt;
-		private int PCAPD_WIFI_PORT = 2000;
-		BufferedReader skt_in;
+		private int PCAPD_WIFI_PORT = 2001;
+		InputStream skt_in;
 		private static final String WIMON_TAG = "WiFiMonitor";
 		private int PCAP_HDR_SIZE = 16;
 		
@@ -443,7 +440,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			}
 			
 			try {
-				skt_in = new BufferedReader(new InputStreamReader(skt.getInputStream()));
+				skt_in = skt.getInputStream();
 			} catch(Exception e) {
 				Log.e(WIMON_TAG, "exception trying to get inputbuffer from socket stream");
 				return "FAIL";
@@ -452,14 +449,29 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			
 			while(true) {
 				byte[] rawph = new byte[PCAP_HDR_SIZE];
+				int v=0;
 				try {
-				for(int i=0; i<PCAP_HDR_SIZE; i++)
-					rawph[i] = (byte)skt_in.read();
+					//for(int i=0; i<PCAP_HDR_SIZE; i++) {
+						v = skt_in.read(rawph);
+						Log.d(TAG, "Read in " + Integer.toString(v));
+						if(v==-1)
+							return "DONE";
+					//}
 				} catch(Exception e) { Log.e(TAG, "unable to read from pcapd buffer",e); }
-				PcapHeader header = new PcapHeader();
-				JBuffer headerBuffer = new JBuffer(rawph);  
-				header.peer(headerBuffer, 0);
-				Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
+				//PcapHeader header = new PcapHeader();
+				//JBuffer headerBuffer = new JBuffer(rawph);  
+				//header.peer(headerBuffer,0);
+				//Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
+				Log.d(TAG, "got a pcap header!");
+				for(int l=0; l < v; l++) {
+					try {
+						int val = (int)rawph[l];
+						String curr = String.format("buff[%d]: 0x%x", l, val);
+						Log.d(TAG, curr);
+					} catch(Exception e) {
+						Log.e(TAG, "Exception trying to format string...",e);
+					}
+				}
 			}
 		}
 	}
