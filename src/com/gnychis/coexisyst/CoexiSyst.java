@@ -1,9 +1,11 @@
 package com.gnychis.coexisyst;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
+
+import org.jnetpcap.PcapHeader;
+import org.jnetpcap.nio.JBuffer;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -451,26 +453,31 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				byte[] rawph = new byte[PCAP_HDR_SIZE];
 				int v=0;
 				try {
-					//for(int i=0; i<PCAP_HDR_SIZE; i++) {
-						v = skt_in.read(rawph);
+					int total=0;
+					while(total < PCAP_HDR_SIZE) {
+						v = skt_in.read(rawph, total, PCAP_HDR_SIZE-total);
 						Log.d(TAG, "Read in " + Integer.toString(v));
 						if(v==-1)
 							return "DONE";
-					//}
+						total+=v;
+					}
 				} catch(Exception e) { Log.e(TAG, "unable to read from pcapd buffer",e); }
-				//PcapHeader header = new PcapHeader();
-				//JBuffer headerBuffer = new JBuffer(rawph);  
-				//header.peer(headerBuffer,0);
-				//Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
 				Log.d(TAG, "got a pcap header!");
 				for(int l=0; l < v; l++) {
 					try {
-						int val = (int)rawph[l];
-						String curr = String.format("buff[%d]: 0x%x", l, val);
+						String curr = String.format("buff[%d]: 0x%x", l, rawph[l]);
 						Log.d(TAG, curr);
 					} catch(Exception e) {
 						Log.e(TAG, "Exception trying to format string...",e);
 					}
+				}
+				try {
+					PcapHeader header = new PcapHeader();
+					JBuffer headerBuffer = new JBuffer(rawph);  
+					header.peer(headerBuffer,0);
+					Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
+				} catch(Exception e) {
+					Log.e(TAG, "exception trying to read pcap header",e);
 				}
 			}
 		}
