@@ -85,6 +85,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     		System.loadLibrary("usb-compat");
     		System.loadLibrary("wispy");
     		System.loadLibrary("pcap");
+    		System.loadLibrary("jnetpcap");
     		System.loadLibrary("coexisyst");
     	} catch (Exception e) {
     		Log.e(TAG, "error trying to load a USB related library", e);
