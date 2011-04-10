@@ -24,6 +24,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.stericson.RootTools.RootTools;
+
 public class CoexiSyst extends Activity implements OnClickListener {
 	
 	private static final String TAG = "WiFiDemo";
@@ -63,12 +65,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
         system = new SubSystem(this);
-    	system.cmd("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system");
-    	system.cmd("mount -t usbfs -o devmode=0666 none /proc/bus/usb");
-    	system.cmd("mkdir /data/data/com.gnychis.coexisyst/bin");
-    	system.cmd("busybox cp /data/data/com.gnychis.coexisyst/lib/*.so /system/lib/");
+        try {
+    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system");
+    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb");
+    	RootTools.sendShell("mkdir /data/data/com.gnychis.coexisyst/bin");
+    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/*.so /system/lib/");
+        } catch(Exception e) {
+        	Log.e(TAG, "error running RootTools commands for init", e);
+        }
     	
     	system.install_bin("iwconfig", R.raw.iwconfig);
     	system.install_bin("lsusb", R.raw.lsusb);
@@ -288,9 +293,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			clickViewSpectrum();
 		}
 		if(view.getId() == R.id.buttonAdb) {
-			system.cmd("setprop service.adb.tcp.port 5555");
-			system.cmd("stop adbd");
-			system.cmd("start adbd");
+			String[] adb_cmds = { 	"setprop service.adb.tcp.port 5555",
+									"stop adbd",
+									"start adbd"};
+			try {
+				RootTools.sendShell(adb_cmds,0);
+			} catch(Exception e) {
+				Log.e(TAG, "error trying to set ADB over TCP");
+				return;
+			}
 			Log.d(TAG,"ADB set for TCP");
 		}
 	}
@@ -411,7 +422,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
 			//coexisyst.system.local_cmd("pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
-			coexisyst.system.cmd("/data/data/com.gnychis.coexisyst/bin/pcapd wlan0 2000 &");
+			try {
+				RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/pcapd wlan0 2000 &");
+			} catch(Exception e) {
+				Log.e(TAG, "error trying to start pcap daemon",e);
+				return "FAIL";
+			}
 			try { Thread.sleep(100); } catch (Exception e) {} // give some time for the process
 			
 			// Attempt to connect to the socket via TCP for the PCAP info
@@ -419,12 +435,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				skt = new Socket("localhost", PCAPD_WIFI_PORT);
 			} catch(Exception e) {
 				Log.e(WIMON_TAG, "exception trying to connect to wifi socket for pcap", e);
+				return "FAIL";
 			}
 			
 			try {
 				skt_in = new BufferedReader(new InputStreamReader(skt.getInputStream()));
 			} catch(Exception e) {
 				Log.e(WIMON_TAG, "exception trying to get inputbuffer from socket stream");
+				return "FAIL";
 			}
 			Log.d(WIMON_TAG, "successfully connected to ");
 			//skt_in.read
