@@ -1,12 +1,12 @@
 package com.gnychis.coexisyst;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 
 import android.util.Log;
 
@@ -14,16 +14,17 @@ public class SubSystem {
 	DataOutputStream _out;
 	Process _proc;
 	CoexiSyst _coexisyst;
+	PrintStream _cmdfh;
 
 	public SubSystem(CoexiSyst c) {
 		_coexisyst = c;
 		try {
         	_proc = Runtime.getRuntime().exec("su");
         	_out = new DataOutputStream(_proc.getOutputStream()); 
+    		_cmdfh = new PrintStream( new FileOutputStream("/sdcard/cmds.txt"));
 		} catch(Exception e) {
 			Log.e("SYSTEM", "exception trying to get data streams",e);
 		}
-		
 	}
 	
 	public void cmd(String c) {
@@ -31,6 +32,8 @@ public class SubSystem {
 			String fullc = c + "\n";
 			_out.writeBytes(fullc);
 			Log.d("SYSTEM", "running command: " + fullc);
+			_cmdfh.print(fullc);
+			_cmdfh.flush();
 		} catch (Exception e) {
 			Log.e("SYSTEM", "exception trying to run command",e);
 		}
@@ -40,6 +43,8 @@ public class SubSystem {
 		try {
 			String fullc = "/data/data/com.gnychis.coexisyst/bin/" + c + "\n";
 			_out.writeBytes(fullc);
+			_cmdfh.print(fullc);
+			_cmdfh.flush();
 			Log.d("SYSTEM", "running command: " + fullc);
 		} catch (Exception e) {
 			Log.e("SYSTEM", "exception trying to run command",e);
