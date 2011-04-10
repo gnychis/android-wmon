@@ -65,9 +65,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
         setContentView(R.layout.main);
         
         system = new SubSystem(this);
-    	system.cmd("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system\n");
-    	system.cmd("mount -t usbfs -o devmode=0666 none /proc/bus/usb\n");
-    	system.cmd("mkdir /data/data/com.gnychis.coexisyst/bin\n");
+    	system.cmd("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system");
+    	system.cmd("mount -t usbfs -o devmode=0666 none /proc/bus/usb");
+    	system.cmd("mkdir /data/data/com.gnychis.coexisyst/bin");
     	system.cmd("busybox cp /data/data/com.gnychis.coexisyst/lib/*.so /system/lib/");
     	
     	system.install_bin("iwconfig", R.raw.iwconfig);
