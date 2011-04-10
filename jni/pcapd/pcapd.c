@@ -24,6 +24,8 @@ int main (int argc, char *argv[])
 	struct pcap_pkthdr header;
 	const u_char *packet;
 
+	printf("Size of header: %d\n", sizeof(struct pcap_pkthdr));
+
 	if(argc<3)
 		return -1;
 
@@ -87,6 +89,7 @@ int main (int argc, char *argv[])
 			perror("error trying to send header over");
 			return -1;
 		}
+		printf("Packet size: %d\n", header.len);
 	}
 	
 	pcap_close(handle);
