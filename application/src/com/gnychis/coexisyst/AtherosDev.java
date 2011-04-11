@@ -77,9 +77,8 @@ public class AtherosDev {
 			
 			// Loop and read headers and packets
 			while(true) {
-				
 				PcapHeader header = getPcapHeader();  // get a header over the socket
-
+				getPcapPacket(header.wirelen());
 			}
 		}
 		
@@ -104,12 +103,33 @@ public class AtherosDev {
 		
 		public PcapHeader getPcapHeader() {
 			PcapHeader header = null;
-			byte[] rawph = new byte[PCAP_HDR_SIZE];
+			byte[] rawdata = getSocketData(PCAP_HDR_SIZE);
+			
+			try {
+				header = new PcapHeader();
+				JBuffer headerBuffer = new JBuffer(rawdata);  
+				header.peer(headerBuffer, 0);				
+			} catch(Exception e) {
+				Log.e("WifiMon", "exception trying to read pcap header",e);
+			}
+			
+			Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
+			return header;
+		}
+		
+		public void getPcapPacket(int length) {
+			byte[] rawdata = getSocketData(length);
+			
+			
+		}
+		
+		public byte[] getSocketData(int length) {
+			byte[] data = new byte[length];
 			int v=0;
 			try {
 				int total=0;
-				while(total < PCAP_HDR_SIZE) {
-					v = skt_in.read(rawph, total, PCAP_HDR_SIZE-total);
+				while(total < length) {
+					v = skt_in.read(data, total, length-total);
 					Log.d("WifiMon", "Read in " + Integer.toString(v));
 					if(v==-1)
 						cancel(true);  // cancel the thread if we have errors reading socket
@@ -117,17 +137,7 @@ public class AtherosDev {
 				}
 			} catch(Exception e) { Log.e("WifiMon", "unable to read from pcapd buffer",e); }
 			
-			try {
-				header = new PcapHeader();
-				JBuffer headerBuffer = new JBuffer(rawph);  
-				header.peer(headerBuffer, 0);
-				Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
-				//Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
-			} catch(Exception e) {
-				Log.e("WifiMon", "exception trying to read pcap header",e);
-			}
-			
-			return header;
+			return data;
 		}
 	}
 }
