@@ -67,61 +67,67 @@ public class AtherosDev {
 			
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
-			//RootTools.sendShell("pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
 			pcap_thread = new Pcapd();
 			pcap_thread.execute(coexisyst);
-			
 			try { Thread.sleep(1000); } catch (Exception e) {} // give some time for the process
 			Log.d(WIMON_TAG, "launched pcapd");
 			
+			if(connectToPcapd() == false)
+				return "FAIL";
+			
+			// Loop and read headers and packets
+			while(true) {
+				
+				PcapHeader header = getPcapHeader();  // get a header over the socket
+
+			}
+		}
+		
+		public boolean connectToPcapd() {
 			// Attempt to connect to the socket via TCP for the PCAP info
 			try {
 				skt = new Socket("localhost", PCAPD_WIFI_PORT);
 			} catch(Exception e) {
 				Log.e(WIMON_TAG, "exception trying to connect to wifi socket for pcap", e);
-				return "FAIL";
+				return false;
 			}
 			
 			try {
 				skt_in = skt.getInputStream();
 			} catch(Exception e) {
 				Log.e(WIMON_TAG, "exception trying to get inputbuffer from socket stream");
-				return "FAIL";
+				return false;
 			}
 			Log.d(WIMON_TAG, "successfully connected to pcapd");
-			
-			while(true) {
-				byte[] rawph = new byte[PCAP_HDR_SIZE];
-				int v=0;
-				try {
-					int total=0;
-					while(total < PCAP_HDR_SIZE) {
-						v = skt_in.read(rawph, total, PCAP_HDR_SIZE-total);
-						Log.d("WifiMon", "Read in " + Integer.toString(v));
-						if(v==-1)
-							return "DONE";
-						total+=v;
-					}
-				} catch(Exception e) { Log.e("WifiMon", "unable to read from pcapd buffer",e); }
-				/*Log.d(TAG, "got a pcap header!");
-				for(int l=0; l < v; l++) {
-					try {
-						String curr = String.format("buff[%d]: 0x%x", l, rawph[l]);
-						Log.d(TAG, curr);
-					} catch(Exception e) {
-						Log.e(TAG, "Exception trying to format string...",e);
-					}
-				}*/
-				try {
-					PcapHeader header = new PcapHeader();
-					JBuffer headerBuffer = new JBuffer(rawph);  
-					header.peer(headerBuffer, 0);
-					Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
-					//Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
-				} catch(Exception e) {
-					Log.e("WifiMon", "exception trying to read pcap header",e);
+			return true;
+		}
+		
+		public PcapHeader getPcapHeader() {
+			PcapHeader header = null;
+			byte[] rawph = new byte[PCAP_HDR_SIZE];
+			int v=0;
+			try {
+				int total=0;
+				while(total < PCAP_HDR_SIZE) {
+					v = skt_in.read(rawph, total, PCAP_HDR_SIZE-total);
+					Log.d("WifiMon", "Read in " + Integer.toString(v));
+					if(v==-1)
+						cancel(true);  // cancel the thread if we have errors reading socket
+					total+=v;
 				}
+			} catch(Exception e) { Log.e("WifiMon", "unable to read from pcapd buffer",e); }
+			
+			try {
+				header = new PcapHeader();
+				JBuffer headerBuffer = new JBuffer(rawph);  
+				header.peer(headerBuffer, 0);
+				Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
+				//Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
+			} catch(Exception e) {
+				Log.e("WifiMon", "exception trying to read pcap header",e);
 			}
+			
+			return header;
 		}
 	}
 }
