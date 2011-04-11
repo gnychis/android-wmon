@@ -39,7 +39,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	WifiManager wifi;
 	BluetoothAdapter bt;
 	protected USBMon usbmon;
-	protected WiSpyScan wispyscan;
+	protected Wispy.WispyThread wispyscan;
 	
 	// Receivers
 	BroadcastReceiver rcvr_80211;
@@ -131,7 +131,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			textStatus.append("\t* " + devices[i] + "\n");
 			
 		// Start the USB monitor thread, but only instantiate the wispy scan
-		wispyscan = new WiSpyScan();
+		try {
+			wispyscan = wispy.new WispyThread();
+		} catch (Exception e) { Log.e(TAG, "exception trying to start wispy thread", e); }
 		usbmon = new USBMon();
 		usbmon.execute (this);
 		ath = new AtherosDev(this);
@@ -329,82 +331,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native int initWiSpyDevices();
 	public native int[] pollWiSpy();
 	public native int pcapGetInterfaces();
-	
-	// A class to handle USB worker like things
-	protected class WiSpyScan extends AsyncTask<Context, Integer, String>
-	{
-		Context parent;
-		CoexiSyst coexisyst;	
 		
-		@Override
-		protected String doInBackground( Context... params )
-		{
-			parent = params[0];
-			coexisyst = (CoexiSyst) params[0];
-			
-			//publishProgress(CoexiSyst.WISPY_POLL_THREAD);
-			
-			if(initWiSpyDevices()==1) {
-				publishProgress(Wispy.WISPY_POLL);
-			} else {
-				publishProgress(Wispy.WISPY_POLL_FAIL);
-				wispy._is_polling = false;
-				return "FAIL";
-			}
-			
-			while(true) {
-				int[] scan_res = pollWiSpy();
-				
-				if(scan_res==null) {
-					publishProgress(Wispy.WISPY_POLL_FAIL);
-					wispy._is_polling = false;
-					break;
-				}
-				
-				//publishProgress(CoexiSyst.WISPY_POLL);		
-				
-				// What to do once we get a response!
-				try {
-					wispy._lock.acquire();
-					if(scan_res.length==256 && wispy._save_scans) {
-						for(int i=0; i<scan_res.length; i++)
-							if(scan_res[i] > wispy._maxresults[i]) 
-								wispy._maxresults[i] = scan_res[i];
-						
-						wispy._poll_count++;
-						Log.d("wispy_thread", "saved result from wispy thread");
-					}
-					wispy._lock.release();
-				} catch (Exception e) {
-					Log.e(TAG, "exception trying to claim lock to save new results",e);
-				}
-			}
-			
-			return "OK";
-		}
-		
-		@Override
-		protected void onProgressUpdate(Integer... values)
-		{
-			super.onProgressUpdate(values);
-			int event = values[0];
-			
-			if(event==Wispy.WISPY_POLL_THREAD) {
-				//Toast.makeText(parent, "In WiSpy poll thread...",
-				//		Toast.LENGTH_LONG).show();
-			}
-			else if(event==Wispy.WISPY_POLL) {
-				//Toast.makeText(parent, "WiSpy started polling...",
-				//		Toast.LENGTH_LONG).show();
-				//textStatus.append(".");
-			}
-			else if(event==Wispy.WISPY_POLL_FAIL) {
-				Toast.makeText(parent, "--- WiSpy poll failed ---",
-						Toast.LENGTH_LONG).show();
-			}
-		}
-	}
-	
 	protected class Pcapd extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
@@ -599,7 +526,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				Toast.makeText(parent, "Re-trying polling",
 						Toast.LENGTH_LONG).show();
 				coexisyst.wispyscan.cancel(true);
-				coexisyst.wispyscan = new WiSpyScan();
+				coexisyst.wispyscan = wispy.new WispyThread();
 				coexisyst.wispyscan.execute(coexisyst);
 				wispy._is_polling = true;
 			}
