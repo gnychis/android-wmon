@@ -96,12 +96,11 @@ int main (int argc, char *argv[])
 			}
 			total += wrote;
 		}
-		printf("Packet size: %d\n", header.len);
-		for(k=0; k<sizeof(struct pcap_pkthdr); k++) {
-			char *hp = (char *)&header + k;
-			printf("byte[%d]: 0x%x\n", k, *hp);
-		}
-		return 1;
+		//printf("Packet size: %d\n", header.len);
+		//for(k=0; k<sizeof(struct pcap_pkthdr); k++) {
+		//	char *hp = (char *)&header + k;
+		//	printf("byte[%d]: 0x%x\n", k, *hp);
+		//}
 	}
 	
 	pcap_close(handle);
