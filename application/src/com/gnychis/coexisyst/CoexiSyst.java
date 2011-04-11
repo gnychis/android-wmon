@@ -4,6 +4,9 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import org.jnetpcap.PcapHeader;
+import org.jnetpcap.nio.JBuffer;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -402,16 +405,41 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		}
 	}
 	
+	protected class Pcapd extends AsyncTask<Context, Integer, String>
+	{
+		Context parent;
+		CoexiSyst coexisyst;
+		private int PCAPD_WIFI_PORT = 2000; // be careful this is consistent with WifiMon
+		
+		@Override
+		protected String doInBackground( Context ... params )
+		{
+			parent = params[0];
+			coexisyst = (CoexiSyst) params[0];
+			
+			try {
+				Log.d("Pcapd", "launching instance of pcapd");
+				RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
+			} catch(Exception e) {
+				Log.e(TAG, "error trying to start pcap daemon",e);
+				return "FAIL";
+			}
+			
+			return "OK";
+		}
+	}
+	
 	protected class WifiMon extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
 		CoexiSyst coexisyst;
 		SubSystem wifi_subsystem;
 		Socket skt;
-		private int PCAPD_WIFI_PORT = 2001;
+		private int PCAPD_WIFI_PORT = 2000;
 		InputStream skt_in;
 		private static final String WIMON_TAG = "WiFiMonitor";
 		private int PCAP_HDR_SIZE = 16;
+		Pcapd pcap_thread;
 		
 		@Override
 		protected String doInBackground( Context ... params )
@@ -422,14 +450,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
-			//coexisyst.system.local_cmd("pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
-			try {
-				//RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/pcapd wlan0 2000 &");
-			} catch(Exception e) {
-				Log.e(TAG, "error trying to start pcap daemon",e);
-				return "FAIL";
-			}
-			try { Thread.sleep(100); } catch (Exception e) {} // give some time for the process
+			//RootTools.sendShell("pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
+			pcap_thread = new Pcapd();
+			pcap_thread.execute(coexisyst);
+			
+			try { Thread.sleep(1000); } catch (Exception e) {} // give some time for the process
+			Log.d(WIMON_TAG, "launched pcapd");
 			
 			// Attempt to connect to the socket via TCP for the PCAP info
 			try {
@@ -460,7 +486,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 						total+=v;
 					}
 				} catch(Exception e) { Log.e(TAG, "unable to read from pcapd buffer",e); }
-				Log.d(TAG, "got a pcap header!");
+				/*Log.d(TAG, "got a pcap header!");
 				for(int l=0; l < v; l++) {
 					try {
 						String curr = String.format("buff[%d]: 0x%x", l, rawph[l]);
@@ -468,8 +494,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					} catch(Exception e) {
 						Log.e(TAG, "Exception trying to format string...",e);
 					}
-				}
+				}*/
 				try {
+					PcapHeader header = new PcapHeader();
+					JBuffer headerBuffer = new JBuffer(rawph);  
+					header.peer(headerBuffer, 0);
+					Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
 					//Log.d(TAG, "PCAP Header size: " + Integer.toString(header.wirelen()));
 				} catch(Exception e) {
 					Log.e(TAG, "exception trying to read pcap header",e);
