@@ -5,8 +5,11 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.Semaphore;
 
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 public class Wispy {
 	public static final int WISPY_CONNECT = 0;
@@ -84,5 +87,79 @@ public class Wispy {
 		}
 		Log.d("wispy", "finished getting results!");
 	}
-
+	
+	// A class to handle USB worker like things
+	protected class WispyThread extends AsyncTask<Context, Integer, String>
+	{
+		Context parent;
+		CoexiSyst coexisyst;	
+		
+		@Override
+		protected String doInBackground( Context... params )
+		{
+			parent = params[0];
+			coexisyst = (CoexiSyst) params[0];
+			
+			//publishProgress(CoexiSyst.WISPY_POLL_THREAD);
+			
+			if(coexisyst.initWiSpyDevices()==1) {
+				publishProgress(Wispy.WISPY_POLL);
+			} else {
+				publishProgress(Wispy.WISPY_POLL_FAIL);
+				_is_polling = false;
+				return "FAIL";
+			}
+			
+			while(true) {
+				int[] scan_res = coexisyst.pollWiSpy();
+				
+				if(scan_res==null) {
+					publishProgress(Wispy.WISPY_POLL_FAIL);
+					_is_polling = false;
+					break;
+				}
+				
+				//publishProgress(CoexiSyst.WISPY_POLL);		
+				
+				// What to do once we get a response!
+				try {
+					_lock.acquire();
+					if(scan_res.length==256 && _save_scans) {
+						for(int i=0; i<scan_res.length; i++)
+							if(scan_res[i] > _maxresults[i]) 
+								_maxresults[i] = scan_res[i];
+						
+						_poll_count++;
+						Log.d("wispy_thread", "saved result from wispy thread");
+					}
+					_lock.release();
+				} catch (Exception e) {
+					Log.e("Wispy", "exception trying to claim lock to save new results",e);
+				}
+			}
+			
+			return "OK";
+		}
+		
+		@Override
+		protected void onProgressUpdate(Integer... values)
+		{
+			super.onProgressUpdate(values);
+			int event = values[0];
+			
+			if(event==Wispy.WISPY_POLL_THREAD) {
+				//Toast.makeText(parent, "In WiSpy poll thread...",
+				//		Toast.LENGTH_LONG).show();
+			}
+			else if(event==Wispy.WISPY_POLL) {
+				//Toast.makeText(parent, "WiSpy started polling...",
+				//		Toast.LENGTH_LONG).show();
+				//textStatus.append(".");
+			}
+			else if(event==Wispy.WISPY_POLL_FAIL) {
+				Toast.makeText(parent, "--- WiSpy poll failed ---",
+						Toast.LENGTH_LONG).show();
+			}
+		}
+	}
 }
