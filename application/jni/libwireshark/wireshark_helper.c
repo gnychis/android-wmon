@@ -21,6 +21,8 @@
 #include "spectool_container.h" 
 #include "spectool_net_client.h"
 #include <errno.h>
+#include <glib.h>
+//#include <epan/dissectors/packet-radiotap.h>
 #define LOG_TAG "WiresharkDriver" // text for log tag 
 
 jstring
