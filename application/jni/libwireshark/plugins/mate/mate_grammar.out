@@ -1,0 +1,2068 @@
+State 0:
+          mate_config ::= * decls
+          decls ::= * decls decl
+      (2) decls ::= *
+
+                   mate_config accept
+                         decls shift  1
+                     {default} reduce 2
+
+State 1:
+      (0) mate_config ::= decls *
+          decls ::= decls * decl
+          decl ::= * pdu_decl
+          decl ::= * gop_decl
+          decl ::= * gog_decl
+          decl ::= * transform_decl
+          decl ::= * defaults_decl
+          decl ::= * debug_decl
+          decl ::= * DONE_KW SEMICOLON
+          debug_decl ::= * DEBUG_KW OPEN_BRACE dbgfile_default dbglevel_default pdu_dbglevel_default gop_dbglevel_default gog_dbglevel_default CLOSE_BRACE SEMICOLON
+          defaults_decl ::= * DEFAULT_KW OPEN_BRACE pdu_defaults gop_defaults gog_defaults CLOSE_BRACE SEMICOLON
+          transform_decl ::= * TRANSFORM_KW NAME transform_body SEMICOLON
+          pdu_decl ::= * PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+          gop_decl ::= * GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          gog_decl ::= * GOG_KW NAME OPEN_BRACE gog_key_statements extra_statement transform_list_statement gog_expiration_statement gog_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+
+                             $ reduce 0
+                       DONE_KW shift  105
+                      DEBUG_KW shift  106
+                        PDU_KW shift  149
+                        GOP_KW shift  161
+                        GOG_KW shift  176
+                    DEFAULT_KW shift  122
+                  TRANSFORM_KW shift  146
+                transform_decl shift  187
+                          decl shift  183
+                      pdu_decl shift  184
+                      gop_decl shift  185
+                      gog_decl shift  186
+                 defaults_decl shift  188
+                    debug_decl shift  189
+
+State 2:
+          transform_body ::= OPEN_BRACE * transform_statements CLOSE_BRACE
+          transform_statements ::= * transform_statements transform_statement
+          transform_statements ::= * transform_statement
+          transform_statement ::= * transform_match transform_action SEMICOLON
+          transform_match ::= * MATCH_KW match_mode avpl
+     (59) transform_match ::= *
+
+                      MATCH_KW shift  19
+          transform_statements shift  5
+           transform_statement shift  250
+               transform_match shift  4
+                     {default} reduce 59
+
+State 3:
+          avp ::= NAME OPEN_BRACE * avp_oneoff CLOSE_BRACE
+          avp_oneoff ::= * avp_oneoff PIPE value
+          avp_oneoff ::= * value
+          value ::= * QUOTED
+          value ::= * NAME
+          value ::= * FLOATING
+          value ::= * INTEGER
+          value ::= * DOTED_IP
+          value ::= * COLONIZED
+
+                        QUOTED shift  233
+                          NAME shift  234
+                       INTEGER shift  236
+                      FLOATING shift  235
+                      DOTED_IP shift  237
+                     COLONIZED shift  238
+                         value shift  241
+                    avp_oneoff shift  101
+
+State 4:
+          transform_statement ::= transform_match * transform_action SEMICOLON
+     (60) transform_action ::= *
+          transform_action ::= * action_mode avpl
+          action_mode ::= * REPLACE_KW
+          action_mode ::= * INSERT_KW
+     (68) action_mode ::= *
+
+                    REPLACE_KW shift  244
+                     INSERT_KW shift  245
+                   OPEN_PARENS reduce 68
+              transform_action shift  148
+                   action_mode shift  64
+                     {default} reduce 60
+
+State 5:
+          transform_body ::= OPEN_BRACE transform_statements * CLOSE_BRACE
+          transform_statements ::= transform_statements * transform_statement
+          transform_statement ::= * transform_match transform_action SEMICOLON
+          transform_match ::= * MATCH_KW match_mode avpl
+     (59) transform_match ::= *
+
+                   CLOSE_BRACE shift  226
+                      MATCH_KW shift  19
+           transform_statement shift  227
+               transform_match shift  4
+                     {default} reduce 59
+
+State 6:
+          avpl ::= OPEN_PARENS * avps CLOSE_PARENS
+          avpl ::= OPEN_PARENS * CLOSE_PARENS
+          avps ::= * avps COMMA avp
+          avps ::= * avp
+          avp ::= * NAME AVP_OPERATOR value
+          avp ::= * NAME
+          avp ::= * NAME OPEN_BRACE avp_oneoff CLOSE_BRACE
+
+                          NAME shift  100
+                  CLOSE_PARENS shift  242
+                          avps shift  99
+                           avp shift  243
+
+State 7:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements * transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+          extraction_statements ::= extraction_statements * extraction_statement
+          extraction_statement ::= * EXTRACT_KW NAME FROM_KW field SEMICOLON
+          transform_list_statement ::= * TRANSFORM_KW transform_list SEMICOLON
+    (130) transform_list_statement ::= *
+
+                  TRANSFORM_KW shift  11
+                    EXTRACT_KW shift  158
+          extraction_statement shift  258
+      transform_list_statement shift  69
+                     {default} reduce 130
+
+State 8:
+          gog_decl ::= GOG_KW NAME OPEN_BRACE gog_key_statements * extra_statement transform_list_statement gog_expiration_statement gog_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          gog_key_statements ::= gog_key_statements * gog_key_statement
+          gog_key_statement ::= * MEMBER_KW gop_name avpl SEMICOLON
+          extra_statement ::= * EXTRA_KW avpl SEMICOLON
+    (128) extra_statement ::= *
+
+                     MEMBER_KW shift  96
+                      EXTRA_KW shift  89
+               extra_statement shift  92
+             gog_key_statement shift  283
+                     {default} reduce 128
+
+State 9:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW * proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+          proto_stack ::= * proto_stack SLASH field
+          proto_stack ::= * field
+          field ::= * NAME
+
+                          NAME shift  260
+                   proto_stack shift  102
+                         field shift  268
+
+State 10:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement * extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+          extraction_statements ::= * extraction_statements extraction_statement
+          extraction_statements ::= * extraction_statement
+          extraction_statement ::= * EXTRACT_KW NAME FROM_KW field SEMICOLON
+
+                    EXTRACT_KW shift  158
+          extraction_statement shift  265
+         extraction_statements shift  7
+
+State 11:
+          transform_list_statement ::= TRANSFORM_KW * transform_list SEMICOLON
+          transform_list ::= * transform_list COMMA transform
+          transform_list ::= * transform
+          transform ::= * NAME
+
+                          NAME shift  263
+                     transform shift  264
+                transform_list shift  103
+
+State 12:
+          payload_statement ::= PAYLOAD_KW * proto_stack SEMICOLON
+          proto_stack ::= * proto_stack SLASH field
+          proto_stack ::= * field
+          field ::= * NAME
+
+                          NAME shift  260
+                   proto_stack shift  104
+                         field shift  268
+
+State 13:
+          gog_decl ::= GOG_KW NAME OPEN_BRACE * gog_key_statements extra_statement transform_list_statement gog_expiration_statement gog_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          gog_key_statements ::= * gog_key_statements gog_key_statement
+          gog_key_statements ::= * gog_key_statement
+          gog_key_statement ::= * MEMBER_KW gop_name avpl SEMICOLON
+
+                     MEMBER_KW shift  96
+            gog_key_statements shift  8
+             gog_key_statement shift  286
+
+State 14:
+          avp ::= NAME AVP_OPERATOR * value
+          value ::= * QUOTED
+          value ::= * NAME
+          value ::= * FLOATING
+          value ::= * INTEGER
+          value ::= * DOTED_IP
+          value ::= * COLONIZED
+
+                        QUOTED shift  233
+                          NAME shift  234
+                       INTEGER shift  236
+                      FLOATING shift  235
+                      DOTED_IP shift  237
+                     COLONIZED shift  238
+                         value shift  232
+
+State 15:
+          avp_oneoff ::= avp_oneoff PIPE * value
+          value ::= * QUOTED
+          value ::= * NAME
+          value ::= * FLOATING
+          value ::= * INTEGER
+          value ::= * DOTED_IP
+          value ::= * COLONIZED
+
+                        QUOTED shift  233
+                          NAME shift  234
+                       INTEGER shift  236
+                      FLOATING shift  235
+                      DOTED_IP shift  237
+                     COLONIZED shift  238
+                         value shift  240
+
+State 16:
+          gop_tree_mode_default ::= SHOW_TREE_KW * gop_tree_mode SEMICOLON
+          gop_tree_mode ::= * NO_TREE_KW
+          gop_tree_mode ::= * PDU_TREE_KW
+          gop_tree_mode ::= * FRAME_TREE_KW
+          gop_tree_mode ::= * BASIC_TREE_KW
+
+                    NO_TREE_KW shift  200
+                   PDU_TREE_KW shift  201
+                 FRAME_TREE_KW shift  202
+                 BASIC_TREE_KW shift  203
+                 gop_tree_mode shift  126
+
+State 17:
+          show_goptree_statement ::= SHOW_TREE_KW * gop_tree_mode SEMICOLON
+          gop_tree_mode ::= * NO_TREE_KW
+          gop_tree_mode ::= * PDU_TREE_KW
+          gop_tree_mode ::= * FRAME_TREE_KW
+          gop_tree_mode ::= * BASIC_TREE_KW
+
+                    NO_TREE_KW shift  200
+                   PDU_TREE_KW shift  201
+                 FRAME_TREE_KW shift  202
+                 BASIC_TREE_KW shift  203
+                 gop_tree_mode shift  168
+
+State 18:
+          gog_goptree_default ::= GOP_TREE_KW * gop_tree_type SEMICOLON
+          gop_tree_type ::= * NULL_TREE_KW
+          gop_tree_type ::= * FULL_TREE_KW
+          gop_tree_type ::= * BASIC_TREE_KW
+
+                 BASIC_TREE_KW shift  211
+                  NULL_TREE_KW shift  209
+                  FULL_TREE_KW shift  210
+                 gop_tree_type shift  130
+
+State 19:
+          transform_match ::= MATCH_KW * match_mode avpl
+     (62) match_mode ::= *
+          match_mode ::= * STRICT_KW
+          match_mode ::= * EVERY_KW
+          match_mode ::= * LOOSE_KW
+
+                     STRICT_KW shift  247
+                      EVERY_KW shift  248
+                      LOOSE_KW shift  249
+                    match_mode shift  66
+                     {default} reduce 62
+
+State 20:
+     (62) match_mode ::= *
+          match_mode ::= * STRICT_KW
+          match_mode ::= * EVERY_KW
+          match_mode ::= * LOOSE_KW
+          criteria_statement ::= CRITERIA_KW accept_mode * match_mode avpl SEMICOLON
+
+                     STRICT_KW shift  247
+                      EVERY_KW shift  248
+                      LOOSE_KW shift  249
+                    match_mode shift  73
+                     {default} reduce 62
+
+State 21:
+          gog_goptree_statement ::= GOP_TREE_KW * gop_tree_type SEMICOLON
+          gop_tree_type ::= * NULL_TREE_KW
+          gop_tree_type ::= * FULL_TREE_KW
+          gop_tree_type ::= * BASIC_TREE_KW
+
+                 BASIC_TREE_KW shift  211
+                  NULL_TREE_KW shift  209
+                  FULL_TREE_KW shift  210
+                 gop_tree_type shift  180
+
+State 22:
+          gog_show_times_default ::= SHOW_TIMES_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  129
+
+State 23:
+          gog_expiration_default ::= EXPIRATION_KW * time_value SEMICOLON
+          time_value ::= * FLOATING
+          time_value ::= * INTEGER
+
+                       INTEGER shift  214
+                      FLOATING shift  213
+                    time_value shift  131
+
+State 24:
+          gop_show_times_default ::= SHOW_TIMES_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  135
+
+State 25:
+          gop_drop_unassigned_default ::= DROP_UNASSIGNED_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  136
+
+State 26:
+          gop_lifetime_default ::= LIFETIME_KW * time_value SEMICOLON
+          time_value ::= * FLOATING
+          time_value ::= * INTEGER
+
+                       INTEGER shift  214
+                      FLOATING shift  213
+                    time_value shift  137
+
+State 27:
+          gop_idle_timeout_default ::= IDLE_TIMEOUT_KW * time_value SEMICOLON
+          time_value ::= * FLOATING
+          time_value ::= * INTEGER
+
+                       INTEGER shift  214
+                      FLOATING shift  213
+                    time_value shift  138
+
+State 28:
+          gop_expiration_default ::= EXPIRATION_KW * time_value SEMICOLON
+          time_value ::= * FLOATING
+          time_value ::= * INTEGER
+
+                       INTEGER shift  214
+                      FLOATING shift  213
+                    time_value shift  139
+
+State 29:
+          pdu_discard_default ::= DISCARD_PDU_DATA_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  143
+
+State 30:
+          pdu_drop_unassigned_default ::= DROP_UNASSIGNED_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  144
+
+State 31:
+          pdu_last_extracted_default ::= LAST_EXTRACTED_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  145
+
+State 32:
+          last_extracted_statement ::= LAST_PDU_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  154
+
+State 33:
+          discard_pdu_data_statement ::= DISCARD_PDU_DATA_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  155
+
+State 34:
+          pdu_drop_unassigned_statement ::= DROP_UNASSIGNED_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  156
+
+State 35:
+          criteria_statement ::= CRITERIA_KW * accept_mode match_mode avpl SEMICOLON
+     (74) accept_mode ::= *
+          accept_mode ::= * ACCEPT_KW
+          accept_mode ::= * REJECT_KW
+
+                     ACCEPT_KW shift  256
+                     REJECT_KW shift  257
+                   accept_mode shift  20
+                     {default} reduce 74
+
+State 36:
+          show_times_statement ::= SHOW_TIMES_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  167
+
+State 37:
+          gop_drop_unassigned_statement ::= DROP_UNASSIGNED_KW * true_false SEMICOLON
+          true_false ::= * TRUE_KW
+          true_false ::= * FALSE_KW
+
+                       TRUE_KW shift  206
+                      FALSE_KW shift  207
+                    true_false shift  169
+
+State 38:
+          lifetime_statement ::= LIFETIME_KW * time_value SEMICOLON
+          time_value ::= * FLOATING
+          time_value ::= * INTEGER
+
+                       INTEGER shift  214
+                      FLOATING shift  213
+                    time_value shift  170
+
+State 39:
+          idle_timeout_statement ::= IDLE_TIMEOUT_KW * time_value SEMICOLON
+          time_value ::= * FLOATING
+          time_value ::= * INTEGER
+
+                       INTEGER shift  214
+                      FLOATING shift  213
+                    time_value shift  171
+
+State 40:
+          gop_expiration_statement ::= EXPIRATION_KW * time_value SEMICOLON
+          time_value ::= * FLOATING
+          time_value ::= * INTEGER
+
+                       INTEGER shift  214
+                      FLOATING shift  213
+                    time_value shift  172
+
+State 41:
+          time_value ::= * FLOATING
+          time_value ::= * INTEGER
+          gog_expiration_statement ::= EXPIRATION_KW * time_value SEMICOLON
+
+                       INTEGER shift  214
+                      FLOATING shift  213
+                    time_value shift  181
+
+State 42:
+          debug_decl ::= DEBUG_KW OPEN_BRACE * dbgfile_default dbglevel_default pdu_dbglevel_default gop_dbglevel_default gog_dbglevel_default CLOSE_BRACE SEMICOLON
+          dbgfile_default ::= * FILENAME_KW QUOTED SEMICOLON
+          dbgfile_default ::= * FILENAME_KW NAME SEMICOLON
+     (13) dbgfile_default ::= *
+
+                   FILENAME_KW shift  98
+               dbgfile_default shift  43
+                     {default} reduce 13
+
+State 43:
+          debug_decl ::= DEBUG_KW OPEN_BRACE dbgfile_default * dbglevel_default pdu_dbglevel_default gop_dbglevel_default gog_dbglevel_default CLOSE_BRACE SEMICOLON
+          dbglevel_default ::= * LEVEL_KW INTEGER SEMICOLON
+     (15) dbglevel_default ::= *
+
+                      LEVEL_KW shift  118
+              dbglevel_default shift  44
+                     {default} reduce 15
+
+State 44:
+          debug_decl ::= DEBUG_KW OPEN_BRACE dbgfile_default dbglevel_default * pdu_dbglevel_default gop_dbglevel_default gog_dbglevel_default CLOSE_BRACE SEMICOLON
+          pdu_dbglevel_default ::= * PDU_KW LEVEL_KW INTEGER SEMICOLON
+     (17) pdu_dbglevel_default ::= *
+
+                        PDU_KW shift  115
+          pdu_dbglevel_default shift  45
+                     {default} reduce 17
+
+State 45:
+          debug_decl ::= DEBUG_KW OPEN_BRACE dbgfile_default dbglevel_default pdu_dbglevel_default * gop_dbglevel_default gog_dbglevel_default CLOSE_BRACE SEMICOLON
+          gop_dbglevel_default ::= * GOP_KW LEVEL_KW INTEGER SEMICOLON
+     (19) gop_dbglevel_default ::= *
+
+                        GOP_KW shift  112
+          gop_dbglevel_default shift  46
+                     {default} reduce 19
+
+State 46:
+          debug_decl ::= DEBUG_KW OPEN_BRACE dbgfile_default dbglevel_default pdu_dbglevel_default gop_dbglevel_default * gog_dbglevel_default CLOSE_BRACE SEMICOLON
+          gog_dbglevel_default ::= * GOG_KW LEVEL_KW INTEGER SEMICOLON
+     (21) gog_dbglevel_default ::= *
+
+                        GOG_KW shift  109
+          gog_dbglevel_default shift  107
+                     {default} reduce 21
+
+State 47:
+          defaults_decl ::= DEFAULT_KW OPEN_BRACE * pdu_defaults gop_defaults gog_defaults CLOSE_BRACE SEMICOLON
+          pdu_defaults ::= * PDU_KW OPEN_BRACE pdu_last_extracted_default pdu_drop_unassigned_default pdu_discard_default CLOSE_BRACE SEMICOLON
+     (24) pdu_defaults ::= *
+
+                        PDU_KW shift  140
+                  pdu_defaults shift  48
+                     {default} reduce 24
+
+State 48:
+          defaults_decl ::= DEFAULT_KW OPEN_BRACE pdu_defaults * gop_defaults gog_defaults CLOSE_BRACE SEMICOLON
+          gop_defaults ::= * GOP_KW OPEN_BRACE gop_expiration_default gop_idle_timeout_default gop_lifetime_default gop_drop_unassigned_default gop_tree_mode_default gop_show_times_default CLOSE_BRACE SEMICOLON
+     (32) gop_defaults ::= *
+
+                        GOP_KW shift  132
+                  gop_defaults shift  49
+                     {default} reduce 32
+
+State 49:
+          defaults_decl ::= DEFAULT_KW OPEN_BRACE pdu_defaults gop_defaults * gog_defaults CLOSE_BRACE SEMICOLON
+          gog_defaults ::= * GOG_KW OPEN_BRACE gog_expiration_default gop_tree_mode_default gog_goptree_default gog_show_times_default CLOSE_BRACE SEMICOLON
+     (46) gog_defaults ::= *
+
+                        GOG_KW shift  125
+                  gog_defaults shift  123
+                     {default} reduce 46
+
+State 50:
+          gog_defaults ::= GOG_KW OPEN_BRACE * gog_expiration_default gop_tree_mode_default gog_goptree_default gog_show_times_default CLOSE_BRACE SEMICOLON
+          gog_expiration_default ::= * EXPIRATION_KW time_value SEMICOLON
+     (48) gog_expiration_default ::= *
+
+                 EXPIRATION_KW shift  23
+        gog_expiration_default shift  51
+                     {default} reduce 48
+
+State 51:
+          gop_tree_mode_default ::= * SHOW_TREE_KW gop_tree_mode SEMICOLON
+     (42) gop_tree_mode_default ::= *
+          gog_defaults ::= GOG_KW OPEN_BRACE gog_expiration_default * gop_tree_mode_default gog_goptree_default gog_show_times_default CLOSE_BRACE SEMICOLON
+
+                  SHOW_TREE_KW shift  16
+         gop_tree_mode_default shift  52
+                     {default} reduce 42
+
+State 52:
+          gog_defaults ::= GOG_KW OPEN_BRACE gog_expiration_default gop_tree_mode_default * gog_goptree_default gog_show_times_default CLOSE_BRACE SEMICOLON
+          gog_goptree_default ::= * GOP_TREE_KW gop_tree_type SEMICOLON
+     (50) gog_goptree_default ::= *
+
+                   GOP_TREE_KW shift  18
+           gog_goptree_default shift  53
+                     {default} reduce 50
+
+State 53:
+          gog_defaults ::= GOG_KW OPEN_BRACE gog_expiration_default gop_tree_mode_default gog_goptree_default * gog_show_times_default CLOSE_BRACE SEMICOLON
+          gog_show_times_default ::= * SHOW_TIMES_KW true_false SEMICOLON
+     (52) gog_show_times_default ::= *
+
+                 SHOW_TIMES_KW shift  22
+        gog_show_times_default shift  127
+                     {default} reduce 52
+
+State 54:
+          gop_defaults ::= GOP_KW OPEN_BRACE * gop_expiration_default gop_idle_timeout_default gop_lifetime_default gop_drop_unassigned_default gop_tree_mode_default gop_show_times_default CLOSE_BRACE SEMICOLON
+          gop_expiration_default ::= * EXPIRATION_KW time_value SEMICOLON
+     (34) gop_expiration_default ::= *
+
+                 EXPIRATION_KW shift  28
+        gop_expiration_default shift  55
+                     {default} reduce 34
+
+State 55:
+          gop_defaults ::= GOP_KW OPEN_BRACE gop_expiration_default * gop_idle_timeout_default gop_lifetime_default gop_drop_unassigned_default gop_tree_mode_default gop_show_times_default CLOSE_BRACE SEMICOLON
+          gop_idle_timeout_default ::= * IDLE_TIMEOUT_KW time_value SEMICOLON
+     (36) gop_idle_timeout_default ::= *
+
+               IDLE_TIMEOUT_KW shift  27
+      gop_idle_timeout_default shift  56
+                     {default} reduce 36
+
+State 56:
+          gop_defaults ::= GOP_KW OPEN_BRACE gop_expiration_default gop_idle_timeout_default * gop_lifetime_default gop_drop_unassigned_default gop_tree_mode_default gop_show_times_default CLOSE_BRACE SEMICOLON
+          gop_lifetime_default ::= * LIFETIME_KW time_value SEMICOLON
+     (38) gop_lifetime_default ::= *
+
+                   LIFETIME_KW shift  26
+          gop_lifetime_default shift  57
+                     {default} reduce 38
+
+State 57:
+          gop_defaults ::= GOP_KW OPEN_BRACE gop_expiration_default gop_idle_timeout_default gop_lifetime_default * gop_drop_unassigned_default gop_tree_mode_default gop_show_times_default CLOSE_BRACE SEMICOLON
+          gop_drop_unassigned_default ::= * DROP_UNASSIGNED_KW true_false SEMICOLON
+     (40) gop_drop_unassigned_default ::= *
+
+            DROP_UNASSIGNED_KW shift  25
+   gop_drop_unassigned_default shift  58
+                     {default} reduce 40
+
+State 58:
+          gop_defaults ::= GOP_KW OPEN_BRACE gop_expiration_default gop_idle_timeout_default gop_lifetime_default gop_drop_unassigned_default * gop_tree_mode_default gop_show_times_default CLOSE_BRACE SEMICOLON
+          gop_tree_mode_default ::= * SHOW_TREE_KW gop_tree_mode SEMICOLON
+     (42) gop_tree_mode_default ::= *
+
+                  SHOW_TREE_KW shift  16
+         gop_tree_mode_default shift  59
+                     {default} reduce 42
+
+State 59:
+          gop_defaults ::= GOP_KW OPEN_BRACE gop_expiration_default gop_idle_timeout_default gop_lifetime_default gop_drop_unassigned_default gop_tree_mode_default * gop_show_times_default CLOSE_BRACE SEMICOLON
+          gop_show_times_default ::= * SHOW_TIMES_KW true_false SEMICOLON
+     (44) gop_show_times_default ::= *
+
+                 SHOW_TIMES_KW shift  24
+        gop_show_times_default shift  133
+                     {default} reduce 44
+
+State 60:
+          pdu_defaults ::= PDU_KW OPEN_BRACE * pdu_last_extracted_default pdu_drop_unassigned_default pdu_discard_default CLOSE_BRACE SEMICOLON
+          pdu_last_extracted_default ::= * LAST_EXTRACTED_KW true_false SEMICOLON
+     (26) pdu_last_extracted_default ::= *
+
+             LAST_EXTRACTED_KW shift  31
+    pdu_last_extracted_default shift  61
+                     {default} reduce 26
+
+State 61:
+          pdu_defaults ::= PDU_KW OPEN_BRACE pdu_last_extracted_default * pdu_drop_unassigned_default pdu_discard_default CLOSE_BRACE SEMICOLON
+          pdu_drop_unassigned_default ::= * DROP_UNASSIGNED_KW true_false SEMICOLON
+     (28) pdu_drop_unassigned_default ::= *
+
+            DROP_UNASSIGNED_KW shift  30
+   pdu_drop_unassigned_default shift  62
+                     {default} reduce 28
+
+State 62:
+          pdu_defaults ::= PDU_KW OPEN_BRACE pdu_last_extracted_default pdu_drop_unassigned_default * pdu_discard_default CLOSE_BRACE SEMICOLON
+          pdu_discard_default ::= * DISCARD_PDU_DATA_KW true_false SEMICOLON
+     (30) pdu_discard_default ::= *
+
+           DISCARD_PDU_DATA_KW shift  29
+           pdu_discard_default shift  141
+                     {default} reduce 30
+
+State 63:
+          transform_decl ::= TRANSFORM_KW NAME * transform_body SEMICOLON
+          transform_body ::= * OPEN_BRACE transform_statements CLOSE_BRACE
+
+                    OPEN_BRACE shift  2
+                transform_body shift  147
+
+State 64:
+          transform_action ::= action_mode * avpl
+          avpl ::= * OPEN_PARENS avps CLOSE_PARENS
+          avpl ::= * OPEN_PARENS CLOSE_PARENS
+
+                   OPEN_PARENS shift  6
+                          avpl shift  229
+
+State 65:
+          avps ::= avps COMMA * avp
+          avp ::= * NAME AVP_OPERATOR value
+          avp ::= * NAME
+          avp ::= * NAME OPEN_BRACE avp_oneoff CLOSE_BRACE
+
+                          NAME shift  100
+                           avp shift  231
+
+State 66:
+          transform_match ::= MATCH_KW match_mode * avpl
+          avpl ::= * OPEN_PARENS avps CLOSE_PARENS
+          avpl ::= * OPEN_PARENS CLOSE_PARENS
+
+                   OPEN_PARENS shift  6
+                          avpl shift  246
+
+State 67:
+          pdu_decl ::= PDU_KW NAME PROTO_KW * field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+          field ::= * NAME
+
+                          NAME shift  260
+                         field shift  151
+
+State 68:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE * payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+     (70) payload_statement ::= *
+          payload_statement ::= * PAYLOAD_KW proto_stack SEMICOLON
+
+                    PAYLOAD_KW shift  12
+             payload_statement shift  10
+                     {default} reduce 70
+
+State 69:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement * criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+     (72) criteria_statement ::= *
+          criteria_statement ::= * CRITERIA_KW accept_mode match_mode avpl SEMICOLON
+
+                   CRITERIA_KW shift  35
+            criteria_statement shift  70
+                     {default} reduce 72
+
+State 70:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement * pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+          pdu_drop_unassigned_statement ::= * DROP_UNASSIGNED_KW true_false SEMICOLON
+     (81) pdu_drop_unassigned_statement ::= *
+
+            DROP_UNASSIGNED_KW shift  34
+ pdu_drop_unassigned_statement shift  71
+                     {default} reduce 81
+
+State 71:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement * discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+          discard_pdu_data_statement ::= * DISCARD_PDU_DATA_KW true_false SEMICOLON
+     (83) discard_pdu_data_statement ::= *
+
+           DISCARD_PDU_DATA_KW shift  33
+    discard_pdu_data_statement shift  72
+                     {default} reduce 83
+
+State 72:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement * last_extracted_statement CLOSE_BRACE SEMICOLON
+          last_extracted_statement ::= * LAST_PDU_KW true_false SEMICOLON
+     (85) last_extracted_statement ::= *
+
+                   LAST_PDU_KW shift  32
+      last_extracted_statement shift  152
+                     {default} reduce 85
+
+State 73:
+          criteria_statement ::= CRITERIA_KW accept_mode match_mode * avpl SEMICOLON
+          avpl ::= * OPEN_PARENS avps CLOSE_PARENS
+          avpl ::= * OPEN_PARENS CLOSE_PARENS
+
+                   OPEN_PARENS shift  6
+                          avpl shift  157
+
+State 74:
+          extraction_statement ::= EXTRACT_KW NAME FROM_KW * field SEMICOLON
+          field ::= * NAME
+
+                          NAME shift  260
+                         field shift  160
+
+State 75:
+          transform_list ::= transform_list COMMA * transform
+          transform ::= * NAME
+
+                          NAME shift  263
+                     transform shift  262
+
+State 76:
+          proto_stack ::= proto_stack SLASH * field
+          field ::= * NAME
+
+                          NAME shift  260
+                         field shift  267
+
+State 77:
+          gop_decl ::= GOP_KW NAME ON_KW * pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          pdu_name ::= * NAME
+
+                          NAME shift  279
+                      pdu_name shift  163
+
+State 78:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW * avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          avpl ::= * OPEN_PARENS avps CLOSE_PARENS
+          avpl ::= * OPEN_PARENS CLOSE_PARENS
+
+                   OPEN_PARENS shift  6
+                          avpl shift  164
+
+State 79:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE * gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          gop_start_statement ::= * START_KW avpl SEMICOLON
+     (93) gop_start_statement ::= *
+
+                      START_KW shift  91
+           gop_start_statement shift  80
+                     {default} reduce 93
+
+State 80:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement * gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          gop_stop_statement ::= * STOP_KW avpl SEMICOLON
+     (95) gop_stop_statement ::= *
+
+                       STOP_KW shift  90
+            gop_stop_statement shift  81
+                     {default} reduce 95
+
+State 81:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement * extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          extra_statement ::= * EXTRA_KW avpl SEMICOLON
+    (128) extra_statement ::= *
+
+                      EXTRA_KW shift  89
+               extra_statement shift  82
+                     {default} reduce 128
+
+State 82:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement * transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          transform_list_statement ::= * TRANSFORM_KW transform_list SEMICOLON
+    (130) transform_list_statement ::= *
+
+                  TRANSFORM_KW shift  11
+      transform_list_statement shift  83
+                     {default} reduce 130
+
+State 83:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement * gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          gop_expiration_statement ::= * EXPIRATION_KW time_value SEMICOLON
+    (101) gop_expiration_statement ::= *
+
+                 EXPIRATION_KW shift  40
+      gop_expiration_statement shift  84
+                     {default} reduce 101
+
+State 84:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement * idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          idle_timeout_statement ::= * IDLE_TIMEOUT_KW time_value SEMICOLON
+    (103) idle_timeout_statement ::= *
+
+               IDLE_TIMEOUT_KW shift  39
+        idle_timeout_statement shift  85
+                     {default} reduce 103
+
+State 85:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement * lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          lifetime_statement ::= * LIFETIME_KW time_value SEMICOLON
+    (105) lifetime_statement ::= *
+
+                   LIFETIME_KW shift  38
+            lifetime_statement shift  86
+                     {default} reduce 105
+
+State 86:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement * gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          gop_drop_unassigned_statement ::= * DROP_UNASSIGNED_KW true_false SEMICOLON
+     (91) gop_drop_unassigned_statement ::= *
+
+            DROP_UNASSIGNED_KW shift  37
+ gop_drop_unassigned_statement shift  87
+                     {default} reduce 91
+
+State 87:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement * show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          show_goptree_statement ::= * SHOW_TREE_KW gop_tree_mode SEMICOLON
+     (97) show_goptree_statement ::= *
+
+                  SHOW_TREE_KW shift  17
+        show_goptree_statement shift  88
+                     {default} reduce 97
+
+State 88:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement * show_times_statement CLOSE_BRACE SEMICOLON
+          show_times_statement ::= * SHOW_TIMES_KW true_false SEMICOLON
+     (99) show_times_statement ::= *
+
+                 SHOW_TIMES_KW shift  36
+          show_times_statement shift  165
+                     {default} reduce 99
+
+State 89:
+          extra_statement ::= EXTRA_KW * avpl SEMICOLON
+          avpl ::= * OPEN_PARENS avps CLOSE_PARENS
+          avpl ::= * OPEN_PARENS CLOSE_PARENS
+
+                   OPEN_PARENS shift  6
+                          avpl shift  173
+
+State 90:
+          gop_stop_statement ::= STOP_KW * avpl SEMICOLON
+          avpl ::= * OPEN_PARENS avps CLOSE_PARENS
+          avpl ::= * OPEN_PARENS CLOSE_PARENS
+
+                   OPEN_PARENS shift  6
+                          avpl shift  174
+
+State 91:
+          gop_start_statement ::= START_KW * avpl SEMICOLON
+          avpl ::= * OPEN_PARENS avps CLOSE_PARENS
+          avpl ::= * OPEN_PARENS CLOSE_PARENS
+
+                   OPEN_PARENS shift  6
+                          avpl shift  175
+
+State 92:
+          gog_decl ::= GOG_KW NAME OPEN_BRACE gog_key_statements extra_statement * transform_list_statement gog_expiration_statement gog_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          transform_list_statement ::= * TRANSFORM_KW transform_list SEMICOLON
+    (130) transform_list_statement ::= *
+
+                  TRANSFORM_KW shift  11
+      transform_list_statement shift  93
+                     {default} reduce 130
+
+State 93:
+          gog_decl ::= GOG_KW NAME OPEN_BRACE gog_key_statements extra_statement transform_list_statement * gog_expiration_statement gog_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          gog_expiration_statement ::= * EXPIRATION_KW time_value SEMICOLON
+    (119) gog_expiration_statement ::= *
+
+                 EXPIRATION_KW shift  41
+      gog_expiration_statement shift  94
+                     {default} reduce 119
+
+State 94:
+          gog_decl ::= GOG_KW NAME OPEN_BRACE gog_key_statements extra_statement transform_list_statement gog_expiration_statement * gog_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+          gog_goptree_statement ::= * GOP_TREE_KW gop_tree_type SEMICOLON
+    (117) gog_goptree_statement ::= *
+
+                   GOP_TREE_KW shift  21
+         gog_goptree_statement shift  95
+                     {default} reduce 117
+
+State 95:
+          show_times_statement ::= * SHOW_TIMES_KW true_false SEMICOLON
+     (99) show_times_statement ::= *
+          gog_decl ::= GOG_KW NAME OPEN_BRACE gog_key_statements extra_statement transform_list_statement gog_expiration_statement gog_goptree_statement * show_times_statement CLOSE_BRACE SEMICOLON
+
+                 SHOW_TIMES_KW shift  36
+          show_times_statement shift  178
+                     {default} reduce 99
+
+State 96:
+          gog_key_statement ::= MEMBER_KW * gop_name avpl SEMICOLON
+          gop_name ::= * NAME
+
+                          NAME shift  285
+                      gop_name shift  97
+
+State 97:
+          gog_key_statement ::= MEMBER_KW gop_name * avpl SEMICOLON
+          avpl ::= * OPEN_PARENS avps CLOSE_PARENS
+          avpl ::= * OPEN_PARENS CLOSE_PARENS
+
+                   OPEN_PARENS shift  6
+                          avpl shift  182
+
+State 98:
+          dbgfile_default ::= FILENAME_KW * QUOTED SEMICOLON
+          dbgfile_default ::= FILENAME_KW * NAME SEMICOLON
+
+                        QUOTED shift  120
+                          NAME shift  121
+
+State 99:
+          avpl ::= OPEN_PARENS avps * CLOSE_PARENS
+          avps ::= avps * COMMA avp
+
+                         COMMA shift  65
+                  CLOSE_PARENS shift  230
+
+State 100:
+          avp ::= NAME * AVP_OPERATOR value
+    (139) avp ::= NAME *
+          avp ::= NAME * OPEN_BRACE avp_oneoff CLOSE_BRACE
+
+                    OPEN_BRACE shift  3
+                  AVP_OPERATOR shift  14
+                     {default} reduce 139
+
+State 101:
+          avp ::= NAME OPEN_BRACE avp_oneoff * CLOSE_BRACE
+          avp_oneoff ::= avp_oneoff * PIPE value
+
+                   CLOSE_BRACE shift  239
+                          PIPE shift  15
+
+State 102:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack * OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+          proto_stack ::= proto_stack * SLASH field
+
+                    OPEN_BRACE shift  68
+                         SLASH shift  76
+
+State 103:
+          transform_list_statement ::= TRANSFORM_KW transform_list * SEMICOLON
+          transform_list ::= transform_list * COMMA transform
+
+                     SEMICOLON shift  261
+                         COMMA shift  75
+
+State 104:
+          payload_statement ::= PAYLOAD_KW proto_stack * SEMICOLON
+          proto_stack ::= proto_stack * SLASH field
+
+                     SEMICOLON shift  266
+                         SLASH shift  76
+
+State 105:
+          decl ::= DONE_KW * SEMICOLON
+
+                     SEMICOLON shift  190
+
+State 106:
+          debug_decl ::= DEBUG_KW * OPEN_BRACE dbgfile_default dbglevel_default pdu_dbglevel_default gop_dbglevel_default gog_dbglevel_default CLOSE_BRACE SEMICOLON
+
+                    OPEN_BRACE shift  42
+
+State 107:
+          debug_decl ::= DEBUG_KW OPEN_BRACE dbgfile_default dbglevel_default pdu_dbglevel_default gop_dbglevel_default gog_dbglevel_default * CLOSE_BRACE SEMICOLON
+
+                   CLOSE_BRACE shift  108
+
+State 108:
+          debug_decl ::= DEBUG_KW OPEN_BRACE dbgfile_default dbglevel_default pdu_dbglevel_default gop_dbglevel_default gog_dbglevel_default CLOSE_BRACE * SEMICOLON
+
+                     SEMICOLON shift  191
+
+State 109:
+          gog_dbglevel_default ::= GOG_KW * LEVEL_KW INTEGER SEMICOLON
+
+                      LEVEL_KW shift  110
+
+State 110:
+          gog_dbglevel_default ::= GOG_KW LEVEL_KW * INTEGER SEMICOLON
+
+                       INTEGER shift  111
+
+State 111:
+          gog_dbglevel_default ::= GOG_KW LEVEL_KW INTEGER * SEMICOLON
+
+                     SEMICOLON shift  192
+
+State 112:
+          gop_dbglevel_default ::= GOP_KW * LEVEL_KW INTEGER SEMICOLON
+
+                      LEVEL_KW shift  113
+
+State 113:
+          gop_dbglevel_default ::= GOP_KW LEVEL_KW * INTEGER SEMICOLON
+
+                       INTEGER shift  114
+
+State 114:
+          gop_dbglevel_default ::= GOP_KW LEVEL_KW INTEGER * SEMICOLON
+
+                     SEMICOLON shift  193
+
+State 115:
+          pdu_dbglevel_default ::= PDU_KW * LEVEL_KW INTEGER SEMICOLON
+
+                      LEVEL_KW shift  116
+
+State 116:
+          pdu_dbglevel_default ::= PDU_KW LEVEL_KW * INTEGER SEMICOLON
+
+                       INTEGER shift  117
+
+State 117:
+          pdu_dbglevel_default ::= PDU_KW LEVEL_KW INTEGER * SEMICOLON
+
+                     SEMICOLON shift  194
+
+State 118:
+          dbglevel_default ::= LEVEL_KW * INTEGER SEMICOLON
+
+                       INTEGER shift  119
+
+State 119:
+          dbglevel_default ::= LEVEL_KW INTEGER * SEMICOLON
+
+                     SEMICOLON shift  195
+
+State 120:
+          dbgfile_default ::= FILENAME_KW QUOTED * SEMICOLON
+
+                     SEMICOLON shift  196
+
+State 121:
+          dbgfile_default ::= FILENAME_KW NAME * SEMICOLON
+
+                     SEMICOLON shift  197
+
+State 122:
+          defaults_decl ::= DEFAULT_KW * OPEN_BRACE pdu_defaults gop_defaults gog_defaults CLOSE_BRACE SEMICOLON
+
+                    OPEN_BRACE shift  47
+
+State 123:
+          defaults_decl ::= DEFAULT_KW OPEN_BRACE pdu_defaults gop_defaults gog_defaults * CLOSE_BRACE SEMICOLON
+
+                   CLOSE_BRACE shift  124
+
+State 124:
+          defaults_decl ::= DEFAULT_KW OPEN_BRACE pdu_defaults gop_defaults gog_defaults CLOSE_BRACE * SEMICOLON
+
+                     SEMICOLON shift  198
+
+State 125:
+          gog_defaults ::= GOG_KW * OPEN_BRACE gog_expiration_default gop_tree_mode_default gog_goptree_default gog_show_times_default CLOSE_BRACE SEMICOLON
+
+                    OPEN_BRACE shift  50
+
+State 126:
+          gop_tree_mode_default ::= SHOW_TREE_KW gop_tree_mode * SEMICOLON
+
+                     SEMICOLON shift  199
+
+State 127:
+          gog_defaults ::= GOG_KW OPEN_BRACE gog_expiration_default gop_tree_mode_default gog_goptree_default gog_show_times_default * CLOSE_BRACE SEMICOLON
+
+                   CLOSE_BRACE shift  128
+
+State 128:
+          gog_defaults ::= GOG_KW OPEN_BRACE gog_expiration_default gop_tree_mode_default gog_goptree_default gog_show_times_default CLOSE_BRACE * SEMICOLON
+
+                     SEMICOLON shift  204
+
+State 129:
+          gog_show_times_default ::= SHOW_TIMES_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  205
+
+State 130:
+          gog_goptree_default ::= GOP_TREE_KW gop_tree_type * SEMICOLON
+
+                     SEMICOLON shift  208
+
+State 131:
+          gog_expiration_default ::= EXPIRATION_KW time_value * SEMICOLON
+
+                     SEMICOLON shift  212
+
+State 132:
+          gop_defaults ::= GOP_KW * OPEN_BRACE gop_expiration_default gop_idle_timeout_default gop_lifetime_default gop_drop_unassigned_default gop_tree_mode_default gop_show_times_default CLOSE_BRACE SEMICOLON
+
+                    OPEN_BRACE shift  54
+
+State 133:
+          gop_defaults ::= GOP_KW OPEN_BRACE gop_expiration_default gop_idle_timeout_default gop_lifetime_default gop_drop_unassigned_default gop_tree_mode_default gop_show_times_default * CLOSE_BRACE SEMICOLON
+
+                   CLOSE_BRACE shift  134
+
+State 134:
+          gop_defaults ::= GOP_KW OPEN_BRACE gop_expiration_default gop_idle_timeout_default gop_lifetime_default gop_drop_unassigned_default gop_tree_mode_default gop_show_times_default CLOSE_BRACE * SEMICOLON
+
+                     SEMICOLON shift  215
+
+State 135:
+          gop_show_times_default ::= SHOW_TIMES_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  216
+
+State 136:
+          gop_drop_unassigned_default ::= DROP_UNASSIGNED_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  217
+
+State 137:
+          gop_lifetime_default ::= LIFETIME_KW time_value * SEMICOLON
+
+                     SEMICOLON shift  218
+
+State 138:
+          gop_idle_timeout_default ::= IDLE_TIMEOUT_KW time_value * SEMICOLON
+
+                     SEMICOLON shift  219
+
+State 139:
+          gop_expiration_default ::= EXPIRATION_KW time_value * SEMICOLON
+
+                     SEMICOLON shift  220
+
+State 140:
+          pdu_defaults ::= PDU_KW * OPEN_BRACE pdu_last_extracted_default pdu_drop_unassigned_default pdu_discard_default CLOSE_BRACE SEMICOLON
+
+                    OPEN_BRACE shift  60
+
+State 141:
+          pdu_defaults ::= PDU_KW OPEN_BRACE pdu_last_extracted_default pdu_drop_unassigned_default pdu_discard_default * CLOSE_BRACE SEMICOLON
+
+                   CLOSE_BRACE shift  142
+
+State 142:
+          pdu_defaults ::= PDU_KW OPEN_BRACE pdu_last_extracted_default pdu_drop_unassigned_default pdu_discard_default CLOSE_BRACE * SEMICOLON
+
+                     SEMICOLON shift  221
+
+State 143:
+          pdu_discard_default ::= DISCARD_PDU_DATA_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  222
+
+State 144:
+          pdu_drop_unassigned_default ::= DROP_UNASSIGNED_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  223
+
+State 145:
+          pdu_last_extracted_default ::= LAST_EXTRACTED_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  224
+
+State 146:
+          transform_decl ::= TRANSFORM_KW * NAME transform_body SEMICOLON
+
+                          NAME shift  63
+
+State 147:
+          transform_decl ::= TRANSFORM_KW NAME transform_body * SEMICOLON
+
+                     SEMICOLON shift  225
+
+State 148:
+          transform_statement ::= transform_match transform_action * SEMICOLON
+
+                     SEMICOLON shift  228
+
+State 149:
+          pdu_decl ::= PDU_KW * NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+
+                          NAME shift  150
+
+State 150:
+          pdu_decl ::= PDU_KW NAME * PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+
+                      PROTO_KW shift  67
+
+State 151:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field * TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON
+
+                  TRANSPORT_KW shift  9
+
+State 152:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement * CLOSE_BRACE SEMICOLON
+
+                   CLOSE_BRACE shift  153
+
+State 153:
+          pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE * SEMICOLON
+
+                     SEMICOLON shift  251
+
+State 154:
+          last_extracted_statement ::= LAST_PDU_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  252
+
+State 155:
+          discard_pdu_data_statement ::= DISCARD_PDU_DATA_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  253
+
+State 156:
+          pdu_drop_unassigned_statement ::= DROP_UNASSIGNED_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  254
+
+State 157:
+          criteria_statement ::= CRITERIA_KW accept_mode match_mode avpl * SEMICOLON
+
+                     SEMICOLON shift  255
+
+State 158:
+          extraction_statement ::= EXTRACT_KW * NAME FROM_KW field SEMICOLON
+
+                          NAME shift  159
+
+State 159:
+          extraction_statement ::= EXTRACT_KW NAME * FROM_KW field SEMICOLON
+
+                       FROM_KW shift  74
+
+State 160:
+          extraction_statement ::= EXTRACT_KW NAME FROM_KW field * SEMICOLON
+
+                     SEMICOLON shift  259
+
+State 161:
+          gop_decl ::= GOP_KW * NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+
+                          NAME shift  162
+
+State 162:
+          gop_decl ::= GOP_KW NAME * ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+
+                         ON_KW shift  77
+
+State 163:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name * MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+
+                      MATCH_KW shift  78
+
+State 164:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl * OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+
+                    OPEN_BRACE shift  79
+
+State 165:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement * CLOSE_BRACE SEMICOLON
+
+                   CLOSE_BRACE shift  166
+
+State 166:
+          gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE * SEMICOLON
+
+                     SEMICOLON shift  269
+
+State 167:
+          show_times_statement ::= SHOW_TIMES_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  270
+
+State 168:
+          show_goptree_statement ::= SHOW_TREE_KW gop_tree_mode * SEMICOLON
+
+                     SEMICOLON shift  271
+
+State 169:
+          gop_drop_unassigned_statement ::= DROP_UNASSIGNED_KW true_false * SEMICOLON
+
+                     SEMICOLON shift  272
+
+State 170:
+          lifetime_statement ::= LIFETIME_KW time_value * SEMICOLON
+
+                     SEMICOLON shift  273
+
+State 171:
+          idle_timeout_statement ::= IDLE_TIMEOUT_KW time_value * SEMICOLON
+
+                     SEMICOLON shift  274
+
+State 172:
+          gop_expiration_statement ::= EXPIRATION_KW time_value * SEMICOLON
+
+                     SEMICOLON shift  275
+
+State 173:
+          extra_statement ::= EXTRA_KW avpl * SEMICOLON
+
+                     SEMICOLON shift  276
+
+State 174:
+          gop_stop_statement ::= STOP_KW avpl * SEMICOLON
+
+                     SEMICOLON shift  277
+
+State 175:
+          gop_start_statement ::= START_KW avpl * SEMICOLON
+
+                     SEMICOLON shift  278
+
+State 176:
+          gog_decl ::= GOG_KW * NAME OPEN_BRACE gog_key_statements extra_statement transform_list_statement gog_expiration_statement gog_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+
+                          NAME shift  177
+
+State 177:
+          gog_decl ::= GOG_KW NAME * OPEN_BRACE gog_key_statements extra_statement transform_list_statement gog_expiration_statement gog_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON
+
+                    OPEN_BRACE shift  13
+
+State 178:
+          gog_decl ::= GOG_KW NAME OPEN_BRACE gog_key_statements extra_statement transform_list_statement gog_expiration_statement gog_goptree_statement show_times_statement * CLOSE_BRACE SEMICOLON
+
+                   CLOSE_BRACE shift  179
+
+State 179:
+          gog_decl ::= GOG_KW NAME OPEN_BRACE gog_key_statements extra_statement transform_list_statement gog_expiration_statement gog_goptree_statement show_times_statement CLOSE_BRACE * SEMICOLON
+
+                     SEMICOLON shift  280
+
+State 180:
+          gog_goptree_statement ::= GOP_TREE_KW gop_tree_type * SEMICOLON
+
+                     SEMICOLON shift  281
+
+State 181:
+          gog_expiration_statement ::= EXPIRATION_KW time_value * SEMICOLON
+
+                     SEMICOLON shift  282
+
+State 182:
+          gog_key_statement ::= MEMBER_KW gop_name avpl * SEMICOLON
+
+                     SEMICOLON shift  284
+
+State 183:
+      (1) decls ::= decls decl *
+
+                     {default} reduce 1
+
+State 184:
+      (3) decl ::= pdu_decl *
+
+                     {default} reduce 3
+
+State 185:
+      (4) decl ::= gop_decl *
+
+                     {default} reduce 4
+
+State 186:
+      (5) decl ::= gog_decl *
+
+                     {default} reduce 5
+
+State 187:
+      (6) decl ::= transform_decl *
+
+                     {default} reduce 6
+
+State 188:
+      (7) decl ::= defaults_decl *
+
+                     {default} reduce 7
+
+State 189:
+      (8) decl ::= debug_decl *
+
+                     {default} reduce 8
+
+State 190:
+      (9) decl ::= DONE_KW SEMICOLON *
+
+                     {default} reduce 9
+
+State 191:
+     (10) debug_decl ::= DEBUG_KW OPEN_BRACE dbgfile_default dbglevel_default pdu_dbglevel_default gop_dbglevel_default gog_dbglevel_default CLOSE_BRACE SEMICOLON *
+
+                     {default} reduce 10
+
+State 192:
+     (20) gog_dbglevel_default ::= GOG_KW LEVEL_KW INTEGER SEMICOLON *
+
+                     {default} reduce 20
+
+State 193:
+     (18) gop_dbglevel_default ::= GOP_KW LEVEL_KW INTEGER SEMICOLON *
+
+                     {default} reduce 18
+
+State 194:
+     (16) pdu_dbglevel_default ::= PDU_KW LEVEL_KW INTEGER SEMICOLON *
+
+                     {default} reduce 16
+
+State 195:
+     (14) dbglevel_default ::= LEVEL_KW INTEGER SEMICOLON *
+
+                     {default} reduce 14
+
+State 196:
+     (11) dbgfile_default ::= FILENAME_KW QUOTED SEMICOLON *
+
+                     {default} reduce 11
+
+State 197:
+     (12) dbgfile_default ::= FILENAME_KW NAME SEMICOLON *
+
+                     {default} reduce 12
+
+State 198:
+     (22) defaults_decl ::= DEFAULT_KW OPEN_BRACE pdu_defaults gop_defaults gog_defaults CLOSE_BRACE SEMICOLON *
+
+                     {default} reduce 22
+
+State 199:
+     (41) gop_tree_mode_default ::= SHOW_TREE_KW gop_tree_mode SEMICOLON *
+
+                     {default} reduce 41
+
+State 200:
+    (106) gop_tree_mode ::= NO_TREE_KW *
+
+                     {default} reduce 106
+
+State 201:
+    (107) gop_tree_mode ::= PDU_TREE_KW *
+
+                     {default} reduce 107
+
+State 202:
+    (108) gop_tree_mode ::= FRAME_TREE_KW *
+
+                     {default} reduce 108
+
+State 203:
+    (109) gop_tree_mode ::= BASIC_TREE_KW *
+
+                     {default} reduce 109
+
+State 204:
+     (45) gog_defaults ::= GOG_KW OPEN_BRACE gog_expiration_default gop_tree_mode_default gog_goptree_default gog_show_times_default CLOSE_BRACE SEMICOLON *
+
+                     {default} reduce 45
+
+State 205:
+     (51) gog_show_times_default ::= SHOW_TIMES_KW true_false SEMICOLON *
+
+                     {default} reduce 51
+
+State 206:
+    (110) true_false ::= TRUE_KW *
+
+                     {default} reduce 110
+
+State 207:
+    (111) true_false ::= FALSE_KW *
+
+                     {default} reduce 111
+
+State 208:
+     (49) gog_goptree_default ::= GOP_TREE_KW gop_tree_type SEMICOLON *
+
+                     {default} reduce 49
+
+State 209:
+    (120) gop_tree_type ::= NULL_TREE_KW *
+
+                     {default} reduce 120
+
+State 210:
+    (121) gop_tree_type ::= FULL_TREE_KW *
+
+                     {default} reduce 121
+
+State 211:
+    (122) gop_tree_type ::= BASIC_TREE_KW *
+
+                     {default} reduce 122
+
+State 212:
+     (47) gog_expiration_default ::= EXPIRATION_KW time_value SEMICOLON *
+
+                     {default} reduce 47
+
+State 213:
+    (113) time_value ::= FLOATING *
+
+                     {default} reduce 113
+
+State 214:
+    (114) time_value ::= INTEGER *
+
+                     {default} reduce 114
+
+State 215:
+     (31) gop_defaults ::= GOP_KW OPEN_BRACE gop_expiration_default gop_idle_timeout_default gop_lifetime_default gop_drop_unassigned_default gop_tree_mode_default gop_show_times_default CLOSE_BRACE SEMICOLON *
+
+                     {default} reduce 31
+
+State 216:
+     (43) gop_show_times_default ::= SHOW_TIMES_KW true_false SEMICOLON *
+
+                     {default} reduce 43
+
+State 217:
+     (39) gop_drop_unassigned_default ::= DROP_UNASSIGNED_KW true_false SEMICOLON *
+
+                     {default} reduce 39
+
+State 218:
+     (37) gop_lifetime_default ::= LIFETIME_KW time_value SEMICOLON *
+
+                     {default} reduce 37
+
+State 219:
+     (35) gop_idle_timeout_default ::= IDLE_TIMEOUT_KW time_value SEMICOLON *
+
+                     {default} reduce 35
+
+State 220:
+     (33) gop_expiration_default ::= EXPIRATION_KW time_value SEMICOLON *
+
+                     {default} reduce 33
+
+State 221:
+     (23) pdu_defaults ::= PDU_KW OPEN_BRACE pdu_last_extracted_default pdu_drop_unassigned_default pdu_discard_default CLOSE_BRACE SEMICOLON *
+
+                     {default} reduce 23
+
+State 222:
+     (29) pdu_discard_default ::= DISCARD_PDU_DATA_KW true_false SEMICOLON *
+
+                     {default} reduce 29
+
+State 223:
+     (27) pdu_drop_unassigned_default ::= DROP_UNASSIGNED_KW true_false SEMICOLON *
+
+                     {default} reduce 27
+
+State 224:
+     (25) pdu_last_extracted_default ::= LAST_EXTRACTED_KW true_false SEMICOLON *
+
+                     {default} reduce 25
+
+State 225:
+     (53) transform_decl ::= TRANSFORM_KW NAME transform_body SEMICOLON *
+
+                     {default} reduce 53
+
+State 226:
+     (54) transform_body ::= OPEN_BRACE transform_statements CLOSE_BRACE *
+
+                     {default} reduce 54
+
+State 227:
+     (55) transform_statements ::= transform_statements transform_statement *
+
+                     {default} reduce 55
+
+State 228:
+     (57) transform_statement ::= transform_match transform_action SEMICOLON *
+
+                     {default} reduce 57
+
+State 229:
+     (61) transform_action ::= action_mode avpl *
+
+                     {default} reduce 61
+
+State 230:
+    (134) avpl ::= OPEN_PARENS avps CLOSE_PARENS *
+
+                     {default} reduce 134
+
+State 231:
+    (136) avps ::= avps COMMA avp *
+
+                     {default} reduce 136
+
+State 232:
+    (138) avp ::= NAME AVP_OPERATOR value *
+
+                     {default} reduce 138
+
+State 233:
+    (143) value ::= QUOTED *
+
+                     {default} reduce 143
+
+State 234:
+    (144) value ::= NAME *
+
+                     {default} reduce 144
+
+State 235:
+    (145) value ::= FLOATING *
+
+                     {default} reduce 145
+
+State 236:
+    (146) value ::= INTEGER *
+
+                     {default} reduce 146
+
+State 237:
+    (147) value ::= DOTED_IP *
+
+                     {default} reduce 147
+
+State 238:
+    (148) value ::= COLONIZED *
+
+                     {default} reduce 148
+
+State 239:
+    (140) avp ::= NAME OPEN_BRACE avp_oneoff CLOSE_BRACE *
+
+                     {default} reduce 140
+
+State 240:
+    (141) avp_oneoff ::= avp_oneoff PIPE value *
+
+                     {default} reduce 141
+
+State 241:
+    (142) avp_oneoff ::= value *
+
+                     {default} reduce 142
+
+State 242:
+    (135) avpl ::= OPEN_PARENS CLOSE_PARENS *
+
+                     {default} reduce 135
+
+State 243:
+    (137) avps ::= avp *
+
+                     {default} reduce 137
+
+State 244:
+     (66) action_mode ::= REPLACE_KW *
+
+                     {default} reduce 66
+
+State 245:
+     (67) action_mode ::= INSERT_KW *
+
+                     {default} reduce 67
+
+State 246:
+     (58) transform_match ::= MATCH_KW match_mode avpl *
+
+                     {default} reduce 58
+
+State 247:
+     (63) match_mode ::= STRICT_KW *
+
+                     {default} reduce 63
+
+State 248:
+     (64) match_mode ::= EVERY_KW *
+
+                     {default} reduce 64
+
+State 249:
+     (65) match_mode ::= LOOSE_KW *
+
+                     {default} reduce 65
+
+State 250:
+     (56) transform_statements ::= transform_statement *
+
+                     {default} reduce 56
+
+State 251:
+     (69) pdu_decl ::= PDU_KW NAME PROTO_KW field TRANSPORT_KW proto_stack OPEN_BRACE payload_statement extraction_statements transform_list_statement criteria_statement pdu_drop_unassigned_statement discard_pdu_data_statement last_extracted_statement CLOSE_BRACE SEMICOLON *
+
+                     {default} reduce 69
+
+State 252:
+     (84) last_extracted_statement ::= LAST_PDU_KW true_false SEMICOLON *
+
+                     {default} reduce 84
+
+State 253:
+     (82) discard_pdu_data_statement ::= DISCARD_PDU_DATA_KW true_false SEMICOLON *
+
+                     {default} reduce 82
+
+State 254:
+     (80) pdu_drop_unassigned_statement ::= DROP_UNASSIGNED_KW true_false SEMICOLON *
+
+                     {default} reduce 80
+
+State 255:
+     (73) criteria_statement ::= CRITERIA_KW accept_mode match_mode avpl SEMICOLON *
+
+                     {default} reduce 73
+
+State 256:
+     (75) accept_mode ::= ACCEPT_KW *
+
+                     {default} reduce 75
+
+State 257:
+     (76) accept_mode ::= REJECT_KW *
+
+                     {default} reduce 76
+
+State 258:
+     (77) extraction_statements ::= extraction_statements extraction_statement *
+
+                     {default} reduce 77
+
+State 259:
+     (79) extraction_statement ::= EXTRACT_KW NAME FROM_KW field SEMICOLON *
+
+                     {default} reduce 79
+
+State 260:
+     (88) field ::= NAME *
+
+                     {default} reduce 88
+
+State 261:
+    (129) transform_list_statement ::= TRANSFORM_KW transform_list SEMICOLON *
+
+                     {default} reduce 129
+
+State 262:
+    (131) transform_list ::= transform_list COMMA transform *
+
+                     {default} reduce 131
+
+State 263:
+    (133) transform ::= NAME *
+
+                     {default} reduce 133
+
+State 264:
+    (132) transform_list ::= transform *
+
+                     {default} reduce 132
+
+State 265:
+     (78) extraction_statements ::= extraction_statement *
+
+                     {default} reduce 78
+
+State 266:
+     (71) payload_statement ::= PAYLOAD_KW proto_stack SEMICOLON *
+
+                     {default} reduce 71
+
+State 267:
+     (86) proto_stack ::= proto_stack SLASH field *
+
+                     {default} reduce 86
+
+State 268:
+     (87) proto_stack ::= field *
+
+                     {default} reduce 87
+
+State 269:
+     (89) gop_decl ::= GOP_KW NAME ON_KW pdu_name MATCH_KW avpl OPEN_BRACE gop_start_statement gop_stop_statement extra_statement transform_list_statement gop_expiration_statement idle_timeout_statement lifetime_statement gop_drop_unassigned_statement show_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON *
+
+                     {default} reduce 89
+
+State 270:
+     (98) show_times_statement ::= SHOW_TIMES_KW true_false SEMICOLON *
+
+                     {default} reduce 98
+
+State 271:
+     (96) show_goptree_statement ::= SHOW_TREE_KW gop_tree_mode SEMICOLON *
+
+                     {default} reduce 96
+
+State 272:
+     (90) gop_drop_unassigned_statement ::= DROP_UNASSIGNED_KW true_false SEMICOLON *
+
+                     {default} reduce 90
+
+State 273:
+    (104) lifetime_statement ::= LIFETIME_KW time_value SEMICOLON *
+
+                     {default} reduce 104
+
+State 274:
+    (102) idle_timeout_statement ::= IDLE_TIMEOUT_KW time_value SEMICOLON *
+
+                     {default} reduce 102
+
+State 275:
+    (100) gop_expiration_statement ::= EXPIRATION_KW time_value SEMICOLON *
+
+                     {default} reduce 100
+
+State 276:
+    (127) extra_statement ::= EXTRA_KW avpl SEMICOLON *
+
+                     {default} reduce 127
+
+State 277:
+     (94) gop_stop_statement ::= STOP_KW avpl SEMICOLON *
+
+                     {default} reduce 94
+
+State 278:
+     (92) gop_start_statement ::= START_KW avpl SEMICOLON *
+
+                     {default} reduce 92
+
+State 279:
+    (112) pdu_name ::= NAME *
+
+                     {default} reduce 112
+
+State 280:
+    (115) gog_decl ::= GOG_KW NAME OPEN_BRACE gog_key_statements extra_statement transform_list_statement gog_expiration_statement gog_goptree_statement show_times_statement CLOSE_BRACE SEMICOLON *
+
+                     {default} reduce 115
+
+State 281:
+    (116) gog_goptree_statement ::= GOP_TREE_KW gop_tree_type SEMICOLON *
+
+                     {default} reduce 116
+
+State 282:
+    (118) gog_expiration_statement ::= EXPIRATION_KW time_value SEMICOLON *
+
+                     {default} reduce 118
+
+State 283:
+    (123) gog_key_statements ::= gog_key_statements gog_key_statement *
+
+                     {default} reduce 123
+
+State 284:
+    (125) gog_key_statement ::= MEMBER_KW gop_name avpl SEMICOLON *
+
+                     {default} reduce 125
+
+State 285:
+    (126) gop_name ::= NAME *
+
+                     {default} reduce 126
+
+State 286:
+    (124) gog_key_statements ::= gog_key_statement *
+
+                     {default} reduce 124
+
+----------------------------------------------------
+Symbols:
+    0: $:
+    1: DONE_KW
+    2: SEMICOLON
+    3: DEBUG_KW
+    4: OPEN_BRACE
+    5: CLOSE_BRACE
+    6: FILENAME_KW
+    7: QUOTED
+    8: NAME
+    9: LEVEL_KW
+   10: INTEGER
+   11: PDU_KW
+   12: GOP_KW
+   13: GOG_KW
+   14: DEFAULT_KW
+   15: LAST_EXTRACTED_KW
+   16: DROP_UNASSIGNED_KW
+   17: DISCARD_PDU_DATA_KW
+   18: EXPIRATION_KW
+   19: IDLE_TIMEOUT_KW
+   20: LIFETIME_KW
+   21: SHOW_TREE_KW
+   22: SHOW_TIMES_KW
+   23: GOP_TREE_KW
+   24: TRANSFORM_KW
+   25: MATCH_KW
+   26: STRICT_KW
+   27: EVERY_KW
+   28: LOOSE_KW
+   29: REPLACE_KW
+   30: INSERT_KW
+   31: PROTO_KW
+   32: TRANSPORT_KW
+   33: PAYLOAD_KW
+   34: CRITERIA_KW
+   35: ACCEPT_KW
+   36: REJECT_KW
+   37: EXTRACT_KW
+   38: FROM_KW
+   39: LAST_PDU_KW
+   40: SLASH
+   41: ON_KW
+   42: START_KW
+   43: STOP_KW
+   44: NO_TREE_KW
+   45: PDU_TREE_KW
+   46: FRAME_TREE_KW
+   47: BASIC_TREE_KW
+   48: TRUE_KW
+   49: FALSE_KW
+   50: FLOATING
+   51: NULL_TREE_KW
+   52: FULL_TREE_KW
+   53: MEMBER_KW
+   54: EXTRA_KW
+   55: COMMA
+   56: OPEN_PARENS
+   57: CLOSE_PARENS
+   58: AVP_OPERATOR
+   59: PIPE
+   60: DOTED_IP
+   61: COLONIZED
+   62: error:
+   63: transform_decl: TRANSFORM_KW
+   64: transform_body: OPEN_BRACE
+   65: transform_statements: SEMICOLON MATCH_KW REPLACE_KW INSERT_KW OPEN_PARENS
+   66: transform_statement: SEMICOLON MATCH_KW REPLACE_KW INSERT_KW OPEN_PARENS
+   67: transform_match: <lambda> MATCH_KW
+   68: transform_action: <lambda> REPLACE_KW INSERT_KW OPEN_PARENS
+   69: match_mode: <lambda> STRICT_KW EVERY_KW LOOSE_KW
+   70: action_mode: <lambda> REPLACE_KW INSERT_KW
+   71: gop_name: NAME
+   72: time_value: INTEGER FLOATING
+   73: pdu_name: NAME
+   74: gop_tree_mode: NO_TREE_KW PDU_TREE_KW FRAME_TREE_KW BASIC_TREE_KW
+   75: true_false: TRUE_KW FALSE_KW
+   76: criteria_statement: <lambda> CRITERIA_KW
+   77: accept_mode: <lambda> ACCEPT_KW REJECT_KW
+   78: pdu_drop_unassigned_statement: <lambda> DROP_UNASSIGNED_KW
+   79: discard_pdu_data_statement: <lambda> DISCARD_PDU_DATA_KW
+   80: last_extracted_statement: <lambda> LAST_PDU_KW
+   81: extraction_statement: EXTRACT_KW
+   82: extraction_statements: EXTRACT_KW
+   83: gop_options:
+   84: gop_start_statement: <lambda> START_KW
+   85: gop_stop_statement: <lambda> STOP_KW
+   86: extra_statement: <lambda> EXTRA_KW
+   87: gop_drop_unassigned_statement: <lambda> DROP_UNASSIGNED_KW
+   88: show_goptree_statement: <lambda> SHOW_TREE_KW
+   89: show_times_statement: <lambda> SHOW_TIMES_KW
+   90: gop_expiration_statement: <lambda> EXPIRATION_KW
+   91: idle_timeout_statement: <lambda> IDLE_TIMEOUT_KW
+   92: lifetime_statement: <lambda> LIFETIME_KW
+   93: gog_statements:
+   94: gog_expiration_statement: <lambda> EXPIRATION_KW
+   95: gog_goptree_statement: <lambda> GOP_TREE_KW
+   96: gog_key_statements: MEMBER_KW
+   97: gog_key_statement: MEMBER_KW
+   98: transform_list_statement: <lambda> TRANSFORM_KW
+   99: transform: NAME
+  100: gop_tree_type: BASIC_TREE_KW NULL_TREE_KW FULL_TREE_KW
+  101: payload_statement: <lambda> PAYLOAD_KW
+  102: proto_stack: NAME
+  103: field: NAME
+  104: transform_list: NAME
+  105: avpl: OPEN_PARENS
+  106: avps: NAME
+  107: avp: NAME
+  108: value: QUOTED NAME INTEGER FLOATING DOTED_IP COLONIZED
+  109: avp_oneoff: QUOTED NAME INTEGER FLOATING DOTED_IP COLONIZED
+  110: mate_config: DONE_KW DEBUG_KW PDU_KW GOP_KW GOG_KW DEFAULT_KW TRANSFORM_KW
+  111: decls: <lambda> DONE_KW DEBUG_KW PDU_KW GOP_KW GOG_KW DEFAULT_KW TRANSFORM_KW
+  112: decl: DONE_KW DEBUG_KW PDU_KW GOP_KW GOG_KW DEFAULT_KW TRANSFORM_KW
+  113: pdu_decl: PDU_KW
+  114: gop_decl: GOP_KW
+  115: gog_decl: GOG_KW
+  116: defaults_decl: DEFAULT_KW
+  117: debug_decl: DEBUG_KW
+  118: dbgfile_default: <lambda> FILENAME_KW
+  119: dbglevel_default: <lambda> LEVEL_KW
+  120: pdu_dbglevel_default: <lambda> PDU_KW
+  121: gop_dbglevel_default: <lambda> GOP_KW
+  122: gog_dbglevel_default: <lambda> GOG_KW
+  123: pdu_defaults: <lambda> PDU_KW
+  124: gop_defaults: <lambda> GOP_KW
+  125: gog_defaults: <lambda> GOG_KW
+  126: pdu_last_extracted_default: <lambda> LAST_EXTRACTED_KW
+  127: pdu_drop_unassigned_default: <lambda> DROP_UNASSIGNED_KW
+  128: pdu_discard_default: <lambda> DISCARD_PDU_DATA_KW
+  129: gop_expiration_default: <lambda> EXPIRATION_KW
+  130: gop_idle_timeout_default: <lambda> IDLE_TIMEOUT_KW
+  131: gop_lifetime_default: <lambda> LIFETIME_KW
+  132: gop_drop_unassigned_default: <lambda> DROP_UNASSIGNED_KW
+  133: gop_tree_mode_default: <lambda> SHOW_TREE_KW
+  134: gop_show_times_default: <lambda> SHOW_TIMES_KW
+  135: gog_expiration_default: <lambda> EXPIRATION_KW
+  136: gog_goptree_default: <lambda> GOP_TREE_KW
+  137: gog_show_times_default: <lambda> SHOW_TIMES_KW

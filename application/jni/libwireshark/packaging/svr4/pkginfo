@@ -1,0 +1,13 @@
+# $Id: pkginfo.in 34996 2010-11-21 19:03:17Z wmeier $
+PKG="wireshark"
+NAME="wireshark 1.5.2"
+VERSION="1.5.2"
+ARCH="arm"
+CLASSES="none"
+CATEGORY="application,network"
+DESC="A GUI network protocol analyzer"
+VENDOR="Wireshark Development Team"
+EMAIL="gerald@wireshark.org"
+ISTATES="S s 1 2 3"
+RSTATES="S s 1 2 3"
+BASEDIR=""

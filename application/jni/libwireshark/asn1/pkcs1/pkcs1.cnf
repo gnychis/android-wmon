@@ -1,0 +1,22 @@
+# pkcs1.cnf
+# PKCS#1 conformation file
+
+# $Id: pkcs1.cnf 23202 2007-10-16 13:59:40Z jmayer $
+
+#.IMPORT ../x509af/x509af-exp.cnf
+
+#.EXPORTS
+
+RSAPrivateKey
+RSAPublicKey
+DigestInfo
+
+#.NO_EMIT
+
+#.TYPE_RENAME
+
+#.FIELD_RENAME
+
+#.END
+
+

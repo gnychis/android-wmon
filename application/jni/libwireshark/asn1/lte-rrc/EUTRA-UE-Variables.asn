@@ -1,0 +1,83 @@
+-- 3GPP TS 36.331 V9.6.0 (2011-03)
+-- $Id: EUTRA-UE-Variables.asn 36524 2011-04-08 19:54:07Z etxrab $
+--
+EUTRA-UE-Variables DEFINITIONS AUTOMATIC TAGS ::=
+
+BEGIN
+
+IMPORTS
+	CarrierFreqGERAN,
+	CellIdentity,
+	SpeedStateScaleFactors,
+	C-RNTI,
+	MeasId,
+	MeasIdToAddModList,
+	MeasObjectToAddModList,
+	MobilityStateParameters,
+	NeighCellConfig,
+	PhysCellId,
+	PhysCellIdCDMA2000,
+	PhysCellIdGERAN,
+	PhysCellIdUTRA-FDD,
+	PhysCellIdUTRA-TDD,
+	QuantityConfig,
+	ReportConfigToAddModList,
+	RSRP-Range,
+	maxCellMeas,
+	maxMeasId
+FROM EUTRA-RRC-Definitions;
+
+
+VarMeasConfig ::=					SEQUENCE {
+	-- Measurement identities
+	measIdList							MeasIdToAddModList					OPTIONAL,
+	-- Measurement objects
+	measObjectList						MeasObjectToAddModList				OPTIONAL,
+	-- Reporting configurations
+	reportConfigList					ReportConfigToAddModList			OPTIONAL,
+	-- Other parameters
+	quantityConfig						QuantityConfig						OPTIONAL,
+	s-Measure							RSRP-Range							OPTIONAL,
+	speedStatePars						CHOICE {
+		release								NULL,
+		setup								SEQUENCE {
+			mobilityStateParameters				MobilityStateParameters,
+			timeToTrigger-SF					SpeedStateScaleFactors
+		}
+	}																		OPTIONAL
+}
+
+
+VarMeasReportList ::=				SEQUENCE (SIZE (1..maxMeasId)) OF VarMeasReport
+
+VarMeasReport ::=					SEQUENCE {
+	-- List of measurement that have been triggered
+	measId								MeasId,
+	cellsTriggeredList					CellsTriggeredList				OPTIONAL,
+	numberOfReportsSent					INTEGER
+}
+
+CellsTriggeredList ::=				SEQUENCE (SIZE (1..maxCellMeas)) OF CHOICE {
+	physCellIdEUTRA							PhysCellId,
+	physCellIdUTRA							CHOICE {
+		fdd										PhysCellIdUTRA-FDD,
+		tdd										PhysCellIdUTRA-TDD
+	},
+	physCellIdGERAN							SEQUENCE {
+		carrierFreq								CarrierFreqGERAN,
+		physCellId								PhysCellIdGERAN
+	},
+	physCellIdCDMA2000						PhysCellIdCDMA2000
+}
+
+VarShortMAC-Input ::=					SEQUENCE {
+	cellIdentity							CellIdentity,
+	physCellId								PhysCellId,
+	c-RNTI									C-RNTI
+}
+
+
+
+END
+
+
