@@ -1,0 +1,128 @@
+# tcap.cnf
+# $Id: ansi_tcap.cnf 33374 2010-06-29 18:07:33Z gal $
+# tcap conformation file
+
+#.OMIT_ASSIGNMENT
+# Removed as they are giving 'defined but not used' warnings currently.
+Priority
+#.END
+
+#--- OperationCode ---
+
+#.FN_PARS
+OperationCode            VAL_PTR = &ansi_tcap_private.d.OperationCode
+OperationCode/national   VAL_PTR = &ansi_tcap_private.d.OperationCode_national
+OperationCode/private    VAL_PTR = &ansi_tcap_private.d.OperationCode_private
+#.FN_FTR OperationCode
+  ansi_tcap_private.d.OperationCode_item = actx->created_item;
+#.END
+
+#--- INVOKE ---
+
+#.FN_BODY Invoke/parameter
+
+  if(find_tcap_subdissector(tvb, actx, tree))
+    offset = tvb_length(tvb);
+  
+
+#.FN_HDR Invoke
+  ansi_tcap_private.d.pdu = 1;
+
+#--- RETURN RESULT ---
+
+#.FIELD_ATTR
+
+#.FN_BODY ReturnResult/parameter
+  if(find_tcap_subdissector(tvb, actx, tree))
+    offset = tvb_length(tvb);
+
+#.FN_HDR ReturnResult
+  ansi_tcap_private.d.pdu = 2;
+
+
+#--- RETURN ERROR ---
+
+#.FN_BODY ReturnError/parameter
+  if(find_tcap_subdissector(tvb, actx, tree))
+    offset = tvb_length(tvb);
+
+#.FN_HDR ReturnError
+  ansi_tcap_private.d.pdu = 3;
+
+#--- ObjectIDApplicationContext --
+#.FN_BODY ObjectIDApplicationContext FN_VARIANT = _str  VAL_PTR = &oid_str
+
+ static const char * oid_str;
+
+ %(DEFAULT_BODY)s
+ 	ansi_tcap_private.objectApplicationId_oid= (void*) oid_str;
+	ansi_tcap_private.oid_is_present=TRUE;
+
+#.FN_HDR PackageType/unidirectional
+gp_tcapsrt_info->ope=TC_ANSI_ALL;
+col_set_str(actx->pinfo->cinfo, COL_INFO, "unidirectional ");
+
+#.FN_HDR PackageType/queryWithPerm
+gp_tcapsrt_info->ope=TC_ANSI_ALL;
+col_set_str(actx->pinfo->cinfo, COL_INFO, "queryWithPerm ");
+
+#.FN_HDR PackageType/queryWithoutPerm
+gp_tcapsrt_info->ope=TC_ANSI_ALL;
+col_set_str(actx->pinfo->cinfo, COL_INFO, "queryWithoutPerm ");
+
+#.FN_HDR PackageType/response
+gp_tcapsrt_info->ope=TC_ANSI_ALL;
+col_set_str(actx->pinfo->cinfo, COL_INFO, "response ");
+
+#.FN_HDR PackageType/conversationWithPerm
+gp_tcapsrt_info->ope=TC_ANSI_ALL;
+col_set_str(actx->pinfo->cinfo, COL_INFO, "conversationWithPerm ");
+
+#.FN_HDR PackageType/conversationWithoutPerm
+gp_tcapsrt_info->ope=TC_ANSI_ALL;
+col_set_str(actx->pinfo->cinfo, COL_INFO, "conversationWithoutPerm ");
+
+#.FN_HDR PackageType/abort
+gp_tcapsrt_info->ope=TC_ANSI_ABORT;
+col_set_str(actx->pinfo->cinfo, COL_INFO, "Abort ");
+
+#.FN_BODY TransactionID/_untag VAL_PTR = &next_tvb
+
+tvbuff_t *next_tvb;
+guint8 len;
+
+%(DEFAULT_BODY)s
+
+if(next_tvb) {
+	len = tvb_length_remaining(next_tvb, 0);
+	if(len !=0){
+		/* 0 octets for the Unidirectional, 
+		 * 4 octets for Query, Response & Abort
+		 * 8 octets for Conversation in the order Originating then Responding TID
+		 * 
+		 * In order to match this it seems like we should only use the last 4 octets
+		 * in the 8 octets case.
+		 */
+		if (len > 4){
+			ansi_tcap_private.TransactionID_str = tvb_bytes_to_str(next_tvb, 4,len-4);
+		}else{
+			ansi_tcap_private.TransactionID_str = tvb_bytes_to_str(next_tvb, 0,len);
+		}
+	}
+	switch(len) {
+	case 1:
+		gp_tcapsrt_info->src_tid=tvb_get_guint8(next_tvb, 0);
+		break;
+	case 2:
+		gp_tcapsrt_info->src_tid=tvb_get_ntohs(next_tvb, 0);
+		break;
+	case 4:
+		gp_tcapsrt_info->src_tid=tvb_get_ntohl(next_tvb, 0);
+		break;
+	default:
+		gp_tcapsrt_info->src_tid=0;
+		break;
+	}
+}
+
+#.END
