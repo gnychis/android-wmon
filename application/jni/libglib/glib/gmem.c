@@ -226,6 +226,156 @@ g_try_realloc (gpointer mem,
   return NULL;
 }
 
+#define SIZE_OVERFLOWS(a,b) (G_UNLIKELY ((b) > 0 && (a) > G_MAXSIZE / (b)))
+
+/**
+ * g_malloc_n:
+ * @n_blocks: the number of blocks to allocate
+ * @n_block_bytes: the size of each block in bytes
+ * 
+ * This function is similar to g_malloc(), allocating (@n_blocks * @n_block_bytes) bytes,
+ * but care is taken to detect possible overflow during multiplication.
+ * 
+ * Since: 2.24
+ * Returns: a pointer to the allocated memory
+ */
+gpointer
+g_malloc_n (gsize n_blocks,
+	    gsize n_block_bytes)
+{
+  if (SIZE_OVERFLOWS (n_blocks, n_block_bytes))
+    {
+      if (G_UNLIKELY (!g_mem_initialized))
+	g_mem_init_nomessage();
+
+      g_error ("%s: overflow allocating %"G_GSIZE_FORMAT"*%"G_GSIZE_FORMAT" bytes",
+               G_STRLOC, n_blocks, n_block_bytes);
+    }
+
+  return g_malloc (n_blocks * n_block_bytes);
+}
+
+/**
+ * g_malloc0_n:
+ * @n_blocks: the number of blocks to allocate
+ * @n_block_bytes: the size of each block in bytes
+ * 
+ * This function is similar to g_malloc0(), allocating (@n_blocks * @n_block_bytes) bytes,
+ * but care is taken to detect possible overflow during multiplication.
+ * 
+ * Since: 2.24
+ * Returns: a pointer to the allocated memory
+ */
+gpointer
+g_malloc0_n (gsize n_blocks,
+	     gsize n_block_bytes)
+{
+  if (SIZE_OVERFLOWS (n_blocks, n_block_bytes))
+    {
+      if (G_UNLIKELY (!g_mem_initialized))
+	g_mem_init_nomessage();
+
+      g_error ("%s: overflow allocating %"G_GSIZE_FORMAT"*%"G_GSIZE_FORMAT" bytes",
+               G_STRLOC, n_blocks, n_block_bytes);
+    }
+
+  return g_malloc0 (n_blocks * n_block_bytes);
+}
+
+/**
+ * g_realloc_n:
+ * @mem: the memory to reallocate
+ * @n_blocks: the number of blocks to allocate
+ * @n_block_bytes: the size of each block in bytes
+ * 
+ * This function is similar to g_realloc(), allocating (@n_blocks * @n_block_bytes) bytes,
+ * but care is taken to detect possible overflow during multiplication.
+ * 
+ * Since: 2.24
+ * Returns: the new address of the allocated memory
+ */
+gpointer
+g_realloc_n (gpointer mem,
+	     gsize    n_blocks,
+	     gsize    n_block_bytes)
+{
+  if (SIZE_OVERFLOWS (n_blocks, n_block_bytes))
+    {
+      if (G_UNLIKELY (!g_mem_initialized))
+	g_mem_init_nomessage();
+
+      g_error ("%s: overflow allocating %"G_GSIZE_FORMAT"*%"G_GSIZE_FORMAT" bytes",
+               G_STRLOC, n_blocks, n_block_bytes);
+    }
+
+  return g_realloc (mem, n_blocks * n_block_bytes);
+}
+
+/**
+ * g_try_malloc_n:
+ * @n_blocks: the number of blocks to allocate
+ * @n_block_bytes: the size of each block in bytes
+ * 
+ * This function is similar to g_try_malloc(), allocating (@n_blocks * @n_block_bytes) bytes,
+ * but care is taken to detect possible overflow during multiplication.
+ * 
+ * Since: 2.24
+ * Returns: the allocated memory, or %NULL.
+ */
+gpointer
+g_try_malloc_n (gsize n_blocks,
+		gsize n_block_bytes)
+{
+  if (SIZE_OVERFLOWS (n_blocks, n_block_bytes))
+    return NULL;
+
+  return g_try_malloc (n_blocks * n_block_bytes);
+}
+
+/**
+ * g_try_malloc0_n:
+ * @n_blocks: the number of blocks to allocate
+ * @n_block_bytes: the size of each block in bytes
+ * 
+ * This function is similar to g_try_malloc0(), allocating (@n_blocks * @n_block_bytes) bytes,
+ * but care is taken to detect possible overflow during multiplication.
+ * 
+ * Since: 2.24
+ * Returns: the allocated memory, or %NULL
+ */
+gpointer
+g_try_malloc0_n (gsize n_blocks,
+		 gsize n_block_bytes)
+{
+  if (SIZE_OVERFLOWS (n_blocks, n_block_bytes))
+    return NULL;
+
+  return g_try_malloc0 (n_blocks * n_block_bytes);
+}
+
+/**
+ * g_try_realloc_n:
+ * @mem: previously-allocated memory, or %NULL.
+ * @n_blocks: the number of blocks to allocate
+ * @n_block_bytes: the size of each block in bytes
+ * 
+ * This function is similar to g_try_realloc(), allocating (@n_blocks * @n_block_bytes) bytes,
+ * but care is taken to detect possible overflow during multiplication.
+ * 
+ * Since: 2.24
+ * Returns: the allocated memory, or %NULL.
+ */
+gpointer
+g_try_realloc_n (gpointer mem,
+		 gsize    n_blocks,
+		 gsize    n_block_bytes)
+{
+  if (SIZE_OVERFLOWS (n_blocks, n_block_bytes))
+    return NULL;
+
+  return g_try_realloc (mem, n_blocks * n_block_bytes);
+}
+
 static gpointer
 fallback_calloc (gsize n_blocks,
 		 gsize n_block_bytes)
