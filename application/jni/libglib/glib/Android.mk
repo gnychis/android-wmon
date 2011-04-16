@@ -46,6 +46,7 @@ LOCAL_SRC_FILES:= \
     gstring.c       \
     gthread.c       \
     gthreadpool.c   \
+		gtestutils.c		\
     gtimer.c        \
     gtree.c         \
     guniprop.c      \
@@ -163,6 +164,7 @@ LOCAL_COPY_HEADERS :=	\
 		gstring.h		\
 		gthread.h		\
 		gthreadpool.h	\
+		gtestutils.h \
 		gtimer.h		\
 		gtree.h			\
 		gtypes.h		\
