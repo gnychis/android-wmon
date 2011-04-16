@@ -24,22 +24,22 @@
 #include <glib.h>
 #define LOG_TAG "WiresharkDriver" // text for log tag 
 
-#include <epan/dissectors/packet-radiotap.h>
-#include <epan/packet.h>
-#include <epan/crc32.h>
-#include <epan/frequency-utils.h>
-#include <epan/tap.h>
-#include <epan/prefs.h>
-#include <epan/addr_resolv.h>
-#include "packet-ieee80211.h"
-#include "packet-radiotap.h"
-#include "packet-radiotap-iter.h"
-#include "packet-radiotap-defs.h"
+#include "config.h"
+
+#include <epan/epan.h>
+//#include <epan/dissectors/packet-radiotap.h>
+//#include <epan/packet.h>
+//#include <epan/crc32.h>
+//#include <epan/frequency-utils.h>
+//#include <epan/tap.h>
+//#include <epan/prefs.h>
+//#include <epan/addr_resolv.h>
+//#include "packet-radiotap-defs.h"
 
 
 jstring
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkHello( JNIEnv* env, jobject thiz )
 {
-
+	proto_register_radiotap();
 	return "Hello";
 }
