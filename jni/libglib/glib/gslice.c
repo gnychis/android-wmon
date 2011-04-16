@@ -43,6 +43,7 @@
 #endif
 
 #include <stdio.h>              /* fputs/fprintf */
+#include <gtestutils.h>
 
 
 /* the GSlice allocator is split up into 4 layers, roughly modelled after the slab

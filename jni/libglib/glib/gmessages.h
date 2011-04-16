@@ -117,6 +117,11 @@ void g_assert_warning         (const char *log_domain,
 			       const int   line,
 		               const char *pretty_function,
 		               const char *expression) G_GNUC_NORETURN;
+void g_warn_message           (const char     *domain,
+                               const char     *file,
+                               int             line,
+                               const char     *func,
+                               const char     *warnexpr);
 
 
 #ifndef G_LOG_DOMAIN
@@ -217,6 +222,10 @@ GPrintFunc      g_set_printerr_handler  (GPrintFunc      func);
  *  if G_DISABLE_ASSERT is not defined, in order to support gcc's
  *  __PRETTY_FUNCTION__ capability.
  */
+
+#define g_warn_if_reached()     do { g_warn_message (G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, NULL); } while (0)
+#define g_warn_if_fail(expr)    do { if G_LIKELY (expr) ; else \
+                                       g_warn_message (G_LOG_DOMAIN, __FILE__, __LINE__, G_STRFUNC, #expr); } while (0)
 
 #ifdef G_DISABLE_ASSERT
 
