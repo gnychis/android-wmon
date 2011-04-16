@@ -54,6 +54,21 @@ gpointer g_try_malloc0    (gulong	 n_bytes) G_GNUC_MALLOC;
 gpointer g_try_realloc    (gpointer	 mem,
 			   gulong	 n_bytes) G_GNUC_WARN_UNUSED_RESULT;
 
+gpointer g_malloc_n       (gsize	 n_blocks,
+			   gsize	 n_block_bytes) G_GNUC_MALLOC G_GNUC_ALLOC_SIZE2(1,2);
+gpointer g_malloc0_n      (gsize	 n_blocks,
+			   gsize	 n_block_bytes) G_GNUC_MALLOC G_GNUC_ALLOC_SIZE2(1,2);
+gpointer g_realloc_n      (gpointer	 mem,
+			   gsize	 n_blocks,
+			   gsize	 n_block_bytes) G_GNUC_WARN_UNUSED_RESULT;
+gpointer g_try_malloc_n   (gsize	 n_blocks,
+			   gsize	 n_block_bytes) G_GNUC_MALLOC G_GNUC_ALLOC_SIZE2(1,2);
+gpointer g_try_malloc0_n  (gsize	 n_blocks,
+			   gsize	 n_block_bytes) G_GNUC_MALLOC G_GNUC_ALLOC_SIZE2(1,2);
+gpointer g_try_realloc_n  (gpointer	 mem,
+			   gsize	 n_blocks,
+			   gsize	 n_block_bytes) G_GNUC_WARN_UNUSED_RESULT;
+
 
 /* Convenience memory allocators
  */
