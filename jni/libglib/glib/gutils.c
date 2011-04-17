@@ -3073,6 +3073,46 @@ g_int_equal (gconstpointer v1,
 }
 
 /**
+ * g_int64_equal:
+ * @v1: a pointer to a #gint64 key.
+ * @v2: a pointer to a #gint64 key to compare with @v1.
+ *
+ * Compares the two #gint64 values being pointed to and returns 
+ * %TRUE if they are equal.
+ * It can be passed to g_hash_table_new() as the @key_equal_func
+ * parameter, when using pointers to 64-bit integers as keys in a #GHashTable.
+ * 
+ * Returns: %TRUE if the two keys match.
+ *
+ * Since: 2.22
+ */
+gboolean
+g_int64_equal (gconstpointer v1,
+               gconstpointer v2)
+{
+  return *((const gint64*) v1) == *((const gint64*) v2);
+}
+
+/**
+ * g_int64_hash:
+ * @v: a pointer to a #gint64 key
+ *
+ * Converts a pointer to a #gint64 to a hash value.
+ * It can be passed to g_hash_table_new() as the @hash_func parameter, 
+ * when using pointers to 64-bit integers values as keys in a #GHashTable.
+ *
+ * Returns: a hash value corresponding to the key.
+ *
+ * Since: 2.22
+ */
+guint
+g_int64_hash (gconstpointer v)
+{
+  return (guint) *(const gint64*) v;
+}
+
+
+/**
  * g_int_hash:
  * @v: a pointer to a #gint key
  *
