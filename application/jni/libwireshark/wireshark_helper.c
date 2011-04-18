@@ -26,15 +26,15 @@
 
 #include "config.h"
 
+#include <epan/packet.h>
 #include <epan/epan.h>
-//#include <epan/dissectors/packet-radiotap.h>
-//#include <epan/packet.h>
-//#include <epan/crc32.h>
-//#include <epan/frequency-utils.h>
-//#include <epan/tap.h>
-//#include <epan/prefs.h>
-//#include <epan/addr_resolv.h>
-//#include "packet-radiotap-defs.h"
+#include <epan/dissectors/packet-radiotap.h>
+#include <epan/crc32.h>
+#include <epan/frequency-utils.h>
+#include <epan/tap.h>
+#include <epan/prefs.h>
+#include <epan/addr_resolv.h>
+#include "packet-radiotap-defs.h"
 
 
 jstring
