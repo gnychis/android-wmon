@@ -10,7 +10,6 @@ subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk, \
 		pcapd\
 		jnetpcap\
 		libnl \
-    libtshark \
 		libwireshark \
     coexisyst \
 ))
