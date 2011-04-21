@@ -46,6 +46,32 @@
 #include "packet-radiotap-defs.h"
 #include "log.h"
 
+#include "cfile.h"
+#include "capture_ui_utils.h"
+#include "capture_ifinfo.h"
+#include "capture-pcap-util.h"
+#include "print.h"
+
+capture_file cfile;
+gchar               *cf_name = NULL, *rfilter = NULL;
+static print_format_e print_format = PR_FMT_TEXT;
+static output_fields_t* output_fields  = NULL;
+static gboolean print_packet_info;      /* TRUE if we're to print packet information */
+static capture_options global_capture_opts;
+static gboolean do_dissection;  /* TRUE if we have to dissect each packet */
+
+/*
+ * The way the packet decode is to be written.
+ */
+typedef enum {
+  WRITE_TEXT,   /* summary or detail text */
+  WRITE_XML,    /* PDML or PSML */
+  WRITE_FIELDS  /* User defined list of fields */
+  /* Add CSV and the like here */
+} output_action_e;
+
+static output_action_e output_action;
+
 extern void tshark_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
 extern void open_failure_message(const char *filename, int err, gboolean for_writing);
 extern void failure_message(const char *msg_format, va_list ap);
@@ -104,6 +130,8 @@ optind = optind_initial;
   g_log_set_handler(LOG_DOMAIN_MAIN,
                     log_flags,
                     tshark_log_handler, NULL /* user_data */);
+
+  initialize_funnel_ops();
   
   timestamp_set_type(TS_RELATIVE);
   timestamp_set_precision(TS_PREC_AUTO);
@@ -119,6 +147,94 @@ optind = optind_initial;
   
   register_all_plugin_tap_listeners();
   register_all_tap_listeners();
+  prefs_register_modules();
+
+  setlocale(LC_ALL, "");
+
+  prefs_p = read_prefs(&gpf_open_errno, &gpf_read_errno, &gpf_path,
+                     &pf_open_errno, &pf_read_errno, &pf_path);
+  if (gpf_path != NULL) {
+    if (gpf_open_errno != 0) {
+      cmdarg_err("Can't open global preferences file \"%s\": %s.",
+              pf_path, strerror(gpf_open_errno));
+    }
+    if (gpf_read_errno != 0) {
+      cmdarg_err("I/O error reading global preferences file \"%s\": %s.",
+              pf_path, strerror(gpf_read_errno));
+    }
+  }
+  if (pf_path != NULL) {
+    if (pf_open_errno != 0) {
+      cmdarg_err("Can't open your preferences file \"%s\": %s.", pf_path,
+              strerror(pf_open_errno));
+    }
+    if (pf_read_errno != 0) {
+      cmdarg_err("I/O error reading your preferences file \"%s\": %s.",
+              pf_path, strerror(pf_read_errno));
+    }
+    g_free(pf_path);
+    pf_path = NULL;
+  }
+  
+  /* Set the name resolution code's flags from the preferences. */
+  gbl_resolv_flags = prefs_p->name_resolve;
+
+  /* Read the disabled protocols file. */
+  read_disabled_protos_list(&gdp_path, &gdp_open_errno, &gdp_read_errno,
+                            &dp_path, &dp_open_errno, &dp_read_errno);
+  if (gdp_path != NULL) {
+    if (gdp_open_errno != 0) {
+      cmdarg_err("Could not open global disabled protocols file\n\"%s\": %s.",
+                 gdp_path, strerror(gdp_open_errno));
+    }
+    if (gdp_read_errno != 0) {
+      cmdarg_err("I/O error reading global disabled protocols file\n\"%s\": %s.",
+                 gdp_path, strerror(gdp_read_errno));
+    }
+    g_free(gdp_path);
+  }
+  if (dp_path != NULL) {
+    if (dp_open_errno != 0) {
+      cmdarg_err(
+        "Could not open your disabled protocols file\n\"%s\": %s.", dp_path,
+        strerror(dp_open_errno));
+    }
+    if (dp_read_errno != 0) {
+      cmdarg_err(
+        "I/O error reading your disabled protocols file\n\"%s\": %s.", dp_path,
+        strerror(dp_read_errno));
+    }
+    g_free(dp_path);
+  }
+
+  cap_file_init(&cfile);
+
+  /* Print format defaults to this. */
+  print_format = PR_FMT_TEXT;
+
+  output_fields = output_fields_new();
+  
+  /* If we specified output fields, but not the output field type... */
+  if(WRITE_FIELDS != output_action && 0 != output_fields_num_fields(output_fields)) {
+        cmdarg_err("Output fields were specified with \"-e\", "
+            "but \"-Tfields\" was not specified.");
+        return "BAD";
+  } else if(WRITE_FIELDS == output_action && 0 == output_fields_num_fields(output_fields)) {
+        cmdarg_err("\"-Tfields\" was specified, but no fields were "
+                    "specified with \"-e\".");
+
+        return "BAD";
+  }
+  
+  prefs_apply_all();
+  start_requested_stats();
+  
+  capture_opts_trim_snaplen(&global_capture_opts, MIN_PACKET_SIZE);
+  capture_opts_trim_ring_num_files(&global_capture_opts);
+  
+  cfile.rfcode = rfcode;
+  
+  do_dissection = print_packet_info || rfcode || have_tap_listeners();
 
 	return "Hello";
 }
