@@ -10,7 +10,8 @@ subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk, \
 		pcapd\
 		jnetpcap\
 		libnl \
-		libwireshark \
+    libtshark \
+    libwireshark \
     coexisyst \
 ))
 include $(subdirs)
