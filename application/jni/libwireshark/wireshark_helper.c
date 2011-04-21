@@ -79,8 +79,8 @@ extern void read_failure_message(const char *filename, int err);
 extern void write_failure_message(const char *filename, int err);
 
 // Mainly a rip-off of the main() function in tshark
-jstring
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkHello( JNIEnv* env, jobject thiz )
+jint
+Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
 {
   char                *init_progfile_dir_error;
   int                  opt;
@@ -132,6 +132,7 @@ optind = optind_initial;
                     tshark_log_handler, NULL /* user_data */);
 
   initialize_funnel_ops();
+  capture_opts_init(&global_capture_opts, &cfile);
   
   timestamp_set_type(TS_RELATIVE);
   timestamp_set_precision(TS_PREC_AUTO);
@@ -218,12 +219,12 @@ optind = optind_initial;
   if(WRITE_FIELDS != output_action && 0 != output_fields_num_fields(output_fields)) {
         cmdarg_err("Output fields were specified with \"-e\", "
             "but \"-Tfields\" was not specified.");
-        return "BAD";
+        return -1;
   } else if(WRITE_FIELDS == output_action && 0 == output_fields_num_fields(output_fields)) {
         cmdarg_err("\"-Tfields\" was specified, but no fields were "
                     "specified with \"-e\".");
 
-        return "BAD";
+        return -1;
   }
   
   prefs_apply_all();
@@ -234,7 +235,9 @@ optind = optind_initial;
   
   cfile.rfcode = rfcode;
   
-  do_dissection = print_packet_info || rfcode || have_tap_listeners();
+  do_dissection = 1;
 
-	return "Hello";
+  timestamp_set_precision(TS_PREC_AUTO_USEC);
+
+	return 1;
 }
