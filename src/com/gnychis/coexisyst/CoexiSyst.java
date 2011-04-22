@@ -89,6 +89,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
     		System.loadLibrary("wispy");
     		System.loadLibrary("pcap");
     		System.loadLibrary("jnetpcap");
+    		System.loadLibrary("tshark");
+    		System.loadLibrary("wireshark_helper");
     		System.loadLibrary("coexisyst");
     	} catch (Exception e) {
     		Log.e(TAG, "error trying to load a USB related library", e);
@@ -144,6 +146,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		Log.d(TAG, "onCreate()");
 		//stopScans();
 		//startScans();
+		if(wiresharkInit()==3)
+			Log.d(TAG, "success with wireshark library");
+		else
+			Log.d(TAG, "error with wireshark library");
     }
     
 	@Override
@@ -331,5 +337,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native int initWiSpyDevices();
 	public native int[] pollWiSpy();
 	public native int pcapGetInterfaces();
+	public native int wiresharkInit();
 		
 }
