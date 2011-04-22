@@ -78,6 +78,13 @@ extern void failure_message(const char *msg_format, va_list ap);
 extern void read_failure_message(const char *filename, int err);
 extern void write_failure_message(const char *filename, int err);
 
+jstring
+Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(jstring param)
+{
+
+	return "something";
+}
+
 // Mainly a rip-off of the main() function in tshark
 jint
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
