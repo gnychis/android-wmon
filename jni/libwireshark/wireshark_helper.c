@@ -108,7 +108,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
   opterr = 0;
   optind_initial = optind;
   
-optind = optind_initial;
+	optind = optind_initial;
   opterr = 1;
 
 

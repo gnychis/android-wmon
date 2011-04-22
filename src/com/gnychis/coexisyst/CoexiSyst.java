@@ -69,10 +69,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
         setContentView(R.layout.main);
         system = new SubSystem(this);
         try {
-    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system");
-    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb");
-    	RootTools.sendShell("mkdir /data/data/com.gnychis.coexisyst/bin");
-    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/*.so /system/lib/");
+	    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system");
+	    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb");
+	    	RootTools.sendShell("mkdir /data/data/com.gnychis.coexisyst/bin");
         } catch(Exception e) {
         	Log.e(TAG, "error running RootTools commands for init", e);
         }
@@ -81,7 +80,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	system.install_bin("lsusb", R.raw.lsusb);
     	system.install_bin("zd_firmware.zip", R.raw.zd_firmware);
     	system.install_bin("pcapd", R.raw.pcapd);
-    	
+
     	// Load the libusb related libraries
     	try {
     		System.loadLibrary("usb");
@@ -146,7 +145,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		Log.d(TAG, "onCreate()");
 		//stopScans();
 		//startScans();
-		if(wiresharkInit()==3)
+		if(wiresharkInit()==1)
 			Log.d(TAG, "success with wireshark library");
 		else
 			Log.d(TAG, "error with wireshark library");
