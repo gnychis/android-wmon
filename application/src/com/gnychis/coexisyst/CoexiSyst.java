@@ -72,6 +72,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system");
 	    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb");
 	    	RootTools.sendShell("mkdir /data/data/com.gnychis.coexisyst/bin");
+	    	RootTools.sendShell("mount -o remount,rw rootfs /");
+	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp");
         } catch(Exception e) {
         	Log.e(TAG, "error running RootTools commands for init", e);
         }
@@ -337,5 +339,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native int[] pollWiSpy();
 	public native int pcapGetInterfaces();
 	public native int wiresharkInit();
+	public native String wiresharkGet(byte[] header, byte[] data, int encap, String param);
 		
 }

@@ -10,6 +10,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.stericson.RootTools.RootTools;
+
 public class AtherosDev {
 	public static final int ATHEROS_CONNECT = 100;
 	public static final int ATHEROS_DISCONNECT = 101;
@@ -18,6 +20,8 @@ public class AtherosDev {
 	
 	boolean _device_connected;
 	WifiMon _monitor_thread;
+	static int WTAP_ENCAP_ETHERNET = 1;
+	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	
 	
 	public AtherosDev(CoexiSyst c) {
@@ -33,9 +37,13 @@ public class AtherosDev {
 	
 	public void connected() {
 		_device_connected=true;
-		coexisyst.system.cmd("netcfg wlan0 down");
-		coexisyst.system.local_cmd("iwconfig wlan0 mode monitor");
-		coexisyst.system.cmd("netcfg wlan0 up");
+		try {
+			RootTools.sendShell("netcfg wlan0 down");
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/iwconfig wlan0 mode monitor");
+			RootTools.sendShell("netcfg wlan0 up");
+		} catch(Exception e) {
+			Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
+		}
 		
 		coexisyst.ath._monitor_thread = new WifiMon();
 		coexisyst.ath._monitor_thread.execute(coexisyst);	}
@@ -69,16 +77,33 @@ public class AtherosDev {
 			// which we will connect to for pcap information.
 			pcap_thread = new Pcapd();
 			pcap_thread.execute(coexisyst);
-			try { Thread.sleep(1000); } catch (Exception e) {} // give some time for the process
+			try { Thread.sleep(5000); } catch (Exception e) {} // give some time for the process
 			Log.d(WIMON_TAG, "launched pcapd");
 			
 			if(connectToPcapd() == false)
 				return "FAIL";
 			
 			// Loop and read headers and packets
-			while(true) {
-				PcapHeader header = getPcapHeader();  // get a header over the socket
-				getPcapPacket(header.wirelen());
+			while(true) {			
+				PcapHeader header = null;
+				byte[] rawHeader, rawData;
+
+				// Pull in the raw header and then cast it to a PcapHeader in JNetPcap
+				rawHeader = getPcapHeader();  // get a header over the socket
+				try {
+					header = new PcapHeader();
+					JBuffer headerBuffer = new JBuffer(rawHeader);  
+					header.peer(headerBuffer, 0);				
+				} catch(Exception e) {
+					Log.e("WifiMon", "exception trying to read pcap header",e);
+				}
+				
+				Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
+				
+				// Get the raw data now from the wirelen in the pcap header
+				//rawData = getPcapPacket(header.wirelen());
+				
+				//coexisyst.wiresharkGet(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP, "wlan.sa");
 			}
 		}
 		
@@ -101,26 +126,14 @@ public class AtherosDev {
 			return true;
 		}
 		
-		public PcapHeader getPcapHeader() {
-			PcapHeader header = null;
+		public byte[] getPcapHeader() {
 			byte[] rawdata = getSocketData(PCAP_HDR_SIZE);
-			
-			try {
-				header = new PcapHeader();
-				JBuffer headerBuffer = new JBuffer(rawdata);  
-				header.peer(headerBuffer, 0);				
-			} catch(Exception e) {
-				Log.e("WifiMon", "exception trying to read pcap header",e);
-			}
-			
-			Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
-			return header;
+			return rawdata;
 		}
 		
-		public void getPcapPacket(int length) {
+		public byte[] getPcapPacket(int length) {
 			byte[] rawdata = getSocketData(length);
-			
-			
+			return rawdata;
 		}
 		
 		public byte[] getSocketData(int length) {
@@ -130,7 +143,7 @@ public class AtherosDev {
 				int total=0;
 				while(total < length) {
 					v = skt_in.read(data, total, length-total);
-					Log.d("WifiMon", "Read in " + Integer.toString(v));
+					Log.d("WifiMon", "Read in " + Integer.toString(v) + " - " + Integer.toString(total) + " / " + Integer.toString(length));
 					if(v==-1)
 						cancel(true);  // cancel the thread if we have errors reading socket
 					total+=v;
