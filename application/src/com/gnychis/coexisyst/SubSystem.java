@@ -36,6 +36,7 @@ public class SubSystem {
 			_cmdfh.print(fullc);
 			_cmdfh.flush();
 		} catch (Exception e) {
+			Log.e("SYSTEM", "failure trying to run: " + c);
 			Log.e("SYSTEM", "exception trying to run command",e);
 		}
 	}
