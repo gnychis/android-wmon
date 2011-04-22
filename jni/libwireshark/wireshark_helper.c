@@ -22,7 +22,6 @@
 #include "spectool_net_client.h"
 #include <errno.h>
 #include <glib.h>
-#define LOG_TAG "WiresharkDriver" // text for log tag 
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,6 +33,7 @@
 
 #include "config.h"
 
+#include <epan/epan_dissect.h>
 #include <epan/packet.h>
 #include <epan/epan.h>
 #include <epan/dissectors/packet-radiotap.h>
@@ -60,6 +60,11 @@ static gboolean print_packet_info;      /* TRUE if we're to print packet informa
 static capture_options global_capture_opts;
 static gboolean do_dissection;  /* TRUE if we have to dissect each packet */
 
+static guint32 cum_bytes;
+static nstime_t first_ts;
+static nstime_t prev_dis_ts;
+static nstime_t prev_cap_ts;
+
 /*
  * The way the packet decode is to be written.
  */
@@ -78,9 +83,47 @@ extern void failure_message(const char *msg_format, va_list ap);
 extern void read_failure_message(const char *filename, int err);
 extern void write_failure_message(const char *filename, int err);
 
+#define LOG_TAG "WiresharkDriver"
+
 jstring
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(jstring param)
+Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap, jstring param)
 {
+	// From the Java environment
+	struct wtap_pkthdr whdr;
+	char *pHeader;
+	char *pData;
+
+	// Wireshark related
+  frame_data fdata;
+	gboolean create_proto_tree = 0;
+	gint64 offset = 0;
+  epan_dissect_t edt;
+	
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Inside wiresharkGet()");
+
+	// Get pointers frmo the jbyteArrays
+	pHeader = (char *) (*env)->GetByteArrayElements(env, header, NULL);
+	pData = (char *) (*env)->GetByteArrayElements(env, data, NULL);
+
+	// We are going to copy, not cast, in to the whdr because we need to set an additional value
+	memcpy(&whdr, pHeader, sizeof(struct wtap_pkthdr));
+	whdr.pkt_encap = encap;
+
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got header of size: %d\n", whdr.caplen);
+
+	// Set up the frame data
+	frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
+
+	// Dissect the packet
+	epan_dissect_init(&edt, create_proto_tree, 0);	// last parameter is 0, since we don't need to print
+	tap_queue_init(&edt);
+	frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
+																&first_ts, &prev_dis_ts, &prev_cap_ts);
+	epan_dissect_run(&edt, wtap_pseudoheader(cfile.wth), pData, &fdata, NULL);
+
+
+	(*env)->ReleaseByteArrayElements( env, header, pHeader, NULL);
+	(*env)->ReleaseByteArrayElements( env, data, pData, NULL);
 
 	return "something";
 }
