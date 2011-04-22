@@ -280,7 +280,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thi
 	jstring      str;
   	jsize        len = 0;
   		
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "checking for a device!"); 	 
+	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "checking for a device!"); 	 
   
   	if(usb_find_busses()<0)
   		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB busses"); 	 
