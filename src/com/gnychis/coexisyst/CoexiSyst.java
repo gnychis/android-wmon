@@ -89,7 +89,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     		System.loadLibrary("usb-compat");
     		System.loadLibrary("wispy");
     		System.loadLibrary("pcap");
-    		System.loadLibrary("jnetpcap");
+    		//System.loadLibrary("jnetpcap");
     		System.loadLibrary("tshark");
     		System.loadLibrary("wireshark_helper");
     		System.loadLibrary("coexisyst");
