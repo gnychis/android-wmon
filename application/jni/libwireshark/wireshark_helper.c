@@ -94,10 +94,10 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	char *pData;
 
 	// Wireshark related
-  frame_data fdata;
+	frame_data fdata;
 	gboolean create_proto_tree = 0;
 	gint64 offset = 0;
-  epan_dissect_t edt;
+	epan_dissect_t edt;
 	
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Inside wiresharkGet()");
 
@@ -118,7 +118,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	epan_dissect_init(&edt, create_proto_tree, 0);	// last parameter is 0, since we don't need to print
 	tap_queue_init(&edt);
 	frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
-																&first_ts, &prev_dis_ts, &prev_cap_ts);
+										&first_ts, &prev_dis_ts, &prev_cap_ts);
 	epan_dissect_run(&edt, wtap_pseudoheader(cfile.wth), pData, &fdata, NULL);
 
 
