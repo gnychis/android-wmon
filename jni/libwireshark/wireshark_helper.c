@@ -156,7 +156,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	proto_tree_children_foreach(edt.tree, proto_tree_get_node_field_values,
                                 &fieldData);
 
-	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "-- Value: %s", fields.field_values[0]);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "-- Value: %s", fields.field_values[0]);
 
 	(*env)->ReleaseStringUTFChars(env, param, field);
 	(*env)->ReleaseByteArrayElements( env, header, pHeader, NULL);
