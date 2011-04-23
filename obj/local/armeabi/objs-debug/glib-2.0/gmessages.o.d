@@ -104,6 +104,7 @@
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gprintfint.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gthreadprivate.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/galias.h \
+ /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gtestutils.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/galiasdef.c
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../android/config.h:
@@ -313,5 +314,7 @@
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gthreadprivate.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/galias.h:
+
+/Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gtestutils.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/galiasdef.c:
