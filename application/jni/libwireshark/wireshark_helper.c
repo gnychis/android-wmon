@@ -85,6 +85,22 @@ extern void write_failure_message(const char *filename, int err);
 
 #define LOG_TAG "WiresharkDriver"
 
+struct _output_fields {
+    gboolean print_header;
+    gchar separator;
+    gchar occurrence;
+    gchar aggregator;
+    GPtrArray* fields;
+    GHashTable* field_indicies;
+    emem_strbuf_t** field_values;
+    gchar quote;
+};
+
+typedef struct {
+    output_fields_t* fields;
+	epan_dissect_t		*edt;
+} write_field_data_t;
+
 jstring
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap, jstring param)
 {
@@ -98,6 +114,8 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	gboolean create_proto_tree = 0;
 	gint64 offset = 0;
 	epan_dissect_t edt;
+	write_field_data_t fieldData;
+	output_fields_t fields;
 	
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Inside wiresharkGet()");
 
@@ -113,6 +131,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 
 	// Set up the frame data
 	frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "properly set up the frame data");
 
 	// Dissect the packet
 	epan_dissect_init(&edt, create_proto_tree, 0);	// last parameter is 0, since we don't need to print
@@ -120,6 +139,12 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
 										&first_ts, &prev_dis_ts, &prev_cap_ts);
 	epan_dissect_run(&edt, wtap_pseudoheader(cfile.wth), pData, &fdata, NULL);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ran the dissector");
+
+	fieldData.fields = &fields;
+	fieldData.edt = &edt;
+	fields.field_indicies = g_hash_table_new(g_str_hash, g_str_equal);
+
 
 
 	(*env)->ReleaseByteArrayElements( env, header, pHeader, NULL);
