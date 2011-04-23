@@ -57,7 +57,8 @@
  /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/linux/byteorder/swab.h \
  /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/linux/byteorder/generic.h \
  /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/linux/in6.h \
- /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/netinet/in6.h
+ /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/netinet/in6.h \
+ /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h
 
 /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/stdio.h:
 
@@ -176,3 +177,5 @@ jni/libpcap/pcap/bpf.h:
 /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/linux/in6.h:
 
 /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/netinet/in6.h:
+
+/Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h:

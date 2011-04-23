@@ -102,6 +102,7 @@
  /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/linux/capability.h \
  /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/pathconf.h \
  /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/stdio.h \
+ /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gtestutils.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/galiasdef.c
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../android/config.h:
@@ -307,5 +308,7 @@
 /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/pathconf.h:
 
 /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/stdio.h:
+
+/Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gtestutils.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/galiasdef.c:
