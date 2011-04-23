@@ -77,6 +77,7 @@ typedef enum {
 
 static output_action_e output_action;
 
+extern void proto_tree_get_node_field_values(proto_node *node, gpointer data);
 extern void tshark_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
 extern void open_failure_message(const char *filename, int err, gboolean for_writing);
 extern void failure_message(const char *msg_format, va_list ap);
@@ -111,11 +112,12 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 
 	// Wireshark related
 	frame_data fdata;
-	gboolean create_proto_tree = 0;
+	gboolean create_proto_tree = 1;
 	gint64 offset = 0;
 	epan_dissect_t edt;
 	write_field_data_t fieldData;
 	output_fields_t fields;
+	gchar *field;
 	
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Inside wiresharkGet()");
 
@@ -134,21 +136,34 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "properly set up the frame data");
 
 	// Dissect the packet
-	epan_dissect_init(&edt, create_proto_tree, 0);	// last parameter is 0, since we don't need to print
+	epan_dissect_init(&edt, create_proto_tree, 1);
 	tap_queue_init(&edt);
 	frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
 										&first_ts, &prev_dis_ts, &prev_cap_ts);
 	epan_dissect_run(&edt, wtap_pseudoheader(cfile.wth), pData, &fdata, NULL);
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ran the dissector");
 
+	// Prepare the field and data
 	fieldData.fields = &fields;
 	fieldData.edt = &edt;
 	fields.field_indicies = g_hash_table_new(g_str_hash, g_str_equal);
 
+	// Create the field name
+	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Retrieving: %s", field);
+	g_hash_table_insert(fields.field_indicies, field, GUINT_TO_POINTER(0));
+	fields.field_values = ep_alloc_array0(emem_strbuf_t*, 1);
+	proto_tree_children_foreach(edt.tree, proto_tree_get_node_field_values,
+                                &fieldData);
 
+	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "-- Value: %s", fields.field_values[0]);
 
+	(*env)->ReleaseStringUTFChars(env, param, field);
 	(*env)->ReleaseByteArrayElements( env, header, pHeader, NULL);
 	(*env)->ReleaseByteArrayElements( env, data, pData, NULL);
+
+	epan_dissect_cleanup(&edt);
+	frame_data_cleanup(&fdata);
 
 	return "something";
 }
