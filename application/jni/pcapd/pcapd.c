@@ -98,14 +98,14 @@ int main (int argc, char *argv[])
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got packet size of: %d", header.len);
 
 		// Now write the pcap packet
-//		total = 0;
-//		while(total < header.len) {
-//			if((wrote = send(sd_current, packet + total, header.len-total, 0)) == -1) {
-//				perror("error trying to send packet over");
-//				return -1;
-//			}
-//			total += wrote;
-//		}
+		total = 0;
+		while(total < header.len) {
+			if((wrote = send(sd_current, packet + total, header.len-total, 0)) == -1) {
+				perror("error trying to send packet over");
+				return -1;
+			}
+			total += wrote;
+		}
 	}
 	
 	pcap_close(handle);
