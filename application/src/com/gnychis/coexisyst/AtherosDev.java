@@ -101,9 +101,9 @@ public class AtherosDev {
 				Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
 				
 				// Get the raw data now from the wirelen in the pcap header
-				//rawData = getPcapPacket(header.wirelen());
+				rawData = getPcapPacket(header.wirelen());
 				
-				//coexisyst.wiresharkGet(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP, "wlan.sa");
+				coexisyst.wiresharkGet(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP, "radiotap.channel.freq");
 			}
 		}
 		
@@ -143,7 +143,7 @@ public class AtherosDev {
 				int total=0;
 				while(total < length) {
 					v = skt_in.read(data, total, length-total);
-					Log.d("WifiMon", "Read in " + Integer.toString(v) + " - " + Integer.toString(total) + " / " + Integer.toString(length));
+					Log.d("WifiMon", "Read in " + Integer.toString(v) + " - " + Integer.toString(total+v) + " / " + Integer.toString(length));
 					if(v==-1)
 						cancel(true);  // cancel the thread if we have errors reading socket
 					total+=v;
