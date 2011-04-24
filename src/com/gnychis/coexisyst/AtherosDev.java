@@ -40,6 +40,7 @@ public class AtherosDev {
 		try {
 			RootTools.sendShell("netcfg wlan0 down");
 			RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/iwconfig wlan0 mode monitor");
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/iwconfig wlan0 channel 6");
 			RootTools.sendShell("netcfg wlan0 up");
 		} catch(Exception e) {
 			Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);

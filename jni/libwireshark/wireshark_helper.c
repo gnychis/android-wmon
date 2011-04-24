@@ -109,6 +109,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	struct wtap_pkthdr whdr;
 	char *pHeader;
 	char *pData;
+	int i;
 
 	// Wireshark related
 	frame_data fdata;
@@ -130,40 +131,44 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	whdr.pkt_encap = encap;
 
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got header of size: %d\n", whdr.caplen);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "First 10 bytes:\n");
+	for(i=0; i<10; i++)
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "data[%d]: 0x%x:\n", i, pData[i]);
+
 
 	// Set up the frame data
-	frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "properly set up the frame data");
+	//frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
+	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "properly set up the frame data");
 
 	// Dissect the packet
-	epan_dissect_init(&edt, create_proto_tree, 1);
-	tap_queue_init(&edt);
-	frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
-										&first_ts, &prev_dis_ts, &prev_cap_ts);
-	epan_dissect_run(&edt, wtap_pseudoheader(cfile.wth), pData, &fdata, NULL);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ran the dissector");
+	//epan_dissect_init(&edt, create_proto_tree, 1);
+	//tap_queue_init(&edt);
+	//frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
+	//									&first_ts, &prev_dis_ts, &prev_cap_ts);
+	//epan_dissect_run(&edt, wtap_pseudoheader(cfile.wth), pData, &fdata, NULL);
+	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ran the dissector");
 
-	// Prepare the field and data
-	fieldData.fields = &fields;
-	fieldData.edt = &edt;
-	fields.field_indicies = g_hash_table_new(g_str_hash, g_str_equal);
+	//// Prepare the field and data
+	//fieldData.fields = &fields;
+	//fieldData.edt = &edt;
+	//fields.field_indicies = g_hash_table_new(g_str_hash, g_str_equal);
 
-	// Create the field name
-	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Retrieving: %s", field);
-	g_hash_table_insert(fields.field_indicies, field, GUINT_TO_POINTER(0));
-	fields.field_values = ep_alloc_array0(emem_strbuf_t*, 1);
-	proto_tree_children_foreach(edt.tree, proto_tree_get_node_field_values,
-                                &fieldData);
+	//// Create the field name
+	//field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
+	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Retrieving: %s", field);
+	//g_hash_table_insert(fields.field_indicies, field, GUINT_TO_POINTER(0));
+	//fields.field_values = ep_alloc_array0(emem_strbuf_t*, 1);
+	//proto_tree_children_foreach(edt.tree, proto_tree_get_node_field_values,
+  //                              &fieldData);
 
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "-- Value: %s", fields.field_values[0]);
+	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "-- Value: %s", fields.field_values[0]);
 
-	(*env)->ReleaseStringUTFChars(env, param, field);
+	//(*env)->ReleaseStringUTFChars(env, param, field);
 	(*env)->ReleaseByteArrayElements( env, header, pHeader, NULL);
 	(*env)->ReleaseByteArrayElements( env, data, pData, NULL);
 
-	epan_dissect_cleanup(&edt);
-	frame_data_cleanup(&fdata);
+	//epan_dissect_cleanup(&edt);
+	//frame_data_cleanup(&fdata);
 
 	return "something";
 }
