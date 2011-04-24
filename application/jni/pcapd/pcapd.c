@@ -8,6 +8,15 @@
 #include <android/log.h>
 #include <sys/types.h>
 #define LOG_TAG "PcapDriver" // text for log tag 
+//#define PCAP_DUMP
+//#define VERBOSE
+
+struct ieee80211_radiotap_header {
+        u_int8_t        it_version;     /* set to 0 */
+        u_int8_t        it_pad;
+        u_int16_t       it_len;         /* entire length */
+        u_int32_t       it_present;     /* fields present */
+} __attribute__((__packed__));
 
 int main (int argc, char *argv[])
 {
@@ -24,8 +33,11 @@ int main (int argc, char *argv[])
 	pcap_t *handle;
 	struct pcap_pkthdr header;
 	const u_char *packet;
+	pcap_dumper_t *pDump;
 
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Size of header: %d\n", sizeof(struct pcap_pkthdr));
+#endif
 
 	if(argc<3)
 		return -1;
@@ -35,16 +47,23 @@ int main (int argc, char *argv[])
 		return -1;
 	}
 
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Network interfaces:\n");
+#endif
 	for(d=alldevs;d;d=d->next) {
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "   %s\n", d->name);
 	}
 
-	handle = pcap_open_live(argv[1], 0, 1, 1000, errbuf);
+	handle = pcap_open_live(argv[1], 1500, 1, 1000, errbuf);
 	if(handle == NULL) {
 		fprintf(stderr, "Couldn't open device %s: %s\n", argv[1], errbuf);
 		return -1;
 	}
+
+#ifdef PCAP_DUMP
+	// Create a dump file
+	pDump = pcap_dump_open(handle, "/sdcard/pcapd.pcap");
+#endif
 
 	// Only open a server if we get this far.
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -76,11 +95,17 @@ int main (int argc, char *argv[])
 		return -1;
 	}
 
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Accepted connection\n");
+#endif
 
 	while(1) {
-		int k,wrote,total;
+		int k,wrote,total,z;
+		struct ieee80211_radiotap_header *rth;
 		packet = pcap_next(handle, &header);
+#ifdef PCAP_DUMP
+		pcap_dump((u_char *) pDump, &header, packet);
+#endif
 		if(packet == NULL) {
 			fprintf(stderr, "Error trying to read packet");
 			break;
@@ -95,7 +120,17 @@ int main (int argc, char *argv[])
 			}
 			total += wrote;
 		}
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got packet size of: %d", header.len);
+
+#ifdef VERBOSE
+		// print out some information
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got packet size of: %d, caplen: %d", header.len, header.caplen);
+		rth = (struct ieee80211_radiotap_header *) packet;
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "RadioTap... Version: %d, Pad: %d, Len: %d, Fields: %d", 
+																rth->it_version, rth->it_pad, rth->it_len, rth->it_present);
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Datalink Type: %d, Name: %s", pcap_datalink(handle), pcap_datalink_val_to_name(pcap_datalink(handle)));
+		for(z = 0; z<10; z++)
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "data[%d]: 0x%x", z, packet[z]);
+#endif
 
 		// Now write the pcap packet
 		total = 0;
