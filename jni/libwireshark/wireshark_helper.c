@@ -85,6 +85,7 @@ extern void read_failure_message(const char *filename, int err);
 extern void write_failure_message(const char *filename, int err);
 
 #define LOG_TAG "WiresharkDriver"
+#define VERBOSE
 
 struct _output_fields {
     gboolean print_header;
@@ -119,8 +120,11 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	write_field_data_t fieldData;
 	output_fields_t fields;
 	gchar *field;
+	union wtap_pseudo_header psh;
 	
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Inside wiresharkGet()");
+#endif
 
 	// Get pointers frmo the jbyteArrays
 	pHeader = (char *) (*env)->GetByteArrayElements(env, header, NULL);
@@ -130,23 +134,47 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	memcpy(&whdr, pHeader, sizeof(struct wtap_pkthdr));
 	whdr.pkt_encap = encap;
 
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got header of size: %d\n", whdr.caplen);
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "First 10 bytes:\n");
 	for(i=0; i<10; i++)
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "data[%d]: 0x%x:\n", i, pData[i]);
+#endif
 
 
 	// Set up the frame data
-	//frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
-	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "properly set up the frame data");
+	frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "properly set up the frame data");
 
-	// Dissect the packet
-	//epan_dissect_init(&edt, create_proto_tree, 1);
-	//tap_queue_init(&edt);
-	//frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
-	//									&first_ts, &prev_dis_ts, &prev_cap_ts);
-	//epan_dissect_run(&edt, wtap_pseudoheader(cfile.wth), pData, &fdata, NULL);
-	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ran the dissector");
+	// Set up the dissection
+	epan_dissect_init(&edt, create_proto_tree, 0);
+	tap_queue_init(&edt);
+
+	// Set some of the frame data
+	memset(&cfile.elapsed_time, '\0', sizeof(nstime_t));
+	memset(&first_ts, '\0', sizeof(nstime_t));
+	memset(&prev_dis_ts, '\0', sizeof(nstime_t));
+	memset(&prev_cap_ts, '\0', sizeof(nstime_t));
+	frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
+									&first_ts, &prev_dis_ts, &prev_cap_ts);
+	fdata.file_off=0;
+
+#ifdef VERBOSE
+	// Check the file data
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "fdata:");
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...pfd: %d", fdata.pfd);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...caplen: %d", fdata.cap_len);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...pktlen: %d", fdata.pkt_len);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...fileoff: %lld", fdata.file_off);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...lnk_t: %d", fdata.lnk_t);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...Flags: %d|%d|%d|%d|%d|%d",
+																				fdata.flags.passed_dfilter, fdata.flags.encoding, fdata.flags.visited,
+																				fdata.flags.marked, fdata.flags.ref_time, fdata.flags.ignored);
+#endif
+
+	memset(&psh, '\0', sizeof(union wtap_pseudo_header));
+	epan_dissect_run(&edt, &psh, pData, &fdata, NULL);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ran the dissector");
 
 	//// Prepare the field and data
 	//fieldData.fields = &fields;
@@ -168,7 +196,8 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	(*env)->ReleaseByteArrayElements( env, data, pData, NULL);
 
 	//epan_dissect_cleanup(&edt);
-	//frame_data_cleanup(&fdata);
+	frame_data_cleanup(&fdata);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "successfully cleaned up our act");
 
 	return "something";
 }
