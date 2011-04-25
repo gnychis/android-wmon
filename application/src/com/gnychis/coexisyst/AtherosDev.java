@@ -66,6 +66,7 @@ public class AtherosDev {
 		private static final String WIMON_TAG = "WiFiMonitor";
 		private int PCAP_HDR_SIZE = 16;
 		Pcapd pcap_thread;
+		int parsed;
 		
 		@Override
 		protected String doInBackground( Context ... params )
@@ -73,6 +74,7 @@ public class AtherosDev {
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			Log.d(WIMON_TAG, "a new Wifi monitor thread was started");
+			parsed=0;
 			
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
@@ -99,16 +101,20 @@ public class AtherosDev {
 					Log.e("WifiMon", "exception trying to read pcap header",e);
 				}
 				
-				Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
+				//Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
 				
 				// Get the raw data now from the wirelen in the pcap header
 				rawData = getPcapPacket(header.wirelen());
 				
 				// Get the value from a wireshark dissection
-				int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-				String rval = coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq");
-				coexisyst.dissectCleanup(dissect_ptr);
-				Log.d("WifiMon", "Got value back from wireshark dissector: " + rval);
+				if(parsed==0) {
+					int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+					String rval = coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq");
+					Log.d("WifiMon", "Got value back from wireshark dissector: " + rval);
+					coexisyst.dissectCleanup(dissect_ptr);
+				}
+				
+				parsed++;
 			}
 		}
 		
@@ -148,7 +154,7 @@ public class AtherosDev {
 				int total=0;
 				while(total < length) {
 					v = skt_in.read(data, total, length-total);
-					Log.d("WifiMon", "Read in " + Integer.toString(v) + " - " + Integer.toString(total+v) + " / " + Integer.toString(length));
+					//Log.d("WifiMon", "Read in " + Integer.toString(v) + " - " + Integer.toString(total+v) + " / " + Integer.toString(length));
 					if(v==-1)
 						cancel(true);  // cancel the thread if we have errors reading socket
 					total+=v;

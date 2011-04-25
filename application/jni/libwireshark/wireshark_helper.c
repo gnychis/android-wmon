@@ -102,6 +102,19 @@ typedef struct {
 	epan_dissect_t		*edt;
 } write_field_data_t;
 
+void
+Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
+{
+	write_field_data_t *dissection = (write_field_data_t *) ptr;
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "casted the pointer");
+	epan_dissect_cleanup(dissection->edt);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "cleaned up dissection");
+	free(dissection->edt);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed edt");
+	free(dissection);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed dissection");
+}
+
 jint
 Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
 {
@@ -149,21 +162,17 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jb
 									&first_ts, &prev_dis_ts, &prev_cap_ts);
 	fdata.file_off=0;
 
+	// Run the actual dissection
 	memset(&psh, '\0', sizeof(union wtap_pseudo_header));
 	epan_dissect_run(dissection->edt, &psh, pData, &fdata, NULL);
 
+	// Do some cleanup
 	frame_data_cleanup(&fdata);
+	(*env)->ReleaseByteArrayElements( env, header, pHeader, NULL);
+	(*env)->ReleaseByteArrayElements( env, data, pData, NULL);
+
 
 	return (jint)dissection;
-}
-
-void
-Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
-{
-	write_field_data_t *dissection = (write_field_data_t *) ptr;
-	epan_dissect_cleanup(dissection->edt);
-	free(dissection->edt);
-	free(dissection);
 }
 
 jstring
@@ -193,6 +202,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jin
 	result = (*env)->NewStringUTF(env, dissection->fields->field_values[0]->str);
 
 	output_fields_free(dissection->fields);
+	(*env)->ReleaseStringUTFChars(env, param, field);
 
 	return result;
 }
