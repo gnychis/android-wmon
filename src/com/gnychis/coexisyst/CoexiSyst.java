@@ -339,6 +339,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native int[] pollWiSpy();
 	public native int pcapGetInterfaces();
 	public native int wiresharkInit();
-	public native String wiresharkGet(byte[] header, byte[] data, int encap, String param);
+	public native int dissectPacket(byte[] header, byte[] data, int encap);
+	public native void dissectCleanup(int dissect_ptr);
+	public native String wiresharkGet(int dissect_ptr, String param);
 		
 }
