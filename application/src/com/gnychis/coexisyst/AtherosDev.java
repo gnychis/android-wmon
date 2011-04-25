@@ -104,7 +104,11 @@ public class AtherosDev {
 				// Get the raw data now from the wirelen in the pcap header
 				rawData = getPcapPacket(header.wirelen());
 				
-				coexisyst.wiresharkGet(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP, "radiotap.channel.freq");
+				// Get the value from a wireshark dissection
+				int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+				String rval = coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq");
+				coexisyst.dissectCleanup(dissect_ptr);
+				Log.d("WifiMon", "Got value back from wireshark dissector: " + rval);
 			}
 		}
 		

@@ -55,7 +55,6 @@
 capture_file cfile;
 gchar               *cf_name = NULL, *rfilter = NULL;
 static print_format_e print_format = PR_FMT_TEXT;
-static output_fields_t* output_fields  = NULL;
 static gboolean print_packet_info;      /* TRUE if we're to print packet information */
 static capture_options global_capture_opts;
 static gboolean do_dissection;  /* TRUE if we have to dissect each packet */
@@ -103,30 +102,30 @@ typedef struct {
 	epan_dissect_t		*edt;
 } write_field_data_t;
 
-jstring
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap, jstring param)
+jint
+Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
 {
+
 	// From the Java environment
 	struct wtap_pkthdr whdr;
+	int i;
+	gsize z;
 	char *pHeader;
 	char *pData;
-	int i;
 
 	// Wireshark related
 	frame_data fdata;
 	gboolean create_proto_tree = 1;
 	gint64 offset = 0;
-	epan_dissect_t edt;
-	write_field_data_t fieldData;
-	output_fields_t fields;
-	gchar *field;
 	union wtap_pseudo_header psh;
-	
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Inside wiresharkGet()");
-#endif
 
-	// Get pointers frmo the jbyteArrays
+	// This structure is *critical*, it holds two points which we hold and pass back to
+	// the Java code.  This way we don't have to dissect multiple times for a packet.
+	write_field_data_t *dissection = malloc(sizeof(write_field_data_t));
+	dissection->edt = malloc(sizeof(epan_dissect_t));
+	memset(dissection->edt, '\0', sizeof(epan_dissect_t));
+
+	// Translate the jbyteArrays to points for dissection
 	pHeader = (char *) (*env)->GetByteArrayElements(env, header, NULL);
 	pData = (char *) (*env)->GetByteArrayElements(env, data, NULL);
 
@@ -134,21 +133,12 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 	memcpy(&whdr, pHeader, sizeof(struct wtap_pkthdr));
 	whdr.pkt_encap = encap;
 
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got header of size: %d\n", whdr.caplen);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "First 10 bytes:\n");
-	for(i=0; i<10; i++)
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "data[%d]: 0x%x:\n", i, pData[i]);
-#endif
-
-
 	// Set up the frame data
 	frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "properly set up the frame data");
 
 	// Set up the dissection
-	epan_dissect_init(&edt, create_proto_tree, 0);
-	tap_queue_init(&edt);
+	epan_dissect_init(dissection->edt, create_proto_tree, 1);
+	tap_queue_init(dissection->edt);
 
 	// Set some of the frame data
 	memset(&cfile.elapsed_time, '\0', sizeof(nstime_t));
@@ -159,47 +149,52 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jby
 									&first_ts, &prev_dis_ts, &prev_cap_ts);
 	fdata.file_off=0;
 
-#ifdef VERBOSE
-	// Check the file data
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "fdata:");
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...pfd: %d", fdata.pfd);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...caplen: %d", fdata.cap_len);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...pktlen: %d", fdata.pkt_len);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...fileoff: %lld", fdata.file_off);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...lnk_t: %d", fdata.lnk_t);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...Flags: %d|%d|%d|%d|%d|%d",
-																				fdata.flags.passed_dfilter, fdata.flags.encoding, fdata.flags.visited,
-																				fdata.flags.marked, fdata.flags.ref_time, fdata.flags.ignored);
-#endif
-
 	memset(&psh, '\0', sizeof(union wtap_pseudo_header));
-	epan_dissect_run(&edt, &psh, pData, &fdata, NULL);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ran the dissector");
+	epan_dissect_run(dissection->edt, &psh, pData, &fdata, NULL);
 
-	//// Prepare the field and data
-	//fieldData.fields = &fields;
-	//fieldData.edt = &edt;
-	//fields.field_indicies = g_hash_table_new(g_str_hash, g_str_equal);
-
-	//// Create the field name
-	//field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
-	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Retrieving: %s", field);
-	//g_hash_table_insert(fields.field_indicies, field, GUINT_TO_POINTER(0));
-	//fields.field_values = ep_alloc_array0(emem_strbuf_t*, 1);
-	//proto_tree_children_foreach(edt.tree, proto_tree_get_node_field_values,
-  //                              &fieldData);
-
-	//__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "-- Value: %s", fields.field_values[0]);
-
-	//(*env)->ReleaseStringUTFChars(env, param, field);
-	(*env)->ReleaseByteArrayElements( env, header, pHeader, NULL);
-	(*env)->ReleaseByteArrayElements( env, data, pData, NULL);
-
-	//epan_dissect_cleanup(&edt);
 	frame_data_cleanup(&fdata);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "successfully cleaned up our act");
 
-	return "something";
+	return (jint)dissection;
+}
+
+void
+Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
+{
+	write_field_data_t *dissection = (write_field_data_t *) ptr;
+	epan_dissect_cleanup(dissection->edt);
+	free(dissection->edt);
+	free(dissection);
+}
+
+jstring
+Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
+{
+	gchar *field;
+	output_fields_t* output_fields  = NULL;
+	int z = 1;
+	jstring result;
+
+	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
+
+	// Get a regular pointer to the field we are looking up, and add it to the output fields
+	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
+	output_fields = output_fields_new();
+	output_fields_add(output_fields, field);
+
+	// Setup the output fields
+	dissection->fields = output_fields;
+	dissection->fields->field_indicies = g_hash_table_new(g_str_hash, g_str_equal);
+	dissection->fields->fields->len = 1;
+	g_hash_table_insert(dissection->fields->field_indicies, field, GUINT_TO_POINTER(z));
+	dissection->fields->field_values = ep_alloc_array0(emem_strbuf_t*, dissection->fields->fields->len);
+
+	// Run and get the value
+	proto_tree_children_foreach(dissection->edt->tree, proto_tree_get_node_field_values, dissection);
+	result = (*env)->NewStringUTF(env, dissection->fields->field_values[0]->str);
+
+	output_fields_free(dissection->fields);
+
+	return result;
 }
 
 // Mainly a rip-off of the main() function in tshark
@@ -336,20 +331,6 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
 
   /* Print format defaults to this. */
   print_format = PR_FMT_TEXT;
-
-  output_fields = output_fields_new();
-  
-  /* If we specified output fields, but not the output field type... */
-  if(WRITE_FIELDS != output_action && 0 != output_fields_num_fields(output_fields)) {
-        cmdarg_err("Output fields were specified with \"-e\", "
-            "but \"-Tfields\" was not specified.");
-        return -1;
-  } else if(WRITE_FIELDS == output_action && 0 == output_fields_num_fields(output_fields)) {
-        cmdarg_err("\"-Tfields\" was specified, but no fields were "
-                    "specified with \"-e\".");
-
-        return -1;
-  }
   
   prefs_apply_all();
   start_requested_stats();
