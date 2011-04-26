@@ -80,6 +80,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
     	// Load the libusb related libraries
     	try {
+    		System.loadLibrary("glib-2.0");
     		System.loadLibrary("usb");
     		System.loadLibrary("usb-compat");
     		System.loadLibrary("wispy");
