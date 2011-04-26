@@ -55,6 +55,7 @@
 void dissectCleanup(int ptr);
 int dissectPacket(char *pHeader, char *pData, int encap);
 char *wiresharkGet(int wfd_ptr, gchar *field);
+void myoutput_fields_free(output_fields_t* fields);
 
 capture_file cfile;
 gchar               *cf_name = NULL, *rfilter = NULL;
@@ -113,15 +114,15 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, js
   unsigned char data_buffer[1024];
   int psize = 113;
   int z, y, i;
-  struct pcap_pkthdr pheader;
   struct pcap_file_header pfheader;
 	char *fname;
+	int parsed=0;
 	
 	fname = (char *) (*env)->GetByteArrayElements(env, jsFname, NULL);
 
-  bf = fopen(fname, "rb");
+  bf = fopen("/sdcard/test.pcap", "rb");
   if(!bf) {
-    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not open /tmp/test.pcap\n");
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not open %s - %s\n", jsFname, fname);
     return;
   }
 
@@ -130,39 +131,48 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, js
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Did not read past header: %d\n", z);
     return;
   }
+#ifdef VERBOSE
   __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "read link type: %d\n", pfheader.linktype);
+#endif
 
-	// Read in the first packet header
-	if((z = fread(&pheader, sizeof(pheader), 1, bf)) != 1) {
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet header\n");
-		return;
-	}
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "got the first packet, size: %d\n", pheader.caplen);
-
-	// Read in the packet now
-	if((z = fread(&data_buffer, pheader.caplen, 1, bf)) != 1) {
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet\n");
-		return;
-	}
+	while(1) {
+		int dissect_ptr;
+		char *rval;
+		struct pcap_pkthdr pheader;
 	
-	if(data_buffer[0] == 0x00 && data_buffer[1] == 0x00 && data_buffer[2] == 0x18
-			&& data_buffer[3] == 0x00 && data_buffer[4] == 0x0e && data_buffer[5] == 0x48) {
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got the start of a radiotap header\n");
-	} else {
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", data_buffer[0], data_buffer[1], data_buffer[2], data_buffer[3],
-							data_buffer[4], data_buffer[5]);
-	}
+		// Read in the first packet header
+		if((z = fread(&pheader, sizeof(pheader), 1, bf)) != 1) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet header\n");
+			break;
+		}
+#ifdef VERBOSE
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "got the first packet, size: %d\n", pheader.caplen);
+#endif
 
-	//  WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP
-	for(i=0; i<100; i++) {
-		int dissect_ptr = dissectPacket((char *)&pheader, data_buffer, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-		char *rval = wiresharkGet(dissect_ptr, "radiotap.channel.freq");
+		// Read in the packet now
+		if((z = fread(&data_buffer, pheader.caplen, 1, bf)) != 1) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet after %d packets\n", parsed);
+			break;
+		}
+#ifdef VERBOSE
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Read in the packet\n", rval);
+#endif
+		
+		dissect_ptr = dissectPacket((char *)&pheader, data_buffer, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+#ifdef VERBOSE
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Finished dissecting\n", rval);
+#endif
+		rval = wiresharkGet(dissect_ptr, "radiotap.channel.freq");
+#ifdef VERBOSE
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got result: %s\n", rval);
+#endif
 		free(rval);
 		dissectCleanup(dissect_ptr);
+		parsed++;
 	}
 
-	(*env)->ReleaseByteArrayElements( env, jsFname, fname, NULL);
+	(*env)->ReleaseByteArrayElements( env, jsFname, fname, 0);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Succuessfully passed wireshark test after %d packets\n", parsed);
 }
 
 
@@ -176,13 +186,21 @@ void
 dissectCleanup(int ptr)
 {
 	write_field_data_t *dissection = (write_field_data_t *) ptr;
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "casted the pointer");
+#endif
 	epan_dissect_cleanup(dissection->edt);
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "cleaned up dissection");
+#endif
 	free(dissection->edt);
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed edt");
+#endif
 	free(dissection);
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed dissection");
+#endif
 }
 
 int
@@ -199,22 +217,38 @@ dissectPacket(char *pHeader, char *pData, int encap)
 	gint64 offset = 0;
 	union wtap_pseudo_header psh;
 
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(hello!)");
+#endif
+
 	// This structure is *critical*, it holds two points which we hold and pass back to
 	// the Java code.  This way we don't have to dissect multiple times for a packet.
 	write_field_data_t *dissection = malloc(sizeof(write_field_data_t));
 	dissection->edt = malloc(sizeof(epan_dissect_t));
 	memset(dissection->edt, '\0', sizeof(epan_dissect_t));
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(created the dissection field)");
+#endif
 
 	// We are going to copy, not cast, in to the whdr because we need to set an additional value
 	memcpy(&whdr, pHeader, sizeof(struct wtap_pkthdr));
 	whdr.pkt_encap = encap;
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(set the encapsulation type)");
+#endif
 
 	// Set up the frame data
 	frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(initialized the frame data)");
+#endif
 
 	// Set up the dissection
 	epan_dissect_init(dissection->edt, create_proto_tree, 1);
 	tap_queue_init(dissection->edt);
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(initialized the dissection)");
+#endif
 
 	// Set some of the frame data
 	memset(&cfile.elapsed_time, '\0', sizeof(nstime_t));
@@ -224,13 +258,25 @@ dissectPacket(char *pHeader, char *pData, int encap)
 	frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
 									&first_ts, &prev_dis_ts, &prev_cap_ts);
 	fdata.file_off=0;
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(setup additional frame data)");
+#endif
 
 	// Run the actual dissection
 	memset(&psh, '\0', sizeof(union wtap_pseudo_header));
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(right before the dissection!)");
+#endif
 	epan_dissect_run(dissection->edt, &psh, pData, &fdata, NULL);
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(ran the dissection)");
+#endif
 
 	// Do some cleanup
 	frame_data_cleanup(&fdata);
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(cleaned up the frame data)");
+#endif
 
 	return (int)dissection;
 }
@@ -248,8 +294,8 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jb
 
 	ret = dissectPacket(pHeader, pData, (int)encap);
 
-	(*env)->ReleaseByteArrayElements( env, header, pHeader, NULL);
-	(*env)->ReleaseByteArrayElements( env, data, pData, NULL);
+	(*env)->ReleaseByteArrayElements( env, header, pHeader, 0);
+	(*env)->ReleaseByteArrayElements( env, data, pData, 0);
 
 	return ret;
 }
@@ -263,10 +309,16 @@ wiresharkGet(int wfd_ptr, gchar *field)
 	char *str_res = malloc(1024);	// assuming string result will be no more than 1024
 
 	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGet(casted dissection pointer)");
+#endif
 	
 	// Get a regular pointer to the field we are looking up, and add it to the output fields
 	output_fields = output_fields_new();
 	output_fields_add(output_fields, field);
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGet(created the new output field)");
+#endif
 
 	// Setup the output fields
 	dissection->fields = output_fields;
@@ -274,15 +326,59 @@ wiresharkGet(int wfd_ptr, gchar *field)
 	dissection->fields->fields->len = 1;
 	g_hash_table_insert(dissection->fields->field_indicies, field, GUINT_TO_POINTER(z));
 	dissection->fields->field_values = ep_alloc_array0(emem_strbuf_t*, dissection->fields->fields->len);
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGet(setup the output field)");
+#endif
 
 	// Run and get the value
 	proto_tree_children_foreach(dissection->edt->tree, proto_tree_get_node_field_values, dissection);
 	strncpy(str_res, dissection->fields->field_values[0]->str, 1024);
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGet(traversed the tree, got result)");
+#endif
 
-	output_fields_free(dissection->fields);
+	myoutput_fields_free(dissection->fields);
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGet(freed up the output field)");
+#endif
 
 	return str_res;
 }
+
+void myoutput_fields_free(output_fields_t* fields)
+{
+    g_assert(fields);
+
+    if(NULL != fields->field_indicies) {
+        /* Keys are stored in fields->fields, values are
+         * integers.
+         */
+        g_hash_table_destroy(fields->field_indicies);
+#ifdef VERBOSE
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "myoutput_fields_free(destroyed the hash table)");
+#endif
+    }
+    if(NULL != fields->fields) {
+        gsize i;
+        for(i = 0; i < fields->fields->len; ++i) {
+            gchar* field = (gchar *)g_ptr_array_index(fields->fields,i);
+#ifdef VERBOSE
+						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "myoutput_fields_free(freeing '%s')", field);
+#endif
+            g_free(field);
+        }
+        g_ptr_array_free(fields->fields, TRUE);
+#ifdef VERBOSE
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "myoutput_fields_free(freed the fields array)");
+#endif
+    }
+
+    g_free(fields);
+#ifdef VERBOSE
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "myoutput_fields_free(freed fields entirely)");
+#endif
+}
+
 
 jstring
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
