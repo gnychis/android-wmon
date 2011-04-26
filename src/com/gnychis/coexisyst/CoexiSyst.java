@@ -1,11 +1,7 @@
 package com.gnychis.coexisyst;
 
-import java.io.InputStream;
-import java.net.Socket;
+import java.io.FileInputStream;
 import java.util.ArrayList;
-
-import org.jnetpcap.PcapHeader;
-import org.jnetpcap.nio.JBuffer;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -16,7 +12,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.util.Log;
@@ -151,6 +146,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Log.d(TAG, "success with wireshark library");
 		else
 			Log.d(TAG, "error with wireshark library");
+		
+		wiresharkTest("/sdcard/test.pcap");
     }
     
 	@Override
@@ -342,5 +339,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native int dissectPacket(byte[] header, byte[] data, int encap);
 	public native void dissectCleanup(int dissect_ptr);
 	public native String wiresharkGet(int dissect_ptr, String param);
+	public native void wiresharkTest(String filename);
 		
 }

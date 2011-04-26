@@ -52,6 +52,10 @@
 #include "capture-pcap-util.h"
 #include "print.h"
 
+void dissectCleanup(int ptr);
+int dissectPacket(char *pHeader, char *pData, int encap);
+char *wiresharkGet(int wfd_ptr, gchar *field);
+
 capture_file cfile;
 gchar               *cf_name = NULL, *rfilter = NULL;
 static print_format_e print_format = PR_FMT_TEXT;
@@ -103,7 +107,73 @@ typedef struct {
 } write_field_data_t;
 
 void
+Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, jstring jsFname)
+{
+  FILE *bf;
+  unsigned char data_buffer[1024];
+  int psize = 113;
+  int z, y, i;
+  struct pcap_pkthdr pheader;
+  struct pcap_file_header pfheader;
+	char *fname;
+	
+	fname = (char *) (*env)->GetByteArrayElements(env, jsFname, NULL);
+
+  bf = fopen(fname, "rb");
+  if(!bf) {
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not open /tmp/test.pcap\n");
+    return;
+  }
+
+  // Read the global pcap header
+  if((z = fread(&pfheader, sizeof(struct pcap_file_header), 1, bf)) != 1) {
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Did not read past header: %d\n", z);
+    return;
+  }
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "read link type: %d\n", pfheader.linktype);
+
+	// Read in the first packet header
+	if((z = fread(&pheader, sizeof(pheader), 1, bf)) != 1) {
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet header\n");
+		return;
+	}
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "got the first packet, size: %d\n", pheader.caplen);
+
+	// Read in the packet now
+	if((z = fread(&data_buffer, pheader.caplen, 1, bf)) != 1) {
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet\n");
+		return;
+	}
+	
+	if(data_buffer[0] == 0x00 && data_buffer[1] == 0x00 && data_buffer[2] == 0x18
+			&& data_buffer[3] == 0x00 && data_buffer[4] == 0x0e && data_buffer[5] == 0x48) {
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got the start of a radiotap header\n");
+	} else {
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", data_buffer[0], data_buffer[1], data_buffer[2], data_buffer[3],
+							data_buffer[4], data_buffer[5]);
+	}
+
+	//  WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP
+	for(i=0; i<100; i++) {
+		int dissect_ptr = dissectPacket((char *)&pheader, data_buffer, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+		char *rval = wiresharkGet(dissect_ptr, "radiotap.channel.freq");
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got result: %s\n", rval);
+		free(rval);
+		dissectCleanup(dissect_ptr);
+	}
+
+	(*env)->ReleaseByteArrayElements( env, jsFname, fname, NULL);
+}
+
+
+void
 Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
+{
+	dissectCleanup(ptr);
+}
+
+void
+dissectCleanup(int ptr)
 {
 	write_field_data_t *dissection = (write_field_data_t *) ptr;
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "casted the pointer");
@@ -115,17 +185,14 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, j
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed dissection");
 }
 
-jint
-Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
+int
+dissectPacket(char *pHeader, char *pData, int encap)
 {
-
 	// From the Java environment
 	struct wtap_pkthdr whdr;
 	int i;
 	gsize z;
-	char *pHeader;
-	char *pData;
-
+	
 	// Wireshark related
 	frame_data fdata;
 	gboolean create_proto_tree = 1;
@@ -137,10 +204,6 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jb
 	write_field_data_t *dissection = malloc(sizeof(write_field_data_t));
 	dissection->edt = malloc(sizeof(epan_dissect_t));
 	memset(dissection->edt, '\0', sizeof(epan_dissect_t));
-
-	// Translate the jbyteArrays to points for dissection
-	pHeader = (char *) (*env)->GetByteArrayElements(env, header, NULL);
-	pData = (char *) (*env)->GetByteArrayElements(env, data, NULL);
 
 	// We are going to copy, not cast, in to the whdr because we need to set an additional value
 	memcpy(&whdr, pHeader, sizeof(struct wtap_pkthdr));
@@ -168,25 +231,40 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jb
 
 	// Do some cleanup
 	frame_data_cleanup(&fdata);
+
+	return (int)dissection;
+}
+
+jint
+Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
+{
+	char *pHeader;
+	char *pData;
+	jint ret;
+
+	// Translate the jbyteArrays to points for dissection
+	pHeader = (char *) (*env)->GetByteArrayElements(env, header, NULL);
+	pData = (char *) (*env)->GetByteArrayElements(env, data, NULL);
+
+	ret = dissectPacket(pHeader, pData, (int)encap);
+
 	(*env)->ReleaseByteArrayElements( env, header, pHeader, NULL);
 	(*env)->ReleaseByteArrayElements( env, data, pData, NULL);
 
-
-	return (jint)dissection;
+	return ret;
 }
 
-jstring
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
+char *
+wiresharkGet(int wfd_ptr, gchar *field)
 {
-	gchar *field;
 	output_fields_t* output_fields  = NULL;
 	int z = 1;
 	jstring result;
+	char *str_res = malloc(1024);	// assuming string result will be no more than 1024
 
 	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
-
+	
 	// Get a regular pointer to the field we are looking up, and add it to the output fields
-	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
 	output_fields = output_fields_new();
 	output_fields_add(output_fields, field);
 
@@ -199,9 +277,26 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jin
 
 	// Run and get the value
 	proto_tree_children_foreach(dissection->edt->tree, proto_tree_get_node_field_values, dissection);
-	result = (*env)->NewStringUTF(env, dissection->fields->field_values[0]->str);
+	strncpy(str_res, dissection->fields->field_values[0]->str, 1024);
 
 	output_fields_free(dissection->fields);
+
+	return str_res;
+}
+
+jstring
+Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
+{
+	gchar *field;
+	char *str_result;
+	jstring result;
+
+	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
+
+	str_result = wiresharkGet((int)wfd_ptr, field);
+	result = (*env)->NewStringUTF(env, str_result);
+	free(str_result);
+
 	(*env)->ReleaseStringUTFChars(env, param, field);
 
 	return result;
