@@ -20,7 +20,7 @@ public class Pcapd extends AsyncTask<Context, Integer, String>
 		
 		try {
 			Log.d("Pcapd", "launching instance of pcapd");
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/pcapd wlan0 " + Integer.toString(PCAPD_WIFI_PORT) + " &");
 		} catch(Exception e) {
 			Log.e("Pcapd", "error trying to start pcap daemon",e);
 			return "FAIL";

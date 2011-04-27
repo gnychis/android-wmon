@@ -27,8 +27,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	private static final String TAG = "WiFiDemo";
 	
-	SubSystem system;
-
 	// Make instances of our helper classes
 	DBAdapter db;
 	WifiManager wifi;
@@ -62,21 +60,22 @@ public class CoexiSyst extends Activity implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        system = new SubSystem(this);
         try {
 	    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system");
 	    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb");
-	    	RootTools.sendShell("mkdir /data/data/com.gnychis.coexisyst/bin");
 	    	RootTools.sendShell("mount -o remount,rw rootfs /");
 	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp");
+	    	
+	    	RootTools.installBinary(this, R.raw.disabled_protos, "disabled_protos");
+	    	RootTools.installBinary(this, R.raw.iwconfig, "iwconfig", "755");
+	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
+	    	RootTools.installBinary(this, R.raw.zd_firmware, "zd_firmware.zip");
+	    	RootTools.installBinary(this, R.raw.pcapd, "pcapd", "755");
+	    			
         } catch(Exception e) {
         	Log.e(TAG, "error running RootTools commands for init", e);
         }
-    	
-    	system.install_bin("iwconfig", R.raw.iwconfig);
-    	system.install_bin("lsusb", R.raw.lsusb);
-    	system.install_bin("zd_firmware.zip", R.raw.zd_firmware);
-    	system.install_bin("pcapd", R.raw.pcapd);
+
 
     	// Load the libusb related libraries
     	try {

@@ -544,6 +544,10 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
   do_dissection = 1;
 
   timestamp_set_precision(TS_PREC_AUTO_USEC);
+  /* disabled protocols as per configuration file */
+	if (gdp_path == NULL && dp_path == NULL) {
+		set_disabled_protos_list();
+	}
 
 	return 1;
 }
