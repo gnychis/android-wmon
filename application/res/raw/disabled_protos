@@ -6,3 +6,6 @@ mailslot
 pipe
 smb2
 smb_netlogon
+udp
+tcp
+arp
