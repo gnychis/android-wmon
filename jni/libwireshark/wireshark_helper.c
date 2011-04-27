@@ -89,7 +89,7 @@ extern void read_failure_message(const char *filename, int err);
 extern void write_failure_message(const char *filename, int err);
 
 #define LOG_TAG "WiresharkDriver"
-#define VERBOSE
+//#define VERBOSE
 
 struct _output_fields {
     gboolean print_header;
@@ -111,7 +111,7 @@ void
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, jstring jsFname)
 {
   FILE *bf;
-  unsigned char data_buffer[1024];
+  unsigned char *data_buffer;
   int psize = 113;
   int z, y, i;
   struct pcap_file_header pfheader;
@@ -150,7 +150,8 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, js
 #endif
 
 		// Read in the packet now
-		if((z = fread(&data_buffer, pheader.caplen, 1, bf)) != 1) {
+		data_buffer = malloc(pheader.caplen);
+		if((z = fread(data_buffer, pheader.caplen, 1, bf)) != 1) {
 			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet after %d packets\n", parsed);
 			break;
 		}
@@ -168,11 +169,12 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, js
 #endif
 		free(rval);
 		dissectCleanup(dissect_ptr);
+		free(data_buffer);
 		parsed++;
 	}
 
 	(*env)->ReleaseByteArrayElements( env, jsFname, fname, 0);
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Succuessfully passed wireshark test after %d packets\n", parsed);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Succussfully passed wireshark test after %d packets\n", parsed);
 }
 
 
