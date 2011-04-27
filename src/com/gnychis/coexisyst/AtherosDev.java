@@ -26,21 +26,23 @@ public class AtherosDev {
 	
 	public AtherosDev(CoexiSyst c) {
 		coexisyst = c;
-    	//coexisyst.system.cmd("cd /system/lib/modules\n");
-    	coexisyst.system.cmd("insmod /system/lib/modules/cfg80211.ko");
-    	coexisyst.system.cmd("insmod /system/lib/modules/crc7.ko");
-    	coexisyst.system.cmd("insmod /system/lib/modules/mac80211.ko");
-    	coexisyst.system.cmd("insmod /system/lib/modules/zd1211rw.ko");
-    	coexisyst.system.cmd("cd /system/etc/firmware");
-    	coexisyst.system.cmd("busybox unzip /data/data/com.gnychis.coexisyst/bin/zd_firmware.zip");
+		try {
+			RootTools.sendShell("insmod /system/lib/modules/cfg80211.ko");
+			RootTools.sendShell("insmod /system/lib/modules/crc7.ko");
+			RootTools.sendShell("insmod /system/lib/modules/mac80211.ko");
+			RootTools.sendShell("insmod /system/lib/modules/zd1211rw.ko");
+			RootTools.sendShell("busybox unzip -o /data/data/com.gnychis.coexisyst/files/zd_firmware.zip -d /system/etc/firmware/");
+		} catch (Exception e) {
+			Log.e("AtherosDev", "Error running shell commands for atheros dev", e);
+		}
 	}
 	
 	public void connected() {
 		_device_connected=true;
 		try {
 			RootTools.sendShell("netcfg wlan0 down");
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/iwconfig wlan0 mode monitor");
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/bin/iwconfig wlan0 channel 6");
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
 			RootTools.sendShell("netcfg wlan0 up");
 		} catch(Exception e) {
 			Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
@@ -59,7 +61,6 @@ public class AtherosDev {
 	{
 		Context parent;
 		CoexiSyst coexisyst;
-		SubSystem wifi_subsystem;
 		Socket skt;
 		private int PCAPD_WIFI_PORT = 2000;
 		InputStream skt_in;
