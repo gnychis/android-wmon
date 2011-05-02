@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 	int fd, ret, s;
 
 	if (argc == 1 || !strcmp(argv[1], "--version")) {
-		printf(	"izattach " VERSION "\n"
+		printf(	"izattach 0.2.2\n"
 			"Copyright (C) 2008, 2009 by Siemens AG\n"
 			"License GPLv2 GNU GPL version 2 <http://gnu.org/licenses/gpl.html>.\n"
 			"This is free software: you are free to change and redistribute it.\n"
@@ -59,8 +59,8 @@ int main(int argc, char **argv) {
 		printf("Usage: %s SERIAL_DEV\n", argv[0]);
 		printf("Attach serial devices via UART to IEEE 802.15.4/ZigBee stack\n\n");
 		printf("  SERIAL_DEV  This specifies the serial device to attach.\n");
-		printf("Report bugs to " PACKAGE_BUGREPORT "\n\n");
-		printf(PACKAGE_NAME " homepage <" PACKAGE_URL ">\n");
+//		printf("Report bugs to " PACKAGE_BUGREPORT "\n\n");
+//		printf(PACKAGE_NAME " homepage <" PACKAGE_URL ">\n");
 		return 1;
 	}
 

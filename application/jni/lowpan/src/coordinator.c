@@ -262,8 +262,8 @@ static void usage(char * name)
 	);
 
 	printf("\n");
-	printf("Report bugs to " PACKAGE_BUGREPORT "\n\n");
-	printf(PACKAGE_NAME " homepage <" PACKAGE_URL ">\n");
+//	printf("Report bugs to " PACKAGE_BUGREPORT "\n\n");
+//	printf(PACKAGE_NAME " homepage <" PACKAGE_URL ">\n");
 }
 #ifdef HAVE_GETOPT_LONG
 static struct option long_options[] = {
@@ -335,7 +335,7 @@ int main(int argc, char **argv)
 			break;
 		case 1:
 		case 'v':
-			printf(	"izcoordinator " VERSION "\n"
+			printf(	"izcoordinator 0.2.2\n"
 				"Copyright (C) 2008, 2009 by Siemens AG\n"
 				"License GPLv2 GNU GPL version 2 <http://gnu.org/licenses/gpl.html>.\n"
 				"This is free software: you are free to change and redistribute it.\n"
