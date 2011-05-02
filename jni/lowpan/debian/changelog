@@ -1,0 +1,63 @@
+lowpan-tools (0.2.1-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>  Wed, 16 Jun 2010 00:42:32 +0400
+
+lowpan-tools (0.2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>  Sun, 10 Jan 2010 02:59:20 +0300
+
+lowpan-tools (0.2~rc4-1) unstable; urgency=low
+
+  * New upstream release candidate.
+
+ -- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>  Sun, 29 Nov 2009 18:09:49 +0300
+
+lowpan-tools (0.2~rc3-1) unstable; urgency=low
+
+  * New upstream release candidate.
+  * Use "3.0 (quilt)" source format.
+
+ -- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>  Mon, 23 Nov 2009 04:24:17 +0300
+
+lowpan-tools (0.2~rc2-1) unstable; urgency=low
+
+  * New upstream release candidate.
+  * Bump standards version to 3.8.3
+
+ -- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>  Thu, 10 Sep 2009 16:46:48 +0400
+
+lowpan-tools (0.2~rc1-1) unstable; urgency=low
+
+  * New upstream release candidate.
+  * Add an sf url to the watchile for uscan(1).
+  * Add build-dependancy on bison (patch by Henning Glawe) and flex,
+    as git versions of the package require them.
+  * Split lowpan-tools into lowpan-tools and lowpan-test-tools.
+  * Add iproute2 plugin files to lowpan-tools.
+  * lowpan-test-tools: replaces lowpan-tools << 0.2
+
+ -- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>  Sat, 08 Aug 2009 01:27:48 +0400
+
+lowpan-tools (0.1-3) unstable; urgency=low
+
+  * Bump down debhelper version to build on Ubuntu.
+
+ -- Maxim Osipov <maxim.osipov@siemens.com>  Mon, 06 Apr 2009 17:17:49 +0400
+
+lowpan-tools (0.1-2) unstable; urgency=low
+
+  * Move localstate dir (and thus leases file) to correct place (/var).
+  * Rename source package to lowpan-tools.
+
+ -- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>  Fri, 13 Feb 2009 21:45:02 +0300
+
+lowpan-utils (0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>  Tue, 03 Feb 2009 02:08:17 +0300
+
