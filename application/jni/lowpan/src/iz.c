@@ -134,7 +134,7 @@ int main(int argc, char **argv)
 				iz_debug = nl_debug = 1;
 			break;
 		case 'v':
-			printf(	"iz " VERSION "\n"
+			printf(	"iz 0.2.2\n"
 				"Copyright (C) 2008, 2009 by Siemens AG\n"
 				"License GPLv2 GNU GPL version 2 <http://gnu.org/licenses/gpl.html>.\n"
 				"This is free software: you are free to change and redistribute it.\n"
@@ -179,7 +179,7 @@ int main(int argc, char **argv)
 	/* Prepare NL command */
 	nl = nl_handle_alloc();
 	if (!nl) {
-		nl_perror("Could not allocate NL handle");
+		//nl_perror("Could not allocate NL handle");
 		return 1;
 	}
 	genl_connect(nl);
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
 	if (cmd.desc->request) {
 		msg = nlmsg_alloc();
 		if (!msg) {
-			nl_perror("Could not allocate NL message!\n");
+			//nl_perror("Could not allocate NL message!\n");
 			return 1;
 		}
 		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0,
@@ -225,7 +225,7 @@ int main(int argc, char **argv)
 	/* Received message handling loop */
 	while (iz_exit == IZ_CONT_OK) {
 		if(nl_recvmsgs_default(nl)) {
-			nl_perror("Receive failed");
+			//nl_perror("Receive failed");
 			return 1;
 		}
 	}
@@ -272,8 +272,8 @@ void iz_help(const char *pname)
 	}
 
 	printf("\n");
-	printf("Report bugs to " PACKAGE_BUGREPORT "\n\n");
-	printf(PACKAGE_NAME " homepage <" PACKAGE_URL ">\n");
+//	printf("Report bugs to " PACKAGE_BUGREPORT "\n\n");
+//	printf(PACKAGE_NAME " homepage <" PACKAGE_URL ">\n");
 }
 
 /* Callback for sequence number check */
