@@ -14,7 +14,12 @@ LOCAL_SRC_FILES:=\
   nl.c \
   object.c\
   socket.c \
-  utils.c
+  utils.c \
+	genl/ctrl.c \
+	genl/family.c \
+	genl/genl.c \
+	genl/mngt.c
+
 
 
 LOCAL_C_INCLUDES += jni/libnl/include
