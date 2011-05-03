@@ -17,7 +17,7 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../android \
 LOCAL_CFLAGS +=  -g
 LOCAL_CFLAGS += -fPIC -DPIC
 
-LOCAL_STATIC_LIBRARIES := libnl liblowpan_common
+LOCAL_STATIC_LIBRARIES := libnls liblowpan_common
 
 ifeq ($(TARGET_BUILD_TYPE),release)
 	LOCAL_CFLAGS += -g
