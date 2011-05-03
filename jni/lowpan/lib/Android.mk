@@ -10,7 +10,7 @@ LOCAL_SRC_FILES:= \
 	parse.c \
 	shash.c \
 	logging.c \
-	nl_policy.c \
+	nl_policy.c 
 
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../android \
@@ -20,7 +20,7 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../android \
 LOCAL_CFLAGS +=  -g
 LOCAL_CFLAGS += -fPIC -DPIC
 
-LOCAL_SHARED_LIBRARIES := libnl
+LOCAL_STATIC_LIBRARIES := libnl
 
 ifeq ($(TARGET_BUILD_TYPE),release)
 	LOCAL_CFLAGS += -g
@@ -29,5 +29,5 @@ endif
 LOCAL_MODULE:= liblowpan_common
 
 LOCAL_PRELINK_MODULE := false 
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_STATIC_LIBRARY)
 
