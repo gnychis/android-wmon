@@ -7,7 +7,7 @@ LOCAL_MODULE := iz
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../android \
 	$(LOCAL_PATH)/../include \
 	$(LOCAL_PATH)/../../libnl/include 
-LOCAL_STATIC_LIBRARIES := libnl liblowpan_common liblowpan_addrdb
+LOCAL_STATIC_LIBRARIES := libnls liblowpan_common liblowpan_addrdb
 include $(BUILD_EXECUTABLE)
 
 include $(CLEAR_VARS)
@@ -17,7 +17,7 @@ LOCAL_MODULE := izattach
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../android \
 	$(LOCAL_PATH)/../include \
 	$(LOCAL_PATH)/../../libnl/include 
-LOCAL_STATIC_LIBRARIES := libnl liblowpan_common liblowpan_addrdb
+LOCAL_STATIC_LIBRARIES := libnls liblowpan_common liblowpan_addrdb
 include $(BUILD_EXECUTABLE)
 
 include $(CLEAR_VARS)
@@ -27,5 +27,5 @@ LOCAL_MODULE := izcoordinator
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../android \
 	$(LOCAL_PATH)/../include \
 	$(LOCAL_PATH)/../../libnl/include 
-LOCAL_STATIC_LIBRARIES := libnl liblowpan_addrdb liblowpan_common 
+LOCAL_STATIC_LIBRARIES := libnls liblowpan_addrdb liblowpan_common 
 include $(BUILD_EXECUTABLE)
