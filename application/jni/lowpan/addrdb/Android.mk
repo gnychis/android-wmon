@@ -17,7 +17,7 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../android \
 LOCAL_CFLAGS +=  -g
 LOCAL_CFLAGS += -fPIC -DPIC
 
-LOCAL_SHARED_LIBRARIES := libnl liblowpan_common
+LOCAL_STATIC_LIBRARIES := libnl liblowpan_common
 
 ifeq ($(TARGET_BUILD_TYPE),release)
 	LOCAL_CFLAGS += -g
@@ -26,5 +26,5 @@ endif
 LOCAL_MODULE:= liblowpan_addrdb
 
 LOCAL_PRELINK_MODULE := false 
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_STATIC_LIBRARY)
 
