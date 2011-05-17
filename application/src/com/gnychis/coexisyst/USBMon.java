@@ -1,9 +1,14 @@
 package com.gnychis.coexisyst;
 
+import java.util.Iterator;
+import java.util.List;
+
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.stericson.RootTools.RootTools;
 
 // A class to handle USB worker like things
 public class USBMon extends AsyncTask<Context, Integer, String>
@@ -18,6 +23,21 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 		Log.d(TAG, "USB monitor thread successfully canceled");
 	}
 	
+	// This function makes a major assumption that only the AR9280 has a file in /sys called loading
+	// when it is expecting firmware.  But, it's held true so far to bypass USB detection issues
+	// and workaround needed a udev daemon.
+	protected int checkAR9280()
+	{
+		try {
+			List<String> res = RootTools.sendShell("busybox find /sys -name loading");
+			if(res.size()!=0)
+				return 1;
+		} catch(Exception e) {
+			Log.e(TAG, "exception trying to check for AR9280", e);
+		}
+		return 0;
+	}
+	
 	@Override
 	protected String doInBackground( Context... params )
 	{
@@ -28,7 +48,8 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 			try {
 				
 				int wispy_in_devlist=coexisyst.USBcheckForDevice(0x1781, 0x083f);
-				int atheros_in_devlist=coexisyst.USBcheckForDevice(0x0411,0x017f);
+				//int atheros_in_devlist=coexisyst.USBcheckForDevice(0x0411,0x017f);  // does not work well for AR9280
+				int atheros_in_devlist = checkAR9280() | coexisyst.USBcheckForDevice(0x0411,0x017f);
 				
 				// Wispy related checks
 				if(wispy_in_devlist==1 && coexisyst.wispy._device_connected==false) {
@@ -55,7 +76,7 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 			} catch (Exception e) {
 				
 				Log.e(TAG, "exception trying to sleep", e);
-				return "OUT";
+				//return "OUT";
 			}
 		}
 	}
