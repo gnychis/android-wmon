@@ -28,7 +28,7 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 			try {
 				
 				int wispy_in_devlist=coexisyst.USBcheckForDevice(0x1781, 0x083f);
-				int atheros_in_devlist=coexisyst.USBcheckForDevice(0x083a,0x4505);
+				int atheros_in_devlist=coexisyst.USBcheckForDevice(0x0411,0x017f);
 				
 				// Wispy related checks
 				if(wispy_in_devlist==1 && coexisyst.wispy._device_connected==false) {

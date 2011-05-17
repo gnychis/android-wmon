@@ -36,6 +36,7 @@ public class AtherosDev {
 			RootTools.sendShell("insmod /system/lib/modules/ath9k_hw.ko");
 			RootTools.sendShell("insmod /system/lib/modules/ath9k_common.ko");
 			RootTools.sendShell("insmod /system/lib/modules/ath9k_htc.ko");
+			Log.d("AtherosDev", "Inserted kernel modules");
 		} catch (Exception e) {
 			Log.e("AtherosDev", "Error running shell commands for atheros dev", e);
 		}
@@ -46,6 +47,7 @@ public class AtherosDev {
 		try {
 			// The AR9280 needs to have its firmware written when inserted, which is not automatic
 			// FIXME: need to dynamically find the usb device id
+			Thread.sleep(1000);
 			RootTools.sendShell("echo 1 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
 			RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/data");
 			RootTools.sendShell("echo 0 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");

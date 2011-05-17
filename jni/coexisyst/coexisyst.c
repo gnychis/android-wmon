@@ -287,19 +287,22 @@ Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thi
 	if(usb_find_devices()<0)
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB devices"); 
 		
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Checking for 0x%x and 0x%x", vid, pid); 
 	// Loop through and get all of the devices
 	for (bus = usb_busses; bus; bus = bus->next) {
 		if (bus->root_dev) { 	
 			struct usb_device *dev;
 			dev = bus->root_dev;
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, ".... 0x%x:0x%x", dev->descriptor.idVendor==vid, dev->descriptor.idProduct==pid); 
 			if(dev->descriptor.idVendor==vid && dev->descriptor.idProduct==pid)
 				return 1;
 		} else {
       		struct usb_device *dev;
 
       		for (dev = bus->devices; dev; dev = dev->next) {
-				if(dev->descriptor.idVendor==vid && dev->descriptor.idProduct==pid)
-					return 1;
+						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, ".... 0x%x:0x%x", dev->descriptor.idVendor==vid, dev->descriptor.idProduct==pid); 
+						if(dev->descriptor.idVendor==vid && dev->descriptor.idProduct==pid)
+							return 1;
       		}
 		}
 	}
