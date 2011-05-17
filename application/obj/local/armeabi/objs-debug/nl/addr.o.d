@@ -85,7 +85,6 @@
  jni/libnl/include/linux/if_link.h jni/libnl/include/linux/if_addr.h \
  jni/libnl/include/linux/neighbour.h jni/libnl/include/linux/genetlink.h \
  jni/libnl/include/linux/netfilter/nfnetlink.h \
- jni/libnl/include/netlink/version.h jni/libnl/include/netlink/errno.h \
  jni/libnl/include/netlink/types.h jni/libnl/include/netlink/handlers.h \
  jni/libnl/include/netlink/netlink-kernel.h \
  jni/libnl/include/netlink/socket.h jni/libnl/include/netlink/cache.h \
@@ -99,8 +98,7 @@
  jni/libnl/include/netlink/route/qdisc.h \
  jni/libnl/include/netlink/route/rtnl.h \
  jni/libnl/include/netlink/route/route.h \
- jni/libnl/include/netlink/route/nexthop.h \
- jni/libnl/include/linux/in_route.h
+ jni/libnl/include/netlink/route/nexthop.h
 
 jni/libnl/include/netlink-local.h:
 
@@ -286,10 +284,6 @@ jni/libnl/include/linux/genetlink.h:
 
 jni/libnl/include/linux/netfilter/nfnetlink.h:
 
-jni/libnl/include/netlink/version.h:
-
-jni/libnl/include/netlink/errno.h:
-
 jni/libnl/include/netlink/types.h:
 
 jni/libnl/include/netlink/handlers.h:
@@ -331,5 +325,3 @@ jni/libnl/include/netlink/route/rtnl.h:
 jni/libnl/include/netlink/route/route.h:
 
 jni/libnl/include/netlink/route/nexthop.h:
-
-jni/libnl/include/linux/in_route.h:

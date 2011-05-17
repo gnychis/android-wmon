@@ -71,6 +71,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
 	    	RootTools.installBinary(this, R.raw.zd_firmware, "zd_firmware.zip");
 	    	RootTools.installBinary(this, R.raw.pcapd, "pcapd", "755");
+	    	RootTools.installBinary(this, R.raw.htc_7010, "htc_7010.fw");
+	    	
 	    			
         } catch(Exception e) {
         	Log.e(TAG, "error running RootTools commands for init", e);

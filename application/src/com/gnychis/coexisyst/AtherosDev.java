@@ -27,11 +27,15 @@ public class AtherosDev {
 	public AtherosDev(CoexiSyst c) {
 		coexisyst = c;
 		try {
+			// All modules related to ath9k_htc that need to be inserted
+			RootTools.sendShell("insmod /system/lib/modules/compat.ko");
+			RootTools.sendShell("insmod /system/lib/modules/compat_firmware_class.ko");
 			RootTools.sendShell("insmod /system/lib/modules/cfg80211.ko");
-			RootTools.sendShell("insmod /system/lib/modules/crc7.ko");
 			RootTools.sendShell("insmod /system/lib/modules/mac80211.ko");
-			RootTools.sendShell("insmod /system/lib/modules/zd1211rw.ko");
-			RootTools.sendShell("busybox unzip -o /data/data/com.gnychis.coexisyst/files/zd_firmware.zip -d /system/etc/firmware/");
+			RootTools.sendShell("insmod /system/lib/modules/ath.ko");
+			RootTools.sendShell("insmod /system/lib/modules/ath9k_hw.ko");
+			RootTools.sendShell("insmod /system/lib/modules/ath9k_common.ko");
+			RootTools.sendShell("insmod /system/lib/modules/ath9k_htc.ko");
 		} catch (Exception e) {
 			Log.e("AtherosDev", "Error running shell commands for atheros dev", e);
 		}
@@ -40,10 +44,16 @@ public class AtherosDev {
 	public void connected() {
 		_device_connected=true;
 		try {
-			RootTools.sendShell("netcfg wlan0 down");
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
-			RootTools.sendShell("netcfg wlan0 up");
+			// The AR9280 needs to have its firmware written when inserted, which is not automatic
+			// FIXME: need to dynamically find the usb device id
+			RootTools.sendShell("echo 1 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
+			RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/data");
+			RootTools.sendShell("echo 0 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
+			
+			//RootTools.sendShell("netcfg wlan0 down");
+			//RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
+			//RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
+			//RootTools.sendShell("netcfg wlan0 up");
 		} catch(Exception e) {
 			Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
 		}
