@@ -52,10 +52,10 @@ public class AtherosDev {
 			RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/data");
 			RootTools.sendShell("echo 0 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
 			
-			//RootTools.sendShell("netcfg wlan0 down");
-			//RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
-			//RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
-			//RootTools.sendShell("netcfg wlan0 up");
+			RootTools.sendShell("netcfg wlan0 down");
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
+			RootTools.sendShell("netcfg wlan0 up");
 		} catch(Exception e) {
 			Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
 		}
