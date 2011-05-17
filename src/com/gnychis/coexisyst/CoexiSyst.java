@@ -66,6 +66,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.sendShell("mount -o remount,rw rootfs /");
 	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp");
 	    	
+	    	// Disable in releases
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libgmodule-2.0.so /system/lib/");
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb.so /system/lib/");
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb-compat.so /system/lib/");
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libpcap.so /system/lib/");
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libnl.so /system/lib/");
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libglib-2.0.so /system/lib/");
+	    	
 	    	RootTools.installBinary(this, R.raw.disabled_protos, "disabled_protos");
 	    	RootTools.installBinary(this, R.raw.iwconfig, "iwconfig", "755");
 	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
