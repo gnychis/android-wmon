@@ -71,7 +71,7 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 				
 				
 				Thread.sleep( 2000 );
-				Log.d(TAG, "checking for USB devices");
+				//Log.d(TAG, "checking for USB devices");
 
 			} catch (Exception e) {
 				

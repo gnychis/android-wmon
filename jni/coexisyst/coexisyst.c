@@ -290,13 +290,13 @@ Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thi
 
   usb_busses = usb_get_busses();
 
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Checking for 0x%x and 0x%x", vid, pid); 
+//	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Checking for 0x%x and 0x%x", vid, pid); 
   for(bus = usb_busses; bus; bus = bus->next) {
     struct usb_device * dev;
     for(dev = bus->devices; dev; dev = dev->next) {
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, ".... 0x%x:0x%x", dev->descriptor.idVendor, dev->descriptor.idProduct); 
+//			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, ".... 0x%x:0x%x", dev->descriptor.idVendor, dev->descriptor.idProduct); 
 			if(dev->descriptor.idVendor==vid && dev->descriptor.idProduct==pid) {
-	      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, ".. found!"); 
+//	      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, ".. found!"); 
 				return 1;
       }
     }
