@@ -161,7 +161,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Log.d(TAG, "error with wireshark library");
 		
 		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
-		wiresharkTest("/sdcard/test.pcap");
+		//wiresharkTest("/sdcard/test.pcap");
     }
     
 	@Override

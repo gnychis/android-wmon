@@ -161,7 +161,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, js
 		
 		dissect_ptr = dissectPacket((char *)&pheader, data_buffer, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 #ifdef VERBOSE
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Finished dissecting\n", rval);
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Finished dissecting (%d)\n", parsed);
 #endif
 		rval = wiresharkGet(dissect_ptr, "radiotap.channel.freq");
 #ifdef VERBOSE

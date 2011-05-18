@@ -20,4 +20,6 @@ LOCAL_CFLAGS := \
     -DG_LOG_DOMAIN=\"GModule\"      \
     -DG_DISABLE_DEPRECATED 
 
+LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog
+
 include $(BUILD_SHARED_LIBRARY)
