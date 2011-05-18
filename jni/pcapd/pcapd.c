@@ -8,8 +8,8 @@
 #include <android/log.h>
 #include <sys/types.h>
 #define LOG_TAG "PcapDriver" // text for log tag 
-//#define PCAP_DUMP
-//#define VERBOSE
+#define PCAP_DUMP 1
+#define VERBOSE 1
 
 struct ieee80211_radiotap_header {
         u_int8_t        it_version;     /* set to 0 */
@@ -49,10 +49,10 @@ int main (int argc, char *argv[])
 
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Network interfaces:\n");
-#endif
 	for(d=alldevs;d;d=d->next) {
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "   %s\n", d->name);
 	}
+#endif
 
 	handle = pcap_open_live(argv[1], 1500, 1, 1000, errbuf);
 	if(handle == NULL) {
@@ -63,6 +63,7 @@ int main (int argc, char *argv[])
 #ifdef PCAP_DUMP
 	// Create a dump file
 	pDump = pcap_dump_open(handle, "/sdcard/pcapd.pcap");
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Opened pcap dump");
 #endif
 
 	// Only open a server if we get this far.
