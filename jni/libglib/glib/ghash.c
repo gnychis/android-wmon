@@ -32,6 +32,7 @@
 
 #include "glib.h"
 #include "galias.h"
+#include <android/log.h>
 
 
 #define HASH_TABLE_MIN_SIZE 11
@@ -276,9 +277,9 @@ g_hash_table_lookup (GHashTable	  *hash_table,
 		     gconstpointer key)
 {
   GHashNode *node;
-  
+
   g_return_val_if_fail (hash_table != NULL, NULL);
-  
+	
   node = *g_hash_table_lookup_node (hash_table, key, NULL);
   
   return node ? node->value : NULL;

@@ -71,6 +71,7 @@
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/gmodule/../glib/gmappedfile.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/gmodule/../glib/gmarkup.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/gmodule/../glib/gmessages.h \
+ /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/gmodule/../glib/gnode.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/gmodule/../glib/goption.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/gmodule/../glib/gpattern.h \
@@ -251,6 +252,8 @@
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/gmodule/../glib/gmarkup.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/gmodule/../glib/gmessages.h:
+
+/Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/gmodule/../glib/gnode.h:
 

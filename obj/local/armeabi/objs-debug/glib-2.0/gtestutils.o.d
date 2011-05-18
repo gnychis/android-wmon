@@ -14,6 +14,7 @@
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gtestutils.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gmessages.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gtypes.h \
+ /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gstring.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gunicode.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gerror.h \
@@ -103,6 +104,8 @@
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gmessages.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gtypes.h:
+
+/Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gstring.h:
 

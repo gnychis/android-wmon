@@ -30,6 +30,7 @@
 #include <stdarg.h>
 #include <glib/gtypes.h>
 #include <glib/gmacros.h>
+#include <android/log.h>
 
 /* Suppress warnings when GCC is in -pedantic mode and not -std=c99
  */
@@ -273,6 +274,7 @@ GPrintFunc      g_set_printerr_handler  (GPrintFunc      func);
 
 #endif /* !G_DISABLE_ASSERT */
 
+#undef G_DISABLE_CHECKS
 
 #ifdef G_DISABLE_CHECKS
 

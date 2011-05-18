@@ -429,7 +429,6 @@ g_logv (const gchar   *log_domain,
 	const gchar   *format,
 	va_list	       args1)
 {
-	__android_log_print(ANDROID_LOG_INFO, "GLIB", "in g_logv()");
   gboolean was_fatal = (log_level & G_LOG_FLAG_FATAL) != 0;
   gboolean was_recursion = (log_level & G_LOG_FLAG_RECURSION) != 0;
   gint i;
@@ -549,7 +548,6 @@ g_log (const gchar   *log_domain,
        ...)
 {
   va_list args;
-	__android_log_print(ANDROID_LOG_INFO, "GLIB", "in g_log()");
   
   va_start (args, format);
   g_logv (log_domain, log_level, format, args);
@@ -561,7 +559,6 @@ g_return_if_fail_warning (const char *log_domain,
 			  const char *pretty_function,
 			  const char *expression)
 {
-	__android_log_print(ANDROID_LOG_INFO, "GLIB", "in g_return_if_fail_warning()");
 }
 
 void
@@ -571,7 +568,6 @@ g_assert_warning (const char *log_domain,
 		  const char *pretty_function,
 		  const char *expression)
 {
-	__android_log_print(ANDROID_LOG_INFO, "GLIB", "in g_assert_warning()");
 }
 
 #define CHAR_IS_SAFE(wc) (!((wc < 0x20 && wc != '\t' && wc != '\n' && wc != '\r') || \

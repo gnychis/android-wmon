@@ -39,6 +39,7 @@
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gutils.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gatomic.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gmessages.h \
+ /Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gqsort.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/galias.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/galiasdef.c
@@ -120,6 +121,8 @@
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/../glib/gatomic.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gmessages.h:
+
+/Users/gnychis/Documents/android-ndk-r5b/platforms/android-9/arch-arm/usr/include/android/log.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libglib/glib/gqsort.h:
 
