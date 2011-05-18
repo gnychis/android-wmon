@@ -174,4 +174,6 @@ LOCAL_COPY_HEADERS :=	\
 		gslice.h		\
 		../android/glibconfig.h
 
+LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog
+
 include $(BUILD_SHARED_LIBRARY)
