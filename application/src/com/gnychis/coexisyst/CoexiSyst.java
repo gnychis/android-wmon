@@ -74,6 +74,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libnl.so /system/lib/");
 	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libglib-2.0.so /system/lib/");
 	    	
+	    	// WARNING: these files do NOT get overwritten if they already exist on the file
+	    	// system with RootTools.  If you are updating ANY of these, you need to do:
+	    	//   adb uninstall com.gnychis.coexisyst
+	    	// And then any updates to these files will be installed on the next build/run.
 	    	RootTools.installBinary(this, R.raw.disabled_protos, "disabled_protos");
 	    	RootTools.installBinary(this, R.raw.iwconfig, "iwconfig", "755");
 	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
