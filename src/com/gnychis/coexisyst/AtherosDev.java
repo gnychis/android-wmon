@@ -68,7 +68,6 @@ public class AtherosDev {
 	public void disconnected() {
 		_device_connected=false;
 		coexisyst.ath._monitor_thread.cancel(true);
-
 	}
 	
 	protected class WifiMon extends AsyncTask<Context, Integer, String>
