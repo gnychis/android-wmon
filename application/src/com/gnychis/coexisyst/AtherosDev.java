@@ -108,6 +108,11 @@ public class AtherosDev {
 
 				// Pull in the raw header and then cast it to a PcapHeader in JNetPcap
 				rawHeader = getPcapHeader();  // get a header over the socket
+				if(rawHeader==null) {
+					pcap_thread.cancel(true);
+					return "error reading pcap header";
+				}
+				
 				try {
 					header = new PcapHeader();
 					JBuffer headerBuffer = new JBuffer(rawHeader);  
@@ -120,14 +125,15 @@ public class AtherosDev {
 				
 				// Get the raw data now from the wirelen in the pcap header
 				rawData = getPcapPacket(header.wirelen());
-				
-				// Get the value from a wireshark dissection
-				//if(parsed==0) {
-					int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-					String rval = coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq");
-					Log.d("WifiMon", "Got value back from wireshark dissector: " + rval);
-					coexisyst.dissectCleanup(dissect_ptr);
-				//}
+				if(rawData==null) {
+					pcap_thread.cancel(true);
+					return "error reading data";
+				}
+
+				int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+				String rval = coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq");
+				Log.d("WifiMon", "Got value back from wireshark dissector: " + rval);
+				coexisyst.dissectCleanup(dissect_ptr);
 				
 				parsed++;
 			}
@@ -174,7 +180,10 @@ public class AtherosDev {
 						cancel(true);  // cancel the thread if we have errors reading socket
 					total+=v;
 				}
-			} catch(Exception e) { Log.e("WifiMon", "unable to read from pcapd buffer",e); }
+			} catch(Exception e) { 
+				Log.e("WifiMon", "unable to read from pcapd buffer",e);
+				return null;
+			}
 			
 			return data;
 		}
