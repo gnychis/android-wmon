@@ -52,7 +52,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	// USB device related
 	Wispy wispy;
-	AtherosDev ath;
+	Wifi ath;
 	IChart wispyGraph;
 	
     /** Called when the activity is first created. */
@@ -147,7 +147,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		} catch (Exception e) { Log.e(TAG, "exception trying to start wispy thread", e); }
 		usbmon = new USBMon();
 		usbmon.execute (this);
-		ath = new AtherosDev(this);
+		ath = new Wifi(this);
 		
 		// Check the pcap interfaces
 		//pcapGetInterfaces();

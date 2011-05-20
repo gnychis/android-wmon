@@ -2,6 +2,7 @@ package com.gnychis.coexisyst;
 
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.List;
 
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
@@ -12,7 +13,7 @@ import android.util.Log;
 
 import com.stericson.RootTools.RootTools;
 
-public class AtherosDev {
+public class Wifi {
 	public static final int ATHEROS_CONNECT = 100;
 	public static final int ATHEROS_DISCONNECT = 101;
 	
@@ -23,8 +24,17 @@ public class AtherosDev {
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	
+	public void APScan() {
+		
+		if(_device_connected==false) {
+			return;
+		}
+		
+		// Create a mutex which gives a lock specifically for scanning.
+		
+	}
 	
-	public AtherosDev(CoexiSyst c) {
+	public Wifi(CoexiSyst c) {
 		coexisyst = c;
 		try {
 			// All modules related to ath9k_htc that need to be inserted
@@ -43,7 +53,6 @@ public class AtherosDev {
 	}
 	
 	public void connected() {
-		_device_connected=true;
 		try {
 			// The AR9280 needs to have its firmware written when inserted, which is not automatic
 			// FIXME: need to dynamically find the usb device id
@@ -63,7 +72,9 @@ public class AtherosDev {
 		}
 		
 		coexisyst.ath._monitor_thread = new WifiMon();
-		coexisyst.ath._monitor_thread.execute(coexisyst);	}
+		coexisyst.ath._monitor_thread.execute(coexisyst);
+		_device_connected=true;
+	}
 	
 	public void disconnected() {
 		_device_connected=false;
