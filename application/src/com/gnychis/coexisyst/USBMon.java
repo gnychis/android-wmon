@@ -64,9 +64,9 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 				
 				// Atheros related checks
 				if(atheros_in_devlist==1 && coexisyst.ath._device_connected==false) {
-					publishProgress(AtherosDev.ATHEROS_CONNECT);
+					publishProgress(Wifi.ATHEROS_CONNECT);
 				} else if(atheros_in_devlist==0 && coexisyst.ath._device_connected==true) {
-					publishProgress(AtherosDev.ATHEROS_DISCONNECT);
+					publishProgress(Wifi.ATHEROS_DISCONNECT);
 				}
 				
 				
@@ -124,12 +124,12 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 		}
 		
 		// Handling events of Atheros device
-		if(event == AtherosDev.ATHEROS_CONNECT) {
+		if(event == Wifi.ATHEROS_CONNECT) {
 			Log.d(TAG, "got update that Atheros card was connected");
 			Toast.makeText(parent, "Atheros device connected", Toast.LENGTH_LONG).show();
 			coexisyst.ath.connected();			
 		}
-		else if(event == AtherosDev.ATHEROS_DISCONNECT) {
+		else if(event == Wifi.ATHEROS_DISCONNECT) {
 			Log.d(TAG, "Atheros card now disconnected");
 			Toast.makeText(parent, "Atheros device disconnected", Toast.LENGTH_LONG).show();
 			coexisyst.ath.disconnected();
