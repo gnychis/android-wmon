@@ -25,7 +25,7 @@ public class Wifi {
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	
-	int _state;
+	WifiState _state;
 	public enum WifiState {
 		IDLE,
 		SCANNING,
@@ -100,6 +100,12 @@ public class Wifi {
 		Pcapd pcap_thread;
 		int parsed;
 		
+		@Override 
+		protected void onPreExecute( )
+		{
+			_state = WifiState.IDLE;
+		}
+		
 		@Override
 		protected String doInBackground( Context ... params )
 		{
@@ -107,8 +113,6 @@ public class Wifi {
 			coexisyst = (CoexiSyst) params[0];
 			Log.d(WIMON_TAG, "a new Wifi monitor thread was started");
 			parsed=0;
-			
-			_state = WifiState.IDLE;
 			
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
