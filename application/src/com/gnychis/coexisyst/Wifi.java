@@ -2,12 +2,12 @@ package com.gnychis.coexisyst;
 
 import java.io.InputStream;
 import java.net.Socket;
-import java.util.List;
 
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -16,6 +16,7 @@ import com.stericson.RootTools.RootTools;
 public class Wifi {
 	public static final int ATHEROS_CONNECT = 100;
 	public static final int ATHEROS_DISCONNECT = 101;
+	public static final String PACKET_UPDATE = "com.gnychis.coexisyst.PACKET_UPDATE";
 	
 	CoexiSyst coexisyst;
 	
@@ -23,6 +24,12 @@ public class Wifi {
 	WifiMon _monitor_thread;
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
+	
+	int _state;
+	public enum WifiState {
+		IDLE,
+		SCANNING,
+	}
 	
 	public void APScan() {
 		
@@ -101,6 +108,8 @@ public class Wifi {
 			Log.d(WIMON_TAG, "a new Wifi monitor thread was started");
 			parsed=0;
 			
+			_state = WifiState.IDLE;
+			
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
 			pcap_thread = new Pcapd();
@@ -140,10 +149,17 @@ public class Wifi {
 					return "error reading data";
 				}
 
-				int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+				/*int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 				String rval = coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq");
 				Log.d("WifiMon", "Got value back from wireshark dissector: " + rval);
-				coexisyst.dissectCleanup(dissect_ptr);
+				coexisyst.dissectCleanup(dissect_ptr);*/
+				
+				// Send out a broadcast with the packet
+				Intent intent = new Intent(PACKET_UPDATE);
+				intent.putExtra("header",rawHeader);
+				intent.putExtra("data", rawData);
+				intent.putExtra("encap", WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+				parent.sendBroadcast(intent);
 				
 				parsed++;
 			}
