@@ -2,6 +2,7 @@ package com.gnychis.coexisyst;
 
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.concurrent.locks.Lock;
 
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
@@ -26,6 +27,7 @@ public class Wifi {
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	
 	WifiState _state;
+	Lock _state_lock;
 	public enum WifiState {
 		IDLE,
 		SCANNING,
@@ -40,6 +42,43 @@ public class Wifi {
 		
 		
 		return true;
+	}
+	
+	// Attempts to change the current state, will return
+	// the state after the change if successful/failure
+	public boolean WifiStateChange(WifiState s) {
+		boolean res = false;
+		if(_state_lock.tryLock()) {
+			try {
+				// Can add logic here to only allow certain state changes
+				switch(_state) {
+				
+				// From the IDLE state, we can go anywhere...
+				case IDLE:
+					_state = s;
+					res = true;
+				break;
+				
+				// We can go to idle, or ignore if we are in a
+				// scan already.
+				case SCANNING:
+					if(_state==WifiState.IDLE) {
+						_state = s;
+						res = true;
+					} else if(_state==WifiState.SCANNING) {
+						
+					}
+				break;
+				
+				default:
+					res = false;
+				}
+			} finally {
+				_state_lock.unlock();
+			}
+		} 		
+		
+		return res;
 	}
 	
 	public Wifi(CoexiSyst c) {
