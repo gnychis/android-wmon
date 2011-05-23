@@ -125,33 +125,27 @@ public class Wifi {
 				return "FAIL";
 			
 			// Loop and read headers and packets
-			while(true) {			
-				PcapHeader header = null;
+			while(true) {
 				byte[] rawHeader, rawData;
 
 				// Pull in the raw header and then cast it to a PcapHeader in JNetPcap
-				rawHeader = getPcapHeader();  // get a header over the socket
-				if(rawHeader==null) {
+				if((rawHeader = getPcapHeader())==null) {
 					pcap_thread.cancel(true);
 					return "error reading pcap header";
 				}
-				
-				try {
-					header = new PcapHeader();
-					JBuffer headerBuffer = new JBuffer(rawHeader);  
-					header.peer(headerBuffer, 0);				
-				} catch(Exception e) {
-					Log.e("WifiMon", "exception trying to read pcap header",e);
-				}
-				
-				//Log.d("WifiMon", "PCAP Header size: " + Integer.toString(header.wirelen()));
-				
+								
 				// Get the raw data now from the wirelen in the pcap header
-				rawData = getPcapPacket(header.wirelen());
-				if(rawData==null) {
+				if((rawData = getPcapPacket(rawHeader))==null) {
 					pcap_thread.cancel(true);
 					return "error reading data";
 				}
+				
+				switch(_state) {
+				case IDLE:
+					break;
+				}
+				
+
 
 				/*int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 				String rval = coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq");
@@ -193,8 +187,19 @@ public class Wifi {
 			return rawdata;
 		}
 		
-		public byte[] getPcapPacket(int length) {
-			byte[] rawdata = getSocketData(length);
+		public byte[] getPcapPacket(byte[] rawHeader) {
+			byte[] rawdata;
+			PcapHeader header = null;
+
+			try {
+				header = new PcapHeader();
+				JBuffer headerBuffer = new JBuffer(rawHeader);  
+				header.peer(headerBuffer, 0);				
+			} catch(Exception e) {
+				Log.e("WifiMon", "exception trying to read pcap header",e);
+			}
+			
+			rawdata = getSocketData(header.wirelen());
 			return rawdata;
 		}
 		
