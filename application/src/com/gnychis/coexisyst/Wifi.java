@@ -31,14 +31,15 @@ public class Wifi {
 		SCANNING,
 	}
 	
-	public void APScan() {
+	// Set the state to scan and start to switch channels
+	public boolean APScan() {
 		
-		if(_device_connected==false) {
-			return;
-		}
+		// Only allow to enter scanning state IF idle
+		if(_device_connected==false || _state!=WifiState.IDLE)
+			return false;
 		
-		// Create a mutex which gives a lock specifically for scanning.
 		
+		return true;
 	}
 	
 	public Wifi(CoexiSyst c) {
@@ -98,7 +99,6 @@ public class Wifi {
 		private static final String WIMON_TAG = "WiFiMonitor";
 		private int PCAP_HDR_SIZE = 16;
 		Pcapd pcap_thread;
-		int parsed;
 		
 		@Override 
 		protected void onPreExecute( )
@@ -112,7 +112,6 @@ public class Wifi {
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			Log.d(WIMON_TAG, "a new Wifi monitor thread was started");
-			parsed=0;
 			
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
@@ -159,7 +158,6 @@ public class Wifi {
 				intent.putExtra("encap", WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 				parent.sendBroadcast(intent);
 				
-				parsed++;
 			}
 		}
 		
