@@ -37,8 +37,7 @@ public class Wifi {
 	public boolean APScan() {
 		
 		// Only allow to enter scanning state IF idle
-		if(_device_connected==false || _state!=WifiState.IDLE)
-			return false;
+		if(!WifiStateChange)
 		
 		
 		return true;
@@ -66,7 +65,7 @@ public class Wifi {
 						_state = s;
 						res = true;
 					} else if(_state==WifiState.SCANNING) {
-						
+						res = false;
 					}
 				break;
 				
