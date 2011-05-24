@@ -8,7 +8,7 @@
 #include <android/log.h>
 #include <sys/types.h>
 #define LOG_TAG "PcapDriver" // text for log tag 
-//#define PCAP_DUMP 1
+#define PCAP_DUMP 1
 //#define VERBOSE 1
 
 struct ieee80211_radiotap_header {
