@@ -162,7 +162,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
 		//wiresharkTest("/sdcard/test.pcap");
-		//wiresharkTestGetAll("/sdcard/test.pcap");
+		wiresharkTestGetAll("/sdcard/test.pcap");
     }
     
 	@Override
@@ -356,7 +356,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native String wiresharkGet(int dissect_ptr, String param);
 	public native void wiresharkTest(String filename);
 	public native void wiresharkTestGetAll(String filename);
-	public native void wiresharkGetAll(int dissect_ptr);
+	public native String[] wiresharkGetAll(int dissect_ptr);
+	public native void wiresharkGetAllTest(int dissect_ptr);
 	
 		
 }

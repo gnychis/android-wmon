@@ -141,6 +141,7 @@ public class Wifi {
 	}
 	
 	public void connected() {
+		_device_connected=true;
 		try {
 			// The AR9280 needs to have its firmware written when inserted, which is not automatic
 			// FIXME: need to dynamically find the usb device id
@@ -161,7 +162,6 @@ public class Wifi {
 		
 		coexisyst.ath._monitor_thread = new WifiMon();
 		coexisyst.ath._monitor_thread.execute(coexisyst);
-		_device_connected=true;
 	}
 	
 	public void disconnected() {
@@ -223,28 +223,31 @@ public class Wifi {
 				switch(_state) {
 				
 				case IDLE:
+					dissectAll(rawHeader, rawHeader);
 					break;
 					
 				case SCANNING:
-					
 					break;
 				}
 				
-
-
-				/*int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-				String rval = coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq");
-				Log.d("WifiMon", "Got value back from wireshark dissector: " + rval);
-				coexisyst.dissectCleanup(dissect_ptr);*/
 				
 				// Send out a broadcast with the packet
-				Intent intent = new Intent(PACKET_UPDATE);
-				intent.putExtra("header",rawHeader);
-				intent.putExtra("data", rawData);
-				intent.putExtra("encap", WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-				parent.sendBroadcast(intent);
+				//Intent intent = new Intent(PACKET_UPDATE);
+				//intent.putExtra("header",rawHeader);
+				//intent.putExtra("data", rawData);
+				//intent.putExtra("encap", WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+				//parent.sendBroadcast(intent);
 				
 			}
+		}
+		
+		public String[] dissectAll(byte[] rawHeader, byte[] rawData) {
+			int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+			Log.d("Testing", "Dissected value: " + coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq"));
+			String rval[] = coexisyst.wiresharkGetAll(dissect_ptr);
+			coexisyst.wiresharkGetAllTest(dissect_ptr);
+			coexisyst.dissectCleanup(dissect_ptr);
+			return rval;
 		}
 		
 		public boolean connectToPcapd() {

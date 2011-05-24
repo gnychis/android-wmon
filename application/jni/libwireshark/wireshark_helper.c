@@ -426,6 +426,12 @@ wiresharkGetAll(int wfd_ptr)
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "<packet>\n");
 }
 
+void
+Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAllTest(JNIEnv* env, jobject thiz, jint wfd_ptr)
+{
+	wiresharkGetAll((int)wfd_ptr);
+}
+
 // Return a list of all the fields
 jobjectArray
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
@@ -447,6 +453,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAll(JNIEnv* env, jobject thiz, 
 	    &data);
 
   fields = (*env)->NewObjectArray(env, (jsize)data.num_fields, (*env)->FindClass(env, "java/lang/String"), 0);
+#ifdef VERBOSE
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Dissected with %d fields\n", data.num_fields);
+#endif
   
   // Go through the list
   item = data.fields_head;
@@ -531,6 +540,9 @@ wireshark_get_fields(proto_node *node, gpointer data)
 				//fputs("\" show=\"", pdata->fh);
 				//print_escaped_xml(pdata->fh, &dfilter_string[chop_len]);
         snprintf(item->str, 256, "%s %s", fi->hfinfo->abbrev, &dfilter_string[chop_len]); 
+#ifdef VERBOSE
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "field: %s - %s", fi->hfinfo->abbrev, &dfilter_string[chop_len]);
+#endif
         pdata->num_fields++;
 			}
 		}
