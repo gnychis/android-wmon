@@ -144,6 +144,9 @@
  jni/libwireshark/epan/address.h \
  jni/libwireshark/epan/dissectors/packet-radiotap-defs.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libwireshark/log.h \
+ jni/libwireshark/epan/charsets.h \
+ jni/libwireshark/epan/dissectors/packet-data.h \
+ jni/libwireshark/epan/dissectors/packet-frame.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libwireshark/cfile.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libwireshark/capture_ui_utils.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libwireshark/capture_opts.h \
@@ -541,6 +544,12 @@ jni/libwireshark/epan/address.h:
 jni/libwireshark/epan/dissectors/packet-radiotap-defs.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libwireshark/log.h:
+
+jni/libwireshark/epan/charsets.h:
+
+jni/libwireshark/epan/dissectors/packet-data.h:
+
+jni/libwireshark/epan/dissectors/packet-frame.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libwireshark/cfile.h:
 
