@@ -62,6 +62,7 @@ int dissectPacket(char *pHeader, char *pData, int encap);
 char *wiresharkGet(int wfd_ptr, gchar *field);
 void myoutput_fields_free(output_fields_t* fields);
 void wireshark_get_fields(proto_node *node, gpointer data);
+void wiresharkGetAll(int wfd_ptr);
 
 capture_file cfile;
 gchar               *cf_name = NULL, *rfilter = NULL;
@@ -95,7 +96,7 @@ extern void read_failure_message(const char *filename, int err);
 extern void write_failure_message(const char *filename, int err);
 
 #define LOG_TAG "WiresharkDriver"
-//#define VERBOSE
+#define VERBOSE
 
 struct _output_fields {
     gboolean print_header;
@@ -112,6 +113,75 @@ typedef struct {
     output_fields_t* fields;
 	epan_dissect_t		*edt;
 } write_field_data_t;
+
+void
+Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTestGetAll(JNIEnv* env, jobject thiz, jstring jsFname)
+{
+  FILE *bf;
+  unsigned char *data_buffer;
+  int psize = 113;
+  int z, y, i;
+  struct pcap_file_header pfheader;
+	char *fname;
+	int parsed=0;
+	
+	fname = (char *) (*env)->GetByteArrayElements(env, jsFname, NULL);
+
+  bf = fopen("/sdcard/test.pcap", "rb");
+  if(!bf) {
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not open %s - %s\n", jsFname, fname);
+    return;
+  }
+
+  // Read the global pcap header
+  if((z = fread(&pfheader, sizeof(struct pcap_file_header), 1, bf)) != 1) {
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Did not read past header: %d\n", z);
+    return;
+  }
+#ifdef VERBOSE
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "read link type: %d\n", pfheader.linktype);
+#endif
+
+	while(1) {
+		int dissect_ptr;
+		char *rval;
+		struct pcap_pkthdr pheader;
+	
+		// Read in the first packet header
+		if((z = fread(&pheader, sizeof(pheader), 1, bf)) != 1) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet header\n");
+			break;
+		}
+#ifdef VERBOSE
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "got the first packet, size: %d\n", pheader.caplen);
+#endif
+
+		// Read in the packet now
+		data_buffer = malloc(pheader.caplen);
+		if((z = fread(data_buffer, pheader.caplen, 1, bf)) != 1) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet after %d packets\n", parsed);
+			break;
+		}
+#ifdef VERBOSE
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Read in the packet\n", rval);
+#endif
+		
+		dissect_ptr = dissectPacket((char *)&pheader, data_buffer, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+#ifdef VERBOSE
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Finished dissecting (%d)\n", parsed);
+#endif
+		wiresharkGetAll(dissect_ptr);
+		dissectCleanup(dissect_ptr);
+#ifdef VERBOSE
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Successful cleanup\n");
+#endif
+		free(data_buffer);
+		parsed++;
+	}
+
+	(*env)->ReleaseByteArrayElements( env, jsFname, fname, 0);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Succussfully passed wireshark test after %d packets\n", parsed);
+}
 
 void
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, jstring jsFname)
@@ -324,8 +394,41 @@ struct gnychis_field_data_s {
 typedef struct gnychis_field_data_s gnychis_field_data;
 
 // Return a list of all the fields
+void
+wiresharkGetAll(int wfd_ptr)
+{
+	gnychis_field_data data;
+	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
+  str_list_item *item;
+  int x=0;
+
+  /* Create the output */
+	data.edt = dissection->edt;
+  data.fields_head = NULL;
+  data.fields = NULL;
+  data.num_fields=0;
+
+	proto_tree_children_foreach(dissection->edt->tree, wireshark_get_fields,
+	    &data);
+
+  // Go through the list
+  item = data.fields_head;
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "\n<packet>");
+  while(item != NULL) {
+		str_list_item *old;
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", item->str);
+		free(item->str);
+		old = item;
+    item = item->next;
+		free(old);
+    x++;
+  }
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "<packet>\n");
+}
+
+// Return a list of all the fields
 jobjectArray
-wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
+Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
 {
   jobjectArray fields = 0;
 	jstring      str;
@@ -348,9 +451,13 @@ wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
   // Go through the list
   item = data.fields_head;
   while(item != NULL) {
+		str_list_item *old;
     jstring strt = (*env)->NewStringUTF( env, item->str );
     (*env)->SetObjectArrayElement(env, fields, x, strt);
+		free(item->str);
+		old = item;
     item = item->next;
+		free(old);
     x++;
   }
 
