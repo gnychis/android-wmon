@@ -46,6 +46,11 @@
 #include "packet-radiotap-defs.h"
 #include "log.h"
 
+#include <epan/charsets.h>
+#include <epan/dissectors/packet-data.h>
+#include <epan/dissectors/packet-frame.h>
+
+
 #include "cfile.h"
 #include "capture_ui_utils.h"
 #include "capture_ifinfo.h"
@@ -56,6 +61,7 @@ void dissectCleanup(int ptr);
 int dissectPacket(char *pHeader, char *pData, int encap);
 char *wiresharkGet(int wfd_ptr, gchar *field);
 void myoutput_fields_free(output_fields_t* fields);
+void wireshark_get_fields(proto_node *node, gpointer data);
 
 capture_file cfile;
 gchar               *cf_name = NULL, *rfilter = NULL;
@@ -301,6 +307,136 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jb
 
 	return ret;
 }
+
+struct gnychis_str_list_s {
+  char *str;    // must be freed
+  struct gnychis_str_list_s *next;
+};
+typedef struct gnychis_str_list_s str_list_item;
+
+struct gnychis_field_data_s {
+  int num_fields;
+  epan_dissect_t *edt;
+  struct gnychis_str_list_s *fields_head;
+  struct gnychis_str_list_s *fields;
+};
+
+typedef struct gnychis_field_data_s gnychis_field_data;
+
+// Return a list of all the fields
+jobjectArray
+wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
+{
+  jobjectArray fields = 0;
+	jstring      str;
+	gnychis_field_data data;
+	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
+  str_list_item *item;
+  int x=0;
+
+  /* Create the output */
+	data.edt = dissection->edt;
+  data.fields_head = NULL;
+  data.fields = NULL;
+  data.num_fields=0;
+
+	proto_tree_children_foreach(dissection->edt->tree, wireshark_get_fields,
+	    &data);
+
+  fields = (*env)->NewObjectArray(env, (jsize)data.num_fields, (*env)->FindClass(env, "java/lang/String"), 0);
+  
+  // Go through the list
+  item = data.fields_head;
+  while(item != NULL) {
+    jstring strt = (*env)->NewStringUTF( env, item->str );
+    (*env)->SetObjectArrayElement(env, fields, x, strt);
+    item = item->next;
+    x++;
+  }
+
+  return fields;
+}
+
+void
+wireshark_get_fields(proto_node *node, gpointer data)
+{
+	field_info	*fi = PNODE_FINFO(node);
+	gnychis_field_data	*pdata = (gnychis_field_data*) data;
+	const gchar	*label_ptr;
+	gchar		label_str[ITEM_LABEL_LENGTH];
+	char		*dfilter_string;
+	size_t		chop_len;
+	int		i;
+  char item_buf[512];
+  str_list_item *item;
+
+	/* Text label. It's printed as a field with no name. */
+	if (fi->hfinfo->id == hf_text_only) {
+	}
+
+	/* Uninterpreted data, i.e., the "Data" protocol, is
+	 * printed as a field instead of a protocol. */
+	else if (fi->hfinfo->id == proto_data) {
+
+	}
+	/* Normal protocols and fields */
+	else {
+
+		switch (fi->hfinfo->type)
+		{
+		case FT_PROTOCOL:
+			break;
+		case FT_NONE:
+			break;
+		default:
+
+      
+      item = malloc(sizeof(str_list_item));
+      item->str = malloc(256);
+      item->next = NULL;
+
+      if(pdata->fields_head == NULL) {
+        pdata->fields_head = item;
+        pdata->fields = item;
+      } else {
+        pdata->fields->next = item;
+        pdata->fields = item;
+      }
+
+
+			/* XXX - this is a hack until we can just call
+			 * fvalue_to_string_repr() for *all* FT_* types. */
+			dfilter_string = proto_construct_match_selected_string(fi,
+			    pdata->edt);
+			if (dfilter_string != NULL) {
+				chop_len = strlen(fi->hfinfo->abbrev) + 4; /* for " == " */
+
+				/* XXX - Remove double-quotes. Again, once we
+				 * can call fvalue_to_string_repr(), we can
+				 * ask it not to produce the version for
+				 * display-filters, and thus, no
+				 * double-quotes. */
+				if (dfilter_string[strlen(dfilter_string)-1] == '"') {
+					dfilter_string[strlen(dfilter_string)-1] = '\0';
+					chop_len++;
+				}
+
+				//fputs("\" show=\"", pdata->fh);
+				//print_escaped_xml(pdata->fh, &dfilter_string[chop_len]);
+        snprintf(item->str, 256, "%s %s", fi->hfinfo->abbrev, &dfilter_string[chop_len]); 
+        pdata->num_fields++;
+			}
+		}
+	}
+
+	/* We always print all levels for PDML. Recurse here. */
+	if (node->first_child != NULL) {
+		proto_tree_children_foreach(node,
+				wireshark_get_fields, pdata);
+	}
+
+}
+
 
 char *
 wiresharkGet(int wfd_ptr, gchar *field)
