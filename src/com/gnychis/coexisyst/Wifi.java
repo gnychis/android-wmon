@@ -223,7 +223,7 @@ public class Wifi {
 				switch(_state) {
 				
 				case IDLE:
-					dissectAll(rawHeader, rawHeader);
+					dissectAll(rawHeader, rawData);
 					break;
 					
 				case SCANNING:
@@ -243,7 +243,6 @@ public class Wifi {
 		
 		public String[] dissectAll(byte[] rawHeader, byte[] rawData) {
 			int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-			Log.d("Testing", "Dissected value: " + coexisyst.wiresharkGet(dissect_ptr, "radiotap.channel.freq"));
 			String rval[] = coexisyst.wiresharkGetAll(dissect_ptr);
 			coexisyst.wiresharkGetAllTest(dissect_ptr);
 			coexisyst.dissectCleanup(dissect_ptr);
