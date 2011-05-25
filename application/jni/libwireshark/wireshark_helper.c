@@ -413,17 +413,23 @@ wiresharkGetAll(int wfd_ptr)
 
   // Go through the list
   item = data.fields_head;
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "\n<packet>");
+#endif
   while(item != NULL) {
 		str_list_item *old;
+#ifdef VERBOSE
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", item->str);
+#endif
 		free(item->str);
 		old = item;
     item = item->next;
 		free(old);
     x++;
   }
+#ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "<packet>\n");
+#endif
 }
 
 void
