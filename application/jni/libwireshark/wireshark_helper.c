@@ -96,7 +96,7 @@ extern void read_failure_message(const char *filename, int err);
 extern void write_failure_message(const char *filename, int err);
 
 #define LOG_TAG "WiresharkDriver"
-#define VERBOSE
+//#define VERBOSE
 
 struct _output_fields {
     gboolean print_header;
@@ -465,7 +465,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAll(JNIEnv* env, jobject thiz, 
   
   // Go through the list
   item = data.fields_head;
-  while(item != NULL) {
+  while(item != NULL && x < data.num_fields) {
 		str_list_item *old;
     jstring strt = (*env)->NewStringUTF( env, item->str );
     (*env)->SetObjectArrayElement(env, fields, x, strt);
@@ -547,7 +547,7 @@ wireshark_get_fields(proto_node *node, gpointer data)
 				//print_escaped_xml(pdata->fh, &dfilter_string[chop_len]);
         snprintf(item->str, 256, "%s %s", fi->hfinfo->abbrev, &dfilter_string[chop_len]); 
 #ifdef VERBOSE
-				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "field: %s - %s", fi->hfinfo->abbrev, &dfilter_string[chop_len]);
+//				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "field: %s - %s", fi->hfinfo->abbrev, &dfilter_string[chop_len]);
 #endif
         pdata->num_fields++;
 			}
