@@ -2,13 +2,14 @@ package com.gnychis.coexisyst;
 
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.Hashtable;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -241,12 +242,21 @@ public class Wifi {
 			}
 		}
 		
-		public String[] dissectAll(byte[] rawHeader, byte[] rawData) {
+		public Hashtable<String,List<String>> dissectAll(byte[] rawHeader, byte[] rawData) {
+			
+			// First dissect the entire packet, getting all fields
 			int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-			String rval[] = coexisyst.wiresharkGetAll(dissect_ptr);
+			String fields[] = coexisyst.wiresharkGetAll(dissect_ptr);
 			coexisyst.wiresharkGetAll(dissect_ptr);
 			coexisyst.dissectCleanup(dissect_ptr);
-			return rval;
+			
+			// Now, store all of the fields in a hash table, where each element accesses
+			// an array.  This is done since fields can have multiple values
+			Hashtable<String,List<String>> htable;
+			htable = new Hashtable<String,List<String>>();
+			
+			
+			return htable;
 		}
 		
 		public boolean connectToPcapd() {
