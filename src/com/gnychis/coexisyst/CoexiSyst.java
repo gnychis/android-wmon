@@ -55,6 +55,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	Wifi ath;
 	IChart wispyGraph;
 	
+	// For remembering whether to renable interfaces
+	boolean _wifi_reenable;
+	boolean _bt_reenable;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -126,6 +130,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// Setup wireless devices
 		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		bt = BluetoothAdapter.getDefaultAdapter();
+		
+		// Check the states of the interfaces
+		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
+		_bt_reenable = (bt.isEnabled()) ? true : false;
 
 		// Register Broadcast Receiver
 		if (rcvr_80211 == null)
@@ -153,8 +161,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		//pcapGetInterfaces();
 		
 		Log.d(TAG, "onCreate()");
-		//stopScans();
-		//startScans();
+
 		if(wiresharkInit()==1)
 			Log.d(TAG, "success with wireshark library");
 		else
@@ -175,7 +182,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		} else {
 			Log.d(TAG, "not resuming USB monitoring, already running?");
 		}
-		//startScans();
 	}
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
@@ -198,14 +204,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 			// Enable interfaces
 			bt.enable();
-			wifi.setWifiEnabled(true);
+			//wifi.setWifiEnabled(true);
 			
 			registerReceiver(rcvr_80211, new IntentFilter(
-					WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));	
+					Wifi.WIFI_SCAN_RESULT));	
 			registerReceiver(rcvr_BTooth, new IntentFilter(
 					BluetoothDevice.ACTION_FOUND));
 			
-			wifi.startScan();
 			bt.startDiscovery();
 		} catch (Exception e) {
 			Log.e(TAG, "Exception trying to register scan receivers");
@@ -222,11 +227,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Log.e(TAG, "Exception trying to unregister scan receivers",e);
 		}
 		
-		// Disable interfaces
-		wifi.setWifiEnabled(false);
+		// Disable interfaces, store history to renable if they were enabled
+		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
+		_bt_reenable = (bt.isEnabled()) ? true : false;
 		bt.disable();
-		
-		// Need to disable wispy also?
+		wifi.setWifiEnabled(false);
 	}
 	
 	public void clickAddNetwork() {

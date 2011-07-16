@@ -22,7 +22,7 @@ public class Wifi {
 
 	public static final int ATHEROS_CONNECT = 100;
 	public static final int ATHEROS_DISCONNECT = 101;
-	public static final String PACKET_UPDATE = "com.gnychis.coexisyst.PACKET_UPDATE";
+	public static final String WIFI_SCAN_RESULT = "com.gnychis.coexisyst.WIFI_SCAN_RESULT";
 	
 	CoexiSyst coexisyst;
 	
@@ -40,7 +40,7 @@ public class Wifi {
 		SCANNING,
 	}
 	
-	List<Hashtable<String,List<String>>> _scan_results;
+	ArrayList<Hashtable<String,ArrayList<String>>> _scan_results;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
 	int[] channels24 = {1,2,3,4,5,6,7,8,9,10,11};
@@ -106,7 +106,7 @@ public class Wifi {
 		
 		// Now, send out a broadcast with the results
 		Intent i = new Intent();
-		i.setAction(PACKET_UPDATE);
+		i.setAction(WIFI_SCAN_RESULT);
 		i.putExtra("packets", _scan_results);
 		coexisyst.sendBroadcast(i);
 		
@@ -263,7 +263,7 @@ public class Wifi {
 					// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
 					// to our scan result.  This does not guarantee one beacon frame per network, but
 					// pruning can be done at the next level.
-					Hashtable<String,List<String>> pkt_fields = dissectAll(rawHeader, rawData);
+					Hashtable<String,ArrayList<String>> pkt_fields = dissectAll(rawHeader, rawData);
 					if(pkt_fields.containsKey("wlan_mgt.fixed.beacon"))
 						_scan_results.add(pkt_fields);
 					
@@ -276,7 +276,7 @@ public class Wifi {
 		// When you see a "wlan_mgt.tag.number", prepend the value to make a key such as "wlan_mgt.tag.number0"
 		// ... then put all "wlan_mgt.tag.interpretation" until the next "wlan_mgt.tag.number" as values in this key.
 		// A new unique key might be hit in between, so keep something like last_tagnum = "wlan_mgt.tag.number0"
-		public Hashtable<String,List<String>> dissectAll(byte[] rawHeader, byte[] rawData) {
+		public Hashtable<String,ArrayList<String>> dissectAll(byte[] rawHeader, byte[] rawData) {
 			
 			// First dissect the entire packet, getting all fields
 			int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
@@ -287,8 +287,8 @@ public class Wifi {
 			
 			// Now, store all of the fields in a hash table, where each element accesses
 			// an array.  This is done since fields can have multiple values
-			Hashtable<String,List<String>> htable;
-			htable = new Hashtable<String,List<String>>();
+			Hashtable<String,ArrayList<String>> htable;
+			htable = new Hashtable<String,ArrayList<String>>();
 			
 			// Each field is a descriptor and value, split by a ' '
 			for(int i=0; i<fields.length;i++) {
@@ -313,10 +313,10 @@ public class Wifi {
 				// Check the hash table for the key, and then append the value in the
 				// list of values associated.
 				if(htable.containsKey(spl[0])) {
-					List<String> l = htable.get(spl[0]);
+					ArrayList<String> l = htable.get(spl[0]);
 					l.add(spl[1]);
 				} else {
-					List<String> l = new ArrayList<String>();
+					ArrayList<String> l = new ArrayList<String>();
 					l.add(spl[1]);
 					htable.put(spl[0], l);
 				}
