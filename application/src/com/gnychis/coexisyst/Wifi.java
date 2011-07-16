@@ -11,12 +11,15 @@ import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.stericson.RootTools.RootTools;
 
 public class Wifi {
+	private static final String TAG = "AtherosDev";
+
 	public static final int ATHEROS_CONNECT = 100;
 	public static final int ATHEROS_DISCONNECT = 101;
 	public static final String PACKET_UPDATE = "com.gnychis.coexisyst.PACKET_UPDATE";
@@ -70,6 +73,11 @@ public class Wifi {
 				Log.e(TAG, "error trying to scan channels", e);
 			}
 			
+			// Need to return the state back to IDLE from scanning
+			if(!WifiStateChange(WifiState.IDLE)) {
+				Log.d(TAG, "Failed to change from scanning to IDLE");
+				return "FAIL";
+			}
 			return "OK";
 		}
 	}
@@ -227,22 +235,25 @@ public class Wifi {
 				case IDLE:
 					break;
 					
+				// To identify beacon: wlan_mgt.fixed.beacon is set
+				
 				case SCANNING:
 					Hashtable<String,List<String>> pkt_fields = dissectAll(rawHeader, rawData);
+					Intent intent = new Intent(PACKET_UPDATE);
+					intent.putExtra("header",rawHeader);
+					intent.putExtra("data", rawData);
+					intent.putExtra("encap", WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+					intent.putExtra("dissection", pkt_fields);
+					parent.sendBroadcast(intent);
 					break;
 				}
-				
-				
-				// Send out a broadcast with the packet
-				//Intent intent = new Intent(PACKET_UPDATE);
-				//intent.putExtra("header",rawHeader);
-				//intent.putExtra("data", rawData);
-				//intent.putExtra("encap", WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-				//parent.sendBroadcast(intent);
-				
 			}
 		}
 		
+		// Need to do special parsing to handle multiple "interpretation" fields
+		// When you see a "wlan_mgt.tag.number", prepend the value to make a key such as "wlan_mgt.tag.number0"
+		// ... then put all "wlan_mgt.tag.interpretation" until the next "wlan_mgt.tag.number" as values in this key.
+		// A new unique key might be hit in between, so keep something like last_tagnum = "wlan_mgt.tag.number0"
 		public Hashtable<String,List<String>> dissectAll(byte[] rawHeader, byte[] rawData) {
 			
 			// First dissect the entire packet, getting all fields
