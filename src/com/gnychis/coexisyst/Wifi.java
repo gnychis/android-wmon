@@ -40,7 +40,7 @@ public class Wifi {
 		SCANNING,
 	}
 	
-	
+	List<Hashtable<String,List<String>>> _scan_results;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
 	int[] channels24 = {1,2,3,4,5,6,7,8,9,10,11};
@@ -73,12 +73,12 @@ public class Wifi {
 				Log.e(TAG, "error trying to scan channels", e);
 			}
 			
-			// Need to return the state back to IDLE from scanning
-			if(!WifiStateChange(WifiState.IDLE)) {
-				Log.d(TAG, "Failed to change from scanning to IDLE");
+			// Alerts the main thread that the scanning has stopped, by changing the state and
+			// saving the relevant data
+			if(APScanStop())
+				return "OK";
+			else
 				return "FAIL";
-			}
-			return "OK";
 		}
 	}
 	
@@ -89,10 +89,28 @@ public class Wifi {
 		if(!WifiStateChange(WifiState.SCANNING))
 			return false;
 		
+		_scan_results.clear();
+		
 		_cscan_thread = new ChannelScanner();
 		_cscan_thread.execute();
 		
 		return true;  // in scanning state, and channel hopping
+	}
+	
+	public boolean APScanStop() {
+		// Need to return the state back to IDLE from scanning
+		if(!WifiStateChange(WifiState.IDLE)) {
+			Log.d(TAG, "Failed to change from scanning to IDLE");
+			return false;
+		}
+		
+		// Now, send out a broadcast with the results
+		Intent i = new Intent();
+		i.setAction(PACKET_UPDATE);
+		i.putExtra("packets", _scan_results);
+		coexisyst.sendBroadcast(i);
+		
+		return true;
 	}
 	
 	// Attempts to change the current state, will return
@@ -101,11 +119,14 @@ public class Wifi {
 		boolean res = false;
 		if(_state_lock.tryLock()) {
 			try {
+				
 				// Can add logic here to only allow certain state changes
+				// Given a _state... then...
 				switch(_state) {
 				
 				// From the IDLE state, we can go anywhere...
 				case IDLE:
+					Log.d(TAG, "Switching state from " + _state.toString() + " to " + s.toString());
 					_state = s;
 					res = true;
 				break;
@@ -113,12 +134,13 @@ public class Wifi {
 				// We can go to idle, or ignore if we are in a
 				// scan already.
 				case SCANNING:
-					if(_state==WifiState.IDLE) {
+					if(s==WifiState.IDLE) {  // cannot go directly to IDLE from SCANNING
+						Log.d(TAG, "Switching state from " + _state.toString() + " to " + s.toString());
 						_state = s;
 						res = true;
-					} else if(_state==WifiState.SCANNING) {
+					} else if(s==WifiState.SCANNING) {  // ignore an attempt to switch in to same state
 						res = false;
-					}
+					} 
 				break;
 				
 				default:
@@ -234,17 +256,17 @@ public class Wifi {
 				
 				case IDLE:
 					break;
-					
-				// To identify beacon: wlan_mgt.fixed.beacon is set
 				
+				// In the scanning state, we save all beacon frames as we hop channels (handled by a
+				// separate thread).
 				case SCANNING:
+					// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
+					// to our scan result.  This does not guarantee one beacon frame per network, but
+					// pruning can be done at the next level.
 					Hashtable<String,List<String>> pkt_fields = dissectAll(rawHeader, rawData);
-					Intent intent = new Intent(PACKET_UPDATE);
-					intent.putExtra("header",rawHeader);
-					intent.putExtra("data", rawData);
-					intent.putExtra("encap", WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-					intent.putExtra("dissection", pkt_fields);
-					parent.sendBroadcast(intent);
+					if(pkt_fields.containsKey("wlan_mgt.fixed.beacon"))
+						_scan_results.add(pkt_fields);
+					
 					break;
 				}
 			}
@@ -261,6 +283,7 @@ public class Wifi {
 			String fields[] = coexisyst.wiresharkGetAll(dissect_ptr);
 			coexisyst.wiresharkGetAll(dissect_ptr);
 			coexisyst.dissectCleanup(dissect_ptr);
+			String last_tag = "";
 			
 			// Now, store all of the fields in a hash table, where each element accesses
 			// an array.  This is done since fields can have multiple values
@@ -270,6 +293,25 @@ public class Wifi {
 			// Each field is a descriptor and value, split by a ' '
 			for(int i=0; i<fields.length;i++) {
 				String spl[] = fields[i].split(" ", 2); // spl[0]: desc, spl[1]: value
+				
+				// If it is wlan_mgt.tag.interpretation, start to save the interpretations
+				if(spl[0].equals("wlan_mgt.tag.number")) {
+					last_tag = spl[0] + spl[1];
+					continue;
+				}
+				
+				// No need to save these
+				if(spl[0].equals("wlan_mgt.tag.length"))
+					continue;
+				
+				// Append the tag interpretation to the last tag, we reuse code by
+				// switching spl[0] to last_tag.  The value of the interpretation will
+				// therefore be appended to wlan_mgt.tag.numberX
+				if(spl[0].equals("wlan_mgt.tag.interpretation"))
+					spl[0] = last_tag;
+				
+				// Check the hash table for the key, and then append the value in the
+				// list of values associated.
 				if(htable.containsKey(spl[0])) {
 					List<String> l = htable.get(spl[0]);
 					l.add(spl[1]);
