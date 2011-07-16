@@ -2,6 +2,7 @@ package com.gnychis.coexisyst;
 
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -227,7 +228,7 @@ public class Wifi {
 					break;
 					
 				case SCANNING:
-					dissectAll(rawHeader, rawData);
+					Hashtable<String,List<String>> pkt_fields = dissectAll(rawHeader, rawData);
 					break;
 				}
 				
@@ -255,6 +256,18 @@ public class Wifi {
 			Hashtable<String,List<String>> htable;
 			htable = new Hashtable<String,List<String>>();
 			
+			// Each field is a descriptor and value, split by a ' '
+			for(int i=0; i<fields.length;i++) {
+				String spl[] = fields[i].split(" ", 2); // spl[0]: desc, spl[1]: value
+				if(htable.containsKey(spl[0])) {
+					List<String> l = htable.get(spl[0]);
+					l.add(spl[1]);
+				} else {
+					List<String> l = new ArrayList<String>();
+					l.add(spl[1]);
+					htable.put(spl[0], l);
+				}
+			}
 			
 			return htable;
 		}
