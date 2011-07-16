@@ -4,8 +4,7 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
@@ -34,7 +33,7 @@ public class Wifi {
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	
 	WifiState _state;
-	Lock _state_lock;
+	private ReentrantLock _state_lock;
 	public enum WifiState {
 		IDLE,
 		SCANNING,
@@ -155,6 +154,7 @@ public class Wifi {
 	}
 	
 	public Wifi(CoexiSyst c) {
+		_state_lock = new ReentrantLock();
 		coexisyst = c;
 		try {
 			// All modules related to ath9k_htc that need to be inserted
