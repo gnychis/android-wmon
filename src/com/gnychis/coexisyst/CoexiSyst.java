@@ -1,9 +1,9 @@
 package com.gnychis.coexisyst;
 
-import java.io.FileInputStream;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -14,12 +14,13 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.stericson.RootTools.RootTools;
 
@@ -33,6 +34,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	BluetoothAdapter bt;
 	protected USBMon usbmon;
 	protected Wispy.WispyThread wispyscan;
+	
+	private ProgressDialog pd;
 	
 	// Receivers
 	BroadcastReceiver rcvr_80211;
@@ -58,6 +61,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// For remembering whether to renable interfaces
 	boolean _wifi_reenable;
 	boolean _bt_reenable;
+	
+	public enum ThreadMessages {
+		WIFI_SCAN_COMPLETE,
+		WISPY_SCAN_COMPLETE,
+	}
 	
     /** Called when the activity is first created. */
     @Override
@@ -186,7 +194,16 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 	
-	public void scanSpectrum() {
+	private Handler handler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+
+			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE)
+				wifiScanComplete();
+		}
+	};
+	
+	public void scanSpectrum() {		
 		// Disable interfaces first, and get the raw power in the spectrum from WiSpy
 		stopScans();
 		
@@ -203,8 +220,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		try {
 		
 			// Enable interfaces
-			bt.enable();
-			//wifi.setWifiEnabled(true);
+			if(_wifi_reenable)
+				wifi.setWifiEnabled(true);
+			if(_bt_reenable)
+				bt.enable();
 			
 			registerReceiver(rcvr_80211, new IntentFilter(
 					Wifi.WIFI_SCAN_RESULT));	
@@ -216,6 +235,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Log.e(TAG, "Exception trying to register scan receivers");
 		}
 	}
+	
 	
 	public void stopScans() {
 		try {
@@ -234,32 +254,29 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		wifi.setWifiEnabled(false);
 	}
 	
+	public void wifiScanComplete() {
+		Log.d(TAG, "Wifi scan is now complete");
+		pd.dismiss();
+	}
+	
 	public void clickAddNetwork() {
+		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);     
 		
-		// Bail ship if there is no 802.11 networks within range, there is nothing to do!
-		if(netlist_80211 == null || netlist_80211.size() == 0) {
-			Toast.makeText(this, "No 802.11 networks in range...",
-					Toast.LENGTH_LONG).show();					
-			return;
-		}
+		// start the scanning process, which happens in another thread
+		ath.APScan();
 		
-		stopScans();	// Make sure that this is atomic, networks are not changing
-
-		try {
-			Log.d(TAG,"Trying to load add networks window");
-			Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
-			
-			//ArrayList<ScanResult> n80211 = new ArrayList(netlist_80211);
-			i.putExtra("com.gnychis.coexisyst.80211", netlist_80211);
-			
-			startActivity(i);
-		} catch (Exception e) {
-			Log.e(TAG, "Exception trying to load network add window",e);
-			return;
-		}
-        
-        startScans();	// We can start scanning again
-        
+		/*try {
+		Log.d(TAG,"Trying to load add networks window");
+		Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
+		
+		//ArrayList<ScanResult> n80211 = new ArrayList(netlist_80211);
+		i.putExtra("com.gnychis.coexisyst.80211", netlist_80211);
+		
+		startActivity(i);
+	} catch (Exception e) {
+		Log.e(TAG, "Exception trying to load network add window",e);
+		return;
+	}*/
 	}
 	
 	public void clickViewSpectrum() {
