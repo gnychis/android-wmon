@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.jnetpcap.PcapHeader;
@@ -33,7 +34,7 @@ public class Wifi {
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	
 	WifiState _state;
-	private ReentrantLock _state_lock;
+	private Semaphore _state_lock;
 	public enum WifiState {
 		IDLE,
 		SCANNING,
@@ -116,7 +117,7 @@ public class Wifi {
 	// the state after the change if successful/failure
 	public boolean WifiStateChange(WifiState s) {
 		boolean res = false;
-		if(_state_lock.tryLock()) {
+		if(_state_lock.tryAcquire()) {
 			try {
 				
 				// Can add logic here to only allow certain state changes
@@ -145,8 +146,9 @@ public class Wifi {
 				default:
 					res = false;
 				}
+				
 			} finally {
-				_state_lock.unlock();
+				_state_lock.release();
 			}
 		} 		
 		
@@ -154,8 +156,10 @@ public class Wifi {
 	}
 	
 	public Wifi(CoexiSyst c) {
-		_state_lock = new ReentrantLock();
+		_state_lock = new Semaphore(1,true);
+		_scan_results = new ArrayList<Hashtable<String,ArrayList<String>>>();
 		coexisyst = c;
+		_state = WifiState.IDLE;
 		try {
 			// All modules related to ath9k_htc that need to be inserted
 			RootTools.sendShell("insmod /system/lib/modules/compat.ko");
