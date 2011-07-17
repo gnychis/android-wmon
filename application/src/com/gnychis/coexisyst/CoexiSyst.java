@@ -194,7 +194,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 	
-	private Handler handler = new Handler() {
+	public Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 

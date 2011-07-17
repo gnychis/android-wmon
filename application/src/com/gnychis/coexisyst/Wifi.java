@@ -5,7 +5,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
@@ -13,8 +12,10 @@ import org.jnetpcap.nio.JBuffer;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Message;
 import android.util.Log;
 
+import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.stericson.RootTools.RootTools;
 
 public class Wifi {
@@ -109,6 +110,11 @@ public class Wifi {
 		i.setAction(WIFI_SCAN_RESULT);
 		i.putExtra("packets", _scan_results);
 		coexisyst.sendBroadcast(i);
+		
+		// Send a message to stop the spinner if it is running
+		Message msg = new Message();
+		msg.obj = ThreadMessages.WIFI_SCAN_COMPLETE;
+		coexisyst.handler.sendMessage(msg);
 		
 		return true;
 	}
