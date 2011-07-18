@@ -112,9 +112,9 @@ public class Wifi {
 		coexisyst.sendBroadcast(i);
 		
 		// Send a message to stop the spinner if it is running
-		Message msg = new Message();
-		msg.obj = ThreadMessages.WIFI_SCAN_COMPLETE;
-		coexisyst.handler.sendMessage(msg);
+		//Message msg 99999999999999999999999= new Message();
+		//msg.obj = ThreadMessages.WIFI_SCAN_COMPLETE;
+		//coexisyst.handler.sendMessage(msg);
 		
 		return true;
 	}
