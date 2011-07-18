@@ -1,27 +1,28 @@
 package com.gnychis.coexisyst;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 
+import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+
+// Can pass a handler that will perform a callback when a scan
+// is received.  This is helpful for alerting the parent class
+// of the incoming scan.
 public class WiFiScanReceiver extends BroadcastReceiver {
   private static final String TAG = "WiFiScanReceiver";
-  CoexiSyst coexisyst;
-  int scans;
   public String nets_str[];
-  
+  private Handler _handler;
 
-  public WiFiScanReceiver(CoexiSyst coexisyst) {
+  // If the handler is not null, callbacks will be made
+  public WiFiScanReceiver(Handler h) {
     super();
-    scans = 0;
-    this.coexisyst = coexisyst;
+    _handler = h;
   }
   
   public String[] get_nets() {
@@ -43,33 +44,13 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   public void onReceive(Context c, Intent intent) {
 	ScanResult bestSignal = null;  
     int i=0;
-    scans++;
-	
-	// Pull the results in
-    coexisyst.netlist_80211 = new ArrayList<ScanResult>(coexisyst.wifi.getScanResults());
-    Collections.sort(coexisyst.netlist_80211, comp);
     
-    
-    //String ts = String.format("Results (%d)\n", scans);
-    //coexisyst.textStatus.setText(ts);
-
-    for (ScanResult result : coexisyst.netlist_80211) {
-      if (bestSignal == null
-          || WifiManager.compareSignalLevel(bestSignal.level, result.level) < 0)
-        bestSignal = result;
-      //String curr = String.format("(%d) %s, %s MHz, %d dBm, %s\n", i, result.SSID, result.frequency, result.level, result.BSSID);
-      //coexisyst.textStatus.append(curr);
-      i++;
+    if(_handler != null) {
+		// Send a message to stop the spinner if it is running
+		Message msg = new Message();
+		msg.obj = ThreadMessages.WIFI_SCAN_COMPLETE;
+		_handler.sendMessage(msg);
     }
-
-    if(bestSignal != null) {
-	    String message = String.format("%s networks found. %s is the strongest with %d dBm.",
-	    		coexisyst.netlist_80211.size(), bestSignal.SSID, bestSignal.level);
-	    //Toast.makeText(coexisyst, message, Toast.LENGTH_LONG).show();
-	
-	    Log.d(TAG, "onReceive() message: " + message);
-    }
-    
   }
 
 }

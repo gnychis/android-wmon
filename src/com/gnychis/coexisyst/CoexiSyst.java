@@ -50,9 +50,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	Button buttonViewSpectrum;
 	Button buttonADB;
 	
-	// Network and Device lists
-	ArrayList<ScanResult> netlist_80211;
-	
 	// USB device related
 	Wispy wispy;
 	Wifi ath;
@@ -145,7 +142,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
 		// Register Broadcast Receiver
 		if (rcvr_80211 == null)
-			rcvr_80211 = new WiFiScanReceiver(this);
+			rcvr_80211 = new WiFiScanReceiver();
 		if (rcvr_BTooth == null)
 			rcvr_BTooth = new BluetoothManager(this);
 
@@ -194,14 +191,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 	
-	public Handler handler = new Handler() {
+	/*public Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 
 			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE)
 				wifiScanComplete();
 		}
-	};
+	};*/
 	
 	public void scanSpectrum() {		
 		// Disable interfaces first, and get the raw power in the spectrum from WiSpy
@@ -235,7 +232,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Log.e(TAG, "Exception trying to register scan receivers");
 		}
 	}
-	
 	
 	public void stopScans() {
 		try {
@@ -352,17 +348,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		}
 	}
 	
-	public String[] netlts_80211() {
-		int i=0;
-		String curr;
-		String[] nets_str = new String[netlist_80211.size()];
-		for(ScanResult result : netlist_80211) {
-	      curr = String.format("%s (%d dBm)", result.SSID, result.level);
-	      nets_str[i] = curr;
-	      i++;
-		}
-		return nets_str;
-	}
+
 	
 	public native String  initUSB();
 	public native String[] getDeviceNames();
