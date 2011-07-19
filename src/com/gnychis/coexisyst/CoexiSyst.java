@@ -1,5 +1,7 @@
 package com.gnychis.coexisyst;
 
+// do a random port number for pcapd
+
 import java.util.ArrayList;
 
 import android.app.Activity;

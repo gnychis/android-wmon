@@ -62,12 +62,17 @@ public class Wifi {
 			try {
 				// For each of the channels, go through and scan
 				for(int i=0; i<channels24.length; i++) {
-					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(i));
+					int c = channels24[i];
+					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
+					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
 					Thread.sleep(scan_period);
 				}
 				
 				for(int i=0; i<channels5.length; i++) {
-					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(i));
+					int c = channels5[i];
+					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
+					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
+
 					Thread.sleep(scan_period);
 				}
 			} catch(Exception e) {
@@ -273,9 +278,9 @@ public class Wifi {
 					// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
 					// to our scan result.  This does not guarantee one beacon frame per network, but
 					// pruning can be done at the next level.
-					Hashtable<String,ArrayList<String>> pkt_fields = dissectAll(rawHeader, rawData);
-					if(pkt_fields.containsKey("wlan_mgt.fixed.beacon"))
-						_scan_results.add(pkt_fields);
+					//Hashtable<String,ArrayList<String>> pkt_fields = dissectAll(rawHeader, rawData);
+					//if(pkt_fields.containsKey("wlan_mgt.fixed.beacon"))
+					//	_scan_results.add(pkt_fields);
 					
 					break;
 				}
