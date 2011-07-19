@@ -41,6 +41,7 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 	@Override
 	protected String doInBackground( Context... params )
 	{
+		int atheros_skip=0;
 		parent = params[0];
 		coexisyst = (CoexiSyst) params[0];
 		Log.d(TAG, "a new USB monitor was started");
@@ -62,13 +63,18 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 					//publishProgress(CoexiSyst.WISPY_POLL);
 				}
 				
-				// Atheros related checks
-				if(atheros_in_devlist==1 && coexisyst.ath._device_connected==false) {
-					publishProgress(Wifi.ATHEROS_CONNECT);
-				} else if(atheros_in_devlist==0 && coexisyst.ath._device_connected==true) {
-					publishProgress(Wifi.ATHEROS_DISCONNECT);
+				// Atheros related checks, after a device is connected, skip a check while it initializes
+				if(atheros_skip!=0) {
+					atheros_skip--;
+					Log.d(TAG, "Skipping atheros...");
+				} else {
+					if(atheros_in_devlist==1 && coexisyst.ath._device_connected==false) {
+						publishProgress(Wifi.ATHEROS_CONNECT);
+						atheros_skip=5;
+					} else if(atheros_in_devlist==0 && coexisyst.ath._device_connected==true) {
+						publishProgress(Wifi.ATHEROS_DISCONNECT);
+					}
 				}
-				
 				
 				Thread.sleep( 2000 );
 				//Log.d(TAG, "checking for USB devices");
