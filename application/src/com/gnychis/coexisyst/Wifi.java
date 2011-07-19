@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 import org.jnetpcap.PcapHeader;
@@ -12,10 +13,8 @@ import org.jnetpcap.nio.JBuffer;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Message;
 import android.util.Log;
 
-import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.stericson.RootTools.RootTools;
 
 public class Wifi {
@@ -221,7 +220,6 @@ public class Wifi {
 		Context parent;
 		CoexiSyst coexisyst;
 		Socket skt;
-		private int PCAPD_WIFI_PORT = 2000;
 		InputStream skt_in;
 		private static final String WIMON_TAG = "WiFiMonitor";
 		private int PCAP_HDR_SIZE = 16;
@@ -236,19 +234,24 @@ public class Wifi {
 		@Override
 		protected String doInBackground( Context ... params )
 		{
+			// Generate a random port for Pcapd
+			Random generator = new Random();
+			int pcapd_port = 2000 + generator.nextInt(500);
+			
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			Log.d(WIMON_TAG, "a new Wifi monitor thread was started");
 			
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
-			pcap_thread = new Pcapd();
+			pcap_thread = new Pcapd(pcapd_port);
 			pcap_thread.execute(coexisyst);
 			try { Thread.sleep(5000); } catch (Exception e) {} // give some time for the process
-			Log.d(WIMON_TAG, "launched pcapd");
 			
-			if(connectToPcapd() == false)
+			if(connectToPcapd(pcapd_port) == false) {
+				Log.d(TAG, "failed to connect to the pcapd daemon, doh");
 				return "FAIL";
+			}
 			
 			// Loop and read headers and packets
 			while(true) {
@@ -340,12 +343,12 @@ public class Wifi {
 			return htable;
 		}
 		
-		public boolean connectToPcapd() {
+		public boolean connectToPcapd(int port) {
 			// Attempt to connect to the socket via TCP for the PCAP info
 			try {
-				skt = new Socket("localhost", PCAPD_WIFI_PORT);
+				skt = new Socket("localhost", port);
 			} catch(Exception e) {
-				Log.e(WIMON_TAG, "exception trying to connect to wifi socket for pcap", e);
+				Log.e(WIMON_TAG, "exception trying to connect to wifi socket for pcap on " + Integer.toString(port), e);
 				return false;
 			}
 			
@@ -355,7 +358,7 @@ public class Wifi {
 				Log.e(WIMON_TAG, "exception trying to get inputbuffer from socket stream");
 				return false;
 			}
-			Log.d(WIMON_TAG, "successfully connected to pcapd");
+			Log.d(WIMON_TAG, "successfully connected to pcapd on port " + Integer.toString(port));
 			return true;
 		}
 		
