@@ -1,6 +1,8 @@
 package com.gnychis.coexisyst;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Hashtable;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -19,6 +21,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   private static final String TAG = "WiFiScanReceiver";
   public String nets_str[];
   private Handler _handler;
+  ArrayList<Hashtable<String,ArrayList<String>>> _last_scan;
 
   // If the handler is not null, callbacks will be made
   public WiFiScanReceiver(Handler h) {
