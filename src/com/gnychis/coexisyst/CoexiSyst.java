@@ -1,6 +1,6 @@
 package com.gnychis.coexisyst;
 
-// do a random port number for pcapd
+// not successfully initializing usb wifi card sometimes
 
 import java.util.ArrayList;
 
