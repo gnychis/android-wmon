@@ -64,6 +64,15 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		WISPY_SCAN_COMPLETE,
 	}
 	
+	public Handler _handler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+
+			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE)
+				wifiScanComplete();
+		}
+	};
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -141,8 +150,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		_bt_reenable = (bt.isEnabled()) ? true : false;
 
 		// Register Broadcast Receiver
-		if (rcvr_80211 == null)
-			rcvr_80211 = new WiFiScanReceiver();
+		if (rcvr_80211 == null) {
+			rcvr_80211 = new WiFiScanReceiver(_handler);
+			registerReceiver(rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
+		}
 		if (rcvr_BTooth == null)
 			rcvr_BTooth = new BluetoothManager(this);
 
@@ -191,15 +202,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 	
-	/*public Handler handler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-
-			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE)
-				wifiScanComplete();
-		}
-	};*/
-	
 	public void scanSpectrum() {		
 		// Disable interfaces first, and get the raw power in the spectrum from WiSpy
 		stopScans();
@@ -235,7 +237,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public void stopScans() {
 		try {
-		unregisterReceiver(rcvr_80211);	
+		//unregisterReceiver(rcvr_80211);	
 		unregisterReceiver(rcvr_BTooth);
 		
 		bt.cancelDiscovery();
@@ -256,7 +258,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	}
 	
 	public void clickAddNetwork() {
-		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);     
+		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);    
 		
 		// start the scanning process, which happens in another thread
 		ath.APScan();

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 
@@ -44,6 +45,8 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   public void onReceive(Context c, Intent intent) {
 	ScanResult bestSignal = null;  
     int i=0;
+    
+    Log.d(TAG, "Received incoming scan complete message");
     
     if(_handler != null) {
 		// Send a message to stop the spinner if it is running
