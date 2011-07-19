@@ -23,6 +23,7 @@ public class Wifi {
 	public static final int ATHEROS_CONNECT = 100;
 	public static final int ATHEROS_DISCONNECT = 101;
 	public static final String WIFI_SCAN_RESULT = "com.gnychis.coexisyst.WIFI_SCAN_RESULT";
+	public static final int MS_SLEEP_UNTIL_PCAPD = 10000;
 	
 	CoexiSyst coexisyst;
 	
@@ -246,10 +247,11 @@ public class Wifi {
 			// which we will connect to for pcap information.
 			pcap_thread = new Pcapd(pcapd_port);
 			pcap_thread.execute(coexisyst);
-			try { Thread.sleep(5000); } catch (Exception e) {} // give some time for the process
+			try { Thread.sleep(MS_SLEEP_UNTIL_PCAPD); } catch (Exception e) {} // give some time for the process
 			
 			if(connectToPcapd(pcapd_port) == false) {
 				Log.d(TAG, "failed to connect to the pcapd daemon, doh");
+				
 				return "FAIL";
 			}
 			
