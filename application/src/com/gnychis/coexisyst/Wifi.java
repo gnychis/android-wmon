@@ -292,6 +292,12 @@ public class Wifi {
 			}
 		}
 		
+		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
+			Message msg = new Message();
+			msg.obj = t;
+			coexisyst._handler.sendMessage(msg);
+		}
+		
 		@Override
 		protected String doInBackground( Context ... params )
 		{
@@ -313,20 +319,19 @@ public class Wifi {
 			
 			// Send a message to block the main dialog after the card is done initializing
 			try { Thread.sleep(MS_SLEEP_UNTIL_PCAPD); } catch (Exception e) {} // give some time for the process
-			Message msg = new Message();
-			msg.obj = ThreadMessages.ATHEROS_INITIALIZED;
-			coexisyst._handler.sendMessage(msg);
 
+			// Attempt to connect to the pcap daemon to read incoming packets over a socket.
+			// If it fails, report it and kill thread.
 			if(connectToPcapd(pcapd_port) == false) {
 				Log.d(TAG, "failed to connect to the pcapd daemon, doh");
-				Toast.makeText(parent, "Failed to initialize Atheros card",
-						Toast.LENGTH_LONG).show();	
+				sendMainMessage(ThreadMessages.ATHEROS_FAILED);
 				return "FAIL";
 			}
 			
-			Toast.makeText(parent, "Successfully initialized Atheros card",
-					Toast.LENGTH_LONG).show();	
-			
+			// Report success at connecting to the pcap daemon, which is the last step in
+			// initialization of the Atheros card.  After that, packets are flowing.
+			sendMainMessage(ThreadMessages.ATHEROS_INITIALIZED);
+						
 			// Loop and read headers and packets
 			while(true) {
 				byte[] rawHeader, rawData;

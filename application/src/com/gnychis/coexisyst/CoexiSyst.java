@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.stericson.RootTools.RootTools;
 
@@ -63,6 +64,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		WISPY_SCAN_COMPLETE,
 		ATHEROS_CONNECTED,
 		ATHEROS_INITIALIZED,
+		ATHEROS_FAILED,
 	}
 	
 	public Handler _handler = new Handler() {
@@ -79,6 +81,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			
 			if(msg.obj == ThreadMessages.ATHEROS_INITIALIZED) {
 				atherosInitialized();
+				Toast.makeText(getApplicationContext(), "Successfully initialized Atheros card", Toast.LENGTH_LONG).show();	
+			}
+			
+			if(msg.obj == ThreadMessages.ATHEROS_FAILED) {
+				Toast.makeText(getApplicationContext(), "Failed to initialize Atheros card", Toast.LENGTH_LONG).show();	
 			}
 
 		}
