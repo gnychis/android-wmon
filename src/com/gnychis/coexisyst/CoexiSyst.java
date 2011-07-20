@@ -1,6 +1,6 @@
 package com.gnychis.coexisyst;
 
-// not successfully initializing usb wifi card sometimes
+// do a random port number for pcapd
 
 import java.util.ArrayList;
 
@@ -64,6 +64,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public enum ThreadMessages {
 		WIFI_SCAN_COMPLETE,
 		WISPY_SCAN_COMPLETE,
+		ATHEROS_SETTLING,
+		ATHEROS_INITIALIZED,
 	}
 	
 	public Handler _handler = new Handler() {
@@ -72,8 +74,23 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
 			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE)
 				wifiScanComplete();
+			
+			if(msg.obj == ThreadMessages.ATHEROS_SETTLING)
+				atherosSettling();
+			
+			if(msg.obj == ThreadMessages.ATHEROS_INITIALIZED)
+				atherosInitialized();
+
 		}
 	};
+	
+	public void atherosSettling() {
+		pd = ProgressDialog.show(this, "", "Initializing Atheros card...", true, false);  
+	}
+	
+	public void atherosInitialized() {
+		pd.dismiss();
+	}
 	
     /** Called when the activity is first created. */
     @Override
