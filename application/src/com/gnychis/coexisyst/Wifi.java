@@ -4,17 +4,22 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.stericson.RootTools.RootTools;
 
 public class Wifi {
@@ -189,6 +194,9 @@ public class Wifi {
 	
 	public void connected() {
 		_device_connected=true;
+		Message msg = new Message();
+		msg.obj = ThreadMessages.ATHEROS_SETTLING;
+		coexisyst._handler.sendMessage(msg);
 		try {
 			// The AR9280 needs to have its firmware written when inserted, which is not automatic
 			// FIXME: need to dynamically find the usb device id
@@ -196,19 +204,60 @@ public class Wifi {
 			RootTools.sendShell("echo 1 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
 			RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/data");
 			RootTools.sendShell("echo 0 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
-			Thread.sleep(1000);
-			RootTools.sendShell("netcfg wlan0 down");
-			RootTools.sendShell("netcfg wlan0 down");
+			
+			// Wait for the firmware to settle, and device interface to pop up
+			while(!wlan0_exists())
+				Thread.sleep(100);
+				
+			while(!wlan0_down()) {
+				RootTools.sendShell("netcfg wlan0 down");
+				Thread.sleep(100);
+			}
+			
 			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
 			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
 			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
-			RootTools.sendShell("netcfg wlan0 up");
+			
+			while(!wlan0_up()) {
+				RootTools.sendShell("netcfg wlan0 up");
+				Thread.sleep(100);
+			}
 		} catch(Exception e) {
 			Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
 		}
 		
 		coexisyst.ath._monitor_thread = new WifiMon();
 		coexisyst.ath._monitor_thread.execute(coexisyst);
+	}
+	
+	public boolean wlan0_up() {
+		try {
+			List<String> res = RootTools.sendShell("netcfg | busybox grep wlan0 | busybox grep UP");
+			if(res.size()!=0)
+				return true;
+		} catch (Exception e) { return false; }	
+
+		return false;		
+	}
+	
+	public boolean wlan0_down() {
+		try {
+			List<String> res = RootTools.sendShell("netcfg | busybox grep wlan0 | busybox grep DOWN");
+			if(res.size()!=0)
+				return true;
+		} catch (Exception e) { return false; }	
+
+		return false;		
+	}
+	
+	public boolean wlan0_exists() {
+		try {
+			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig | busybox grep wlan0");
+			if(res.size()!=0)
+				return true;
+		} catch (Exception e) { return false; }	
+
+		return false;
 	}
 	
 	public void disconnected() {
@@ -247,13 +296,22 @@ public class Wifi {
 			// which we will connect to for pcap information.
 			pcap_thread = new Pcapd(pcapd_port);
 			pcap_thread.execute(coexisyst);
-			try { Thread.sleep(MS_SLEEP_UNTIL_PCAPD); } catch (Exception e) {} // give some time for the process
 			
+			// Send a message to block the main dialog after the card is done initializing
+			try { Thread.sleep(MS_SLEEP_UNTIL_PCAPD); } catch (Exception e) {} // give some time for the process
+			Message msg = new Message();
+			msg.obj = ThreadMessages.ATHEROS_INITIALIZED;
+			coexisyst._handler.sendMessage(msg);
+
 			if(connectToPcapd(pcapd_port) == false) {
 				Log.d(TAG, "failed to connect to the pcapd daemon, doh");
-				
+				Toast.makeText(parent, "Failed to initialize Atheros card",
+						Toast.LENGTH_LONG).show();	
 				return "FAIL";
 			}
+			
+			Toast.makeText(parent, "Successfully initialized Atheros card",
+					Toast.LENGTH_LONG).show();	
 			
 			// Loop and read headers and packets
 			while(true) {
