@@ -15,6 +15,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
@@ -28,7 +29,7 @@ public class Wifi {
 	public static final int ATHEROS_CONNECT = 100;
 	public static final int ATHEROS_DISCONNECT = 101;
 	public static final String WIFI_SCAN_RESULT = "com.gnychis.coexisyst.WIFI_SCAN_RESULT";
-	public static final int MS_SLEEP_UNTIL_PCAPD = 10000;
+	public static final int MS_SLEEP_UNTIL_PCAPD = 5000;
 	
 	CoexiSyst coexisyst;
 	
@@ -194,66 +195,41 @@ public class Wifi {
 	
 	public void connected() {
 		_device_connected=true;
-		Message msg = new Message();
-		msg.obj = ThreadMessages.ATHEROS_SETTLING;
-		coexisyst._handler.sendMessage(msg);
-		try {
-			// The AR9280 needs to have its firmware written when inserted, which is not automatic
-			// FIXME: need to dynamically find the usb device id
-			Thread.sleep(1000);
-			RootTools.sendShell("echo 1 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
-			RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/data");
-			RootTools.sendShell("echo 0 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
-			
-			// Wait for the firmware to settle, and device interface to pop up
-			while(!wlan0_exists())
-				Thread.sleep(100);
-				
-			while(!wlan0_down()) {
-				RootTools.sendShell("netcfg wlan0 down");
-				Thread.sleep(100);
-			}
-			
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
-			
-			while(!wlan0_up()) {
-				RootTools.sendShell("netcfg wlan0 up");
-				Thread.sleep(100);
-			}
-		} catch(Exception e) {
-			Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
-		}
-		
 		coexisyst.ath._monitor_thread = new WifiMon();
 		coexisyst.ath._monitor_thread.execute(coexisyst);
 	}
 	
+	public boolean wlan0_monitor() {
+		try {
+			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 | busybox grep Monitor");
+			if(res.size()!=0)
+				return true;
+		} catch (Exception e) { return false; }	
+
+		return false;		
+	}
 	public boolean wlan0_up() {
 		try {
-			List<String> res = RootTools.sendShell("netcfg | busybox grep wlan0 | busybox grep UP");
+			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep UP");
 			if(res.size()!=0)
 				return true;
 		} catch (Exception e) { return false; }	
 
 		return false;		
 	}
-	
 	public boolean wlan0_down() {
 		try {
-			List<String> res = RootTools.sendShell("netcfg | busybox grep wlan0 | busybox grep DOWN");
+			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep DOWN");
 			if(res.size()!=0)
 				return true;
 		} catch (Exception e) { return false; }	
 
 		return false;		
 	}
-	
 	public boolean wlan0_exists() {
 		try {
-			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig | busybox grep wlan0");
-			if(res.size()!=0)
+			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0");
+			if(res.size()>1)
 				return true;
 		} catch (Exception e) { return false; }	
 
@@ -275,15 +251,53 @@ public class Wifi {
 		private int PCAP_HDR_SIZE = 16;
 		Pcapd pcap_thread;
 		
+		// On pre-execute, we make sure that we initialize the card properly and set the state to IDLE
 		@Override 
 		protected void onPreExecute( )
 		{
-			_state = WifiState.IDLE;
+			_state = WifiState.IDLE;			
+		}
+		
+		protected void initAtherosCard() {
+			try {
+				// The AR9280 needs to have its firmware written when inserted, which is not automatic
+				// FIXME: need to dynamically find the usb device id
+				Thread.sleep(1000);
+				RootTools.sendShell("echo 1 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
+				RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/data");
+				RootTools.sendShell("echo 0 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
+				
+				// Wait for the firmware to settle, and device interface to pop up
+				while(!wlan0_exists())
+					Thread.sleep(100);
+					
+				while(!wlan0_down()) {
+					RootTools.sendShell("netcfg wlan0 down");
+					Thread.sleep(100);
+				}
+				
+				while(!wlan0_monitor()) {
+					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
+					Thread.sleep(100);
+				}
+				
+				RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
+				
+				while(!wlan0_up()) {
+					RootTools.sendShell("netcfg wlan0 up");
+					Thread.sleep(100);
+				}
+			} catch(Exception e) {
+				Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
+			}
 		}
 		
 		@Override
 		protected String doInBackground( Context ... params )
 		{
+			
+			initAtherosCard();
+			
 			// Generate a random port for Pcapd
 			Random generator = new Random();
 			int pcapd_port = 2000 + generator.nextInt(500);

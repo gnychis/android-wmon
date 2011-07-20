@@ -5,9 +5,11 @@ import java.util.List;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.stericson.RootTools.RootTools;
 
 // A class to handle USB worker like things
@@ -131,9 +133,10 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 		
 		// Handling events of Atheros device
 		if(event == Wifi.ATHEROS_CONNECT) {
+			Message msg = new Message();
+			msg.obj = ThreadMessages.ATHEROS_CONNECTED;
+			coexisyst._handler.sendMessage(msg);
 			Log.d(TAG, "got update that Atheros card was connected");
-			Toast.makeText(parent, "Atheros device connected", Toast.LENGTH_LONG).show();
-			coexisyst.ath.connected();			
 		}
 		else if(event == Wifi.ATHEROS_DISCONNECT) {
 			Log.d(TAG, "Atheros card now disconnected");

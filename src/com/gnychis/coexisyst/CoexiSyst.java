@@ -2,8 +2,6 @@ package com.gnychis.coexisyst;
 
 // do a random port number for pcapd
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -12,7 +10,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
@@ -64,7 +61,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public enum ThreadMessages {
 		WIFI_SCAN_COMPLETE,
 		WISPY_SCAN_COMPLETE,
-		ATHEROS_SETTLING,
+		ATHEROS_CONNECTED,
 		ATHEROS_INITIALIZED,
 	}
 	
@@ -75,11 +72,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE)
 				wifiScanComplete();
 			
-			if(msg.obj == ThreadMessages.ATHEROS_SETTLING)
+			if(msg.obj == ThreadMessages.ATHEROS_CONNECTED) {
 				atherosSettling();
+				ath.connected();
+			}
 			
-			if(msg.obj == ThreadMessages.ATHEROS_INITIALIZED)
+			if(msg.obj == ThreadMessages.ATHEROS_INITIALIZED) {
 				atherosInitialized();
+			}
 
 		}
 	};
@@ -90,6 +90,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public void atherosInitialized() {
 		pd.dismiss();
+	}
+	
+	public void showProgressUpdate(String s) {
+		pd = ProgressDialog.show(this, "", s, true, false);  
 	}
 	
     /** Called when the activity is first created. */
