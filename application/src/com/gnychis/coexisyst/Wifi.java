@@ -47,7 +47,7 @@ public class Wifi {
 		SCANNING,
 	}
 	
-	ArrayList<Hashtable<String,ArrayList<String>>> _scan_results;
+	ArrayList<DissectedPacket> _scan_results;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
 	int[] channels24 = {1,2,3,4,5,6,7,8,9,10,11};
@@ -174,7 +174,7 @@ public class Wifi {
 	
 	public Wifi(CoexiSyst c) {
 		_state_lock = new Semaphore(1,true);
-		_scan_results = new ArrayList<Hashtable<String,ArrayList<String>>>();
+		_scan_results = new ArrayList<DissectedPacket>();
 		coexisyst = c;
 		_state = WifiState.IDLE;
 		try {
