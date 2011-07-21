@@ -334,16 +334,16 @@ public class Wifi {
 						
 			// Loop and read headers and packets
 			while(true) {
-				byte[] rawHeader, rawData;
+				RawPacket rpkt = new RawPacket(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 
 				// Pull in the raw header and then cast it to a PcapHeader in JNetPcap
-				if((rawHeader = getPcapHeader())==null) {
+				if((rpkt._rawHeader = getPcapHeader())==null) {
 					pcap_thread.cancel(true);
 					return "error reading pcap header";
 				}
 								
 				// Get the raw data now from the wirelen in the pcap header
-				if((rawData = getPcapPacket(rawHeader))==null) {
+				if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
 					pcap_thread.cancel(true);
 					return "error reading data";
 				}
@@ -367,59 +367,6 @@ public class Wifi {
 					break;
 				}
 			}
-		}
-		
-		// Need to do special parsing to handle multiple "interpretation" fields
-		// When you see a "wlan_mgt.tag.number", prepend the value to make a key such as "wlan_mgt.tag.number0"
-		// ... then put all "wlan_mgt.tag.interpretation" until the next "wlan_mgt.tag.number" as values in this key.
-		// A new unique key might be hit in between, so keep something like last_tagnum = "wlan_mgt.tag.number0"
-		public Hashtable<String,ArrayList<String>> dissectAll(byte[] rawHeader, byte[] rawData) {
-			
-			// First dissect the entire packet, getting all fields
-			int dissect_ptr = coexisyst.dissectPacket(rawHeader, rawData, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-			String fields[] = coexisyst.wiresharkGetAll(dissect_ptr);
-			coexisyst.wiresharkGetAll(dissect_ptr);
-			coexisyst.dissectCleanup(dissect_ptr);
-			String last_tag = "";
-			
-			// Now, store all of the fields in a hash table, where each element accesses
-			// an array.  This is done since fields can have multiple values
-			Hashtable<String,ArrayList<String>> htable;
-			htable = new Hashtable<String,ArrayList<String>>();
-			
-			// Each field is a descriptor and value, split by a ' '
-			for(int i=0; i<fields.length;i++) {
-				String spl[] = fields[i].split(" ", 2); // spl[0]: desc, spl[1]: value
-				
-				// If it is wlan_mgt.tag.interpretation, start to save the interpretations
-				if(spl[0].equals("wlan_mgt.tag.number")) {
-					last_tag = spl[0] + spl[1];
-					continue;
-				}
-				
-				// No need to save these
-				if(spl[0].equals("wlan_mgt.tag.length"))
-					continue;
-				
-				// Append the tag interpretation to the last tag, we reuse code by
-				// switching spl[0] to last_tag.  The value of the interpretation will
-				// therefore be appended to wlan_mgt.tag.numberX
-				if(spl[0].equals("wlan_mgt.tag.interpretation"))
-					spl[0] = last_tag;
-				
-				// Check the hash table for the key, and then append the value in the
-				// list of values associated.
-				if(htable.containsKey(spl[0])) {
-					ArrayList<String> l = htable.get(spl[0]);
-					l.add(spl[1]);
-				} else {
-					ArrayList<String> l = new ArrayList<String>();
-					l.add(spl[1]);
-					htable.put(spl[0], l);
-				}
-			}
-			
-			return htable;
 		}
 		
 		public boolean connectToPcapd(int port) {
