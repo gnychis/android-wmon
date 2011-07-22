@@ -7,6 +7,12 @@ import java.util.concurrent.BlockingQueue;
 import android.content.Context;
 import android.os.AsyncTask;
 
+///////////////////////////////////////////////////
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//        THIS CLASS IS NOT USED
+// ...but kept for reference
+///////////////////////////////////////////////////
+
 // The goal is to make a thread for a process or for a scan to send
 // all of the packets it needs dissected, and be able to have the thread
 // do the work while the scanning thread does the scanning without being
@@ -14,7 +20,7 @@ import android.os.AsyncTask;
 public class Dissector extends AsyncTask<Context, Integer, String> {
 	
 	public int _packets_in;
-	public BlockingQueue<RawPacket> _incoming_queue;
+	public BlockingQueue<Packet> _incoming_queue;
 	
 	public Dissector() {
 		_packets_in=0;
@@ -39,7 +45,7 @@ public class Dissector extends AsyncTask<Context, Integer, String> {
 	// When you see a "wlan_mgt.tag.number", prepend the value to make a key such as "wlan_mgt.tag.number0"
 	// ... then put all "wlan_mgt.tag.interpretation" until the next "wlan_mgt.tag.number" as values in this key.
 	// A new unique key might be hit in between, so keep something like last_tagnum = "wlan_mgt.tag.number0"
-	public Hashtable<String,ArrayList<String>> dissectAll(RawPacket rpkt) {
+	public Hashtable<String,ArrayList<String>> dissectAll(Packet rpkt) {
 		
 		String last_tag = "";
 		

@@ -47,52 +47,13 @@ public class Wifi {
 		SCANNING,
 	}
 	
-	ArrayList<DissectedPacket> _scan_results;
+	ArrayList<Packet> _scan_results;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
 	int[] channels24 = {1,2,3,4,5,6,7,8,9,10,11};
 	int[] channels5 = {36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
 	int scan_period = 110; // time to sit on each channel, in milliseconds
 						   // 110 is to catch the 100ms beacon interval
-	
-	protected class ChannelScanner extends AsyncTask<Integer, Integer, String>
-	{
-		private static final String TAG = "WiFiChannelManager";
-
-		
-		@Override
-		protected String doInBackground( Integer ... params )
-		{
-			Log.d(TAG, "a new Wifi channel manager thread was started");
-			
-			try {
-				// For each of the channels, go through and scan
-				for(int i=0; i<channels24.length; i++) {
-					int c = channels24[i];
-					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
-					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
-					Thread.sleep(scan_period);
-				}
-				
-				for(int i=0; i<channels5.length; i++) {
-					int c = channels5[i];
-					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
-					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
-
-					Thread.sleep(scan_period);
-				}
-			} catch(Exception e) {
-				Log.e(TAG, "error trying to scan channels", e);
-			}
-			
-			// Alerts the main thread that the scanning has stopped, by changing the state and
-			// saving the relevant data
-			if(APScanStop())
-				return "OK";
-			else
-				return "FAIL";
-		}
-	}
 	
 	// Set the state to scan and start to switch channels
 	public boolean APScan() {
@@ -174,7 +135,7 @@ public class Wifi {
 	
 	public Wifi(CoexiSyst c) {
 		_state_lock = new Semaphore(1,true);
-		_scan_results = new ArrayList<DissectedPacket>();
+		_scan_results = new ArrayList<Packet>();
 		coexisyst = c;
 		_state = WifiState.IDLE;
 		try {
@@ -199,6 +160,22 @@ public class Wifi {
 		coexisyst.ath._monitor_thread.execute(coexisyst);
 	}
 	
+	public String compatLoading() {
+		try {
+			List<String> res = RootTools.sendShell("busybox find /sys -name loading");
+			return res.get(0);
+		} catch (Exception e) { return ""; }	
+	}
+	public boolean compatIsLoading(String loc) {
+		try {
+			List<String> res = RootTools.sendShell("cat " + loc);
+			
+			if(Integer.parseInt(res.get(0))==1)
+				return true;
+			else
+				return false;
+		} catch (Exception e) { return false; }	
+	}
 	public boolean wlan0_monitor() {
 		try {
 			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 | busybox grep Monitor");
@@ -258,14 +235,33 @@ public class Wifi {
 			_state = WifiState.IDLE;			
 		}
 		
+		// Initializes the Atheros hardware strictly.  First writes the firmware, then sets the
+		// interface to be in monitor mode
 		protected void initAtherosCard() {
 			try {
 				// The AR9280 needs to have its firmware written when inserted, which is not automatic
 				// FIXME: need to dynamically find the usb device id
-				Thread.sleep(1000);
-				RootTools.sendShell("echo 1 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
-				RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/data");
-				RootTools.sendShell("echo 0 > /sys/devices/platform/musb_hdrc/usb3/3-1/3-1.1/compat_firmware/3-1.1/loading");
+				
+				// Find the location of the "loading" register in the filesystem to alert the hardware
+				// that the firmware is going to be loaded.
+				String load_loc;
+				while(true) {
+					load_loc = compatLoading();
+					if(!load_loc.equals(""))
+						break;
+				}
+				
+				// Write a "1" to notify of impending firmware write
+				while(!compatIsLoading(load_loc))
+					RootTools.sendShell("echo 1 > " + load_loc);
+				
+				// Write the firmware to the appropriate location
+				String firmware_loc = load_loc.substring(0, load_loc.length()-7);
+				RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > " + firmware_loc + "data");
+				
+				// Notify that we are done writing the firmware
+				while(compatIsLoading(load_loc))
+					RootTools.sendShell("echo 0 > " + load_loc);
 				
 				// Wait for the firmware to settle, and device interface to pop up
 				while(!wlan0_exists())
@@ -292,49 +288,34 @@ public class Wifi {
 			}
 		}
 		
+		// Used to send messages to the main Activity (UI) thread
 		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
 			Message msg = new Message();
 			msg.obj = t;
 			coexisyst._handler.sendMessage(msg);
 		}
 		
+		// The entire meat of the thread, pulls packets off the interface and dissects them
 		@Override
 		protected String doInBackground( Context ... params )
 		{
-			
-			initAtherosCard();
-			
-			// Generate a random port for Pcapd
-			Random generator = new Random();
-			int pcapd_port = 2000 + generator.nextInt(500);
-			
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
-			Log.d(WIMON_TAG, "a new Wifi monitor thread was started");
 			
-			// Attempt to create capture process spawned in the background
-			// which we will connect to for pcap information.
-			pcap_thread = new Pcapd(pcapd_port);
-			pcap_thread.execute(coexisyst);
-			
-			// Send a message to block the main dialog after the card is done initializing
-			try { Thread.sleep(MS_SLEEP_UNTIL_PCAPD); } catch (Exception e) {} // give some time for the process
+			// Initialize the Atheros hardware
+			initAtherosCard();
 
-			// Attempt to connect to the pcap daemon to read incoming packets over a socket.
-			// If it fails, report it and kill thread.
-			if(connectToPcapd(pcapd_port) == false) {
+			// Connect to the pcap daemon to pull packets from the hardware
+			if(connectToPcapd() == false) {
 				Log.d(TAG, "failed to connect to the pcapd daemon, doh");
 				sendMainMessage(ThreadMessages.ATHEROS_FAILED);
 				return "FAIL";
 			}
-			
-			// Report success at connecting to the pcap daemon, which is the last step in
-			// initialization of the Atheros card.  After that, packets are flowing.
 			sendMainMessage(ThreadMessages.ATHEROS_INITIALIZED);
 						
 			// Loop and read headers and packets
 			while(true) {
-				RawPacket rpkt = new RawPacket(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+				Packet rpkt = new Packet(coexisyst, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 
 				// Pull in the raw header and then cast it to a PcapHeader in JNetPcap
 				if((rpkt._rawHeader = getPcapHeader())==null) {
@@ -360,21 +341,36 @@ public class Wifi {
 					// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
 					// to our scan result.  This does not guarantee one beacon frame per network, but
 					// pruning can be done at the next level.
-					//Hashtable<String,ArrayList<String>> pkt_fields = dissectAll(rawHeader, rawData);
-					//if(pkt_fields.containsKey("wlan_mgt.fixed.beacon"))
-					//	_scan_results.add(pkt_fields);
+					rpkt.dissect();
+					//if(rpkt.getField("wlan_mgt.fixed.beacon")!=null)
+					//	_scan_results.add(rpkt);
 					
 					break;
 				}
 			}
 		}
 		
-		public boolean connectToPcapd(int port) {
+		public boolean connectToPcapd() {
+			
+			// Generate a random port for Pcapd
+			Random generator = new Random();
+			int pcapd_port = 2000 + generator.nextInt(500);
+			
+			Log.d(WIMON_TAG, "a new Wifi monitor thread was started");
+			
+			// Attempt to create capture process spawned in the background
+			// which we will connect to for pcap information.
+			pcap_thread = new Pcapd(pcapd_port);
+			pcap_thread.execute(coexisyst);
+			
+			// Send a message to block the main dialog after the card is done initializing
+			try { Thread.sleep(MS_SLEEP_UNTIL_PCAPD); } catch (Exception e) {} // give some time for the process
+			
 			// Attempt to connect to the socket via TCP for the PCAP info
 			try {
-				skt = new Socket("localhost", port);
+				skt = new Socket("localhost", pcapd_port);
 			} catch(Exception e) {
-				Log.e(WIMON_TAG, "exception trying to connect to wifi socket for pcap on " + Integer.toString(port), e);
+				Log.e(WIMON_TAG, "exception trying to connect to wifi socket for pcap on " + Integer.toString(pcapd_port), e);
 				return false;
 			}
 			
@@ -384,7 +380,7 @@ public class Wifi {
 				Log.e(WIMON_TAG, "exception trying to get inputbuffer from socket stream");
 				return false;
 			}
-			Log.d(WIMON_TAG, "successfully connected to pcapd on port " + Integer.toString(port));
+			Log.d(WIMON_TAG, "successfully connected to pcapd on port " + Integer.toString(pcapd_port));
 			return true;
 		}
 		
@@ -429,4 +425,48 @@ public class Wifi {
 			return data;
 		}
 	}
+	
+	////////////////////////////////////////////////////////////////////////////////
+	// ChannelScanner: a class which instantiates a new thread to issues commands
+	//     which changes the channel of the Atheros card.  This allows packet
+	//     capture to continue smoothly, as the channel hops in the background.
+	protected class ChannelScanner extends AsyncTask<Integer, Integer, String>
+	{
+		private static final String TAG = "WiFiChannelManager";
+
+		
+		@Override
+		protected String doInBackground( Integer ... params )
+		{
+			Log.d(TAG, "a new Wifi channel manager thread was started");
+			
+			try {
+				// For each of the channels, go through and scan
+				for(int i=0; i<channels24.length; i++) {
+					int c = channels24[i];
+					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
+					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
+					Thread.sleep(scan_period);
+				}
+				
+				for(int i=0; i<channels5.length; i++) {
+					int c = channels5[i];
+					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
+					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
+
+					Thread.sleep(scan_period);
+				}
+			} catch(Exception e) {
+				Log.e(TAG, "error trying to scan channels", e);
+			}
+			
+			// Alerts the main thread that the scanning has stopped, by changing the state and
+			// saving the relevant data
+			if(APScanStop())
+				return "OK";
+			else
+				return "FAIL";
+		}
+	}
+	
 }
