@@ -38,7 +38,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	private ProgressDialog pd;
 	
 	// Receivers
-	BroadcastReceiver rcvr_80211;
+	WiFiScanReceiver rcvr_80211;
 	BroadcastReceiver rcvr_BTooth;
 	
 	TextView textStatus;
@@ -292,18 +292,19 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// start the scanning process, which happens in another thread
 		ath.APScan();
 		
-		/*try {
-		Log.d(TAG,"Trying to load add networks window");
-		Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
-		
-		//ArrayList<ScanResult> n80211 = new ArrayList(netlist_80211);
-		i.putExtra("com.gnychis.coexisyst.80211", netlist_80211);
-		
-		startActivity(i);
-	} catch (Exception e) {
-		Log.e(TAG, "Exception trying to load network add window",e);
-		return;
-	}*/
+		try {
+			Log.d(TAG,"Trying to load add networks window");
+			Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
+			
+			// Hopefully this is not broken, using it as a WifiScanReceiver rather
+			// than BroadcastReceiver type.
+			i.putExtra("com.gnychis.coexisyst.80211", rcvr_80211._last_scan);
+			
+			startActivity(i);
+		} catch (Exception e) {
+			Log.e(TAG, "Exception trying to load network add window",e);
+			return;
+		}
 	}
 	
 	public void clickViewSpectrum() {
