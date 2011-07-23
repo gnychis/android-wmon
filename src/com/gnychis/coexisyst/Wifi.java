@@ -315,7 +315,7 @@ public class Wifi {
 						
 			// Loop and read headers and packets
 			while(true) {
-				Packet rpkt = new Packet(coexisyst, WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+				Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 
 				// Pull in the raw header and then cast it to a PcapHeader in JNetPcap
 				if((rpkt._rawHeader = getPcapHeader())==null) {
