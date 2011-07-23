@@ -284,13 +284,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void wifiScanComplete() {
 		Log.d(TAG, "Wifi scan is now complete");
 		pd.dismiss();
-	}
-	
-	public void clickAddNetwork() {
-		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);    
-		
-		// start the scanning process, which happens in another thread
-		ath.APScan();
 		
 		try {
 			Log.d(TAG,"Trying to load add networks window");
@@ -305,6 +298,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Log.e(TAG, "Exception trying to load network add window",e);
 			return;
 		}
+	}
+	
+	public void clickAddNetwork() {
+		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);    
+		
+		// start the scanning process, which happens in another thread
+		ath.APScan();
 	}
 	
 	public void clickViewSpectrum() {
