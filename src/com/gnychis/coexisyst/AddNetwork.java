@@ -30,7 +30,7 @@ public class AddNetwork extends ExpandableListActivity {
     private static final String DESCRIPTION = "DESCRIPTION";
     private static final String RSSI = "RSSI";
     
-    ArrayList<ScanResult> netlist_80211;
+    ArrayList<WifiAP> netlist_80211;
 
     public List<Map<String, String>> groupData;
     public List<List<Map<String, String>>> childData;
@@ -46,7 +46,7 @@ public class AddNetwork extends ExpandableListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 	  super.onCreate(savedInstanceState);
 	  Bundle i = getIntent().getExtras();
-	  netlist_80211 = (ArrayList<ScanResult>)i.get("com.gnychis.coexisyst.80211");
+	  netlist_80211 = (ArrayList<WifiAP>)i.get("com.gnychis.coexisyst.80211");
 	  db = new DBAdapter(this);
 	  db.open();
 	  setup_groups();
@@ -65,13 +65,13 @@ public class AddNetwork extends ExpandableListActivity {
         curGroupMap.put(DESCRIPTION, "Description: 802.11 networks");
         
         List<Map<String, String>> children = new ArrayList<Map<String, String>>();
-		for(ScanResult result : netlist_80211) {
+		for(WifiAP result : netlist_80211) {
             Map<String, String> curChildMap = new HashMap<String, String>();
             children.add(curChildMap);
-            curChildMap.put(NAME, result.SSID);
-            curChildMap.put(MAC, "MAC: " + result.BSSID);
-            curChildMap.put(RSSI, "RSSI: " + result.level + "dBm");
-            curChildMap.put(CMAC, result.BSSID);	// clear string mac
+            curChildMap.put(NAME, result._ssid);
+            curChildMap.put(MAC, "MAC: " + result._mac);
+            curChildMap.put(RSSI, "RSSI: " + result._rssi + "dBm");
+            curChildMap.put(CMAC, result._mac);	// clear string mac
 		}
 		childData.add(children);
 
