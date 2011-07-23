@@ -259,6 +259,11 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, j
 {
 	dissectCleanup(ptr);
 }
+void
+Java_com_gnychis_coexisyst_Packet_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
+{
+	dissectCleanup(ptr);
+}
 
 void
 dissectCleanup(int ptr)
@@ -361,6 +366,24 @@ dissectPacket(char *pHeader, char *pData, int encap)
 
 jint
 Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
+{
+	char *pHeader;
+	char *pData;
+	jint ret;
+
+	// Translate the jbyteArrays to points for dissection
+	pHeader = (char *) (*env)->GetByteArrayElements(env, header, NULL);
+	pData = (char *) (*env)->GetByteArrayElements(env, data, NULL);
+
+	ret = dissectPacket(pHeader, pData, (int)encap);
+
+	(*env)->ReleaseByteArrayElements( env, header, pHeader, 0);
+	(*env)->ReleaseByteArrayElements( env, data, pData, 0);
+
+	return ret;
+}
+jint
+Java_com_gnychis_coexisyst_Packet_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
 {
 	char *pHeader;
 	char *pData;
@@ -648,6 +671,23 @@ void myoutput_fields_free(output_fields_t* fields)
 
 jstring
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
+{
+	gchar *field;
+	char *str_result;
+	jstring result;
+
+	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
+
+	str_result = wiresharkGet((int)wfd_ptr, field);
+	result = (*env)->NewStringUTF(env, str_result);
+	free(str_result);
+
+	(*env)->ReleaseStringUTFChars(env, param, field);
+
+	return result;
+}
+jstring
+Java_com_gnychis_coexisyst_Packet_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
 {
 	gchar *field;
 	char *str_result;

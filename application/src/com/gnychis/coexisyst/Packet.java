@@ -1,21 +1,20 @@
 package com.gnychis.coexisyst;
 
+import java.io.Serializable;
+
 // To store raw packet information.  Can also piggyback a dissection pointer.
-public class Packet {
+public class Packet implements Serializable {
 	public int _encap;
 	public byte[] _rawHeader;
 	public byte[] _rawData;
 	
 	public int _dissection_ptr;
-	
-	private CoexiSyst _coexisyst;  // for access to native methods
-	
-	public Packet(CoexiSyst c, int encap) {
+		
+	public Packet(int encap) {
 		_rawHeader = null;
 		_rawData = null;
 		_encap = encap;
 		_dissection_ptr = -1;
-		_coexisyst = c;
 	}
 	
 	// Dissects the packet, wireshark-style.  Saves the pointer to
@@ -28,7 +27,7 @@ public class Packet {
 		if(_dissection_ptr != -1)  // packet is already dissected
 			return true;
 
-		_dissection_ptr = _coexisyst.dissectPacket(_rawHeader, _rawData, _encap);
+		_dissection_ptr = dissectPacket(_rawHeader, _rawData, _encap);
 		
 		return true;
 	}
@@ -41,7 +40,7 @@ public class Packet {
 		if(_dissection_ptr == -1)
 			return null;
 		
-		result = _coexisyst.wiresharkGet(_dissection_ptr, f);
+		result = wiresharkGet(_dissection_ptr, f);
 		
 		if(result.equals(""))
 			return null;
@@ -55,10 +54,15 @@ public class Packet {
 	    try {
 	    	
 	    	if(_dissection_ptr!=-1)
-	    		_coexisyst.dissectCleanup(_dissection_ptr);
+	    		dissectCleanup(_dissection_ptr);
 
 	    } finally {
 	        super.finalize();
 	    }
 	}
+	
+	// TODO: instead, create a class where all of the wireshark functions are static
+	public native int dissectPacket(byte[] header, byte[] data, int encap);
+	public native void dissectCleanup(int dissect_ptr);
+	public native String wiresharkGet(int dissect_ptr, String param);
 }
