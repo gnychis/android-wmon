@@ -21,7 +21,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   private static final String TAG = "WiFiScanReceiver";
   public String nets_str[];
   private Handler _handler;
-  ArrayList<Hashtable<String,ArrayList<String>>> _last_scan;
+  ArrayList<Packet> _last_scan;
 
   // If the handler is not null, callbacks will be made
   public WiFiScanReceiver(Handler h) {
@@ -48,6 +48,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   public void onReceive(Context c, Intent intent) {
 	ScanResult bestSignal = null;  
     int i=0;
+    ArrayList<Packet> scan_result = (ArrayList<Packet>) intent.getExtras().get("packets");
     
     Log.d(TAG, "Received incoming scan complete message");
     
