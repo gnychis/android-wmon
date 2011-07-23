@@ -571,6 +571,8 @@ wiresharkGet(int wfd_ptr, gchar *field)
 	jstring result;
 	char *str_res = malloc(1024);	// assuming string result will be no more than 1024
 
+	memset(str_res, '\0', sizeof(str_res));
+
 	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGet(casted dissection pointer)");
@@ -595,7 +597,8 @@ wiresharkGet(int wfd_ptr, gchar *field)
 
 	// Run and get the value
 	proto_tree_children_foreach(dissection->edt->tree, proto_tree_get_node_field_values, dissection);
-	strncpy(str_res, dissection->fields->field_values[0]->str, 1024);
+	if(dissection->fields->field_values[0]!=NULL)
+		strncpy(str_res, dissection->fields->field_values[0]->str, 1024);
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGet(traversed the tree, got result)");
 #endif
