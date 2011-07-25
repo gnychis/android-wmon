@@ -29,6 +29,7 @@ public class AddNetwork extends ExpandableListActivity {
     //private static final String PROTOCOL = "PROTOCOL";
     private static final String DESCRIPTION = "DESCRIPTION";
     private static final String RSSI = "RSSI";
+    private static final String FREQ = "FREQ";
     
     ArrayList<WifiAP> netlist_80211;
 
@@ -75,7 +76,13 @@ public class AddNetwork extends ExpandableListActivity {
             else
             	curChildMap.put(MAC, "MAC: " + result._mac + " / " + result._mac2);
             
-            curChildMap.put(RSSI, "RSSI: " + result._rssi + "dBm");
+            curChildMap.put(RSSI, "RSSI: " + result.rssi() + "dBm");
+            
+            if(!result._dualband)
+            	curChildMap.put(FREQ, "Frequencies: " + result._band + "KHz");
+            else
+            	curChildMap.put(FREQ, "Frequencies: " + result._band + "KHz / " + result._band2 + "KHz");
+            
             curChildMap.put(CMAC, result._mac);	// clear string mac
 		}
 		childData.add(children);
@@ -97,9 +104,9 @@ public class AddNetwork extends ExpandableListActivity {
                 new String[] { NAME, DESCRIPTION },
                 new int[] { android.R.id.text1, android.R.id.text2 },
                 childData,
-                R.layout.three_line_list_item,
-                new String[] { NAME, MAC, RSSI },
-                new int[] { R.id.text1, R.id.text2, R.id.text3 }
+                R.layout.four_line_list_item,
+                new String[] { NAME, MAC, RSSI, FREQ },
+                new int[] { R.id.text1, R.id.text2, R.id.text3, R.id.text4 }
                 );
         
         setListAdapter(mAdapter);

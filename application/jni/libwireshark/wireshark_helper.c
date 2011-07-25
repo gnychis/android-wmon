@@ -463,6 +463,47 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAllTest(JNIEnv* env, jobject th
 
 // Return a list of all the fields
 jobjectArray
+Java_com_gnychis_coexisyst_Packet_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
+{
+  jobjectArray fields = 0;
+	jstring      str;
+	gnychis_field_data data;
+	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
+  str_list_item *item;
+  int x=0;
+
+  /* Create the output */
+	data.edt = dissection->edt;
+  data.fields_head = NULL;
+  data.fields = NULL;
+  data.num_fields=0;
+
+	proto_tree_children_foreach(dissection->edt->tree, wireshark_get_fields,
+	    &data);
+
+  fields = (*env)->NewObjectArray(env, (jsize)data.num_fields, (*env)->FindClass(env, "java/lang/String"), 0);
+#ifdef VERBOSE
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Dissected with %d fields\n", data.num_fields);
+#endif
+  
+  // Go through the list
+  item = data.fields_head;
+  while(item != NULL && x < data.num_fields) {
+		str_list_item *old;
+    jstring strt = (*env)->NewStringUTF( env, item->str );
+    (*env)->SetObjectArrayElement(env, fields, x, strt);
+		free(item->str);
+		old = item;
+    item = item->next;
+		free(old);
+    x++;
+  }
+
+  return fields;
+}
+
+// Return a list of all the fields
+jobjectArray
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
 {
   jobjectArray fields = 0;
