@@ -37,9 +37,9 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   
   Comparator<Object> comp = new Comparator<Object>() {
 	public int compare(Object arg0, Object arg1) {
-		if(((WifiAP)arg0)._rssi < ((WifiAP)arg1)._rssi)
+		if(((WifiAP)arg0).rssi() < ((WifiAP)arg1).rssi())
 			return 1;
-		else if( ((WifiAP)arg0)._rssi > ((WifiAP)arg1)._rssi)
+		else if( ((WifiAP)arg0).rssi() > ((WifiAP)arg1).rssi())
 			return -1;
 		else
 			return 0;
@@ -94,12 +94,13 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     while(results.hasNext()) {
     	Packet pkt = results.next();
     	WifiAP ap = new WifiAP();
+    	int rssi = Integer.parseInt(pkt.getField("radiotap.dbm_antsignal"));
     	
     	// Kind of like caching the important stuff to be readily accessible
     	ap._band = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
     	ap._mac = pkt.getField("wlan.sa");
     	ap._ssid = pkt.getField("wlan_mgt.ssid");
-    	ap._rssi = Integer.parseInt(pkt.getField("radiotap.dbm_antsignal"));
+    	ap._rssis.add(rssi);
     	ap._beacon = pkt;
     	
     	// Keep the AP if we don't already have a record for it (a single scan
@@ -111,7 +112,10 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     		// it with another AP as a dual-band access point (one network).
     		if(!mergeDualband(parsed_result, ap))
     			parsed_result.add(ap);
-    	}    	
+    	} else {  // we already have it, but we can add multiple RSSI readings
+    		WifiAP tap = aps_in_list.get(ap._mac);
+    		tap._rssis.add(rssi);
+    	}
     }
     
     // Save this scan as our most current scan
