@@ -1,9 +1,9 @@
 package com.gnychis.coexisyst;
 
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
@@ -11,14 +11,11 @@ import java.util.concurrent.Semaphore;
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.stericson.RootTools.RootTools;
@@ -217,6 +214,28 @@ public class Wifi {
 		_device_connected=false;
 		coexisyst.ath._monitor_thread.cancel(true);
 	}
+	
+	public static byte[] parseMacAddress(String macAddress)
+    {
+        String[] bytes = macAddress.split(":");
+        byte[] parsed = new byte[bytes.length];
+
+        for (int x = 0; x < bytes.length; x++)
+        {
+            BigInteger temp = new BigInteger(bytes[x], 16);
+            byte[] raw = temp.toByteArray();
+            parsed[x] = raw[raw.length - 1];
+        }
+        return parsed;
+    }
+	
+	public static BigInteger parseMacStringToBigInteger(String macAddress)
+	{
+		String newMac = macAddress.replaceAll(":", "");
+		BigInteger ret = new BigInteger(newMac, 16);  // 16 specifies hex
+		return ret;
+	}
+
 	
 	protected class WifiMon extends AsyncTask<Context, Integer, String>
 	{
