@@ -1,5 +1,6 @@
 package com.gnychis.coexisyst;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -9,7 +10,6 @@ import java.util.Iterator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.ScanResult;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -45,14 +45,49 @@ public class WiFiScanReceiver extends BroadcastReceiver {
 			return 0;
 	}
   };
+  
+  // The purpose of this function is to search through the already discovered
+  // APs, and determine if the newly scanned "AP" is simply another band on
+  // a single physical AP.  If so, we merge them into a single dualband AP.
+  public boolean mergeDualband(ArrayList<WifiAP> aps_in_list, WifiAP ap) {
+	  
+	  // The hashtable is indexed by MAC addresses.  We check to see if there
+	  // is an AP with an adjacent MAC address on the opposite band (i.e., 2.4/5GHz).
+	  BigInteger orig_ap_addr = Wifi.parseMacStringToBigInteger(ap._mac);
+	  
+	  // Compare with each access point
+	  Iterator<WifiAP> aps = aps_in_list.iterator();
+	  while(aps.hasNext()) {
+		  WifiAP curr_ap = aps.next();
+		  BigInteger this_ap_addr = Wifi.parseMacStringToBigInteger(curr_ap._mac);
+		  BigInteger difference = orig_ap_addr.subtract(this_ap_addr);
+		  
+		  // The addresses are apart by one, save this access point information to the
+		  // current access point.  Since we scan 2.4GHz before 5GHz, we are guaranteed
+		  // to have 2.4GHz before 5GHz in the list of bands.
+		  if(difference.equals(new BigInteger("-1")) || difference.equals(new BigInteger("1"))) {
+			  curr_ap._mac2 = ap._mac;
+			  curr_ap._band2 = ap._band;
+			  curr_ap._dualband = true;
+			  return true;
+		  }
+	  }
+	  return false;
+  }
 
   @Override
   public void onReceive(Context c, Intent intent) {
-    ArrayList<WifiAP> parsed_result = new ArrayList<WifiAP>();
-    Hashtable<String,String> aps_in_list = new Hashtable<String,String>();
-    ArrayList<Packet> scan_result = (ArrayList<Packet>) intent.getExtras().get("packets");
+	   
+	Log.d(TAG, "Received incoming scan complete message");
+	  
+	// The raw pcap packets from the scan result, for parsing
+	ArrayList<Packet> scan_result = (ArrayList<Packet>) intent.getExtras().get("packets");
+	  
+    // For keeping track of the APs that we have already parsed, by MAC
+    Hashtable<String,WifiAP> aps_in_list = new Hashtable<String,WifiAP>();
     
-    Log.d(TAG, "Received incoming scan complete message");
+    // To return, a list of WifiAPs
+    ArrayList<WifiAP> parsed_result = new ArrayList<WifiAP>();
     
     // Go through each scan result, and get the access point information
     Iterator<Packet> results = scan_result.iterator();
@@ -61,7 +96,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     	WifiAP ap = new WifiAP();
     	
     	// Kind of like caching the important stuff to be readily accessible
-    	ap._frequency = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
+    	ap._band = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
     	ap._mac = pkt.getField("wlan.sa");
     	ap._ssid = pkt.getField("wlan_mgt.ssid");
     	ap._rssi = Integer.parseInt(pkt.getField("radiotap.dbm_antsignal"));
@@ -70,9 +105,13 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     	// Keep the AP if we don't already have a record for it (a single scan
     	// might catch multiple beacons from the AP).
     	if(!aps_in_list.containsKey(ap._mac)) {
-    		aps_in_list.put(ap._mac, "");  // mark that we've seen it
-    		parsed_result.add(ap);
-    	}
+    		aps_in_list.put(ap._mac, ap);  // mark that we've seen it
+    		
+    		// Before we add it to our list as a new AP, see if we can merge
+    		// it with another AP as a dual-band access point (one network).
+    		if(!mergeDualband(parsed_result, ap))
+    			parsed_result.add(ap);
+    	}    	
     }
     
     // Save this scan as our most current scan

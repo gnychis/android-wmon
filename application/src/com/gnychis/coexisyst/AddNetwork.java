@@ -69,7 +69,12 @@ public class AddNetwork extends ExpandableListActivity {
             Map<String, String> curChildMap = new HashMap<String, String>();
             children.add(curChildMap);
             curChildMap.put(NAME, result._ssid);
-            curChildMap.put(MAC, "MAC: " + result._mac);
+            
+            if(!result._dualband)
+            	curChildMap.put(MAC, "MAC: " + result._mac);
+            else
+            	curChildMap.put(MAC, "MAC: " + result._mac + " / " + result._mac2);
+            
             curChildMap.put(RSSI, "RSSI: " + result._rssi + "dBm");
             curChildMap.put(CMAC, result._mac);	// clear string mac
 		}
