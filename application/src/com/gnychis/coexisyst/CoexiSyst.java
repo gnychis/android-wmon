@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gnychis.coexisyst.USBMon.USBState;
 import com.stericson.RootTools.RootTools;
 
 public class CoexiSyst extends Activity implements OnClickListener {
@@ -284,6 +285,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void wifiScanComplete() {
 		Log.d(TAG, "Wifi scan is now complete");
 		pd.dismiss();
+		usbmon.changeState(USBState.SCANNING);
 		
 		try {
 			Log.d(TAG,"Trying to load add networks window");
@@ -301,7 +303,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	}
 	
 	public void clickAddNetwork() {
-		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);    
+		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);
+		usbmon.changeState(USBState.HAULTED);  // slows down the scanning to put load on the USB bus
 		
 		// start the scanning process, which happens in another thread
 		ath.APScan();
