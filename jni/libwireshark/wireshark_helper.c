@@ -626,47 +626,6 @@ wireshark_get_fields(proto_node *node, gpointer data)
 
 }
 
-jobjectArray
-wiresharkGetMult(JNIEnv* env, int wfd_ptr, gchar *field)
-{
-	output_fields_t* output_fields  = NULL;
-	int z = 1, i;
-  jobjectArray results = 0;
-  int nresults=0;
-
-	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
-	
-	// Get a regular pointer to the field we are looking up, and add it to the output fields
-	output_fields = output_fields_new();
-	output_fields_add(output_fields, field);
-
-	// Setup the output fields
-	dissection->fields = output_fields;
-	dissection->fields->field_indicies = g_hash_table_new(g_str_hash, g_str_equal);
-	dissection->fields->fields->len = 1;
-	g_hash_table_insert(dissection->fields->field_indicies, field, GUINT_TO_POINTER(z));
-	dissection->fields->field_values = ep_alloc_array0(emem_strbuf_t*, 50);
-
-	// Run and get the value
-	proto_tree_children_foreach(dissection->edt->tree, proto_tree_get_node_field_values, dissection);
-
-  // Allocate enough memory for the jbojectArray
-  while(dissection->fields->field_values[nresults]!=NULL)
-    nresults++;
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGetMult(have %d results)", nresults);
-  results = (*env)->NewObjectArray(env, (jsize)nresults, (*env)->FindClass(env, "java/lang/String"), 0);
-
-  // Copy the results in to our jobjectArray
-  for(i=0; i<nresults; i++) {
-    jstring strt = (*env)->NewStringUTF( env, dissection->fields->field_values[i]->str );
-	  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGetMult(result[%d]: %s)", i, dissection->fields->field_values[i]->str);
-    (*env)->SetObjectArrayElement(env, results, i, strt);
-  }
-
-	myoutput_fields_free(dissection->fields);
-
-	return results;
-}
 
 char *
 wiresharkGet(int wfd_ptr, gchar *field)
@@ -702,8 +661,14 @@ wiresharkGet(int wfd_ptr, gchar *field)
 
 	// Run and get the value
 	proto_tree_children_foreach(dissection->edt->tree, proto_tree_get_node_field_values, dissection);
-	if(dissection->fields->field_values[0]!=NULL)
+	if(dissection->fields->field_values[0]!=NULL) {
 		strncpy(str_res, dissection->fields->field_values[0]->str, 1024);
+  } else {
+    myoutput_fields_free(dissection->fields);
+    free(str_res);
+    return NULL;
+  }
+
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGet(traversed the tree, got result)");
 #endif
@@ -750,33 +715,44 @@ void myoutput_fields_free(output_fields_t* fields)
 #endif
 }
 
-jobjectArray
+
+jstring
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
 {
 	gchar *field;
-  jobjectArray results = 0;
+	char *str_result;
+	jstring result;
 
 	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
 
-	results = wiresharkGetMult(env, (int)wfd_ptr, field);
+	str_result = wiresharkGet((int)wfd_ptr, field);
+	result = (*env)->NewStringUTF(env, str_result);
+	free(str_result);
 
 	(*env)->ReleaseStringUTFChars(env, param, field);
 
-	return results;
+	return result;
 }
-jobjectArray
+jstring
 Java_com_gnychis_coexisyst_Packet_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
 {
 	gchar *field;
-  jobjectArray results = 0;
+	char *str_result;
+	jstring result;
 
 	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
 
-	results = wiresharkGetMult(env, (int)wfd_ptr, field);
+	str_result = wiresharkGet((int)wfd_ptr, field);
+
+  if(str_result == NULL)
+    return NULL;
+
+	result = (*env)->NewStringUTF(env, str_result);
+	free(str_result);
 
 	(*env)->ReleaseStringUTFChars(env, param, field);
 
-	return results;
+	return result;
 }
 
 // Mainly a rip-off of the main() function in tshark
