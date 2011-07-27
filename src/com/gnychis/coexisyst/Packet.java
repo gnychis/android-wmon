@@ -35,16 +35,16 @@ public class Packet implements Serializable {
 	}
 	
 	// Attempt to pull a field from the dissection
-	public String getField(String f) {
+	public String[] getField(String f) {
 		
-		String result;
+		String[] result;
 		
 		if(_dissection_ptr == -1)
 			return null;
 		
 		result = wiresharkGet(_dissection_ptr, f);
 		
-		if(result.equals(""))
+		if(result[0].equals(""))
 			return null;
 		
 		return result;
@@ -114,6 +114,6 @@ public class Packet implements Serializable {
 	// TODO: instead, create a class where all of the wireshark functions are static
 	public native int dissectPacket(byte[] header, byte[] data, int encap);
 	public native void dissectCleanup(int dissect_ptr);
-	public native String wiresharkGet(int dissect_ptr, String param);
+	public native String[] wiresharkGet(int dissect_ptr, String param);
 	public native String[] wiresharkGetAll(int dissect_ptr);
 }
