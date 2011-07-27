@@ -94,15 +94,24 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     while(results.hasNext()) {
     	Packet pkt = results.next();
     	WifiAP ap = new WifiAP();
-    	int rssi = Integer.parseInt(pkt.getField("radiotap.dbm_antsignal")[0]);
+    	int rssi = Integer.parseInt(pkt.getField("radiotap.dbm_antsignal"));
+    	
+    	// If it's a bad packet, ignore
+    	if(pkt.getField("radiotap.flags.badfcs").equals("1"))
+    		continue;
     	
     	// Kind of like caching the important stuff to be readily accessible
     	// tag 3 is the channel, and it's not reliable to use radiotap.channel.freq, since
     	// it is possible to capture a beacon on an adjacent channel to the actual channel
     	// that the AP is on.
-    	ap._band = Integer.parseInt(pkt.getField("wlan_mgt.tag.number3")[0]);  
-    	ap._mac = pkt.getField("wlan.sa")[0];
-    	ap._ssid = pkt.getField("wlan_mgt.ssid")[0];
+    	String channel_s = pkt.getField("wlan_mgt.ds.current_channel");
+    	if(channel_s!=null)
+    		ap._band = Integer.parseInt(channel_s);  
+    	else 
+    		ap._band = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
+    	
+    	ap._mac = pkt.getField("wlan.sa");
+    	ap._ssid = pkt.getField("wlan_mgt.ssid");
     	ap._rssis.add(rssi);
     	ap._beacon = pkt;
     	

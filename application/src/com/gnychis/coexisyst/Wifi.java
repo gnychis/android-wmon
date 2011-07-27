@@ -261,6 +261,10 @@ public class Wifi {
 				// The AR9280 needs to have its firmware written when inserted, which is not automatic
 				// FIXME: need to dynamically find the usb device id
 				
+				// Only initialize if it is not already initialized
+				if(wlan0_exists() && wlan0_up() && wlan0_monitor())
+					return;
+				
 				// Find the location of the "loading" register in the filesystem to alert the hardware
 				// that the firmware is going to be loaded.
 				String load_loc;
