@@ -49,8 +49,6 @@ public class Wifi {
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
 	int[] channels24 = {1,2,3,4,5,6,7,8,9,10,11};
 	int[] channels5 = {36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
-	int scan_period = 110; // time to sit on each channel, in milliseconds
-						   // 110 is to catch the 100ms beacon interval
 	
 	// Set the state to scan and start to switch channels
 	public boolean APScan() {
@@ -61,7 +59,7 @@ public class Wifi {
 		
 		_scan_results.clear();
 		
-		_cscan_thread = new ChannelScanner();
+		_cscan_thread = new ChannelScanner(200);	// time to wait on each channel as parameter
 		_cscan_thread.execute();
 		
 		return true;  // in scanning state, and channel hopping
@@ -456,6 +454,16 @@ public class Wifi {
 	protected class ChannelScanner extends AsyncTask<Integer, Integer, String>
 	{
 		private static final String TAG = "WiFiChannelManager";
+		
+		private int _scan_interval;  // in milliseconds, time-per-channel
+		
+		public ChannelScanner(int scan_interval) {
+			_scan_interval = scan_interval;
+		}
+		
+		public ChannelScanner() {
+			_scan_interval = 110;  // default value
+		}
 
 		
 		@Override
@@ -469,7 +477,7 @@ public class Wifi {
 					int c = channels24[i];
 					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
 					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
-					Thread.sleep(scan_period);
+					Thread.sleep(_scan_interval);
 				}
 				
 				for(int i=0; i<channels5.length; i++) {
@@ -477,7 +485,7 @@ public class Wifi {
 					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
 					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
 
-					Thread.sleep(scan_period);
+					Thread.sleep(_scan_interval);
 				}
 			} catch(Exception e) {
 				Log.e(TAG, "error trying to scan channels", e);
