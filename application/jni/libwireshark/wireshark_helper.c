@@ -645,7 +645,7 @@ wiresharkGetMult(JNIEnv* env, int wfd_ptr, gchar *field)
 	dissection->fields->field_indicies = g_hash_table_new(g_str_hash, g_str_equal);
 	dissection->fields->fields->len = 1;
 	g_hash_table_insert(dissection->fields->field_indicies, field, GUINT_TO_POINTER(z));
-	dissection->fields->field_values = ep_alloc_array0(emem_strbuf_t*, dissection->fields->fields->len);
+	dissection->fields->field_values = ep_alloc_array0(emem_strbuf_t*, 50);
 
 	// Run and get the value
 	proto_tree_children_foreach(dissection->edt->tree, proto_tree_get_node_field_values, dissection);
