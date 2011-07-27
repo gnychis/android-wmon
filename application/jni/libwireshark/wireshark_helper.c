@@ -653,11 +653,13 @@ wiresharkGetMult(JNIEnv* env, int wfd_ptr, gchar *field)
   // Allocate enough memory for the jbojectArray
   while(dissection->fields->field_values[nresults]!=NULL)
     nresults++;
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGetMult(have %d results)", nresults);
   results = (*env)->NewObjectArray(env, (jsize)nresults, (*env)->FindClass(env, "java/lang/String"), 0);
 
   // Copy the results in to our jobjectArray
   for(i=0; i<nresults; i++) {
     jstring strt = (*env)->NewStringUTF( env, dissection->fields->field_values[i]->str );
+	  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "wiresharkGetMult(result[%d]: )", dissection->fields->field_values[i]->str);
     (*env)->SetObjectArrayElement(env, results, i, strt);
   }
 
