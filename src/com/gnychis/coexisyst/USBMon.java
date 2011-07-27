@@ -2,6 +2,7 @@ package com.gnychis.coexisyst;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -18,6 +19,18 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 	Context parent;
 	CoexiSyst coexisyst;
 	String TAG = "USBMon";
+	private Semaphore _state_lock;
+	private USBState _state;
+	
+	public enum USBState {
+		HAULTED,
+		SCANNING,
+	}
+	
+	public USBMon() {
+		_state_lock = new Semaphore(1,true);
+		_state = USBState.SCANNING;  // default state
+	}
 	
 	@Override
 	protected void onCancelled()
@@ -40,6 +53,16 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 		return 0;
 	}
 	
+	public void changeState(USBState s) {
+		try {
+			_state_lock.acquire();
+			_state = s;			
+			_state_lock.release();
+		} catch(Exception e) {
+			
+		}
+	}
+	
 	@Override
 	protected String doInBackground( Context... params )
 	{
@@ -49,6 +72,11 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 		Log.d(TAG, "a new USB monitor was started");
 		while(true) {
 			try {
+				
+				if(_state==USBState.HAULTED) {
+					Thread.sleep(2000);
+					continue;
+				}
 				
 				int wispy_in_devlist=coexisyst.USBcheckForDevice(0x1781, 0x083f);
 				//int atheros_in_devlist=coexisyst.USBcheckForDevice(0x0411,0x017f);  // does not work well for AR9280
