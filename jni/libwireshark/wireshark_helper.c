@@ -961,6 +961,7 @@ static struct sigaction old_sa[NSIG];
 
 void android_sigaction(int signal, siginfo_t *info, void *reserved)
 {
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) android_sigaction");
   (*_env)->CallVoidMethod(_env, _obj, nativeCrashed);
   old_sa[signal].sa_handler(signal);
 }
