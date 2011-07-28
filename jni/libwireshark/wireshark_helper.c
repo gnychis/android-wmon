@@ -389,6 +389,10 @@ Java_com_gnychis_coexisyst_Packet_dissectPacket(JNIEnv* env, jobject thiz, jbyte
 	char *pData;
 	jint ret;
 
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Packet_dissectPacket(Hello!)");
+#endif
+
 	// Translate the jbyteArrays to points for dissection
 	pHeader = (char *) (*env)->GetByteArrayElements(env, header, NULL);
 	pData = (char *) (*env)->GetByteArrayElements(env, data, NULL);
