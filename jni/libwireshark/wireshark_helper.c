@@ -272,15 +272,18 @@ dissectCleanup(int ptr)
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "casted the pointer");
 #endif
-	epan_dissect_cleanup(dissection->edt);
+  if(dissection->edt!=NULL)
+	  epan_dissect_cleanup(dissection->edt);
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "cleaned up dissection");
 #endif
-	free(dissection->edt);
+  if(dissection->edt!=NULL)
+    free(dissection->edt);
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed edt");
 #endif
-	free(dissection);
+  if(dissection!=NULL && dissection != -1)
+    free(dissection);
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed dissection");
 #endif
