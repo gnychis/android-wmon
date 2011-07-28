@@ -957,38 +957,39 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
 	return 1;
 }
 
-static struct sigaction old_sa[NSIG];
-
-void android_sigaction(int signal, siginfo_t *info, void *reserved)
-{
-  (*_env)->CallVoidMethod(_env, _obj, nativeCrashed);
-  old_sa[signal].sa_handler(signal);
-}
-
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
-{
-
-  jclass cls=NULL;
-  cls = (*_env)->FindClass(_env, "com/gnychis/coexisyst/CoexiSyst");
-
-  if(cls==NULL)
-    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not find class");
-
-  nativeCrashed  = (*_env)->GetMethodID(_env, cls,  "nativeCrashed", "()V");
-
-  // Try to catch crashes...
-  struct sigaction handler;
-  memset(&handler, 0, sizeof(sigaction));
-  handler.sa_sigaction = android_sigaction;
-  handler.sa_flags = SA_RESETHAND;
-#define CATCHSIG(X) sigaction(X, &handler, &old_sa[X])
-  CATCHSIG(SIGILL);
-  CATCHSIG(SIGABRT);
-  CATCHSIG(SIGBUS);
-  CATCHSIG(SIGFPE);
-  CATCHSIG(SIGSEGV);
-  CATCHSIG(SIGSTKFLT);
-  CATCHSIG(SIGPIPE);
-
-  return JNI_VERSION_1_2;
-}
+//static struct sigaction old_sa[NSIG];
+//
+//void android_sigaction(int signal, siginfo_t *info, void *reserved)
+//{
+//  (*_env)->CallVoidMethod(_env, _obj, nativeCrashed);
+//  old_sa[signal].sa_handler(signal);
+//}
+//
+//JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
+//{
+//
+//  jclass cls=NULL;
+//  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "At JNI_OnLoad");
+//  cls = (*_env)->FindClass(_env, "com/gnychis/coexisyst/CoexiSyst");
+//
+//  if(cls==NULL)
+//    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not find class");
+//
+//  nativeCrashed  = (*_env)->GetMethodID(_env, cls,  "nativeCrashed", "()V");
+//
+//  // Try to catch crashes...
+//  struct sigaction handler;
+//  memset(&handler, 0, sizeof(sigaction));
+//  handler.sa_sigaction = android_sigaction;
+//  handler.sa_flags = SA_RESETHAND;
+//#define CATCHSIG(X) sigaction(X, &handler, &old_sa[X])
+//  CATCHSIG(SIGILL);
+//  CATCHSIG(SIGABRT);
+//  CATCHSIG(SIGBUS);
+//  CATCHSIG(SIGFPE);
+//  CATCHSIG(SIGSEGV);
+//  CATCHSIG(SIGSTKFLT);
+//  CATCHSIG(SIGPIPE);
+//
+//  return JNI_VERSION_1_2;
+//}
