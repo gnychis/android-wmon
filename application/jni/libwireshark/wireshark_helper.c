@@ -968,16 +968,26 @@ void android_sigaction(int signal, siginfo_t *info, void *reserved)
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
 {
 
-  jclass cls=NULL;
+  JNIEnv  *env=NULL; 
 
+  jclass cls=NULL;
   __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) At JNI_OnLoad");
 
-  cls = (*_env)->FindClass(_env, "com/gnychis/coexisyst/CoexiSyst");
+  if ((*jvm)->GetEnv(jvm, (void **)&env, JNI_VERSION_1_6) != JNI_OK) 
+                  return -1; 
+
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Got the environment");
+  _env = env;
+  
+  if(env==NULL)
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Could not grab env");
+
+  cls = (*env)->FindClass(env, "com/gnychis/coexisyst/CoexiSyst");
 
   if(cls==NULL)
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Could not find class");
 
-  nativeCrashed  = (*_env)->GetMethodID(_env, cls,  "nativeCrashed", "()V");
+  nativeCrashed  = (*env)->GetMethodID(env, cls,  "nativeCrashed", "()V");
 
   // Try to catch crashes...
   struct sigaction handler;
