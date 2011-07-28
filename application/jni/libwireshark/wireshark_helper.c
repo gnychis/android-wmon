@@ -76,6 +76,8 @@ static nstime_t first_ts;
 static nstime_t prev_dis_ts;
 static nstime_t prev_cap_ts;
 
+static jmethodID nativeCrashed;
+
 /*
  * The way the packet decode is to be written.
  */
@@ -85,6 +87,9 @@ typedef enum {
   WRITE_FIELDS  /* User defined list of fields */
   /* Add CSV and the like here */
 } output_action_e;
+
+static JNIEnv *_env;
+static jobject _obj;
 
 static output_action_e output_action;
 
@@ -124,6 +129,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTestGetAll(JNIEnv* env, jobject th
   struct pcap_file_header pfheader;
 	char *fname;
 	int parsed=0;
+
+  _env=env;
+  _obj=thiz;
 	
 	fname = (char *) (*env)->GetByteArrayElements(env, jsFname, NULL);
 
@@ -193,6 +201,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, js
   struct pcap_file_header pfheader;
 	char *fname;
 	int parsed=0;
+  
+  _env=env;
+  _obj=thiz;
 	
 	fname = (char *) (*env)->GetByteArrayElements(env, jsFname, NULL);
 
@@ -257,11 +268,17 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, js
 void
 Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
 {
+  
+  _env=env;
+  _obj=thiz;
 	dissectCleanup(ptr);
 }
 void
 Java_com_gnychis_coexisyst_Packet_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
 {
+  
+  _env=env;
+  _obj=thiz;
 	dissectCleanup(ptr);
 }
 
@@ -373,6 +390,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jb
 	char *pHeader;
 	char *pData;
 	jint ret;
+  
+  _env=env;
+  _obj=thiz;
 
 	// Translate the jbyteArrays to points for dissection
 	pHeader = (char *) (*env)->GetByteArrayElements(env, header, NULL);
@@ -391,6 +411,9 @@ Java_com_gnychis_coexisyst_Packet_dissectPacket(JNIEnv* env, jobject thiz, jbyte
 	char *pHeader;
 	char *pData;
 	jint ret;
+  
+  _env=env;
+  _obj=thiz;
 
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Packet_dissectPacket(Hello!)");
@@ -465,6 +488,9 @@ wiresharkGetAll(int wfd_ptr)
 void
 Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAllTest(JNIEnv* env, jobject thiz, jint wfd_ptr)
 {
+  
+  _env=env;
+  _obj=thiz;
 	wiresharkGetAll((int)wfd_ptr);
 }
 
@@ -478,6 +504,9 @@ Java_com_gnychis_coexisyst_Packet_wiresharkGetAll(JNIEnv* env, jobject thiz, jin
 	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
   str_list_item *item;
   int x=0;
+  
+  _env=env;
+  _obj=thiz;
 
   /* Create the output */
 	data.edt = dissection->edt;
@@ -519,6 +548,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAll(JNIEnv* env, jobject thiz, 
 	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
   str_list_item *item;
   int x=0;
+  
+  _env=env;
+  _obj=thiz;
 
   /* Create the output */
 	data.edt = dissection->edt;
@@ -729,6 +761,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jin
 	gchar *field;
 	char *str_result;
 	jstring result;
+  
+  _env=env;
+  _obj=thiz;
 
 	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
 
@@ -746,6 +781,9 @@ Java_com_gnychis_coexisyst_Packet_wiresharkGet(JNIEnv* env, jobject thiz, jint w
 	gchar *field;
 	char *str_result;
 	jstring result;
+  
+  _env=env;
+  _obj=thiz;
 
 	field = (gchar *) (*env)->GetStringUTFChars(env, param, 0);
 
@@ -786,6 +824,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
   char                 badopt;
   GLogLevelFlags       log_flags;
   int                  optind_initial;
+  
+  _env=env;
+  _obj=thiz;
   
   init_process_policies();
   
@@ -914,4 +955,40 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
 	}
 
 	return 1;
+}
+
+static struct sigaction old_sa[NSIG];
+
+void android_sigaction(int signal, siginfo_t *info, void *reserved)
+{
+  (*_env)->CallVoidMethod(_env, _obj, nativeCrashed);
+  old_sa[signal].sa_handler(signal);
+}
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
+{
+
+  jclass cls=NULL;
+  cls = (*_env)->FindClass(_env, "com/gnychis/coexisyst/CoexiSyst");
+
+  if(cls==NULL)
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not find class");
+
+  nativeCrashed  = (*_env)->GetMethodID(_env, cls,  "nativeCrashed", "()V");
+
+  // Try to catch crashes...
+  struct sigaction handler;
+  memset(&handler, 0, sizeof(sigaction));
+  handler.sa_sigaction = android_sigaction;
+  handler.sa_flags = SA_RESETHAND;
+#define CATCHSIG(X) sigaction(X, &handler, &old_sa[X])
+  CATCHSIG(SIGILL);
+  CATCHSIG(SIGABRT);
+  CATCHSIG(SIGBUS);
+  CATCHSIG(SIGFPE);
+  CATCHSIG(SIGSEGV);
+  CATCHSIG(SIGSTKFLT);
+  CATCHSIG(SIGPIPE);
+
+  return JNI_VERSION_1_2;
 }
