@@ -983,7 +983,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
   if(env==NULL)
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Could not grab env");
 
-  cls = (*env)->FindClass(env, "com/gnychis/coexisyst/CoexiSyst");
+  cls = (*env)->FindClass(env, "com/gnychis/coexisyst/Packet");
 
   if(cls==NULL)
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Could not find class");
