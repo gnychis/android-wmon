@@ -282,7 +282,7 @@ Java_com_gnychis_coexisyst_Packet_dissectCleanup(JNIEnv* env, jobject thiz, jint
 	dissectCleanup(ptr);
 }
 
-#define VERBOSE_CLEAN
+//#define VERBOSE_CLEAN
 void
 dissectCleanup(int ptr)
 {
