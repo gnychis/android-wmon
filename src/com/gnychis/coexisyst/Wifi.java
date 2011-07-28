@@ -363,8 +363,8 @@ public class Wifi {
 					// to our scan result.  This does not guarantee one beacon frame per network, but
 					// pruning can be done at the next level.
 					rpkt.dissect();
-					if(rpkt.getField("wlan_mgt.fixed.beacon")!=null)
-						_scan_results.add(rpkt);
+					//if(rpkt.getField("wlan_mgt.fixed.beacon")!=null)
+					//	_scan_results.add(rpkt);
 					
 					break;
 				}
