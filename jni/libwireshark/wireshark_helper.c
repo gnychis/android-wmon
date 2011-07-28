@@ -282,27 +282,28 @@ Java_com_gnychis_coexisyst_Packet_dissectCleanup(JNIEnv* env, jobject thiz, jint
 	dissectCleanup(ptr);
 }
 
+#define VERBOSE_CLEAN
 void
 dissectCleanup(int ptr)
 {
 	write_field_data_t *dissection = (write_field_data_t *) ptr;
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "casted the pointer");
+#ifdef VERBOSE_CLEAN
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "casted the pointer: %d", ptr);
 #endif
   if(dissection->edt!=NULL)
 	  epan_dissect_cleanup(dissection->edt);
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "cleaned up dissection");
+#ifdef VERBOSE_CLEAN
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "cleaned up dissection: %d", ptr);
 #endif
   if(dissection->edt!=NULL)
     free(dissection->edt);
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed edt");
+#ifdef VERBOSE_CLEAN
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed edt: %d", ptr);
 #endif
   if(dissection!=NULL && dissection != -1)
     free(dissection);
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed dissection");
+#ifdef VERBOSE_CLEAN
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed dissection: %d", ptr);
 #endif
 }
 
