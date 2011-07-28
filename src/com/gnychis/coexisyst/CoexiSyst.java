@@ -382,7 +382,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Log.d(TAG,"ADB set for TCP");
 		}
 	}
-
 	
 	public native String  initUSB();
 	public native String[] getDeviceNames();

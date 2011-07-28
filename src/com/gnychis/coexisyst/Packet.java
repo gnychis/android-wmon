@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import android.util.Log;
+
 // To store raw packet information.  Can also piggyback a dissection pointer.
 public class Packet implements Serializable {
 	public int _encap;
@@ -106,6 +108,12 @@ public class Packet implements Serializable {
 		}
 		
 		return pkt_fields;
+	}
+	
+	void nativeCrashed()
+	{
+		Log.d("Packet", "(JNIDEBUG) In nativeCrashed()");
+		new RuntimeException("gcrashed here (native trace should follow after the Java trace)").printStackTrace();
 	}
 	
 	// TODO: instead, create a class where all of the wireshark functions are static
