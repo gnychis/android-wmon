@@ -112,7 +112,7 @@ public class Packet implements Serializable {
 	
 	void nativeCrashed()
 	{
-		Log.d("Packet", "(JNIDEBUG) In nativeCrashed()");
+		Log.d("Packet", "(JNIDEBUG) In nativeCrashed(): " + Integer.toString(_dissection_ptr));
 		new RuntimeException("gcrashed here (native trace should follow after the Java trace)").printStackTrace();
 	}
 	
