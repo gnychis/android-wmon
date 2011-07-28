@@ -101,7 +101,7 @@ extern void read_failure_message(const char *filename, int err);
 extern void write_failure_message(const char *filename, int err);
 
 #define LOG_TAG "WiresharkDriver"
-#define VERBOSE
+//#define VERBOSE
 
 struct _output_fields {
     gboolean print_header;
