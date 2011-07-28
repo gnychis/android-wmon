@@ -288,7 +288,7 @@ dissectCleanup(int ptr)
 {
 	write_field_data_t *dissection = (write_field_data_t *) ptr;
 #ifdef VERBOSE_CLEAN
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "casted the pointer: %d", ptr);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "casted the pointer: %d - %d", ptr, (int) dissection->edt);
 #endif
   if(dissection->edt!=NULL)
 	  epan_dissect_cleanup(dissection->edt);
@@ -380,6 +380,10 @@ dissectPacket(char *pHeader, char *pData, int encap)
 	frame_data_cleanup(&fdata);
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(cleaned up the frame data)");
+#endif
+
+#ifdef VERBOSE_CLEAN
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "new dissection: %d - %d", (int)dissection, (int)dissection->edt);
 #endif
 
 	return (int)dissection;
