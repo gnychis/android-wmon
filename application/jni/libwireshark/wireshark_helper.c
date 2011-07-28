@@ -990,6 +990,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
 
   nativeCrashed  = (*env)->GetMethodID(env, cls,  "nativeCrashed", "()V");
 
+  if(nativeCrashed==NULL)
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) nativeCrashed was NULL");
+    
+
   // Try to catch crashes...
   struct sigaction handler;
   memset(&handler, 0, sizeof(sigaction));
