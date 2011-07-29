@@ -77,7 +77,7 @@ public class Wifi {
 		i.setAction(WIFI_SCAN_RESULT);
 		i.putExtra("packets", _scan_results);
 		coexisyst.sendBroadcast(i);
-		
+				
 		// Send a message to stop the spinner if it is running
 		//Message msg 99999999999999999999999= new Message();
 		//msg.obj = ThreadMessages.WIFI_SCAN_COMPLETE;
@@ -363,8 +363,8 @@ public class Wifi {
 					// to our scan result.  This does not guarantee one beacon frame per network, but
 					// pruning can be done at the next level.
 					rpkt.dissect();
-					//if(rpkt.getField("wlan_mgt.fixed.beacon")!=null)
-					//	_scan_results.add(rpkt);
+					if(rpkt.getField("wlan_mgt.fixed.beacon")!=null)
+						_scan_results.add(rpkt);
 					
 					break;
 				}
