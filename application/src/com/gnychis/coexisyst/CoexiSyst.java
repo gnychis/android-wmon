@@ -287,7 +287,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		pd.dismiss();
 		usbmon.changeState(USBState.SCANNING);
 		
-		/*try {
+		try {
 			Log.d(TAG,"Trying to load add networks window");
 			Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
 			
@@ -300,7 +300,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Log.e(TAG, "Exception trying to load network add window",e);
 			return;
 		}
-		*/
+		
 	}
 	
 	public void clickAddNetwork() {
