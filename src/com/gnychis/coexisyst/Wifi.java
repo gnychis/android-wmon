@@ -72,10 +72,17 @@ public class Wifi {
 			return false;
 		}
 		
+		// Add it to the Hash of passed packets, that way we can pass
+		// by reference and not object
+		synchronized(coexisyst._passed_packets) {
+			coexisyst._passed_packets.put(_scan_results.hashCode(), _scan_results);
+			Log.d(TAG, "sending out broadcast with key: " + Integer.toString(_scan_results.hashCode()));
+		}
+		
 		// Now, send out a broadcast with the results
 		Intent i = new Intent();
 		i.setAction(WIFI_SCAN_RESULT);
-		i.putExtra("packets", _scan_results);
+		i.putExtra("packets", _scan_results.hashCode());
 		coexisyst.sendBroadcast(i);
 				
 		// Send a message to stop the spinner if it is running

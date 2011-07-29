@@ -2,6 +2,9 @@ package com.gnychis.coexisyst;
 
 // do a random port number for pcapd
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -35,6 +38,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	BluetoothAdapter bt;
 	protected USBMon usbmon;
 	protected Wispy.WispyThread wispyscan;
+	
+	// To pass around lists of packets by reference
+	// See: http://stackoverflow.com/questions/6875212/why-is-my-java-object-being-copied-or-finalize-being-called-twice
+	public HashMap<Integer,ArrayList<Packet>> _passed_packets;
 	
 	private ProgressDialog pd;
 	
@@ -152,6 +159,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	} catch (Exception e) {
     		Log.e(TAG, "error trying to load a USB related library", e);
     	}
+    	
+    	_passed_packets = new HashMap<Integer,ArrayList<Packet>>();
        
     	wispy = new Wispy();
         
@@ -181,7 +190,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
 		// Register Broadcast Receiver
 		if (rcvr_80211 == null) {
-			rcvr_80211 = new WiFiScanReceiver(_handler);
+			rcvr_80211 = new WiFiScanReceiver(this,_handler);
 			registerReceiver(rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		}
 		if (rcvr_BTooth == null)
@@ -288,6 +297,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		usbmon.changeState(USBState.SCANNING);
 		
 		/*try {
+						
 			Log.d(TAG,"Trying to load add networks window");
 			Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
 			
