@@ -338,17 +338,18 @@ public class Wifi {
 			while(true) {
 				Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 
-				// Pull in the raw header and then cast it to a PcapHeader in JNetPcap
-				if(!rpkt.setHeader(getPcapHeader())) {
+				if((rpkt._rawHeader = getPcapHeader())==null) {
 					pcap_thread.cancel(true);
 					return "error reading pcap header";
 				}
+				rpkt._headerLen = rpkt._rawHeader.length;
 								
 				// Get the raw data now from the wirelen in the pcap header
-				if(!rpkt.setData(getPcapPacket(rpkt._rawHeader))) {
+				if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
 					pcap_thread.cancel(true);
 					return "error reading data";
 				}
+				rpkt._dataLen = rpkt._rawData.length;
 				
 				// Based on the state of our wifi thread, we determine what to do with the packet
 				switch(_state) {

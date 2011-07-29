@@ -24,22 +24,6 @@ public class Packet implements Parcelable {
 		_dissection_ptr = -1;
 	}
 	
-	public boolean setHeader(byte[] h) {
-		if(h==null)
-			return false;
-		_rawHeader = h;
-		_headerLen = h.length;
-		return true;
-	}
-	
-	public boolean setData(byte[] d) {
-		if(d==null)
-			return false;
-		_rawData = d;
-		_dataLen = d.length;
-		return false;
-	}
-	
 	public int describeContents()
 	{
 		return this.hashCode();
