@@ -1,14 +1,17 @@
 package com.gnychis.coexisyst;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 // To store raw packet information.  Can also piggyback a dissection pointer.
-public class Packet implements Serializable {
+public class Packet implements Parcelable {
 	public int _encap;
+	public int _headerLen;
+	public int _dataLen;
 	public byte[] _rawHeader;
 	public byte[] _rawData;
 	
@@ -21,6 +24,62 @@ public class Packet implements Serializable {
 		_dissection_ptr = -1;
 	}
 	
+	public boolean setHeader(byte[] h) {
+		if(h==null)
+			return false;
+		_rawHeader = h;
+		_headerLen = h.length;
+		return true;
+	}
+	
+	public boolean setData(byte[] d) {
+		if(d==null)
+			return false;
+		_rawData = d;
+		_dataLen = d.length;
+		return false;
+	}
+	
+	public int describeContents()
+	{
+		return this.hashCode();
+	}
+	
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeInt(_encap);
+        out.writeInt(_headerLen);
+        out.writeInt(_dataLen);
+        out.writeByteArray(_rawHeader);
+        out.writeByteArray(_rawData);
+        out.writeInt(-1);	// Cannot pass the dissection pointer, otherwise the GC will
+        					// try to free the object more than once.  Once per copied object.
+    }
+    
+    private Packet(Parcel in) {
+        _encap = in.readInt();
+        _headerLen = in.readInt();
+        _dataLen = in.readInt();
+        
+        _rawHeader = new byte[_headerLen];
+        _rawData = new byte[_dataLen];
+        
+        in.readByteArray(_rawHeader);
+        in.readByteArray(_rawData);
+        _dissection_ptr = in.readInt();
+    }
+	
+    public static final Parcelable.Creator<Packet> CREATOR
+    		= new Parcelable.Creator<Packet>() {
+    	public Packet createFromParcel(Parcel in) {
+    		return new Packet(in);
+    	}
+
+    	public Packet[] newArray(int size) {
+    		return new Packet[size];
+    	}
+    };
+
+    
 	// Dissects the packet, wireshark-style.  Saves the pointer to
 	// the dissection for the ability to pull fields.
 	public boolean dissect() {
@@ -42,7 +101,8 @@ public class Packet implements Serializable {
 		String result;
 		
 		if(_dissection_ptr == -1)
-			return null;
+			if(!dissect())
+				return null;
 		
 		result = wiresharkGet(_dissection_ptr, f);
 		

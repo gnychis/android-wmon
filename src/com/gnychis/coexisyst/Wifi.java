@@ -339,13 +339,13 @@ public class Wifi {
 				Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 
 				// Pull in the raw header and then cast it to a PcapHeader in JNetPcap
-				if((rpkt._rawHeader = getPcapHeader())==null) {
+				if(!rpkt.setHeader(getPcapHeader())) {
 					pcap_thread.cancel(true);
 					return "error reading pcap header";
 				}
 								
 				// Get the raw data now from the wirelen in the pcap header
-				if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
+				if(!rpkt.setData(getPcapPacket(rpkt._rawHeader))) {
 					pcap_thread.cancel(true);
 					return "error reading data";
 				}
@@ -362,7 +362,6 @@ public class Wifi {
 					// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
 					// to our scan result.  This does not guarantee one beacon frame per network, but
 					// pruning can be done at the next level.
-					rpkt.dissect();
 					if(rpkt.getField("wlan_mgt.fixed.beacon")!=null)
 						_scan_results.add(rpkt);
 					
