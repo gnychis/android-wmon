@@ -24,13 +24,11 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   public String nets_str[];
   private Handler _handler;
   public ArrayList<WifiAP> _last_scan;
-  CoexiSyst _coexisyst;
 
   // If the handler is not null, callbacks will be made
-  public WiFiScanReceiver(CoexiSyst coexisyst, Handler h) {
+  public WiFiScanReceiver(Handler h) {
     super();
     _handler = h;
-    _coexisyst = coexisyst;
   }
   
   public String[] get_nets() {
@@ -80,13 +78,10 @@ public class WiFiScanReceiver extends BroadcastReceiver {
   @Override
   public void onReceive(Context c, Intent intent) {
 	   
-	
-	int key = (Integer)intent.getExtras().get("packets");
-	
-	Log.d(TAG, "Received incoming scan complete message, key: " + Integer.toString(key));
+	Log.d(TAG, "Received incoming scan complete message");
 	  
 	// The raw pcap packets from the scan result, for parsing
-	ArrayList<Packet> scan_result = _coexisyst._passed_packets.get(key);
+	ArrayList<Packet> scan_result = (ArrayList<Packet>) intent.getExtras().get("packets");
 	  
     // For keeping track of the APs that we have already parsed, by MAC
     Hashtable<String,WifiAP> aps_in_list = new Hashtable<String,WifiAP>();
