@@ -16,7 +16,7 @@ public class WifiAP implements Parcelable {
 	public int _band2;
 	ArrayList<Integer> _rssis;
 	
-	public Packet _beacon;
+	//public Packet _beacon;
 	
     public void writeToParcel(Parcel out, int flags) {
     	out.writeString(_mac);
@@ -31,7 +31,7 @@ public class WifiAP implements Parcelable {
     	out.writeInt(_band);
     	out.writeInt(_band2);
     	out.writeSerializable(_rssis);
-    	out.writeParcelable(_beacon, 0);
+    	//out.writeParcelable(_beacon, 0);
     }
     
     private WifiAP(Parcel in) {
@@ -48,7 +48,7 @@ public class WifiAP implements Parcelable {
     	_band2 = in.readInt();
     	_rssis = (ArrayList<Integer>) in.readSerializable();
     	
-    	_beacon = in.readParcelable(null);
+    	//_beacon = in.readParcelable(null);
     }
 	
 	public int describeContents()
