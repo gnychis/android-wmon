@@ -113,7 +113,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     	ap._mac = pkt.getField("wlan.sa");
     	ap._ssid = pkt.getField("wlan_mgt.ssid");
     	ap._rssis.add(rssi);
-    	//ap._beacon = pkt;
+    	ap._beacon = pkt;
     	
     	// Keep the AP if we don't already have a record for it (a single scan
     	// might catch multiple beacons from the AP).
