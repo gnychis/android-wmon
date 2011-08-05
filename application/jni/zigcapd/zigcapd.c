@@ -16,13 +16,24 @@ void init_econotag();
 int fd;
 
 int main() {
+	int n;
+  char cmd;
 
 	init_econotag();
 
-	if(set_channel(3))
-		printf("Success!\n");
-	else
-		printf("Fail!\n");
+	set_channel(1);
+
+	// Keep reading in for commands
+	while(1) {
+
+		if((n = read(fd, &cmd, 1))==1) {
+			
+			if(cmd==RECEIVED_PACKET) {
+
+			}
+
+		}
+	}
 
 	return 1;
 
@@ -31,17 +42,19 @@ int main() {
 int set_channel(int channel) {
 	char cmd = CHANGE_CHAN;
 	char chan = (char) channel;
-	char rval;
+	//char rval;
 
 	write (fd, &cmd, 1); 
 	write (fd, &chan, 1);
 	
-	read (fd, &rval, 1);  // read up to 100 characters if ready to read
+	// read back value for testing
+	/*read (fd, &rval, 1); 
 
 	if(rval==chan)
 		return 1;
 	else
-		return 0;
+		return 0;*/
+	return 1;
 }
 
 void init_econotag() {
