@@ -7,6 +7,7 @@
 
 #define CHANGE_CHAN 0x0000
 #define TRANSMIT_PACKET 0x0001
+#define RECEIVED_PACKET 0x0002
 
 int set_channel(int channel);
 void init_econotag();
