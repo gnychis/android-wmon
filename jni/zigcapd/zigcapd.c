@@ -98,6 +98,7 @@ int main (int argc, char *argv[]) {
 	write(1, &pcap_fh, sizeof(struct pcap_file_header));
 	fflush(stdout);
 #endif
+	write(sd_current, &pcap_fh, sizeof(struct pcap_file_header));
 
 	// Keep reading in for commands
 	while(1) {
@@ -120,19 +121,25 @@ int main (int argc, char *argv[]) {
 				// Construct a pcap packet header, using the time from 
 				// the actual hardware, rather than time of day
 				pcap_hdr.sec = 0;
-				pcap_hdr.usec = rxtime;
+				pcap_hdr.usec = 0;
 				pcap_hdr.caplen = length;
 				pcap_hdr.len = length;
 #ifdef DEBUG_OUTPUT
 				write(1, &pcap_hdr, sizeof(struct pcap_pkthdr_32));
 				fflush(stdout);
 #endif
+				write(sd_current, &pcap_hdr, sizeof(struct pcap_pkthdr_32));
 
 				// Now, print out the data
 #ifdef DEBUG_OUTPUT
 				write(1, buf, length);
 				fflush(stdout);
 #endif
+				write(sd_current, buf, length);
+
+				// Write the link quality indicator and received packet time
+				write(sd_current, (char *)&rxtime, 4);
+				write(sd_current, (char *)&lqi, 1);
 
 				free(buf);
 			}
