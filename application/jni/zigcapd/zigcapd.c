@@ -10,8 +10,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <pcap.h>
 //#include <android/log.h>
-#include "pcap.h"
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
