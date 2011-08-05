@@ -6,7 +6,10 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <limits.h>
+#include "pcap.h"
 #include "serial.h"
+
+#define DEBUG_OUTPUT
 
 #define CHANGE_CHAN 0x0000
 #define TRANSMIT_PACKET 0x0001
@@ -17,6 +20,13 @@ void init_econotag();
 	
 #define portname "/dev/ttyUSB1"
 int fd;
+
+struct pcap_pkthdr_32 {
+	bpf_u_int32 sec;
+	bpf_u_int32 usec;
+	bpf_u_int32 caplen;	/* length of portion present */
+	bpf_u_int32 len;	/* length this packet (off wire) */
+};
 
 char block_read1() {
 	int n;
@@ -34,11 +44,8 @@ uint32_t block_read_uint32() {
 
 	for(i=0;i<4;i++) {
 		uint32_t t = ((uint32_t)block_read1()) & 0xff;
-		printf("t(%d): 0x%x\n", i, t);
 		v = v | (t << i*CHAR_BIT);
 	}
-
-	printf("v: 0x%x\n", v);
 
 	return v;
 }
@@ -51,13 +58,37 @@ void block_read_nbytes(char *buf, int nbytes) {
 	}
 }
 
+void debug_buf(char *buf, int length) {
+	int i=0;
+
+	for(i=0;i<length;i++)
+		fprintf(stderr, "0x%02x ", buf[i]);
+
+	fprintf(stderr, "\n");
+}
+
 int main() {
 	int n;
   char cmd;
+	struct pcap_file_header pcap_fh; 
 
+	// Initialize the econotag and a channel
 	init_econotag();
-
 	set_channel(1);
+
+	// Need to construct a pcap file header for output (debugging)
+	pcap_fh.magic = 0xa1b2c3d4;
+	pcap_fh.version_major = 2;
+	pcap_fh.version_minor = 4;
+	pcap_fh.thiszone = 0;
+	pcap_fh.sigfigs = 0;
+	pcap_fh.snaplen = 0xffff;
+	pcap_fh.linktype = 230;
+
+#ifdef DEBUG_OUTPUT
+	write(1, &pcap_fh, sizeof(struct pcap_file_header));
+	fflush(stdout);
+#endif
 
 	// Keep reading in for commands
 	while(1) {
@@ -65,19 +96,42 @@ int main() {
 		if((n = read(fd, &cmd, 1))==1) {
 			
 			if(cmd==RECEIVED_PACKET) {
+				struct pcap_pkthdr_32 pcap_hdr;
+
+				// Read in the fields
 				uint8_t lqi = (uint8_t)block_read1();
 				uint32_t rxtime = block_read_uint32();
 				uint8_t length = (uint8_t)block_read1();
+
+				// Read in the data
 				char *buf = malloc(length);
 				block_read_nbytes(buf, length);
-				printf("rxtime: %d, LQI: %d, length: %d\n", rxtime, lqi, length);
+				fprintf(stderr, "rxtime: %d, LQI: %d, length: %d\n", rxtime, lqi, length);
+				
+				// Construct a pcap packet header, using the time from 
+				// the actual hardware, rather than time of day
+				pcap_hdr.sec = 0;
+				pcap_hdr.usec = rxtime;
+				pcap_hdr.caplen = length;
+				pcap_hdr.len = length;
+#ifdef DEBUG_OUTPUT
+				write(1, &pcap_hdr, sizeof(struct pcap_pkthdr_32));
+				fflush(stdout);
+#endif
+
+				// Now, print out the data
+#ifdef DEBUG_OUTPUT
+				write(1, buf, length);
+				fflush(stdout);
+#endif
+
+				free(buf);
 			}
 
 		}
 	}
 
 	return 1;
-
 }
 
 int set_channel(int channel) {
