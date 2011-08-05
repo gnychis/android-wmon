@@ -32,10 +32,10 @@ void debug_buf(char *buf, int length);
 int fd;
 
 struct pcap_pkthdr_32 {
-	bpf_u_int32 sec;
-	bpf_u_int32 usec;
-	bpf_u_int32 caplen;	/* length of portion present */
-	bpf_u_int32 len;	/* length this packet (off wire) */
+	uint32_t sec;
+	uint32_t usec;
+	uint32_t caplen;	/* length of portion present */
+	uint32_t len;	/* length this packet (off wire) */
 };
 
 int main (int argc, char *argv[]) {
