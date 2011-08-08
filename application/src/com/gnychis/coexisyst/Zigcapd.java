@@ -22,11 +22,11 @@ public class Zigcapd extends AsyncTask<Context, Integer, String>
 		String launch_s = "/data/data/com.gnychis.coexisyst/files/zigcapd " + Integer.toString(_port) + " &";
 		
 		try {
-			Log.d("Pcapd", "launching instance of zigcapd on port " + Integer.toString(_port));
-			Log.d("Pcapd", "launch command: " + launch_s);
+			Log.d("Zigcapd", "launching instance of zigcapd on port " + Integer.toString(_port));
+			Log.d("Zigcapd", "launch command: " + launch_s);
 			RootTools.sendShell(launch_s);
 		} catch(Exception e) {
-			Log.e("Pcapd", "error trying to start zigcapd daemon",e);
+			Log.e("Zigcapd", "error trying to start zigcapd daemon",e);
 			return "FAIL";
 		}
 		
