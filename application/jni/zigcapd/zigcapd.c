@@ -11,12 +11,12 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <pcap.h>
-//#include <android/log.h>
+#include <android/log.h>   // comment out for native linux build testing
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
 //#define DEBUG_OUTPUT
-//#define VERBOSE
+#define VERBOSE
 
 const char CHANGE_CHAN=0x0000;
 const char TRANSMIT_PACKET=0x0001;
@@ -51,6 +51,8 @@ int check_seq(char *buf1, char *buf2) {
 	return 1;
 }
 
+#define VERSION 0x01
+
 int main (int argc, char *argv[]) {
 	int n;
   char cmd;
@@ -66,6 +68,8 @@ int main (int argc, char *argv[]) {
 	// Initialize the econotag and a channel
 	init_econotag();
 	set_channel(1);
+
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Zigpcap running, version: 0x%x\n", VERSION);
 	
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket error");

@@ -45,7 +45,6 @@ public final class R {
         public static final int lsusb=0x7f040003;
         public static final int pcapd=0x7f040004;
         public static final int update=0x7f040005;
-        public static final int zigcapd=0x7f040006;
     }
     public static final class string {
         public static final int app_name=0x7f050001;
