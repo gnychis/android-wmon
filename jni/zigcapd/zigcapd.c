@@ -11,13 +11,12 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <pcap.h>
-#include <android/log.h>
 //#include <android/log.h>
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
 //#define DEBUG_OUTPUT
-#define VERBOSE
+//#define VERBOSE
 
 const char CHANGE_CHAN=0x0000;
 const char TRANSMIT_PACKET=0x0001;
@@ -101,6 +100,8 @@ int main (int argc, char *argv[]) {
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Accepted connection\n");
 #endif
 
+	fprintf(stderr, "Accepted connection\n");
+
 
 	// Wait for the firmware to report that the user has pushed the reset button and
 	// restarted the firmware program.  Wait for the last N characters to meet our seq.
@@ -110,7 +111,11 @@ int main (int argc, char *argv[]) {
 #ifdef VERBOSE
 			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got the byte: 0x%x\n", g1);
 #endif
+			fprintf(stderr, "Got byte: 0x%02x\n", g1);
+		seqs_left--;
 	}
+
+	fprintf(stderr, "Got twelve bytes...\n");
 
 	while(!check_seq(seq_buf, initialized_sequence)) {
 		int k;
@@ -125,6 +130,7 @@ int main (int argc, char *argv[]) {
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Reset button push complete, going on...\n");
 #endif
+	fprintf(stderr, "Reset complete!\n");
 
 
 	// Need to construct a pcap file header for output (debugging)
