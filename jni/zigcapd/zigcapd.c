@@ -11,11 +11,13 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <pcap.h>
+#include <android/log.h>
 //#include <android/log.h>
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
 //#define DEBUG_OUTPUT
+#define VERBOSE
 
 const char CHANGE_CHAN=0x0000;
 const char TRANSMIT_PACKET=0x0001;
@@ -102,8 +104,13 @@ int main (int argc, char *argv[]) {
 
 	// Wait for the firmware to report that the user has pushed the reset button and
 	// restarted the firmware program.  Wait for the last N characters to meet our seq.
-	while(seqs_left!=0)
-		seq_buf[SEQLEN-seqs_left]=block_read1();
+	while(seqs_left!=0) {
+		char g1 = block_read1();
+		seq_buf[SEQLEN-seqs_left]=g1;
+#ifdef VERBOSE
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got the byte: 0x%x\n", g1);
+#endif
+	}
 
 	while(!check_seq(seq_buf, initialized_sequence)) {
 		int k;

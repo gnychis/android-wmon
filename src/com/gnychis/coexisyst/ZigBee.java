@@ -171,7 +171,13 @@ public class ZigBee {
 		InputStream skt_in;
 		private static final String ZIGMON_TAG = "ZigBeeMonitor";
 		private int PCAP_HDR_SIZE = 16;
-		Pcapd pcap_thread;
+		Zigcapd zigcapd_thread;
+		
+		// Incoming commands
+		byte CHANGE_CHAN=0x0000;
+		byte TRANSMIT_PACKET=0x0001;
+		byte RECEIVED_PACKET=0x0002;
+		byte INITIALIZED=0x0003;
 		
 		// On pre-execute, we make sure that we initialize the card properly and set the state to IDLE
 		@Override 
@@ -193,9 +199,6 @@ public class ZigBee {
 		{
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
-			int SEQLEN = 12;
-			byte[] initialized_sequence = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
-			byte[] seq_recvd = new byte[SEQLEN];
 
 			// Connect to the pcap daemon to pull packets from the hardware
 			if(connectToZigcapd() == false) {
@@ -205,13 +208,12 @@ public class ZigBee {
 			}
 			sendMainMessage(ThreadMessages.ZIGBEE_WAIT_RESET);
 			
-			// Now, read from the socket until we get the initialization message
-			while(!seq_recvd.equals(initialized_sequence)) {
-				int k;
-				for(k=0;k<SEQLEN-1;k++)
-					seq_recvd[k] = seq_recvd[k+1];
-				seq_recvd[SEQLEN-1]=getSocketData(1)[0];
+			// Wait for the initialized byte
+			if(getSocketData(1)[0]!=INITIALIZED) {
+				sendMainMessage(ThreadMessages.ZIGBEE_FAILED);
+				return "FAIL";
 			}
+			
 			sendMainMessage(ThreadMessages.ZIGBEE_INITIALIZED);
 						
 			// Loop and read headers and packets
@@ -219,14 +221,14 @@ public class ZigBee {
 				Packet rpkt = new Packet(WTAP_ENCAP_802_15);
 
 				if((rpkt._rawHeader = getPcapHeader())==null) {
-					pcap_thread.cancel(true);
+					zigcapd_thread.cancel(true);
 					return "error reading pcap header";
 				}
 				rpkt._headerLen = rpkt._rawHeader.length;
 								
 				// Get the raw data now from the wirelen in the pcap header
 				if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
-					pcap_thread.cancel(true);
+					zigcapd_thread.cancel(true);
 					return "error reading data";
 				}
 				rpkt._dataLen = rpkt._rawData.length;
@@ -261,8 +263,8 @@ public class ZigBee {
 			
 			// Attempt to create capture process spawned in the background
 			// which we will connect to for pcap information.
-			pcap_thread = new Pcapd(pcapd_port);
-			pcap_thread.execute(coexisyst);
+			zigcapd_thread = new Zigcapd(pcapd_port);
+			zigcapd_thread.execute(coexisyst);
 			
 			// Send a message to block the main dialog after the card is done initializing
 			try { Thread.sleep(MS_SLEEP_UNTIL_PCAPD); } catch (Exception e) {} // give some time for the process
