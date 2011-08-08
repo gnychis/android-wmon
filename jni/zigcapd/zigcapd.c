@@ -277,7 +277,7 @@ int main (int argc, char *argv[]) {
 					return -1;
 				}
 
-#ifdef BUILD_ANDROID
+#ifdef VERBOSE
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Received packet with LQI: %d\n", lqi);
 #endif
 
