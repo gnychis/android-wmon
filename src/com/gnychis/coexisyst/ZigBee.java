@@ -1,10 +1,10 @@
 package com.gnychis.coexisyst;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
@@ -169,9 +169,11 @@ public class ZigBee {
 		CoexiSyst coexisyst;
 		Socket skt;
 		InputStream skt_in;
+		OutputStream skt_out;
 		private static final String ZIGMON_TAG = "ZigBeeMonitor";
 		private int PCAP_HDR_SIZE = 16;
 		Zigcapd zigcapd_thread;
+		int _channel;
 		
 		// Incoming commands
 		byte CHANGE_CHAN=0x0000;
@@ -226,6 +228,9 @@ public class ZigBee {
 			}
 			
 			sendMainMessage(ThreadMessages.ZIGBEE_INITIALIZED);
+			
+			// Send a command to set the channel to 1
+			setChannel(1);
 						
 			// Loop and read headers and packets
 			while(true) {
@@ -255,6 +260,8 @@ public class ZigBee {
 					// Get the LQI
 					rpkt._lqi = (int)getSocketData(1)[0];
 					
+					Log.d(TAG, "Got ZigBee packet on channel " + Integer.toString(_channel) + " with LQI: " + Integer.toString(rpkt._lqi));
+					
 					// Based on the state of our wifi thread, we determine what to do with the packet
 					switch(_state) {
 					
@@ -274,6 +281,17 @@ public class ZigBee {
 					}
 				}
 			}
+		}
+		
+		public boolean setChannel(int channel) {
+			try {
+				skt_out.write(CHANGE_CHAN);		// first send the command
+				skt_out.write(channel);	// then send the channel
+			} catch(Exception e) { 
+				return false;
+			}
+			_channel = channel;
+			return true;
 		}
 		
 		public boolean connectToZigcapd() {
@@ -302,6 +320,7 @@ public class ZigBee {
 			
 			try {
 				skt_in = skt.getInputStream();
+				skt_out = skt.getOutputStream();
 			} catch(Exception e) {
 				Log.e(ZIGMON_TAG, "exception trying to get inputbuffer from socket stream");
 				return false;

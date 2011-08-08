@@ -14,10 +14,12 @@
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
-//#define ANDROID
+#define VERSION 0x08
 
-#ifdef ANDROID
-#include <android/log.h>   // comment out for native linux build testing
+#define BUILD_ANDROID  // if this is not defined, we build for native linux testing
+
+#ifdef BUILD_ANDROID
+#include <android/log.h>
 #endif
 
 //#define DEBUG_OUTPUT
@@ -35,7 +37,7 @@ uint32_t block_read_uint32();
 void block_read_nbytes(char *buf, int nbytes);
 void debug_buf(char *buf, int length);
 	
-#ifdef ANDROID
+#ifdef BUILD_ANDROID
 #define portname "/dev/ttyUSB5"
 #else
 #define portname "/dev/ttyUSB1"
@@ -79,8 +81,6 @@ int check_seq(char *buf1, char *buf2) {
 	return 1;
 }
 
-#define VERSION 0x06
-
 int main (int argc, char *argv[]) {
 	int n;
   char cmd;
@@ -98,7 +98,7 @@ int main (int argc, char *argv[]) {
 	// Initialize the econotag and a channel
 	init_econotag();
 
-#ifdef ANDROID
+#ifdef BUILD_ANDROID
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Zigpcap running, version: 0x%x\n", VERSION);
 #endif
 	
@@ -142,15 +142,9 @@ int main (int argc, char *argv[]) {
 	// restarted the firmware program.  Wait for the last N characters to meet our seq.
 	while(seqs_left!=0) {
 		char g1;
-#ifdef VERBOSE
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Waiting for byte %d\n", seqs_left);
-#endif
 		g1 = block_read1();
 		seq_buf[SEQLEN-seqs_left]=g1;
-#ifdef VERBOSE
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got the byte: 0x%x\n", g1);
-#endif
-			fprintf(stderr, "Got byte: 0x%02x\n", g1);
+		fprintf(stderr, "Got byte: 0x%02x\n", g1);
 		seqs_left--;
 	}
 
@@ -162,9 +156,6 @@ int main (int argc, char *argv[]) {
 			seq_buf[k]=seq_buf[k+1];
 
 		seq_buf[SEQLEN-1]=block_read1();
-#ifdef VERBOSE
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got the byte: 0x%x\n", seq_buf[SEQLEN-1]);
-#endif
 	}
  
 	write(sd_current, &INITIALIZED, 1);
@@ -203,9 +194,9 @@ int main (int argc, char *argv[]) {
 			// If the command is to change the channel, read the channel number (cast a single byte, only 16 channels)
 			if(cmd==CHANGE_CHAN) {
 				char tval;
-				while((n = read(sd_current, &cmd, 1))!=1) { }
+				while((n = read(sd_current, &tval, 1))!=1) { }
 				set_channel((int)tval);
-#ifdef ANDROID
+#ifdef BUILD_ANDROID
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Changing channel to: %d\n", (int)tval);
 #endif
 			}
@@ -229,7 +220,7 @@ int main (int argc, char *argv[]) {
 
 				// Write the command to the receive
 				if(write(sd_current, &RECEIVED_PACKET, 1)==-1) {
-#ifdef ANDROID
+#ifdef BUILD_ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write received packet command");
 #endif
 					return -1;
@@ -248,7 +239,7 @@ int main (int argc, char *argv[]) {
 				total=0;
 				while(total < sizeof(struct pcap_pkthdr_32)) {
 					if((wrote = write(sd_current, &pcap_hdr + total, sizeof(struct pcap_pkthdr_32)-total))==-1) {
-#ifdef ANDROID
+#ifdef BUILD_ANDROID
 						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write pcap packet header");
 #endif
 						return -1;
@@ -264,7 +255,7 @@ int main (int argc, char *argv[]) {
 				total=0;
 				while(total < length) {
 					if((wrote = write(sd_current, buf, length))==-1) {
-#ifdef ANDROID
+#ifdef BUILD_ANDROID
 						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write pcap packet data");
 #endif
 						return -1;
@@ -274,17 +265,21 @@ int main (int argc, char *argv[]) {
 
 				// Write the link quality indicator and received packet time
 				if(write(sd_current, (char *)&rxtime, 4) != 4) {
-#ifdef ANDROID
+#ifdef BUILD_ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write rx time");
 #endif
 					return -1;
 				}
 				if(write(sd_current, (char *)&lqi, 1)==-1) {
-#ifdef ANDROID
+#ifdef BUILD_ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write link quality indicator");
 #endif
 					return -1;
 				}
+
+#ifdef BUILD_ANDROID
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Received packet with LQI: %d\n", lqi);
+#endif
 
 				free(buf);
 			}
