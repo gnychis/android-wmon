@@ -14,7 +14,7 @@
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
-#define VERSION 0x08
+#define VERSION 0x09
 
 #define BUILD_ANDROID  // if this is not defined, we build for native linux testing
 
@@ -29,7 +29,9 @@ const char CHANGE_CHAN=0x0000;
 const char TRANSMIT_PACKET=0x0001;
 const char RECEIVED_PACKET=0x0002;
 const char INITIALIZED=0x0003;
+const char TRANSMIT_BEACON=0x0004;
 
+void transmit_beacon();
 int set_channel(int channel);
 void init_econotag();
 char block_read1();
@@ -200,6 +202,12 @@ int main (int argc, char *argv[]) {
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Changing channel to: %d\n", (int)tval);
 #endif
 			}
+
+			// A beacon is a command with no other information associated with it, causing the econotag
+			// to transmit a beacon frame.
+			if(cmd==TRANSMIT_BEACON) {
+				transmit_beacon();	
+			}
 		}
 
 		// Read from the serial device
@@ -328,6 +336,11 @@ void debug_buf(char *buf, int length) {
 		fprintf(stderr, "0x%02x ", buf[i]);
 
 	fprintf(stderr, "\n");
+}
+
+void transmit_beacon() {
+	char cmd = TRANSMIT_BEACON;
+	write(fd, &cmd, 1);
 }
 
 int set_channel(int channel) {

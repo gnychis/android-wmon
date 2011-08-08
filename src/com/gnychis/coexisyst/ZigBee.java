@@ -180,6 +180,7 @@ public class ZigBee {
 		byte TRANSMIT_PACKET=0x0001;
 		byte RECEIVED_PACKET=0x0002;
 		byte INITIALIZED=0x0003;
+		byte TRANSMIT_BEACON=0x0004;
 		
 		// On pre-execute, we make sure that we initialize the card properly and set the state to IDLE
 		@Override 
@@ -231,6 +232,11 @@ public class ZigBee {
 			
 			// Send a command to set the channel to 1
 			setChannel(1);
+			try {
+			Thread.sleep(1000);
+			} catch(Exception e) {}
+			
+			transmitBeacon();
 						
 			// Loop and read headers and packets
 			while(true) {
@@ -262,8 +268,6 @@ public class ZigBee {
 					
 					//Log.d(TAG, "Got ZigBee packet on channel " + Integer.toString(_channel) + " with LQI: " + Integer.toString(rpkt._lqi));
 					
-					rpkt.getAllFields();
-					
 					// Based on the state of our wifi thread, we determine what to do with the packet
 					switch(_state) {
 					
@@ -293,6 +297,15 @@ public class ZigBee {
 				return false;
 			}
 			_channel = channel;
+			return true;
+		}
+		
+		public boolean transmitBeacon() {
+			try {
+				skt_out.write(TRANSMIT_BEACON);
+			} catch(Exception e) {
+				return false;
+			}
 			return true;
 		}
 		
