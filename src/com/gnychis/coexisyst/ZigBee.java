@@ -34,7 +34,7 @@ public class ZigBee {
 	ZigBeeMon _monitor_thread;
 	protected ChannelScanner _cscan_thread;
 	
-	static int WTAP_ENCAP_802_15 = 230;
+	static int WTAP_ENCAP_802_15 = 127;
 	
 	ZigBeeState _state;
 	private Semaphore _state_lock;
@@ -260,7 +260,9 @@ public class ZigBee {
 					// Get the LQI
 					rpkt._lqi = (int)getSocketData(1)[0];
 					
-					Log.d(TAG, "Got ZigBee packet on channel " + Integer.toString(_channel) + " with LQI: " + Integer.toString(rpkt._lqi));
+					//Log.d(TAG, "Got ZigBee packet on channel " + Integer.toString(_channel) + " with LQI: " + Integer.toString(rpkt._lqi));
+					
+					rpkt.getAllFields();
 					
 					// Based on the state of our wifi thread, we determine what to do with the packet
 					switch(_state) {
