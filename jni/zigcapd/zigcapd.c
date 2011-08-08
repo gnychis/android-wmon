@@ -11,12 +11,17 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <pcap.h>
-#include <android/log.h>   // comment out for native linux build testing
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
+//#define ANDROID
+
+#ifdef ANDROID
+#include <android/log.h>   // comment out for native linux build testing
+#endif
+
 //#define DEBUG_OUTPUT
-#define VERBOSE
+//#define VERBOSE
 
 const char CHANGE_CHAN=0x0000;
 const char TRANSMIT_PACKET=0x0001;
@@ -30,7 +35,12 @@ uint32_t block_read_uint32();
 void block_read_nbytes(char *buf, int nbytes);
 void debug_buf(char *buf, int length);
 	
+#ifdef ANDROID
 #define portname "/dev/ttyUSB5"
+#else
+#define portname "/dev/ttyUSB1"
+#endif 
+
 int fd;
 char initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
 const int SEQLEN=12;
@@ -41,6 +51,24 @@ struct pcap_pkthdr_32 {
 	uint32_t caplen;	/* length of portion present */
 	uint32_t len;	/* length this packet (off wire) */
 };
+
+void setnonblocking(sock)
+{
+	int opts;
+
+	opts = fcntl(sock,F_GETFL);
+	if (opts < 0) {
+		perror("fcntl(F_GETFL)");
+		exit(EXIT_FAILURE);
+	}
+	opts = (opts | O_NONBLOCK);
+	if (fcntl(sock,F_SETFL,opts) < 0) {
+		perror("fcntl(F_SETFL)");
+		exit(EXIT_FAILURE);
+	}
+	return;
+}
+
 
 int check_seq(char *buf1, char *buf2) {
 	int i;
@@ -70,7 +98,9 @@ int main (int argc, char *argv[]) {
 	// Initialize the econotag and a channel
 	init_econotag();
 
+#ifdef ANDROID
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Zigpcap running, version: 0x%x\n", VERSION);
+#endif
 	
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket error");
@@ -159,10 +189,27 @@ int main (int argc, char *argv[]) {
 	fflush(stdout);
 #endif
 	
-	set_channel(1);
+	set_channel(0);
+
+	// Set the socket to non-blocking for read() commands
+	setnonblocking(sd_current);
 
 	// Keep reading in for commands
 	while(1) {
+
+		if((n = read(sd_current, &cmd, 1))==1) {
+			fprintf(stderr, "Got incoming command: 0x%02x\n", cmd);
+
+			// If the command is to change the channel, read the channel number (cast a single byte, only 16 channels)
+			if(cmd==CHANGE_CHAN) {
+				char tval;
+				while((n = read(sd_current, &cmd, 1))!=1) { }
+				set_channel((int)tval);
+#ifdef ANDROID
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Changing channel to: %d\n", (int)tval);
+#endif
+			}
+		}
 
 		// Read from the serial device
 		if((n = read(fd, &cmd, 1))==1) {
@@ -182,7 +229,9 @@ int main (int argc, char *argv[]) {
 
 				// Write the command to the receive
 				if(write(sd_current, &RECEIVED_PACKET, 1)==-1) {
+#ifdef ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write received packet command");
+#endif
 					return -1;
 				}
 				
@@ -199,7 +248,9 @@ int main (int argc, char *argv[]) {
 				total=0;
 				while(total < sizeof(struct pcap_pkthdr_32)) {
 					if((wrote = write(sd_current, &pcap_hdr + total, sizeof(struct pcap_pkthdr_32)-total))==-1) {
+#ifdef ANDROID
 						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write pcap packet header");
+#endif
 						return -1;
 					}
 					total+=wrote;
@@ -213,7 +264,9 @@ int main (int argc, char *argv[]) {
 				total=0;
 				while(total < length) {
 					if((wrote = write(sd_current, buf, length))==-1) {
+#ifdef ANDROID
 						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write pcap packet data");
+#endif
 						return -1;
 					}
 					total += wrote;
@@ -221,11 +274,15 @@ int main (int argc, char *argv[]) {
 
 				// Write the link quality indicator and received packet time
 				if(write(sd_current, (char *)&rxtime, 4) != 4) {
+#ifdef ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write rx time");
+#endif
 					return -1;
 				}
 				if(write(sd_current, (char *)&lqi, 1)==-1) {
+#ifdef ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write link quality indicator");
+#endif
 					return -1;
 				}
 
