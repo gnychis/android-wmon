@@ -17,9 +17,10 @@
 
 //#define DEBUG_OUTPUT
 
-#define CHANGE_CHAN 0x0000
-#define TRANSMIT_PACKET 0x0001
-#define RECEIVED_PACKET 0x0002
+const char CHANGE_CHAN=0x0000;
+const char TRANSMIT_PACKET=0x0001;
+const char RECEIVED_PACKET=0x0002;
+const char INITIALIZED=0x0003;
 
 int set_channel(int channel);
 void init_econotag();
@@ -30,6 +31,8 @@ void debug_buf(char *buf, int length);
 	
 #define portname "/dev/ttyUSB1"
 int fd;
+char initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
+const int SEQLEN=12;
 
 struct pcap_pkthdr_32 {
 	uint32_t sec;
@@ -37,6 +40,15 @@ struct pcap_pkthdr_32 {
 	uint32_t caplen;	/* length of portion present */
 	uint32_t len;	/* length this packet (off wire) */
 };
+
+int check_seq(char *buf1, char *buf2) {
+	int i;
+	for(i=0;i<SEQLEN;i++)
+		if(buf1[i]!=buf2[i])
+			return 0;
+
+	return 1;
+}
 
 int main (int argc, char *argv[]) {
 	int n;
@@ -47,6 +59,8 @@ int main (int argc, char *argv[]) {
 	int sd, sd_current;
 	int addrlen;
 	struct sockaddr_in sin, pin;
+	char seq_buf[SEQLEN];
+	int seqs_left=SEQLEN;
 
 	// Initialize the econotag and a channel
 	init_econotag();
@@ -85,6 +99,27 @@ int main (int argc, char *argv[]) {
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Accepted connection\n");
 #endif
 
+
+	// Wait for the firmware to report that the user has pushed the reset button and
+	// restarted the firmware program.  Wait for the last N characters to meet our seq.
+	while(seqs_left!=0)
+		seq_buf[SEQLEN-seqs_left]=block_read1();
+
+	while(!check_seq(seq_buf, initialized_sequence)) {
+		int k;
+		for(k=0;k<SEQLEN-1; k++)
+			seq_buf[k]=seq_buf[k+1];
+
+		seq_buf[SEQLEN-1]=block_read1();
+	}
+ 
+	write(sd_current, &INITIALIZED, 1);
+
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Reset button push complete, going on...\n");
+#endif
+
+
 	// Need to construct a pcap file header for output (debugging)
 	pcap_fh.magic = 0xa1b2c3d4;
 	pcap_fh.version_major = 2;
@@ -98,7 +133,6 @@ int main (int argc, char *argv[]) {
 	write(1, &pcap_fh, sizeof(struct pcap_file_header));
 	fflush(stdout);
 #endif
-	write(sd_current, &pcap_fh, sizeof(struct pcap_file_header));
 
 	// Keep reading in for commands
 	while(1) {
@@ -117,6 +151,9 @@ int main (int argc, char *argv[]) {
 				char *buf = malloc(length);
 				block_read_nbytes(buf, length);
 				fprintf(stderr, "rxtime: %d, LQI: %d, length: %d\n", rxtime, lqi, length);
+
+				// Write the command to the receive
+				write(sd_current, &RECEIVED_PACKET, 1);
 				
 				// Construct a pcap packet header, using the time from 
 				// the actual hardware, rather than time of day

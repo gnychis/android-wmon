@@ -54,6 +54,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// USB device related
 	Wispy wispy;
 	Wifi ath;
+	ZigBee zigbee;
 	IChart wispyGraph;
 	
 	// For remembering whether to renable interfaces
@@ -66,6 +67,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		ATHEROS_CONNECTED,
 		ATHEROS_INITIALIZED,
 		ATHEROS_FAILED,
+		ZIGBEE_CONNECTED,
+		ZIGBEE_INITIALIZED,
+		ZIGBEE_FAILED,
+		ZIGBEE_WAIT_RESET,
 	}
 	
 	public Handler _handler = new Handler() {
@@ -88,9 +93,35 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			if(msg.obj == ThreadMessages.ATHEROS_FAILED) {
 				Toast.makeText(getApplicationContext(), "Failed to initialize Atheros card", Toast.LENGTH_LONG).show();	
 			}
+			
+			if(msg.obj == ThreadMessages.ZIGBEE_CONNECTED) {
+				zigbeeSettling();
+				zigbee.connected();
+			}
+			
+			if(msg.obj == ThreadMessages.ZIGBEE_WAIT_RESET) {
+				zigbeeWaiting();
+			}
+			
+			if(msg.obj == ThreadMessages.ZIGBEE_INITIALIZED) {
+				zigbeeInitialized();
+			}
 
 		}
 	};
+	
+	public void zigbeeSettling() {
+		pd = ProgressDialog.show(this, "", "Initializing ZigBee device...", true, false);  
+	}
+	
+	public void zigbeeInitialized() {
+		pd.dismiss();
+	}
+	
+	public void zigbeeWaiting() {
+		pd.dismiss();
+		pd = ProgressDialog.show(this, "", "Press ZigBee reset button...", true, false); 
+	}
 	
 	public void atherosSettling() {
 		pd = ProgressDialog.show(this, "", "Initializing Atheros card...", true, false);  
@@ -203,6 +234,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		usbmon = new USBMon();
 		usbmon.execute (this);
 		ath = new Wifi(this);
+		zigbee = new ZigBee(this);
 		
 		// Check the pcap interfaces
 		//pcapGetInterfaces();

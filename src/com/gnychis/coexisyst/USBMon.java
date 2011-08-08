@@ -67,6 +67,7 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 	protected String doInBackground( Context... params )
 	{
 		int atheros_skip=0;
+		int zigbee_skip=0;
 		parent = params[0];
 		coexisyst = (CoexiSyst) params[0];
 		Log.d(TAG, "a new USB monitor was started");
@@ -81,6 +82,7 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 				int wispy_in_devlist=coexisyst.USBcheckForDevice(0x1781, 0x083f);
 				//int atheros_in_devlist=coexisyst.USBcheckForDevice(0x0411,0x017f);  // does not work well for AR9280
 				int atheros_in_devlist = checkAR9280() | coexisyst.USBcheckForDevice(0x0411,0x017f);
+				int econotag_in_devlist = coexisyst.USBcheckForDevice(0x0403, 0x6010);
 				
 				// Wispy related checks
 				if(wispy_in_devlist==1 && coexisyst.wispy._device_connected==false) {
@@ -106,6 +108,19 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 					}
 				}
 				
+				
+				if(zigbee_skip!=0) {
+					zigbee_skip--;
+					Log.d(TAG, "Skipping zigbee...");
+				} else {
+					if(econotag_in_devlist==1 && coexisyst.zigbee._device_connected==false) {
+						publishProgress(ZigBee.ZIGBEE_CONNECT);
+						zigbee_skip=5;
+					} else if(econotag_in_devlist==0 && coexisyst.zigbee._device_connected==true) {
+						publishProgress(ZigBee.ZIGBEE_DISCONNECT);
+					}
+				}
+								
 				Thread.sleep( 2000 );
 				//Log.d(TAG, "checking for USB devices");
 
@@ -170,6 +185,19 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 			Log.d(TAG, "Atheros card now disconnected");
 			Toast.makeText(parent, "Atheros device disconnected", Toast.LENGTH_LONG).show();
 			coexisyst.ath.disconnected();
+		}
+		
+		// Handling events for ZigBee device
+		if(event == ZigBee.ZIGBEE_CONNECT) {
+			Message msg = new Message();
+			msg.obj = ThreadMessages.ZIGBEE_CONNECTED;
+			coexisyst._handler.sendMessage(msg);
+			Log.d(TAG, "got update that ZigBee device was connected");
+		}
+		else if(event == ZigBee.ZIGBEE_DISCONNECT) {
+			Log.d(TAG, "ZigBee device now disconnected");
+			Toast.makeText(parent, "ZigBee device disconnected", Toast.LENGTH_LONG).show();
+			coexisyst.zigbee.disconnected();
 		}
 	}
 }
