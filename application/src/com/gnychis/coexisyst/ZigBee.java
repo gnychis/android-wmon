@@ -193,6 +193,17 @@ public class ZigBee {
 			coexisyst._handler.sendMessage(msg);
 		}
 		
+		@Override
+		protected void onCancelled()
+		{
+			Log.d(TAG, "ZigBee monitor thread is canceled...");
+			try {
+				RootTools.sendShell("busybox killall zigcapd");
+			} catch(Exception e) {
+				
+			}
+		}
+		
 		// The entire meat of the thread, pulls packets off the interface and dissects them
 		@Override
 		protected String doInBackground( Context ... params )
@@ -218,37 +229,49 @@ public class ZigBee {
 						
 			// Loop and read headers and packets
 			while(true) {
-				Packet rpkt = new Packet(WTAP_ENCAP_802_15);
-
-				if((rpkt._rawHeader = getPcapHeader())==null) {
-					zigcapd_thread.cancel(true);
-					return "error reading pcap header";
-				}
-				rpkt._headerLen = rpkt._rawHeader.length;
-								
-				// Get the raw data now from the wirelen in the pcap header
-				if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
-					zigcapd_thread.cancel(true);
-					return "error reading data";
-				}
-				rpkt._dataLen = rpkt._rawData.length;
+				byte cmd = getSocketData(1)[0];
 				
-				// Based on the state of our wifi thread, we determine what to do with the packet
-				switch(_state) {
+				// Wait for a byte which signals a command
+				if(cmd==RECEIVED_PACKET) {
 				
-				case IDLE:
-					break;
-				
-				// In the scanning state, we save all beacon frames as we hop channels (handled by a
-				// separate thread).
-				case SCANNING:
-					// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
-					// to our scan result.  This does not guarantee one beacon frame per network, but
-					// pruning can be done at the next level.
-					if(rpkt.getField("wlan_mgt.fixed.beacon")!=null)
-						_scan_results.add(rpkt);
+					Packet rpkt = new Packet(WTAP_ENCAP_802_15);
+	
+					if((rpkt._rawHeader = getPcapHeader())==null) {
+						zigcapd_thread.cancel(true);
+						return "error reading pcap header";
+					}
+					rpkt._headerLen = rpkt._rawHeader.length;
+									
+					// Get the raw data now from the wirelen in the pcap header
+					if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
+						zigcapd_thread.cancel(true);
+						return "error reading data";
+					}
+					rpkt._dataLen = rpkt._rawData.length;
 					
-					break;
+					// Get the rx time
+					getSocketData(4);
+					
+					// Get the LQI
+					rpkt._lqi = (int)getSocketData(1)[0];
+					
+					// Based on the state of our wifi thread, we determine what to do with the packet
+					switch(_state) {
+					
+					case IDLE:
+						break;
+					
+					// In the scanning state, we save all beacon frames as we hop channels (handled by a
+					// separate thread).
+					case SCANNING:
+						// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
+						// to our scan result.  This does not guarantee one beacon frame per network, but
+						// pruning can be done at the next level.
+						//if(rpkt.getField("wlan_mgt.fixed.beacon")!=null)
+						//	_scan_results.add(rpkt);
+						
+						break;
+					}
 				}
 			}
 		}
