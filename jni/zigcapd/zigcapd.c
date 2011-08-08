@@ -30,7 +30,7 @@ uint32_t block_read_uint32();
 void block_read_nbytes(char *buf, int nbytes);
 void debug_buf(char *buf, int length);
 	
-#define portname "/dev/ttyUSB1"
+#define portname "/dev/ttyUSB5"
 int fd;
 char initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
 const int SEQLEN=12;
@@ -51,7 +51,7 @@ int check_seq(char *buf1, char *buf2) {
 	return 1;
 }
 
-#define VERSION 0x01
+#define VERSION 0x06
 
 int main (int argc, char *argv[]) {
 	int n;
@@ -64,10 +64,11 @@ int main (int argc, char *argv[]) {
 	struct sockaddr_in sin, pin;
 	char seq_buf[SEQLEN];
 	int seqs_left=SEQLEN;
+	int wrote;
+	int total;
 
 	// Initialize the econotag and a channel
 	init_econotag();
-	set_channel(1);
 
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Zigpcap running, version: 0x%x\n", VERSION);
 	
@@ -110,7 +111,11 @@ int main (int argc, char *argv[]) {
 	// Wait for the firmware to report that the user has pushed the reset button and
 	// restarted the firmware program.  Wait for the last N characters to meet our seq.
 	while(seqs_left!=0) {
-		char g1 = block_read1();
+		char g1;
+#ifdef VERBOSE
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Waiting for byte %d\n", seqs_left);
+#endif
+		g1 = block_read1();
 		seq_buf[SEQLEN-seqs_left]=g1;
 #ifdef VERBOSE
 			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got the byte: 0x%x\n", g1);
@@ -127,6 +132,9 @@ int main (int argc, char *argv[]) {
 			seq_buf[k]=seq_buf[k+1];
 
 		seq_buf[SEQLEN-1]=block_read1();
+#ifdef VERBOSE
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got the byte: 0x%x\n", seq_buf[SEQLEN-1]);
+#endif
 	}
  
 	write(sd_current, &INITIALIZED, 1);
@@ -150,10 +158,13 @@ int main (int argc, char *argv[]) {
 	write(1, &pcap_fh, sizeof(struct pcap_file_header));
 	fflush(stdout);
 #endif
+	
+	set_channel(1);
 
 	// Keep reading in for commands
 	while(1) {
 
+		// Read from the serial device
 		if((n = read(fd, &cmd, 1))==1) {
 			
 			if(cmd==RECEIVED_PACKET) {
@@ -170,7 +181,10 @@ int main (int argc, char *argv[]) {
 				fprintf(stderr, "rxtime: %d, LQI: %d, length: %d\n", rxtime, lqi, length);
 
 				// Write the command to the receive
-				write(sd_current, &RECEIVED_PACKET, 1);
+				if(write(sd_current, &RECEIVED_PACKET, 1)==-1) {
+					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write received packet command");
+					return -1;
+				}
 				
 				// Construct a pcap packet header, using the time from 
 				// the actual hardware, rather than time of day
@@ -182,18 +196,38 @@ int main (int argc, char *argv[]) {
 				write(1, &pcap_hdr, sizeof(struct pcap_pkthdr_32));
 				fflush(stdout);
 #endif
-				write(sd_current, &pcap_hdr, sizeof(struct pcap_pkthdr_32));
+				total=0;
+				while(total < sizeof(struct pcap_pkthdr_32)) {
+					if((wrote = write(sd_current, &pcap_hdr + total, sizeof(struct pcap_pkthdr_32)-total))==-1) {
+						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write pcap packet header");
+						return -1;
+					}
+					total+=wrote;
+				}
 
 				// Now, print out the data
 #ifdef DEBUG_OUTPUT
 				write(1, buf, length);
 				fflush(stdout);
 #endif
-				write(sd_current, buf, length);
+				total=0;
+				while(total < length) {
+					if((wrote = write(sd_current, buf, length))==-1) {
+						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write pcap packet data");
+						return -1;
+					}
+					total += wrote;
+				}
 
 				// Write the link quality indicator and received packet time
-				write(sd_current, (char *)&rxtime, 4);
-				write(sd_current, (char *)&lqi, 1);
+				if(write(sd_current, (char *)&rxtime, 4) != 4) {
+					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write rx time");
+					return -1;
+				}
+				if(write(sd_current, (char *)&lqi, 1)==-1) {
+					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write link quality indicator");
+					return -1;
+				}
 
 				free(buf);
 			}
