@@ -389,7 +389,7 @@ public class ZigBee {
 				JBuffer headerBuffer = new JBuffer(rawHeader);  
 				header.peer(headerBuffer, 0);				
 			} catch(Exception e) {
-				Log.e("WifiMon", "exception trying to read pcap header",e);
+				Log.e("ZigBeeMon", "exception trying to read pcap header",e);
 			}
 			
 			rawdata = getSocketData(header.wirelen());
@@ -404,13 +404,13 @@ public class ZigBee {
 				int total=0;
 				while(total < length) {
 					v = skt_in.read(data, total, length-total);
-					//Log.d("WifiMon", "Read in " + Integer.toString(v) + " - " + Integer.toString(total+v) + " / " + Integer.toString(length));
+					//Log.d("ZigBeeMon", "Read in " + Integer.toString(v) + " - " + Integer.toString(total+v) + " / " + Integer.toString(length));
 					if(v==-1)
 						cancel(true);  // cancel the thread if we have errors reading socket
 					total+=v;
 				}
 			} catch(Exception e) { 
-				Log.e("WifiMon", "unable to read from pcapd buffer",e);
+				Log.e("ZigBeeMon", "unable to read from pcapd buffer",e);
 				return null;
 			}
 			
