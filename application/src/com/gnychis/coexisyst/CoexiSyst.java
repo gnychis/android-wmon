@@ -41,6 +41,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// Receivers
 	WiFiScanReceiver rcvr_80211;
 	BroadcastReceiver rcvr_BTooth;
+	ZigBeeScanReceiver rcvr_ZigBee;
 	
 	TextView textStatus;
 	
@@ -57,6 +58,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	ZigBee zigbee;
 	IChart wispyGraph;
 	
+	NetworksScan _networks_scan;
+	
 	// For remembering whether to renable interfaces
 	boolean _wifi_reenable;
 	boolean _bt_reenable;
@@ -71,6 +74,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		ZIGBEE_INITIALIZED,
 		ZIGBEE_FAILED,
 		ZIGBEE_WAIT_RESET,
+		ZIGBEE_SCAN_COMPLETE,
 	}
 	
 	public Handler _handler = new Handler() {
@@ -79,6 +83,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
 			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE)
 				wifiScanComplete();
+			
+			if(msg.obj == ThreadMessages.ZIGBEE_SCAN_COMPLETE)
+				zigbeeScanComplete();
 			
 			if(msg.obj == ThreadMessages.ATHEROS_CONNECTED) {
 				atherosSettling();
@@ -186,6 +193,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	}
        
     	wispy = new Wispy();
+    	
+    	_networks_scan = new NetworksScan();
         
         // Setup the database
     	db = new DBAdapter(this);
@@ -211,13 +220,19 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
 		_bt_reenable = (bt.isEnabled()) ? true : false;
 
-		// Register Broadcast Receiver
+		// Register Broadcast Receivers for all of the different protocols.
+		// These receivers handle incoming scan completes to parse through results.
 		if (rcvr_80211 == null) {
 			rcvr_80211 = new WiFiScanReceiver(_handler);
 			registerReceiver(rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		}
-		if (rcvr_BTooth == null)
+		if (rcvr_BTooth == null) {
 			rcvr_BTooth = new BluetoothManager(this);
+		}
+		if(rcvr_ZigBee == null) {
+			rcvr_ZigBee = new ZigBeeScanReceiver(_handler);
+			registerReceiver(rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
+		}
 
 		textStatus.append(initUSB());
 		
@@ -315,8 +330,27 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		wifi.setWifiEnabled(false);
 	}
 	
+	// Invoked from the message handler when a message has been received
+	// that a Wifi scan has completed.  That message is sent by WifiScanReceiver.
 	public void wifiScanComplete() {
 		Log.d(TAG, "Wifi scan is now complete");
+		_networks_scan._wifi_scan_result = rcvr_80211._last_scan;
+		if(_networks_scan.isScanComplete())
+			networkScansComplete();
+	}
+	
+	// Invoked from the message handler when a message has been received that
+	// a ZigBee network scan has been completed.  This message is sent to
+	// the handler from ZigBeeScanReceiver.
+	public void zigbeeScanComplete() {
+		Log.d(TAG, "ZigBee scan is now complete");
+		_networks_scan._zigbee_scan_result = rcvr_ZigBee._last_scan;
+		if(_networks_scan.isScanComplete())
+			networkScansComplete();
+	}
+	
+	// Invoked once we have received the results from all of the network scans.
+	public void networkScansComplete() {
 		pd.dismiss();
 		usbmon.changeState(USBState.SCANNING);
 		
@@ -326,19 +360,21 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			
 			// Hopefully this is not broken, using it as a WifiScanReceiver rather
 			// than BroadcastReceiver type.
-			i.putExtra("com.gnychis.coexisyst.80211", rcvr_80211._last_scan);
+			i.putExtra("com.gnychis.coexisyst.80211", _networks_scan._wifi_scan_result);
+			i.putExtra("com.gnychis.coexisyst.ZigBee", _networks_scan._zigbee_scan_result);
 			
 			startActivity(i);
 		} catch (Exception e) {
 			Log.e(TAG, "Exception trying to load network add window",e);
 			return;
-		}
-		
+		}	
 	}
 	
 	public void clickAddNetwork() {
 		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);
 		usbmon.changeState(USBState.HAULTED);  // slows down the scanning to put load on the USB bus
+		
+		_networks_scan.resetScan();
 		
 		// start the scanning process, which happens in another thread
 		ath.APScan();
