@@ -342,6 +342,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		// start the scanning process, which happens in another thread
 		ath.APScan();
+		zigbee.scanStart();
 	}
 	
 	public void clickViewSpectrum() {

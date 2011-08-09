@@ -32,7 +32,7 @@ public class Wifi {
 	
 	boolean _device_connected;
 	WifiMon _monitor_thread;
-	protected ChannelScanner _cscan_thread;
+	protected WifiChannelScanner _cscan_thread;
 	
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
@@ -59,7 +59,7 @@ public class Wifi {
 		
 		_scan_results.clear();
 		
-		_cscan_thread = new ChannelScanner(200);	// time to wait on each channel as parameter
+		_cscan_thread = new WifiChannelScanner(200);	// time to wait on each channel as parameter
 		_cscan_thread.execute();
 		
 		return true;  // in scanning state, and channel hopping
@@ -451,17 +451,17 @@ public class Wifi {
 	// ChannelScanner: a class which instantiates a new thread to issues commands
 	//     which changes the channel of the Atheros card.  This allows packet
 	//     capture to continue smoothly, as the channel hops in the background.
-	protected class ChannelScanner extends AsyncTask<Integer, Integer, String>
+	protected class WifiChannelScanner extends AsyncTask<Integer, Integer, String>
 	{
 		private static final String TAG = "WiFiChannelManager";
 		
 		private int _scan_interval;  // in milliseconds, time-per-channel
 		
-		public ChannelScanner(int scan_interval) {
+		public WifiChannelScanner(int scan_interval) {
 			_scan_interval = scan_interval;
 		}
 		
-		public ChannelScanner() {
+		public WifiChannelScanner() {
 			_scan_interval = 110;  // default value
 		}
 
@@ -498,6 +498,8 @@ public class Wifi {
 			else
 				return "FAIL";
 		}
+		
+		// Update spinner in here
 	}
 	
 }
