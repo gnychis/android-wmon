@@ -74,7 +74,7 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
     	dev._pan = pkt.getField("wpan.src_pan");
     	dev._lqis.add(pkt._lqi);
     	dev._beacon = pkt;
-    	dev._band = pkt._channel;
+    	dev._band = pkt._band;
     	
     	// Keep the AP if we don't already have a record for it (a single scan
     	// might catch multiple beacons from the AP).

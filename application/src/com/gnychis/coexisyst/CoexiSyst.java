@@ -377,7 +377,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		_networks_scan.resetScan();
 		
 		// start the scanning process, which happens in another thread
-		ath.APScan();
+		//ath.APScan();
 		zigbee.scanStart();
 	}
 	

@@ -46,7 +46,26 @@ public class ZigBee {
 	ArrayList<Packet> _scan_results;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
-	int[] channels = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+	static int[] channels = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+	static int[] frequencies = {2405, 2410, 2415, 2420, 2425, 2430, 2435, 
+			2440, 2445, 2450, 2455, 2460, 2465, 2470, 2475, 2480};
+	
+	static public int freqToChan(int freq) {
+		int i=0;
+		for(i=0; i<frequencies.length; i++)
+			if(frequencies[i]==freq)
+				break;
+		if(!(i<frequencies.length))
+			return -1;
+		
+		return channels[i];
+	}
+	
+	static public int chanToFreq(int chan) {
+		if(chan<0 || chan>channels.length-1)
+			return -1;
+		return frequencies[chan];
+	}
 	
 	// Set the state to scan and start to switch channels
 	public boolean scanStart() {
@@ -264,7 +283,7 @@ public class ZigBee {
 					rpkt._lqi = (int)getSocketData(1)[0];
 					
 					// The channel is read from the hardware
-					rpkt._channel = (int)getSocketData(1)[0];
+					rpkt._band = frequencies[(int)getSocketData(1)[0]];
 					
 					// Based on the state of our wifi thread, we determine what to do with the packet
 					switch(_state) {
@@ -431,6 +450,8 @@ public class ZigBee {
 					int c = channels[i];
 					_zigbee._monitor_thread.setChannel(c);
 					_zigbee._monitor_thread.transmitBeacon();
+					_zigbee._monitor_thread.transmitBeacon();
+					_zigbee._monitor_thread.transmitBeacon();
 					Log.d(TAG, "ZigBee hopping to channel " + Integer.toString(c));
 					Thread.sleep(_scan_interval);				
 				}
@@ -449,6 +470,7 @@ public class ZigBee {
 		
 		// When done scanning, set the channel back to where we were
 		protected void onPostExecute(String s) {
+			Log.d(TAG, "leaving ZigBee channel scanner");
 			_zigbee._monitor_thread.setChannel(_old_channel);
 		}
 	}	
