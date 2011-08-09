@@ -70,10 +70,11 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
     	if(pkt.getField("wpan.fcs_ok").equals("0"))
     		continue;    	
     	
-    	dev._mac = pkt.getField("wpan.fcs_ok");
+    	dev._mac = pkt.getField("wpan.src16");
     	dev._pan = pkt.getField("wpan.src_pan");
     	dev._lqis.add(pkt._lqi);
     	dev._beacon = pkt;
+    	dev._band = pkt._channel;
     	
     	// Keep the AP if we don't already have a record for it (a single scan
     	// might catch multiple beacons from the AP).
