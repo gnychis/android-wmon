@@ -263,8 +263,8 @@ public class ZigBee {
 					// Get the LQI
 					rpkt._lqi = (int)getSocketData(1)[0];
 					
-					// Save the channel since the channel is not in any part of the packet
-					rpkt._channel = _channel;
+					// The channel is read from the hardware
+					rpkt._channel = (int)getSocketData(1)[0];
 					
 					// Based on the state of our wifi thread, we determine what to do with the packet
 					switch(_state) {
