@@ -14,7 +14,7 @@
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
-#define VERSION 0x09
+#define VERSION 0x0f
 
 #define BUILD_ANDROID  // if this is not defined, we build for native linux testing
 
@@ -196,22 +196,29 @@ int main (int argc, char *argv[]) {
 			// If the command is to change the channel, read the channel number (cast a single byte, only 16 channels)
 			if(cmd==CHANGE_CHAN) {
 				char tval;
-				while((n = read(sd_current, &tval, 1))!=1) { }
+				while((n = read(sd_current, &tval, 1))<=0) { 
+					if(n==-1 && errno!=EAGAIN) {
+						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in main() 2");
+						return -1;
+					}
+				}
 				set_channel((int)tval);
 #ifdef BUILD_ANDROID
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Changing channel to: %d\n", (int)tval);
 #endif
-			} else if(n==-1) {
-				return -1;
-			}
+			} 
 
 			// A beacon is a command with no other information associated with it, causing the econotag
 			// to transmit a beacon frame.
 			if(cmd==TRANSMIT_BEACON) {
 				transmit_beacon();	
 			}
+
 		} else if(n==-1) {
-			return -1;
+			if(errno!=EAGAIN) {  // allow 0 bytes on non-blocking error
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in main() 1");
+				return -1;
+			}
 		}
 
 		// Read from the serial device
@@ -304,6 +311,7 @@ int main (int argc, char *argv[]) {
 			}
 
 		} else if(n==-1) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in main() 2");
 			return -1;
 		}
 	}
@@ -321,9 +329,13 @@ char block_read1() {
 #endif
 
 	while(1) {
-		if((n = read(fd, &c, 1))==1)
+		if((n = read(fd, &c, 1))==1) {
+#ifdef VERBOSE
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Leaving block_read1()");
+#endif
 			return c;
-		else if(n==-1) {
+		} else if(n==-1) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in block_read1()");
 			exit(-1);
 		}
 	}
@@ -360,8 +372,10 @@ void block_read_nbytes(char *buf, int nbytes) {
 	while(nread<nbytes) {
 		int n = read(fd, buf+nread, nbytes-nread);
 
-		if(n==-1)
+		if(n==-1) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in block_read_nbytes()");
 			exit(-1);
+		}
 
 		nread += n;
 	}
@@ -381,8 +395,10 @@ void debug_buf(char *buf, int length) {
 
 void transmit_beacon() {
 	char cmd = TRANSMIT_BEACON;
-	if(write(fd, &cmd, 1)==-1)
+	if(write(fd, &cmd, 1)==-1) {
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in transmit_beacon()");
 		exit(-1);
+	}
 }
 
 int set_channel(int channel) {
@@ -390,10 +406,14 @@ int set_channel(int channel) {
 	char chan = (char) channel;
 	//char rval;
 
-	if(write (fd, &cmd, 1)==-1)
+	if(write (fd, &cmd, 1)==-1) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in set_channel() 1");
 		exit(-1);
-	if(write (fd, &chan, 1)==-1)
+	}
+	if(write (fd, &chan, 1)==-1) {
+			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in set_channel() 2");
 		exit(-1);
+	}
 	
 	// read back value for testing
 	/*read (fd, &rval, 1); 
