@@ -32,6 +32,7 @@ public class AddNetwork extends ExpandableListActivity {
     private static final String CHAN = "FREQ";
     
     ArrayList<WifiAP> netlist_80211;
+    ArrayList<ZigBeeDev> netlist_ZigBee;
 
     public List<Map<String, String>> groupData;
     public List<List<Map<String, String>>> childData;
@@ -48,6 +49,7 @@ public class AddNetwork extends ExpandableListActivity {
 	  super.onCreate(savedInstanceState);
 	  Bundle i = getIntent().getExtras();
 	  netlist_80211 = (ArrayList<WifiAP>)i.get("com.gnychis.coexisyst.80211");
+	  netlist_ZigBee = (ArrayList<ZigBeeDev>)i.get("com.gnychis.coexisyst.ZigBee");
 	  db = new DBAdapter(this);
 	  db.open();
 	  setup_groups();
@@ -93,6 +95,16 @@ public class AddNetwork extends ExpandableListActivity {
         curGroupMap.put(NAME, "ZigBee");  
         curGroupMap.put(DESCRIPTION, "Description: 802.15.4 networks");
         children = new ArrayList<Map<String, String>>();
+        for(ZigBeeDev result: netlist_ZigBee) {
+            Map<String, String> curChildMap = new HashMap<String, String>();
+            children.add(curChildMap);
+            curChildMap.put(NAME, result._mac);
+            
+            curChildMap.put(MAC, "Network ID: " + result._pan);
+           	curChildMap.put(CHAN, "Channel: " + result._band);            
+            curChildMap.put(CMAC, result._mac);	// clear string mac
+            curChildMap.put(RSSI, "LQI: " + result.lqi());        	
+        }
         childData.add(children);
         
 		
