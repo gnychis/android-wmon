@@ -217,6 +217,7 @@ int main (int argc, char *argv[]) {
 				struct pcap_pkthdr_32 pcap_hdr;
 
 				// Read in the fields
+				uint8_t chan = (uint8_t)block_read1();
 				uint8_t lqi = (uint8_t)block_read1();
 				uint32_t rxtime = block_read_uint32();
 				uint8_t length = (uint8_t)block_read1();
@@ -281,6 +282,12 @@ int main (int argc, char *argv[]) {
 				if(write(sd_current, (char *)&lqi, 1)==-1) {
 #ifdef BUILD_ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write link quality indicator");
+#endif
+					return -1;
+				}
+				if(write(sd_current, (char *)&chan, 1)==-1) {
+#ifdef BUILD_ANDROID
+					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write chan");
 #endif
 					return -1;
 				}
