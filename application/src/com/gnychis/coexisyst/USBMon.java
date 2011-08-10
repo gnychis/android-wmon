@@ -1,11 +1,11 @@
 package com.gnychis.coexisyst;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
-import android.content.Context;
-import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
@@ -14,28 +14,48 @@ import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.stericson.RootTools.RootTools;
 
 // A class to handle USB worker like things
-public class USBMon extends AsyncTask<Context, Integer, String>
+public class USBMon
 {
-	Context parent;
-	CoexiSyst coexisyst;
+	CoexiSyst _coexisyst;
 	String TAG = "USBMon";
 	private Semaphore _state_lock;
-	private USBState _state;
+	private int _atheros_skip;
+	private int _zigbee_skip;
+	private Handler _handler;
 	
-	public enum USBState {
-		HAULTED,
-		SCANNING,
-	}
+	private Timer _scan_timer;
 	
-	public USBMon() {
+	public USBMon(CoexiSyst c, Handler h) {
 		_state_lock = new Semaphore(1,true);
-		_state = USBState.SCANNING;  // default state
+		_coexisyst = c;
+		_atheros_skip=0;
+		_zigbee_skip=0;
+		_handler = h;
+		_scan_timer=null;
+		startUSBMon();
 	}
 	
-	@Override
-	protected void onCancelled()
-	{
-		Log.d(TAG, "USB monitor thread successfully canceled");
+	public boolean startUSBMon() {
+		if(_scan_timer!=null)
+			return false;
+		
+		_scan_timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				usbPoll();
+			}
+
+		}, 0, 2000);
+		return true;
+	}
+	
+	public boolean stopUSBMon() {
+		if(_scan_timer==null)
+			return false;
+		
+		_scan_timer.cancel();
+		_scan_timer=null;
+		return true;
 	}
 	
 	// This function makes a major assumption that only the AR9280 has a file in /sys called loading
@@ -53,81 +73,47 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 		return 0;
 	}
 	
-	public void changeState(USBState s) {
-		try {
-			_state_lock.acquire();
-			_state = s;			
-			_state_lock.release();
-		} catch(Exception e) {
-			
-		}
-	}
-	
-	@Override
-	protected String doInBackground( Context... params )
+	public void usbPoll( )
 	{
-		int atheros_skip=0;
-		int zigbee_skip=0;
-		parent = params[0];
-		coexisyst = (CoexiSyst) params[0];
-		Log.d(TAG, "a new USB monitor was started");
-		while(true) {
-			try {
-				
-				if(_state==USBState.HAULTED) {
-					Thread.sleep(2000);
-					continue;
-				}
-				
-				int wispy_in_devlist=coexisyst.USBcheckForDevice(0x1781, 0x083f);
-				//int atheros_in_devlist=coexisyst.USBcheckForDevice(0x0411,0x017f);  // does not work well for AR9280
-				int atheros_in_devlist = checkAR9280() | coexisyst.USBcheckForDevice(0x0411,0x017f);
-				int econotag_in_devlist = coexisyst.USBcheckForDevice(0x0403, 0x6010);
-				
-				// Wispy related checks
-				if(wispy_in_devlist==1 && coexisyst.wispy._device_connected==false) {
-					publishProgress(Wispy.WISPY_CONNECT);
-				} else if(wispy_in_devlist==0 && coexisyst.wispy._device_connected==true) {
-					publishProgress(Wispy.WISPY_DISCONNECT);
-				} else if(wispy_in_devlist==1 && coexisyst.wispy._device_connected==true && coexisyst.wispy._is_polling==false) {
-					//Log.d(TAG, "determined that a re-poll is needed");
-					//Thread.sleep( 1000 );
-					//publishProgress(CoexiSyst.WISPY_POLL);
-				}
-				
-				// Atheros related checks, after a device is connected, skip a check while it initializes
-				if(atheros_skip!=0) {
-					atheros_skip--;
-					Log.d(TAG, "Skipping atheros...");
-				} else {
-					if(atheros_in_devlist==1 && coexisyst.ath._device_connected==false) {
-						publishProgress(Wifi.ATHEROS_CONNECT);
-						atheros_skip=5;
-					} else if(atheros_in_devlist==0 && coexisyst.ath._device_connected==true) {
-						publishProgress(Wifi.ATHEROS_DISCONNECT);
-					}
-				}
-				
-				
-				if(zigbee_skip!=0) {
-					zigbee_skip--;
-					Log.d(TAG, "Skipping zigbee...");
-				} else {
-					if(econotag_in_devlist==1 && coexisyst.zigbee._device_connected==false) {
-						publishProgress(ZigBee.ZIGBEE_CONNECT);
-						zigbee_skip=5;
-					} else if(econotag_in_devlist==0 && coexisyst.zigbee._device_connected==true) {
-						publishProgress(ZigBee.ZIGBEE_DISCONNECT);
-					}
-				}
-								
-				Thread.sleep( 2000 );
-				//Log.d(TAG, "checking for USB devices");
 
-			} catch (Exception e) {
-				
-				Log.e(TAG, "exception trying to sleep", e);
-				//return "OUT";
+		int wispy_in_devlist=_coexisyst.USBcheckForDevice(0x1781, 0x083f);
+		int atheros_in_devlist = checkAR9280() | _coexisyst.USBcheckForDevice(0x0411,0x017f);
+		int econotag_in_devlist = _coexisyst.USBcheckForDevice(0x0403, 0x6010);
+		
+		// Wispy related checks
+		if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==false) {
+			updateState(Wispy.WISPY_CONNECT);
+		} else if(wispy_in_devlist==0 && _coexisyst.wispy._device_connected==true) {
+			updateState(Wispy.WISPY_DISCONNECT);
+		} else if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==true && _coexisyst.wispy._is_polling==false) {
+			//Log.d(TAG, "determined that a re-poll is needed");
+			//Thread.sleep( 1000 );
+			//publishProgress(CoexiSyst.WISPY_POLL);
+		}
+		
+		// Atheros related checks, after a device is connected, skip a check while it initializes
+		if(_atheros_skip!=0) {
+			_atheros_skip--;
+			Log.d(TAG, "Skipping atheros...");
+		} else {
+			if(atheros_in_devlist==1 && _coexisyst.ath._device_connected==false) {
+				updateState(Wifi.ATHEROS_CONNECT);
+				_atheros_skip=5;
+			} else if(atheros_in_devlist==0 && _coexisyst.ath._device_connected==true) {
+				updateState(Wifi.ATHEROS_DISCONNECT);
+			}
+		}
+		
+		
+		if(_zigbee_skip!=0) {
+			_zigbee_skip--;
+			Log.d(TAG, "Skipping zigbee...");
+		} else {
+			if(econotag_in_devlist==1 && _coexisyst.zigbee._device_connected==false) {
+				updateState(ZigBee.ZIGBEE_CONNECT);
+				_zigbee_skip=5;
+			} else if(econotag_in_devlist==0 && _coexisyst.zigbee._device_connected==true) {
+				updateState(ZigBee.ZIGBEE_DISCONNECT);
 			}
 		}
 	}
@@ -135,69 +121,62 @@ public class USBMon extends AsyncTask<Context, Integer, String>
 	/* (non-Javadoc)
 	 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
 	 */
-	@Override
-	protected void onProgressUpdate(Integer... values)
+	protected void updateState(int event)
 	{
-		super.onProgressUpdate(values);
-		int event = values[0];
-		
 		if(event == Wispy.WISPY_CONNECT) {
 			Log.d(TAG, "got update that WiSpy was connected");
-			Toast.makeText(parent, "WiSpy device connected",
-					Toast.LENGTH_LONG).show();	
-			coexisyst.wispy._device_connected=true;
+			_coexisyst.sendToastMessage(_handler, "WiSpy device connected");
+			_coexisyst.wispy._device_connected=true;
 			
 			// List the wispy devices
-			coexisyst.textStatus.append("\n\nWiSpy Devices:\n");
-			String devices[] = coexisyst.getWiSpyList();
+			_coexisyst.textStatus.append("\n\nWiSpy Devices:\n");
+			String devices[] = _coexisyst.getWiSpyList();
 			for (int i=0; i<devices.length; i++)
-				coexisyst.textStatus.append(devices[i] + "\n");
+				_coexisyst.textStatus.append(devices[i] + "\n");
 			
 			// Start the poll thread now
-			coexisyst.wispyscan.execute(coexisyst);
-			coexisyst.wispy._is_polling = true;
+			_coexisyst.wispyscan.execute(_coexisyst);
+			_coexisyst.wispy._is_polling = true;
 		}
 		else if(event == Wispy.WISPY_DISCONNECT) {
 			Log.d(TAG, "got update that WiSpy was connected");
-			Toast.makeText(parent, "WiSpy device has been disconnected",
-					Toast.LENGTH_LONG).show();
-			coexisyst.wispy._device_connected=false;
-			coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
+			_coexisyst.sendToastMessage(_handler, "WiSpy device has been disconnected");
+			_coexisyst.wispy._device_connected=false;
+			_coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
 		}
 		else if(event == Wispy.WISPY_POLL) {
 			Log.d(TAG, "trying to re-poll the WiSpy device");
-			Toast.makeText(parent, "Re-trying polling",
-					Toast.LENGTH_LONG).show();
-			coexisyst.wispyscan.cancel(true);
-			coexisyst.wispyscan = coexisyst.wispy.new WispyThread();
-			coexisyst.wispyscan.execute(coexisyst);
-			coexisyst.wispy._is_polling = true;
+			_coexisyst.sendToastMessage(_handler, "Re-trying polling");
+			_coexisyst.wispyscan.cancel(true);
+			_coexisyst.wispyscan = _coexisyst.wispy.new WispyThread();
+			_coexisyst.wispyscan.execute(_coexisyst);
+			_coexisyst.wispy._is_polling = true;
 		}
 		
 		// Handling events of Atheros device
 		if(event == Wifi.ATHEROS_CONNECT) {
 			Message msg = new Message();
 			msg.obj = ThreadMessages.ATHEROS_CONNECTED;
-			coexisyst._handler.sendMessage(msg);
+			_coexisyst._handler.sendMessage(msg);
 			Log.d(TAG, "got update that Atheros card was connected");
 		}
 		else if(event == Wifi.ATHEROS_DISCONNECT) {
 			Log.d(TAG, "Atheros card now disconnected");
-			Toast.makeText(parent, "Atheros device disconnected", Toast.LENGTH_LONG).show();
-			coexisyst.ath.disconnected();
+			_coexisyst.sendToastMessage(_handler, "Atheros device disconnected");
+			_coexisyst.ath.disconnected();
 		}
 		
 		// Handling events for ZigBee device
 		if(event == ZigBee.ZIGBEE_CONNECT) {
 			Message msg = new Message();
 			msg.obj = ThreadMessages.ZIGBEE_CONNECTED;
-			coexisyst._handler.sendMessage(msg);
+			_coexisyst._handler.sendMessage(msg);
 			Log.d(TAG, "got update that ZigBee device was connected");
 		}
 		else if(event == ZigBee.ZIGBEE_DISCONNECT) {
 			Log.d(TAG, "ZigBee device now disconnected");
-			Toast.makeText(parent, "ZigBee device disconnected", Toast.LENGTH_LONG).show();
-			coexisyst.zigbee.disconnected();
+			_coexisyst.sendToastMessage(_handler, "ZigBee device disconnected");
+			_coexisyst.zigbee.disconnected();
 		}
 	}
 }
