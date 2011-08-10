@@ -16,14 +16,14 @@
 
 #define VERSION 0x09
 
-//#define BUILD_ANDROID  // if this is not defined, we build for native linux testing
+#define BUILD_ANDROID  // if this is not defined, we build for native linux testing
 
 #ifdef BUILD_ANDROID
 #include <android/log.h>
 #endif
 
 //#define DEBUG_OUTPUT
-//#define VERBOSE
+#define VERBOSE
 
 const char CHANGE_CHAN=0x0000;
 const char TRANSMIT_PACKET=0x0001;
