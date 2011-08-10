@@ -66,6 +66,10 @@ public class ZigBee {
 		return frequencies[chan];
 	}	
 	
+	public boolean isConnected() {
+		return _device_connected;
+	}
+	
 	// Set the state to scan and start to switch channels
 	public boolean scanStart() {
 		
