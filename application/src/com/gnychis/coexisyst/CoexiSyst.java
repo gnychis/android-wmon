@@ -376,9 +376,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		_networks_scan.resetScan();
 		
+		_networks_scan._wifi_connected=ath.isConnected();
+		_networks_scan._zigbee_connected=zigbee.isConnected();
+		
 		// start the scanning process, which happens in another thread
-		ath.APScan();
-		zigbee.scanStart();
+		if(ath.isConnected())
+			ath.APScan();
+		if(zigbee.isConnected())
+			zigbee.scanStart();
 	}
 	
 	public void clickViewSpectrum() {

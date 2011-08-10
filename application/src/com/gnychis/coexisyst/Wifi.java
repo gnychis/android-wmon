@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
 import org.jnetpcap.PcapHeader;
@@ -32,7 +34,6 @@ public class Wifi {
 	
 	boolean _device_connected;
 	WifiMon _monitor_thread;
-	protected WifiChannelScanner _cscan_thread;
 	
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
@@ -45,6 +46,8 @@ public class Wifi {
 	}
 	
 	ArrayList<Packet> _scan_results;
+	private int _scan_channel;
+	private Timer _scan_timer;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
 	static int[] channels = {1,2,3,4,5,6,7,8,9,10,11,36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
@@ -89,10 +92,29 @@ public class Wifi {
 		
 		_scan_results.clear();
 		
-		_cscan_thread = new WifiChannelScanner(200);	// time to wait on each channel as parameter
-		_cscan_thread.execute();
+		_scan_channel=0;
+		setChannel(channels[_scan_channel]);
+		_scan_timer = new Timer();
+		_scan_timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				scanIncrement();
+			}
+
+		}, 0, 200);
 		
 		return true;  // in scanning state, and channel hopping
+	}
+	
+	private void scanIncrement() {
+		_scan_channel++;
+		if(_scan_channel==channels.length) {
+			APScanStop();
+			_scan_timer.cancel();
+			return;
+		}
+		Log.d(TAG, "Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
+		setChannel(channels[_scan_channel]);
 	}
 	
 	public boolean APScanStop() {
@@ -185,6 +207,10 @@ public class Wifi {
 		coexisyst.ath._monitor_thread.execute(coexisyst);
 	}
 	
+	public boolean isConnected() {
+		return _device_connected;
+	}
+	
 	public String compatLoading() {
 		try {
 			List<String> res = RootTools.sendShell("busybox find /sys -name loading");
@@ -236,6 +262,14 @@ public class Wifi {
 		} catch (Exception e) { return false; }	
 
 		return false;
+	}
+	
+	public void setChannel(int channel) {
+		try {
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(channel));
+		} catch(Exception e) {
+			
+		}
 	}
 	
 	public void disconnected() {
@@ -475,53 +509,5 @@ public class Wifi {
 			
 			return data;
 		}
-	}
-	
-	////////////////////////////////////////////////////////////////////////////////
-	// ChannelScanner: a class which instantiates a new thread to issues commands
-	//     which changes the channel of the Atheros card.  This allows packet
-	//     capture to continue smoothly, as the channel hops in the background.
-	protected class WifiChannelScanner extends AsyncTask<Integer, Integer, String>
-	{
-		private static final String TAG = "WiFiChannelManager";
-		
-		private int _scan_interval;  // in milliseconds, time-per-channel
-		
-		public WifiChannelScanner(int scan_interval) {
-			_scan_interval = scan_interval;
-		}
-		
-		public WifiChannelScanner() {
-			_scan_interval = 110;  // default value
-		}
-
-		
-		@Override
-		protected String doInBackground( Integer ... params )
-		{
-			Log.d(TAG, "a new Wifi channel manager thread was started");
-			
-			try {
-				// For each of the channels, go through and scan
-				for(int i=0; i<channels.length; i++) {
-					int c = channels[i];
-					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
-					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
-					Thread.sleep(_scan_interval);
-				}
-			} catch(Exception e) {
-				Log.e(TAG, "error trying to scan channels", e);
-			}
-			
-			// Alerts the main thread that the scanning has stopped, by changing the state and
-			// saving the relevant data
-			if(APScanStop())
-				return "OK";
-			else
-				return "FAIL";
-		}
-		
-		// Update spinner in here
-	}
-	
+	}	
 }

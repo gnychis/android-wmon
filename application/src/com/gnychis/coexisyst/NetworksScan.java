@@ -9,6 +9,9 @@ public class NetworksScan {
 	public ArrayList<ZigBeeDev> _zigbee_scan_result;
 	public ArrayList<WifiAP> _wifi_scan_result;
 	
+	public boolean _zigbee_connected;
+	public boolean _wifi_connected;
+	
 	// Set the results to null to begin with, so that we can easily check
 	// when a scan of all protocols is complete.
 	NetworksScan() {
@@ -18,9 +21,9 @@ public class NetworksScan {
 	
 	// A method to check if we have results for each of the networks
 	public boolean isScanComplete() {
-		if(_zigbee_scan_result==null)
+		if(_zigbee_scan_result==null && _zigbee_connected)
 			return false;
-		if(_wifi_scan_result==null)
+		if(_wifi_scan_result==null && _wifi_connected)
 			return false;
 		
 		return true;
