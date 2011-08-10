@@ -30,6 +30,8 @@ const char TRANSMIT_PACKET=0x0001;
 const char RECEIVED_PACKET=0x0002;
 const char INITIALIZED=0x0003;
 const char TRANSMIT_BEACON=0x0004;
+const char START_SCAN=0x0005;
+const char SCAN_DONE=0x0006;
 
 void transmit_beacon();
 int set_channel(int channel);
@@ -208,10 +210,18 @@ int main (int argc, char *argv[]) {
 			if(cmd==TRANSMIT_BEACON) {
 				transmit_beacon();	
 			}
+
+			if(cmd==START_SCAN) {
+				write(fd, &cmd, 1);  // pass the command to the hardware
+			}
 		}
 
 		// Read from the serial device
 		if((n = read(fd, &cmd, 1))==1) {
+
+			if(cmd==SCAN_DONE) {
+				write(sd_current, &cmd, 1);
+			}
 			
 			if(cmd==RECEIVED_PACKET) {
 				struct pcap_pkthdr_32 pcap_hdr;

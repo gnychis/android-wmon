@@ -75,8 +75,7 @@
  /Users/gnychis/Documents/android-ndk/platforms/android-9/arch-arm/usr/include/linux/in6.h \
  /Users/gnychis/Documents/android-ndk/platforms/android-9/arch-arm/usr/include/netinet/in6.h \
  jni/libpcap/pcap.h jni/libpcap/pcap/pcap.h jni/libpcap/pcap/bpf.h \
- /Users/gnychis/Documents/workspace/CoexiSyst/jni/zigcapd/serial.h \
- /Users/gnychis/Documents/android-ndk/platforms/android-9/arch-arm/usr/include/android/log.h
+ /Users/gnychis/Documents/workspace/CoexiSyst/jni/zigcapd/serial.h
 
 /Users/gnychis/Documents/android-ndk/platforms/android-9/arch-arm/usr/include/errno.h:
 
@@ -233,5 +232,3 @@ jni/libpcap/pcap/pcap.h:
 jni/libpcap/pcap/bpf.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/zigcapd/serial.h:
-
-/Users/gnychis/Documents/android-ndk/platforms/android-9/arch-arm/usr/include/android/log.h:
