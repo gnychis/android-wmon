@@ -15,7 +15,7 @@ public class Packet implements Parcelable {
 	public byte[] _rawHeader;
 	public byte[] _rawData;
 	public int _lqi;  // only for ZigBee
-	public int _band;  // only for ZigBee also since there is no radiotap header
+	public int _channel;  // only for ZigBee also since there is no radiotap header
 	
 	public int _dissection_ptr;
 		
@@ -25,7 +25,7 @@ public class Packet implements Parcelable {
 		_encap = encap;
 		_lqi = -1;
 		_dissection_ptr = -1;
-		_band = -1;
+		_channel = -1;
 	}
 	
 	public int describeContents()
@@ -40,7 +40,7 @@ public class Packet implements Parcelable {
         out.writeByteArray(_rawHeader);
         out.writeByteArray(_rawData);
         out.writeInt(_lqi);
-        out.writeInt(_band);
+        out.writeInt(_channel);
         out.writeInt(-1);	// Cannot pass the dissection pointer, otherwise the GC will
         					// try to free the object more than once.  Once per copied object.
     }
@@ -56,7 +56,7 @@ public class Packet implements Parcelable {
         in.readByteArray(_rawHeader);
         in.readByteArray(_rawData);
         _lqi = in.readInt();
-        _band = in.readInt();
+        _channel = in.readInt();
         _dissection_ptr = in.readInt();
     }
 	

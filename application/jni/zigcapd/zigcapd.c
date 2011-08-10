@@ -14,16 +14,16 @@
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
-#define VERSION 0x0f
+#define VERSION 0x09
 
-#define BUILD_ANDROID  // if this is not defined, we build for native linux testing
+//#define BUILD_ANDROID  // if this is not defined, we build for native linux testing
 
 #ifdef BUILD_ANDROID
 #include <android/log.h>
 #endif
 
 //#define DEBUG_OUTPUT
-#define VERBOSE
+//#define VERBOSE
 
 const char CHANGE_CHAN=0x0000;
 const char TRANSMIT_PACKET=0x0001;
@@ -160,7 +160,7 @@ int main (int argc, char *argv[]) {
 		seq_buf[SEQLEN-1]=block_read1();
 	}
  
-	send(sd_current, &INITIALIZED, 1, 0);
+	write(sd_current, &INITIALIZED, 1);
 
 #ifdef VERBOSE
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Reset button push complete, going on...\n");
@@ -182,7 +182,7 @@ int main (int argc, char *argv[]) {
 	fflush(stdout);
 #endif
 	
-	set_channel(0);
+	set_channel(1);
 
 	// Set the socket to non-blocking for read() commands
 	setnonblocking(sd_current);
@@ -196,28 +196,17 @@ int main (int argc, char *argv[]) {
 			// If the command is to change the channel, read the channel number (cast a single byte, only 16 channels)
 			if(cmd==CHANGE_CHAN) {
 				char tval;
-				while((n = read(sd_current, &tval, 1))<=0) { 
-					if(n==-1 && errno!=EAGAIN) {
-						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in main() 2");
-						return -1;
-					}
-				}
+				while((n = read(sd_current, &tval, 1))!=1) { }
 				set_channel((int)tval);
 #ifdef BUILD_ANDROID
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Changing channel to: %d\n", (int)tval);
 #endif
-			} 
+			}
 
 			// A beacon is a command with no other information associated with it, causing the econotag
 			// to transmit a beacon frame.
 			if(cmd==TRANSMIT_BEACON) {
 				transmit_beacon();	
-			}
-
-		} else if(n==-1) {
-			if(errno!=EAGAIN) {  // allow 0 bytes on non-blocking error
-				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in main() 1");
-				return -1;
 			}
 		}
 
@@ -239,7 +228,7 @@ int main (int argc, char *argv[]) {
 				fprintf(stderr, "rxtime: %d, LQI: %d, length: %d\n", rxtime, lqi, length);
 
 				// Write the command to the receive
-				if(send(sd_current, &RECEIVED_PACKET, 1, 0)==-1) {
+				if(write(sd_current, &RECEIVED_PACKET, 1)==-1) {
 #ifdef BUILD_ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write received packet command");
 #endif
@@ -258,7 +247,7 @@ int main (int argc, char *argv[]) {
 #endif
 				total=0;
 				while(total < sizeof(struct pcap_pkthdr_32)) {
-					if((wrote = send(sd_current, &pcap_hdr + total, sizeof(struct pcap_pkthdr_32)-total, 0))==-1) {
+					if((wrote = write(sd_current, &pcap_hdr + total, sizeof(struct pcap_pkthdr_32)-total))==-1) {
 #ifdef BUILD_ANDROID
 						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write pcap packet header");
 #endif
@@ -274,7 +263,7 @@ int main (int argc, char *argv[]) {
 #endif
 				total=0;
 				while(total < length) {
-					if((wrote = send(sd_current, buf, length, 0))==-1) {
+					if((wrote = write(sd_current, buf, length))==-1) {
 #ifdef BUILD_ANDROID
 						__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write pcap packet data");
 #endif
@@ -284,19 +273,19 @@ int main (int argc, char *argv[]) {
 				}
 
 				// Write the link quality indicator and received packet time
-				if(send(sd_current, (char *)&rxtime, 4, 0) != 4) {
+				if(write(sd_current, (char *)&rxtime, 4) != 4) {
 #ifdef BUILD_ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write rx time");
 #endif
 					return -1;
 				}
-				if(send(sd_current, (char *)&lqi, 1, 0)==-1) {
+				if(write(sd_current, (char *)&lqi, 1)==-1) {
 #ifdef BUILD_ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write link quality indicator");
 #endif
 					return -1;
 				}
-				if(send(sd_current, (char *)&chan, 1, 0)==-1) {
+				if(write(sd_current, (char *)&chan, 1)==-1) {
 #ifdef BUILD_ANDROID
 					__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Error trying to write chan");
 #endif
@@ -306,13 +295,11 @@ int main (int argc, char *argv[]) {
 #ifdef VERBOSE
 				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Received packet with LQI: %d\n", lqi);
 #endif
+				fprintf(stderr, "Received packet with LQI: %d\n", lqi);
 
 				free(buf);
 			}
 
-		} else if(n==-1) {
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in main() 2");
-			return -1;
 		}
 	}
 
@@ -324,64 +311,30 @@ char block_read1() {
 	int n;
 	char c;
 
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Entering block_read1()");
-#endif
-
 	while(1) {
-		if((n = read(fd, &c, 1))==1) {
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Leaving block_read1()");
-#endif
+		if((n = read(fd, &c, 1))==1)
 			return c;
-		} else if(n==-1) {
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in block_read1()");
-			exit(-1);
-		}
 	}
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Leaving block_read1()");
-#endif
 }
 
 uint32_t block_read_uint32() {
 	int i;
 	uint32_t v = 0;
 
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Entering block_read_uint32()");
-#endif
-
 	for(i=0;i<4;i++) {
 		uint32_t t = ((uint32_t)block_read1()) & 0xff;
 		v = v | (t << i*CHAR_BIT);
 	}
-
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Leaving block_read_uint32()");
-#endif
 
 	return v;
 }
 
 void block_read_nbytes(char *buf, int nbytes) {
 	int nread=0;
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Entering block_read_nbytes()");
-#endif
 	while(nread<nbytes) {
 		int n = read(fd, buf+nread, nbytes-nread);
-
-		if(n==-1) {
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in block_read_nbytes()");
-			exit(-1);
-		}
-
 		nread += n;
 	}
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Leaving block_read_nbytes()");
-#endif
 }
 
 void debug_buf(char *buf, int length) {
@@ -395,10 +348,7 @@ void debug_buf(char *buf, int length) {
 
 void transmit_beacon() {
 	char cmd = TRANSMIT_BEACON;
-	if(write(fd, &cmd, 1)==-1) {
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in transmit_beacon()");
-		exit(-1);
-	}
+	write(fd, &cmd, 1);
 }
 
 int set_channel(int channel) {
@@ -406,14 +356,8 @@ int set_channel(int channel) {
 	char chan = (char) channel;
 	//char rval;
 
-	if(write (fd, &cmd, 1)==-1) {
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in set_channel() 1");
-		exit(-1);
-	}
-	if(write (fd, &chan, 1)==-1) {
-			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Failed in set_channel() 2");
-		exit(-1);
-	}
+	write (fd, &cmd, 1); 
+	write (fd, &chan, 1);
 	
 	// read back value for testing
 	/*read (fd, &rval, 1); 

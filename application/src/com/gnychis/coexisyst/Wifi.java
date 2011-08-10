@@ -47,38 +47,8 @@ public class Wifi {
 	ArrayList<Packet> _scan_results;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
-	static int[] channels = {1,2,3,4,5,6,7,8,9,10,11,36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
-	static int[] frequencies = {2412, 2417, 2422, 2427, 2432, 2437, 2442, 2447, 2452, 2457, 2462,5180, 5200, 5220, 5240, 5260, 5280, 5300, 5320, 
-		5500, 5520, 5540, 5560, 5580, 5680, 5700, 5745, 5765, 5785, 5805, 5825};
-
-	// Take an 802.11 channel number, get a frequency in KHz
-	static int channelToFreq(int chan) {
-		int index=-1;
-		int i;
-		
-		for(i=0;i<channels.length;i++)
-			if(channels[i]==chan)
-				index=i;
-		
-		if(index==-1)
-			return -1;
-		
-		return frequencies[index];
-	}
-	
-	// Take a frequency in KHz, get a channel!
-	static int freqtoChannel(int freq) {
-		int index=-1;
-		int i;
-		
-		for(i=0;i<frequencies.length;i++)
-			if(frequencies[i]==freq)
-				index=i;
-		
-		if(index==-1)
-			return -1;
-		return channels[index];
-	}
+	int[] channels24 = {1,2,3,4,5,6,7,8,9,10,11};
+	int[] channels5 = {36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
 	
 	// Set the state to scan and start to switch channels
 	public boolean APScan() {
@@ -489,7 +459,6 @@ public class Wifi {
 		
 		public WifiChannelScanner(int scan_interval) {
 			_scan_interval = scan_interval;
-			Log.d(TAG, "Instantiated new Wifi channel scanner");
 		}
 		
 		public WifiChannelScanner() {
@@ -504,10 +473,18 @@ public class Wifi {
 			
 			try {
 				// For each of the channels, go through and scan
-				for(int i=0; i<channels.length; i++) {
-					int c = channels[i];
+				for(int i=0; i<channels24.length; i++) {
+					int c = channels24[i];
 					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
 					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
+					Thread.sleep(_scan_interval);
+				}
+				
+				for(int i=0; i<channels5.length; i++) {
+					int c = channels5[i];
+					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(c));
+					Log.d(TAG, "Hopping to channel " + Integer.toString(c));
+
 					Thread.sleep(_scan_interval);
 				}
 			} catch(Exception e) {
