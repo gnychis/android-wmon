@@ -32,7 +32,6 @@ public class ZigBee {
 	
 	boolean _device_connected;
 	ZigBeeMon _monitor_thread;
-	protected ZigBeeChannelScanner _cscan_thread;
 	
 	static int WTAP_ENCAP_802_15 = 127;
 	
@@ -46,7 +45,26 @@ public class ZigBee {
 	ArrayList<Packet> _scan_results;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
-	int[] channels = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+	static int[] channels = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+	static int[] frequencies = {2405, 2410, 2415, 2420, 2425, 2430, 2435, 
+			2440, 2445, 2450, 2455, 2460, 2465, 2470, 2475, 2480};
+	
+	static public int freqToChan(int freq) {
+		int i=0;
+		for(i=0; i<frequencies.length; i++)
+			if(frequencies[i]==freq)
+				break;
+		if(!(i<frequencies.length))
+			return -1;
+		
+		return channels[i];
+	}
+	
+	static public int chanToFreq(int chan) {
+		if(chan<0 || chan>channels.length-1)
+			return -1;
+		return frequencies[chan];
+	}	
 	
 	// Set the state to scan and start to switch channels
 	public boolean scanStart() {
@@ -56,9 +74,7 @@ public class ZigBee {
 			return false;
 		
 		_scan_results.clear();
-		
-		_cscan_thread = new ZigBeeChannelScanner(200, this);	// time to wait on each channel as parameter
-		_cscan_thread.execute();
+		_monitor_thread.startScan();
 		
 		return true;  // in scanning state, and channel hopping
 	}
@@ -182,6 +198,8 @@ public class ZigBee {
 		byte RECEIVED_PACKET=0x0002;
 		byte INITIALIZED=0x0003;
 		byte TRANSMIT_BEACON=0x0004;
+		byte START_SCAN=0x0005;
+		byte SCAN_DONE=0x0006;
 		
 		// On pre-execute, we make sure that we initialize the card properly and set the state to IDLE
 		@Override 
@@ -239,6 +257,10 @@ public class ZigBee {
 			while(true) {
 				byte cmd = getSocketData(1)[0];
 				
+				if(cmd==SCAN_DONE) {
+					scanStop();
+				}
+				
 				// Wait for a byte which signals a command
 				if(cmd==RECEIVED_PACKET) {
 				
@@ -264,7 +286,7 @@ public class ZigBee {
 					rpkt._lqi = (int)getSocketData(1)[0];
 					
 					// The channel is read from the hardware
-					rpkt._channel = (int)getSocketData(1)[0];
+					rpkt._band = frequencies[(int)getSocketData(1)[0]]; ;
 					
 					// Based on the state of our wifi thread, we determine what to do with the packet
 					switch(_state) {
@@ -308,6 +330,19 @@ public class ZigBee {
 			try {
 				_comm_lock.acquire();
 				skt_out.write(TRANSMIT_BEACON);
+			} catch(Exception e) {
+				_comm_lock.release();
+				return false;
+			}
+			_comm_lock.release();
+			return true;
+		}
+		
+		// Transmit a command to start a scan on the hardware (channel hop)
+		public boolean startScan() {
+			try {
+				_comm_lock.acquire();
+				skt_out.write(START_SCAN);
 			} catch(Exception e) {
 				_comm_lock.release();
 				return false;
@@ -398,58 +433,4 @@ public class ZigBee {
 			return data;
 		}
 	}
-	
-	////////////////////////////////////////////////////////////////////////////////
-	// ChannelScanner: a class which instantiates a new thread to issues commands
-	//     which changes the channel of the Atheros card.  This allows packet
-	//     capture to continue smoothly, as the channel hops in the background.
-	protected class ZigBeeChannelScanner extends AsyncTask<Integer, Integer, String>
-	{
-		private static final String TAG = "ZigBeeChannelManager";
-		ZigBee _zigbee;
-		
-		private int _scan_interval;  // in milliseconds, time-per-channel
-		private int _old_channel;
-		
-		public ZigBeeChannelScanner(int scan_interval, ZigBee z) {
-			_scan_interval = scan_interval;
-			_zigbee = z;
-			
-			// save the channel that the device was on before the scan
-			_old_channel = _zigbee._monitor_thread._channel;
-		}
-  
-		@Override
-		protected String doInBackground( Integer ... params )
-		{
-			Log.d(TAG, "a new ZigBee channel scanner thread was started");
-			
-			// Hop through each channel and send a beacon, which illicits a response
-			// from all of the devices in the channel, which will be monitored
-			try {
-				for(int i=0; i<channels.length; i++) {
-					int c = channels[i];
-					_zigbee._monitor_thread.setChannel(c);
-					_zigbee._monitor_thread.transmitBeacon();
-					Log.d(TAG, "ZigBee hopping to channel " + Integer.toString(c));
-					Thread.sleep(_scan_interval);				
-				}
-				
-			} catch(Exception e) {
-				Log.e(TAG, "error trying to scan channels", e);
-			}
-			
-			// Alerts the main thread that the scanning has stopped, by changing the state and
-			// saving the relevant data
-			if(scanStop())
-				return "OK";
-			else
-				return "FAIL";
-		}
-		
-		// When done scanning, set the channel back to where we were
-		protected void onPostExecute(String s) {
-			_zigbee._monitor_thread.setChannel(_old_channel);
-		}
-	}	
 }

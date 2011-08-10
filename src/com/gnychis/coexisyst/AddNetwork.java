@@ -101,7 +101,7 @@ public class AddNetwork extends ExpandableListActivity {
             curChildMap.put(NAME, result._mac);
             
             curChildMap.put(MAC, "Network ID: " + result._pan);
-           	curChildMap.put(CHAN, "Channel: " + result._band);            
+            curChildMap.put(CHAN, "Frequency:  " + result._band + "KHz   (" + (result._band-2.5) + "->" + (result._band+2.5) + ")");             
             curChildMap.put(CMAC, result._mac);	// clear string mac
             curChildMap.put(RSSI, "LQI: " + result.lqi());        	
         }
