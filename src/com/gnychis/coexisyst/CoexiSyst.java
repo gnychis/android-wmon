@@ -2,6 +2,9 @@ package com.gnychis.coexisyst;
 
 // do a random port number for pcapd
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -22,7 +25,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gnychis.coexisyst.USBMon.USBState;
 import com.stericson.RootTools.RootTools;
 
 public class CoexiSyst extends Activity implements OnClickListener {
@@ -64,6 +66,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	boolean _wifi_reenable;
 	boolean _bt_reenable;
 	
+	public BlockingQueue<String> toastMessages;
+	
 	public enum ThreadMessages {
 		WIFI_SCAN_COMPLETE,
 		WISPY_SCAN_COMPLETE,
@@ -75,6 +79,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		ZIGBEE_FAILED,
 		ZIGBEE_WAIT_RESET,
 		ZIGBEE_SCAN_COMPLETE,
+		SHOW_TOAST,
 	}
 	
 	public Handler _handler = new Handler() {
@@ -113,9 +118,29 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			if(msg.obj == ThreadMessages.ZIGBEE_INITIALIZED) {
 				zigbeeInitialized();
 			}
+			
+			if(msg.obj == ThreadMessages.SHOW_TOAST) {
+				try {
+					String m = toastMessages.remove();
+					Toast.makeText(getApplicationContext(), m, Toast.LENGTH_LONG).show();	
+				} catch(Exception e) { }
+			}
 
 		}
 	};
+	
+	// This works by putting a bunch of Toast messages in a queue
+	// for the main thread to take out and show.
+	public void sendToastMessage(Handler h, String msg) {
+		try {
+			toastMessages.put(msg);
+			Message m = new Message();
+			m.obj = ThreadMessages.SHOW_TOAST;
+			h.sendMessage(m);
+		} catch (Exception e) {
+			Log.e(TAG, "Exception trying to put toast msg in queue:", e);
+		}
+	}
 	
 	public void zigbeeSettling() {
 		pd = ProgressDialog.show(this, "", "Initializing ZigBee device...", true, false);  
@@ -195,6 +220,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	wispy = new Wispy();
     	
     	_networks_scan = new NetworksScan();
+    	toastMessages = new ArrayBlockingQueue<String>(20);
         
         // Setup the database
     	db = new DBAdapter(this);
@@ -246,8 +272,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		try {
 			wispyscan = wispy.new WispyThread();
 		} catch (Exception e) { Log.e(TAG, "exception trying to start wispy thread", e); }
-		usbmon = new USBMon();
-		usbmon.execute (this);
+		usbmon = new USBMon(this, _handler);
 		ath = new Wifi(this);
 		zigbee = new ZigBee(this);
 		
@@ -269,13 +294,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	@Override
 	public void onStop() { super.onStop(); Log.d(TAG, "onStop()");}
 	public void onResume() { super.onResume(); Log.d(TAG, "onResume()");
-		if(usbmon == null || usbmon.getStatus()!=Status.RUNNING){ 
-			Log.d(TAG, "resuming a USB monitoring thread");
-			usbmon = new USBMon();
-			usbmon.execute (this);
-		} else {
-			Log.d(TAG, "not resuming USB monitoring, already running?");
-		}
+
 	}
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
@@ -352,7 +371,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// Invoked once we have received the results from all of the network scans.
 	public void networkScansComplete() {
 		pd.dismiss();
-		usbmon.changeState(USBState.SCANNING);
+		usbmon.startUSBMon();
 		
 		try {
 			Log.d(TAG,"Trying to load add networks window");
@@ -372,8 +391,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public void clickAddNetwork() {
 		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);
-		usbmon.changeState(USBState.HAULTED);  // slows down the scanning to put load on the USB bus
-		
+		usbmon.stopUSBMon();
 		_networks_scan.resetScan();
 		
 		_networks_scan._wifi_connected=ath.isConnected();
@@ -396,13 +414,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				Log.d(TAG, "canceling wispy scan");
 			}
 			
+			/* TODO: fix this
 			if(usbmon.getStatus()==Status.RUNNING) {
 				if(usbmon.cancel(true))
 					Log.d(TAG, "canceled USB monitor");
 				else
 					Log.d(TAG, "error trying to cancel USB monitor");	
 				usbmon = null;
-			}
+			}*/
 			
 			i = wispyGraph.execute(this);
 			i.putExtra("com.gnychis.coexisyst.results", wispy._maxresults);
