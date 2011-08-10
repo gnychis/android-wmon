@@ -14,7 +14,7 @@
 #include "serial.h"
 #define LOG_TAG "Zigcap" // text for log tag 
 
-#define VERSION 0x09
+#define VERSION 0x0f
 
 #define BUILD_ANDROID  // if this is not defined, we build for native linux testing
 
@@ -23,7 +23,7 @@
 #endif
 
 //#define DEBUG_OUTPUT
-#define VERBOSE
+//#define VERBOSE
 
 const char CHANGE_CHAN=0x0000;
 const char TRANSMIT_PACKET=0x0001;
