@@ -201,6 +201,7 @@ public class ZigBee {
 		byte TRANSMIT_BEACON=0x0004;
 		byte START_SCAN=0x0005;
 		byte SCAN_DONE=0x0006;
+		byte CHAN_IS=0x0007;
 		
 		// The initialized sequence (hardware sends it when it is initialized)
 		byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
@@ -264,6 +265,13 @@ public class ZigBee {
 			// Loop and read headers and packets
 			while(true) {
 				byte cmd = getSocketData(1)[0];
+				
+				if(cmd==CHAN_IS) {
+					_channel = (int)_dev.getByte() & 0xff;
+					
+					if(_state==ZigBeeState.SCANNING)
+						_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+				}
 				
 				if(cmd==SCAN_DONE) {
 					scanStop();

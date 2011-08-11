@@ -115,6 +115,7 @@ public class Wifi {
 		}
 		Log.d(TAG, "Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
 		setChannel(channels[_scan_channel]);
+		_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
 	}
 	
 	public boolean APScanStop() {

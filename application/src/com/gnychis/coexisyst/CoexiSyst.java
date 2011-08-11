@@ -81,6 +81,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		ZIGBEE_WAIT_RESET,
 		ZIGBEE_SCAN_COMPLETE,
 		SHOW_TOAST,
+		INCREMENT_PROGRESS,
 	}
 	
 	public Handler _handler = new Handler() {
@@ -125,6 +126,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					String m = toastMessages.remove();
 					Toast.makeText(getApplicationContext(), m, Toast.LENGTH_LONG).show();	
 				} catch(Exception e) { }
+			}
+
+			if(msg.obj == ThreadMessages.INCREMENT_PROGRESS) {
+				pd.incrementProgressBy(1);
 			}
 
 		}
@@ -400,7 +405,22 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	}
 	
 	public void clickAddNetwork() {
-		pd = ProgressDialog.show(this, "", "Scanning, please wait...", true, false);
+		int max=0;
+		pd = new ProgressDialog(this);
+		pd.setCancelable(true);
+		pd.setMessage("Scanning for networks...");
+		pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		pd.setProgress(0);
+		
+		if(ath.isConnected())
+			max += ath.channels.length;
+		if(zigbee.isConnected())
+			max += zigbee.channels.length;
+		
+		pd.setMax(max);
+		
+		pd.show();
+				
 		usbmon.stopUSBMon();
 		_networks_scan.resetScan();
 		
