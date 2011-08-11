@@ -319,55 +319,75 @@ public class Wifi {
 		// Initializes the Atheros hardware strictly.  First writes the firmware, then sets the
 		// interface to be in monitor mode
 		protected void initAtherosCard() {
-			try {
-				// The AR9280 needs to have its firmware written when inserted, which is not automatic
-				// FIXME: need to dynamically find the usb device id
-				
-				// Only initialize if it is not already initialized
-				if(wlan0_exists() && wlan0_up() && wlan0_monitor())
-					return;
-				
-				// Find the location of the "loading" register in the filesystem to alert the hardware
-				// that the firmware is going to be loaded.
-				String load_loc;
-				while(true) {
-					load_loc = compatLoading();
-					if(!load_loc.equals(""))
-						break;
-				}
-				
-				// Write a "1" to notify of impending firmware write
-				while(!compatIsLoading(load_loc))
+			// The AR9280 needs to have its firmware written when inserted, which is not automatic
+			// FIXME: need to dynamically find the usb device id
+			
+			// Only initialize if it is not already initialized
+			if(wlan0_exists() && wlan0_up() && wlan0_monitor())
+				return;
+			
+			// Find the location of the "loading" register in the filesystem to alert the hardware
+			// that the firmware is going to be loaded.
+			String load_loc;
+			while(true) {
+				load_loc = compatLoading();
+				if(!load_loc.equals(""))
+					break;
+			}
+			
+			// Write a "1" to notify of impending firmware write
+			while(!compatIsLoading(load_loc)) {
+				try {
 					RootTools.sendShell("echo 1 > " + load_loc);
-				
-				// Write the firmware to the appropriate location
-				String firmware_loc = load_loc.substring(0, load_loc.length()-7);
-				RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > " + firmware_loc + "data");
-				
-				// Notify that we are done writing the firmware
-				while(compatIsLoading(load_loc))
+				} catch(Exception e) {} 
+			}
+			
+			// Write the firmware to the appropriate location
+			String firmware_loc = load_loc.substring(0, load_loc.length()-7);
+			try{
+			RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > " + firmware_loc + "data");
+			} catch(Exception e) { Log.e(TAG, "that is bad... not going to load firmware, fail", e); } 
+			
+			// Notify that we are done writing the firmware
+			while(compatIsLoading(load_loc)) {
+				try {
 					RootTools.sendShell("echo 0 > " + load_loc);
+				} catch(Exception e) {} 
+			}
+			
+			// Wait for the firmware to settle, and device interface to pop up
+			while(!wlan0_exists())
+				trySleep(100);
 				
-				// Wait for the firmware to settle, and device interface to pop up
-				while(!wlan0_exists())
-					Thread.sleep(100);
-					
-				while(!wlan0_down()) {
+			while(!wlan0_down()) {
+				try {
 					RootTools.sendShell("netcfg wlan0 down");
-					Thread.sleep(100);
-				}
-				
-				while(!wlan0_monitor()) {
+				} catch(Exception e) {} 
+				trySleep(100);
+			}
+			
+			while(!wlan0_monitor()) {
+				try {
 					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
-					Thread.sleep(100);
-				}
-				
-				RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
-				
-				while(!wlan0_up()) {
+				} catch(Exception e) {} 
+				trySleep(100);
+			}
+			
+			try {
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
+			} catch(Exception e) {} 
+			
+			while(!wlan0_up()) {
+				try {
 					RootTools.sendShell("netcfg wlan0 up");
-					Thread.sleep(100);
-				}
+				} catch(Exception e) {} 
+				trySleep(100);
+			}			
+		}
+		
+		public void trySleep(int length) {
+			try {
+				Thread.sleep(length);
 			} catch(Exception e) {
 				Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
 			}
