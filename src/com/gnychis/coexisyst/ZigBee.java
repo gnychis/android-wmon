@@ -278,7 +278,7 @@ public class ZigBee {
 					rpkt._band = frequencies[(int)getSocketData(1)[0]];
 					
 					// Get the LQI
-					rpkt._lqi = (int)getSocketData(1)[0];
+					rpkt._lqi = (int)getSocketData(1)[0] & 0xff;
 
 					// Get the rx time
 					getSocketData(4);
