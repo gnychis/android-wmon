@@ -187,9 +187,6 @@ public class ZigBee {
 	{
 		Context parent;
 		CoexiSyst coexisyst;
-		Socket skt;
-		InputStream skt_in;
-		OutputStream skt_out;
 		private static final String ZIGMON_TAG = "ZigBeeMonitor";
 		private int PCAP_HDR_SIZE = 16;
 		Zigcapd zigcapd_thread;
@@ -263,14 +260,10 @@ public class ZigBee {
 				for(int i=0; i<initialized_sequence.length-1; i++)
 					readSeq[i] = readSeq[i+1];
 				readSeq[initialized_sequence.length-1] = _dev.getByte();
-				Log.d(TAG, "Got byte");
 			}
 			
 			sendMainMessage(ThreadMessages.ZIGBEE_INITIALIZED);
-			
-			return "OK";
-			
-			/*
+
 			// Send a command to set the channel to 1
 			setChannel(0);
 						
@@ -286,12 +279,26 @@ public class ZigBee {
 				if(cmd==RECEIVED_PACKET) {
 				
 					Packet rpkt = new Packet(WTAP_ENCAP_802_15);
-	
-					if((rpkt._rawHeader = getPcapHeader())==null) {
-						zigcapd_thread.cancel(true);
-						return "error reading pcap header";
-					}
-					rpkt._headerLen = rpkt._rawHeader.length;
+					
+					// The channel is read from the hardware
+					rpkt._band = frequencies[(int)getSocketData(1)[0]];
+					
+					// Get the LQI
+					rpkt._lqi = (int)getSocketData(1)[0];
+
+					// Get the rx time
+					getSocketData(4);
+					
+					// Get the data length
+					rpkt._dataLen = (int)_dev.getByte();
+					Log.d(TAG, "Received data, length: " + Integer.toString(rpkt._dataLen));
+					
+					// Create a raw header (the serial device does not send one)
+					rpkt._rawHeader = new byte[PCAP_HDR_SIZE];
+					for(int k=0; k<8; k++)
+						rpkt._rawHeader[k]=0;
+					rpkt._rawHeader[8]=Integer.valueOf(rpkt._dataLen).byteValue(); rpkt._rawHeader[9]=0; rpkt._rawHeader[10]=0; rpkt._rawHeader[11]=0;
+					rpkt._rawHeader[12]=Integer.valueOf(rpkt._dataLen).byteValue(); rpkt._rawHeader[13]=0; rpkt._rawHeader[14]=0; rpkt._rawHeader[15]=0;
 									
 					// Get the raw data now from the wirelen in the pcap header
 					if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
@@ -299,17 +306,7 @@ public class ZigBee {
 						return "error reading data";
 					}
 					rpkt._dataLen = rpkt._rawData.length;
-					
-					// Get the rx time
-					getSocketData(4);
-					
-					// Get the LQI
-					rpkt._lqi = (int)getSocketData(1)[0];
-					
-					// The channel is read from the hardware
-					rpkt._band = frequencies[(int)getSocketData(1)[0]]; ;
-					
-					// Based on the state of our wifi thread, we determine what to do with the packet
+				
 					switch(_state) {
 					
 					case IDLE:
@@ -326,7 +323,7 @@ public class ZigBee {
 						break;
 					}
 				}
-			}*/
+			}
 		}
 		
 		// First, acquire the lock to communicate with the ZigBee device,
@@ -334,8 +331,8 @@ public class ZigBee {
 		public boolean setChannel(int channel) {
 			try {
 				_comm_lock.acquire();
-				skt_out.write(CHANGE_CHAN);		// first send the command
-				skt_out.write(channel);	// then send the channel
+				_dev.writeByte(CHANGE_CHAN);		// first send the command
+				_dev.writeByte((byte)channel);	// then send the channel
 			} catch(Exception e) { 
 				_comm_lock.release();
 				return false;
@@ -350,7 +347,7 @@ public class ZigBee {
 		public boolean transmitBeacon() {
 			try {
 				_comm_lock.acquire();
-				skt_out.write(TRANSMIT_BEACON);
+				_dev.writeByte(TRANSMIT_BEACON);
 			} catch(Exception e) {
 				_comm_lock.release();
 				return false;
@@ -363,7 +360,7 @@ public class ZigBee {
 		public boolean startScan() {
 			try {
 				_comm_lock.acquire();
-				skt_out.write(START_SCAN);
+				_dev.writeByte(START_SCAN);
 			} catch(Exception e) {
 				_comm_lock.release();
 				return false;
@@ -371,50 +368,7 @@ public class ZigBee {
 			_comm_lock.release();
 			return true;
 		}
-		
-		// Connect to the daemon (written in native C code) for which we communicate
-		// with the ZigBee device.  This is done so that the daemon can run as root.
-		public boolean connectToZigcapd() {
-			
-			// Generate a random port for Pcapd
-			Random generator = new Random();
-			int pcapd_port = 2000 + generator.nextInt(500);
-			
-			Log.d(ZIGMON_TAG, "a new Wifi monitor thread was started");
-			
-			// Attempt to create capture process spawned in the background
-			// which we will connect to for pcap information.
-			zigcapd_thread = new Zigcapd(pcapd_port);
-			zigcapd_thread.execute(coexisyst);
-			
-			// Send a message to block the main dialog after the card is done initializing
-			try { Thread.sleep(MS_SLEEP_UNTIL_PCAPD); } catch (Exception e) {} // give some time for the process
-			
-			// Attempt to connect to the socket via TCP for the PCAP info
-			try {
-				skt = new Socket("localhost", pcapd_port);
-			} catch(Exception e) {
-				Log.e(ZIGMON_TAG, "exception trying to connect to wifi socket for pcap on " + Integer.toString(pcapd_port), e);
-				return false;
-			}
-			
-			try {
-				skt_in = skt.getInputStream();
-				skt_out = skt.getOutputStream();
-			} catch(Exception e) {
-				Log.e(ZIGMON_TAG, "exception trying to get inputbuffer from socket stream");
-				return false;
-			}
-			Log.d(ZIGMON_TAG, "successfully connected to pcapd on port " + Integer.toString(pcapd_port));
-			return true;
-		}
-		
-		// Read the pcap header from the socket
-		public byte[] getPcapHeader() {
-			byte[] rawdata = getSocketData(PCAP_HDR_SIZE);
-			return rawdata;
-		}
-		
+
 		// Read the pcap packet from the socket, based on the number of bytes
 		// specified in the header (needed).
 		public byte[] getPcapPacket(byte[] rawHeader) {
@@ -429,29 +383,15 @@ public class ZigBee {
 				Log.e("WifiMon", "exception trying to read pcap header",e);
 			}
 			
+			Log.d(TAG, "The wirelen is: " + Integer.toString(header.wirelen()));
+			
 			rawdata = getSocketData(header.wirelen());
 			return rawdata;
 		}
 		
 		// Returns any length of socket data specified, blocking until complete.
 		public byte[] getSocketData(int length) {
-			byte[] data = new byte[length];
-			int v=0;
-			try {
-				int total=0;
-				while(total < length) {
-					v = skt_in.read(data, total, length-total);
-					//Log.d("WifiMon", "Read in " + Integer.toString(v) + " - " + Integer.toString(total+v) + " / " + Integer.toString(length));
-					if(v==-1)
-						cancel(true);  // cancel the thread if we have errors reading socket
-					total+=v;
-				}
-			} catch(Exception e) { 
-				Log.e("WifiMon", "unable to read from pcapd buffer",e);
-				return null;
-			}
-			
-			return data;
+			return _dev.getBytes(length);
 		}
 	}
 }
