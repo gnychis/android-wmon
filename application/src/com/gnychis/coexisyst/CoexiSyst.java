@@ -2,6 +2,7 @@ package com.gnychis.coexisyst;
 
 // do a random port number for pcapd
 
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -272,7 +273,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		try {
 			wispyscan = wispy.new WispyThread();
 		} catch (Exception e) { Log.e(TAG, "exception trying to start wispy thread", e); }
-		usbmon = new USBMon(this, _handler);
 		ath = new Wifi(this);
 		zigbee = new ZigBee(this);
 		
@@ -286,13 +286,24 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		else
 			Log.d(TAG, "error with wireshark library");
 		
+		usbmon = new USBMon(this, _handler);
+		
 		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
 		//wiresharkTest("/sdcard/test.pcap");
 		//wiresharkTestGetAll("/sdcard/test.pcap");
     }
     
+    public String getAppUser() {
+    	try {
+    		List<String> res = RootTools.sendShell("ls -l /data/data/com.gnychis.coexisyst");
+    		return res.get(0).split(" ")[1];
+    	} catch(Exception e) {
+    		return "FAIL";
+    	}
+    }
+    
 	@Override
-	public void onStop() { super.onStop(); Log.d(TAG, "onStop()");}
+ 	public void onStop() { super.onStop(); Log.d(TAG, "onStop()");}
 	public void onResume() { super.onResume(); Log.d(TAG, "onResume()");
 
 	}
@@ -493,7 +504,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native void wiresharkTest(String filename);
 	public native void wiresharkTestGetAll(String filename);
 	public native String[] wiresharkGetAll(int dissect_ptr);
-	public native void wiresharkGetAllTest(int dissect_ptr);
-	
+	public native void wiresharkGetAllTest(int dissect_ptr);	
 		
 }

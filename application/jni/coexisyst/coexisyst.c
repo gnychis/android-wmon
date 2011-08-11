@@ -97,6 +97,80 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 	return 1;
 }
 
+jchar
+Java_com_gnychis_coexisyst_USBSerial_blockRead1(JNIEnv* env, jobject thiz, int fd) {
+	int n;
+	char c;
+
+	while(1) {
+		if((n = read(fd, &c, 1))==1) {
+			return c;
+		} else if(n==-1) {
+			 jclass newExcCls;
+			 (*env)->ExceptionDescribe(env);
+			 (*env)->ExceptionClear(env);
+			 newExcCls = (*env)->FindClass(env, 
+										 "java/lang/IllegalArgumentException");
+			 if (newExcCls == NULL) {
+					 /* Unable to find the exception class, give up. */
+					 return;
+			 }
+			 (*env)->ThrowNew(env, newExcCls, "error reading from serial device with blockRead1");
+		}
+	}
+}
+
+jbyteArray
+Java_com_gnychis_coexisyst_USBSerial_blockReadBytes(JNIEnv* env, jobject thiz, int fd, int nbytes) {
+	int nread=0;
+	jbyteArray buf;
+	char *pBuf;
+
+	buf = (*env)->NewByteArray(env, nbytes);
+
+	pBuf = (char *) (*env)->GetByteArrayElements(env, buf, NULL);
+
+	while(nread<nbytes) {
+		int n = read(fd, pBuf+nread, nbytes-nread);
+		if(n==-1) {
+			 jclass newExcCls;
+			 (*env)->ExceptionDescribe(env);
+			 (*env)->ExceptionClear(env);
+			 newExcCls = (*env)->FindClass(env, 
+										 "java/lang/IllegalArgumentException");
+			 if (newExcCls == NULL) {
+					 /* Unable to find the exception class, give up. */
+					 return;
+			 }
+			 (*env)->ThrowNew(env, newExcCls, "error reading from serial device with blockReadBytes");
+		}
+		nread += n;
+	}
+	(*env)->ReleaseByteArrayElements(env, buf, pBuf, 0);
+	return buf;
+}
+
+jint
+Java_com_gnychis_coexisyst_USBSerial_openCommPort(JNIEnv* env, jobject thiz, jstring port_name)
+{
+	const char *nativePort = (*env)->GetStringUTFChars(env, port_name, 0);
+	int fd = open (nativePort, O_RDWR | O_NOCTTY | O_SYNC);
+
+	if (fd < 0)
+	{
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ERROR OPENING COMM PORT!\n");
+		return -1;
+	}
+
+	set_interface_attribs (fd, B115200, 0);  // set speed to 115,200 bps, 8n1 (no parity)
+	set_blocking (fd, 0);                // set no blocking
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Success in opening comm port\n");
+	
+	(*env)->ReleaseStringUTFChars(env, port_name, nativePort);
+
+	return fd;
+}
+
 jintArray
 Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 {

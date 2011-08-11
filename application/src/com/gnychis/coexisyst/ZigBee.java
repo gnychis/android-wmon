@@ -195,6 +195,7 @@ public class ZigBee {
 		Zigcapd zigcapd_thread;
 		int _channel;
 		private Semaphore _comm_lock;
+		USBSerial _dev;
 		
 		// Incoming commands
 		byte CHANGE_CHAN=0x0000;
@@ -204,6 +205,9 @@ public class ZigBee {
 		byte TRANSMIT_BEACON=0x0004;
 		byte START_SCAN=0x0005;
 		byte SCAN_DONE=0x0006;
+		
+		// The initialized sequence (hardware sends it when it is initialized)
+		byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
 		
 		// On pre-execute, we make sure that we initialize the card properly and set the state to IDLE
 		@Override 
@@ -230,6 +234,15 @@ public class ZigBee {
 			}
 		}
 		
+		public boolean checkInitSeq(byte buf[]) {
+			
+			for(int i=0; i<initialized_sequence.length; i++)
+				if(initialized_sequence[i]!=buf[i])
+					return false;
+						
+			return true;
+		}
+		
 		// The entire meat of the thread, pulls packets off the interface and dissects them
 		@Override
 		protected String doInBackground( Context ... params )
@@ -237,23 +250,27 @@ public class ZigBee {
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			_comm_lock = new Semaphore(1,true);
-
-			// Connect to the pcap daemon to pull packets from the hardware
-			if(connectToZigcapd() == false) {
-				Log.d(TAG, "failed to connect to the pcapd daemon, doh");
-				sendMainMessage(ThreadMessages.ZIGBEE_FAILED);
-				return "FAIL";
-			}
-			sendMainMessage(ThreadMessages.ZIGBEE_WAIT_RESET);
 			
-			// Wait for the initialized byte
-			if(getSocketData(1)[0]!=INITIALIZED) {
-				sendMainMessage(ThreadMessages.ZIGBEE_FAILED);
+			// Create a serial device
+			_dev = new USBSerial();
+			if(!_dev.openPort("/dev/ttyUSB5"))
 				return "FAIL";
+			
+			// Wait for the initialized sequence...
+			byte[] readSeq = new byte[initialized_sequence.length];
+			sendMainMessage(ThreadMessages.ZIGBEE_WAIT_RESET);
+			while(!checkInitSeq(readSeq)) {
+				for(int i=0; i<initialized_sequence.length-1; i++)
+					readSeq[i] = readSeq[i+1];
+				readSeq[initialized_sequence.length-1] = _dev.getByte();
+				Log.d(TAG, "Got byte");
 			}
 			
 			sendMainMessage(ThreadMessages.ZIGBEE_INITIALIZED);
 			
+			return "OK";
+			
+			/*
 			// Send a command to set the channel to 1
 			setChannel(0);
 						
@@ -309,7 +326,7 @@ public class ZigBee {
 						break;
 					}
 				}
-			}
+			}*/
 		}
 		
 		// First, acquire the lock to communicate with the ZigBee device,
