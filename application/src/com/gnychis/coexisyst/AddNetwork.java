@@ -68,25 +68,27 @@ public class AddNetwork extends ExpandableListActivity {
         curGroupMap.put(DESCRIPTION, "Description: 802.11 networks");
         
         List<Map<String, String>> children = new ArrayList<Map<String, String>>();
-		for(WifiAP result : netlist_80211) {
-            Map<String, String> curChildMap = new HashMap<String, String>();
-            children.add(curChildMap);
-            curChildMap.put(NAME, result._ssid);
-            
-            if(!result._dualband)
-            	curChildMap.put(MAC, "MAC: " + result._mac);
-            else
-            	curChildMap.put(MAC, "MAC: " + result._mac + " / " + result._mac2);
-
-            if(!result._dualband)
-            	curChildMap.put(CHAN, "Channel: " + result._band);
-            else
-            	curChildMap.put(CHAN, "Channel: " + result._band + " / " + result._band2 + " (dual-band)");
-            
-            curChildMap.put(CMAC, result._mac);	// clear string mac
-            
-            curChildMap.put(RSSI, "RSSI: " + result.rssi() + "dBm");
-		}
+        if(netlist_80211!=null) {
+			for(WifiAP result : netlist_80211) {
+	            Map<String, String> curChildMap = new HashMap<String, String>();
+	            children.add(curChildMap);
+	            curChildMap.put(NAME, result._ssid);
+	            
+	            if(!result._dualband)
+	            	curChildMap.put(MAC, "MAC: " + result._mac);
+	            else
+	            	curChildMap.put(MAC, "MAC: " + result._mac + " / " + result._mac2);
+	
+	            if(!result._dualband)
+	            	curChildMap.put(CHAN, "Channel: " + result._band);
+	            else
+	            	curChildMap.put(CHAN, "Channel: " + result._band + " / " + result._band2 + " (dual-band)");
+	            
+	            curChildMap.put(CMAC, result._mac);	// clear string mac
+	            
+	            curChildMap.put(RSSI, "RSSI: " + result.rssi() + "dBm");
+			}
+        }
 		childData.add(children);
 
         //////////////// 802.15.4 Networks
@@ -95,15 +97,17 @@ public class AddNetwork extends ExpandableListActivity {
         curGroupMap.put(NAME, "ZigBee");  
         curGroupMap.put(DESCRIPTION, "Description: 802.15.4 networks");
         children = new ArrayList<Map<String, String>>();
-        for(ZigBeeDev result: netlist_ZigBee) {
-            Map<String, String> curChildMap = new HashMap<String, String>();
-            children.add(curChildMap);
-            curChildMap.put(NAME, result._mac);
-            
-            curChildMap.put(MAC, "Network ID: " + result._pan);
-            curChildMap.put(CHAN, "Frequency:  " + result._band + "KHz   (" + (result._band-2.5) + "->" + (result._band+2.5) + ")");             
-            curChildMap.put(CMAC, result._mac);	// clear string mac
-            curChildMap.put(RSSI, "LQI: " + result.lqi());        	
+        if(netlist_ZigBee!=null) {
+	        for(ZigBeeDev result: netlist_ZigBee) {
+	            Map<String, String> curChildMap = new HashMap<String, String>();
+	            children.add(curChildMap);
+	            curChildMap.put(NAME, result._mac);
+	            
+	            curChildMap.put(MAC, "Network ID: " + result._pan);
+	            curChildMap.put(CHAN, "Frequency:  " + result._band + "KHz   (" + (result._band-2.5) + "->" + (result._band+2.5) + ")");             
+	            curChildMap.put(CMAC, result._mac);	// clear string mac
+	            curChildMap.put(RSSI, "LQI: " + result.lqi());        	
+	        }
         }
         childData.add(children);
         

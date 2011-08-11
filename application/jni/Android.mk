@@ -8,7 +8,6 @@ subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk, \
     standalone \
     libpcap \
 		pcapd\
-		zigcapd\
 		jnetpcap\
 		libnl \
     libtshark \

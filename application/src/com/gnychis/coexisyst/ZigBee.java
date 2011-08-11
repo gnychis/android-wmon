@@ -189,7 +189,6 @@ public class ZigBee {
 		CoexiSyst coexisyst;
 		private static final String ZIGMON_TAG = "ZigBeeMonitor";
 		private int PCAP_HDR_SIZE = 16;
-		Zigcapd zigcapd_thread;
 		int _channel;
 		private Semaphore _comm_lock;
 		USBSerial _dev;
@@ -224,11 +223,6 @@ public class ZigBee {
 		protected void onCancelled()
 		{
 			Log.d(TAG, "ZigBee monitor thread is canceled...");
-			try {
-				RootTools.sendShell("busybox killall zigcapd");
-			} catch(Exception e) {
-				
-			}
 		}
 		
 		public boolean checkInitSeq(byte buf[]) {
@@ -291,10 +285,10 @@ public class ZigBee {
 					
 					// Get the data length
 					rpkt._dataLen = (int)_dev.getByte();
-					Log.d(TAG, "Received data, length: " + Integer.toString(rpkt._dataLen));
 					
 					// Create a raw header (the serial device does not send one)
 					rpkt._rawHeader = new byte[PCAP_HDR_SIZE];
+					rpkt._headerLen = PCAP_HDR_SIZE;
 					for(int k=0; k<8; k++)
 						rpkt._rawHeader[k]=0;
 					rpkt._rawHeader[8]=Integer.valueOf(rpkt._dataLen).byteValue(); rpkt._rawHeader[9]=0; rpkt._rawHeader[10]=0; rpkt._rawHeader[11]=0;
@@ -302,8 +296,7 @@ public class ZigBee {
 									
 					// Get the raw data now from the wirelen in the pcap header
 					if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
-						zigcapd_thread.cancel(true);
-						return "error reading data";
+						return "FAIL";
 					}
 					rpkt._dataLen = rpkt._rawData.length;
 				
@@ -382,9 +375,7 @@ public class ZigBee {
 			} catch(Exception e) {
 				Log.e("WifiMon", "exception trying to read pcap header",e);
 			}
-			
-			Log.d(TAG, "The wirelen is: " + Integer.toString(header.wirelen()));
-			
+						
 			rawdata = getSocketData(header.wirelen());
 			return rawdata;
 		}
