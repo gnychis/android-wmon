@@ -120,6 +120,72 @@ Java_com_gnychis_coexisyst_USBSerial_blockRead1(JNIEnv* env, jobject thiz, int f
 	}
 }
 
+jchar blockRead1(JNIEnv* env, jobject thiz, int fd) {
+	int n;
+	char c;
+
+	while(1) {
+		if((n = read(fd, &c, 1))==1) {
+			return c;
+		} else if(n==-1) {
+			 jclass newExcCls;
+			 (*env)->ExceptionDescribe(env);
+			 (*env)->ExceptionClear(env);
+			 newExcCls = (*env)->FindClass(env, 
+										 "java/lang/IllegalArgumentException");
+			 if (newExcCls == NULL) {
+					 /* Unable to find the exception class, give up. */
+					 return;
+			 }
+			 (*env)->ThrowNew(env, newExcCls, "error reading from serial device with blockRead1");
+		}
+	}
+}
+
+jint
+Java_com_gnychis_coexisyst_USBSerial_readInt32(JNIEnv* env, jobject thiz, int fd) {
+	int i;
+	uint32_t v = 0;
+
+	for(i=0;i<4;i++) {
+		uint32_t t;
+		
+		t= ((uint32_t)blockRead1(env, thiz, fd)) & 0xff;
+		v = v | (t << i*CHAR_BIT);
+	}
+
+	return v;
+}
+
+void
+Java_com_gnychis_coexisyst_USBSerial_writeBytes(JNIEnv* env, jobject thiz, int fd, jbyteArray data, int length)
+{
+	int nwrote=0;
+	int n;
+	char *pBuf;
+	pBuf = (char *) (*env)->GetByteArrayElements(env, data, NULL);
+	while(nwrote<length) {
+		n=write(fd, pBuf+nwrote, length-nwrote);
+
+		if(n==-1) {
+			 jclass newExcCls;
+			 (*env)->ExceptionDescribe(env);
+			 (*env)->ExceptionClear(env);
+			 newExcCls = (*env)->FindClass(env, 
+										 "java/lang/IllegalArgumentException");
+			 if (newExcCls == NULL) {
+					 /* Unable to find the exception class, give up. */
+					 return;
+			 }
+			 (*env)->ThrowNew(env, newExcCls, "error writing to serial device");
+		}
+
+		nwrote+=n;
+	}
+	(*env)->ReleaseByteArrayElements(env, data, pBuf, 0);
+}
+
+
 jbyteArray
 Java_com_gnychis_coexisyst_USBSerial_blockReadBytes(JNIEnv* env, jobject thiz, int fd, int nbytes) {
 	int nread=0;
