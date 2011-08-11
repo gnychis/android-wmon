@@ -38,7 +38,7 @@ public class USBMon
 	public boolean startUSBMon() {
 		if(_scan_timer!=null)
 			return false;
-		
+		_scan_timer=new Timer();
 		_scan_timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -75,11 +75,10 @@ public class USBMon
 	
 	public void usbPoll( )
 	{
-
 		int wispy_in_devlist=_coexisyst.USBcheckForDevice(0x1781, 0x083f);
 		int atheros_in_devlist = checkAR9280() | _coexisyst.USBcheckForDevice(0x0411,0x017f);
 		int econotag_in_devlist = _coexisyst.USBcheckForDevice(0x0403, 0x6010);
-		
+				
 		// Wispy related checks
 		if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==false) {
 			updateState(Wispy.WISPY_CONNECT);
@@ -179,4 +178,5 @@ public class USBMon
 			_coexisyst.zigbee.disconnected();
 		}
 	}
+	
 }
