@@ -20,15 +20,16 @@ public class ZigBeeNetwork implements Parcelable {
     	
     	out.writeInt(_band);
     	out.writeSerializable(_lqis);
-    	out.writeSerializable(_devices);
+    	out.writeTypedList(_devices);
     }
     
     private ZigBeeNetwork(Parcel in) {
+    	_devices = new ArrayList<ZigBeeDev>();
     	_mac = in.readString();
     	_pan = in.readString(); 	
     	_band = in.readInt();
     	_lqis = (ArrayList<Integer>) in.readSerializable();
-    	_devices = (ArrayList<ZigBeeDev>) in.readSerializable();
+    	in.readTypedList(_devices, ZigBeeDev.CREATOR);
     }
 	
 	public int describeContents()
