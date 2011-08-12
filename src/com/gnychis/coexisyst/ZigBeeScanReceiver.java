@@ -23,7 +23,7 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
   private static final String TAG = "ZigBeeScanReceiver";
   public String nets_str[];
   private Handler _handler;
-  public ArrayList<ZigBeeDev> _last_scan;
+  public ArrayList<ZigBeeNetwork> _last_scan;
 
   // If the handler is not null, callbacks will be made
   public ZigBeeScanReceiver(Handler h) {
@@ -37,9 +37,9 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
   
   Comparator<Object> comp = new Comparator<Object>() {
 	public int compare(Object arg0, Object arg1) {
-		if(((ZigBeeDev)arg0).lqi() < ((ZigBeeDev)arg1).lqi())
+		if(((ZigBeeNetwork)arg0).lqi() < ((ZigBeeNetwork)arg1).lqi())
 			return 1;
-		else if( ((ZigBeeDev)arg0).lqi() > ((ZigBeeDev)arg1).lqi())
+		else if( ((ZigBeeNetwork)arg0).lqi() > ((ZigBeeNetwork)arg1).lqi())
 			return -1;
 		else
 			return 0;
@@ -56,9 +56,11 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
 	  
     // For keeping track of the APs that we have already parsed, by MAC
     Hashtable<String,ZigBeeDev> devs_in_list = new Hashtable<String,ZigBeeDev>();
+    Hashtable<String,ZigBeeNetwork> networks_in_list = new Hashtable<String,ZigBeeNetwork>();
     
     // To return, a list of WifiAPs
-    ArrayList<ZigBeeDev> parsed_result = new ArrayList<ZigBeeDev>();
+    ArrayList<ZigBeeDev> parsed_devices = new ArrayList<ZigBeeDev>();
+    ArrayList<ZigBeeNetwork> parsed_networks = new ArrayList<ZigBeeNetwork>();
     
     // Go through each scan result, and get the access point information
     Iterator<Packet> results = scan_result.iterator();
@@ -80,16 +82,38 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
     	// might catch multiple beacons from the AP).
     	if(!devs_in_list.containsKey(dev._mac)) {
     		devs_in_list.put(dev._mac, dev);  // mark that we've seen it
-    		parsed_result.add(dev);
+    		parsed_devices.add(dev);
     	} else {  // we already have it, but we can add multiple RSSI readings
     		ZigBeeDev tdev = devs_in_list.get(dev._mac);
     		tdev._lqis.add(pkt._lqi);
     	}
     }
     
+    // Now, go through all of the devices and create networks
+    Iterator<ZigBeeDev> devs = parsed_devices.iterator();
+    while(devs.hasNext()) {
+    	ZigBeeDev dev = devs.next();
+    	
+    	// First, see if it is a new network
+    	if(!networks_in_list.contains(dev._pan)) {
+    		ZigBeeNetwork net = new ZigBeeNetwork();
+    		net._mac = "0x0000";
+    		net._pan = dev._pan;
+    		net._band = dev._band;
+    		net._lqis.addAll(dev._lqis);
+    		net._devices.add(dev);
+    		networks_in_list.put(net._pan, net);
+    		parsed_networks.add(net);
+    	} else { // it is not a new network
+    		ZigBeeNetwork net = networks_in_list.get(dev._pan);
+    		net._devices.add(dev);
+    		net._lqis.addAll(dev._lqis);	
+    	}
+    }
+    
     // Save this scan as our most current scan
-    Collections.sort(parsed_result, comp);
-    _last_scan = parsed_result;
+    Collections.sort(parsed_networks, comp);
+    _last_scan = parsed_networks;
     
     if(_handler != null) {
 		// Send a message to stop the spinner if it is running

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 // all of the protocols.  That way, we can cache results and determine when
 // each of the protocols has been scanned for.
 public class NetworksScan {
-	public ArrayList<ZigBeeDev> _zigbee_scan_result;
+	public ArrayList<ZigBeeNetwork> _zigbee_scan_result;
 	public ArrayList<WifiAP> _wifi_scan_result;
 	
 	public boolean _zigbee_connected;
