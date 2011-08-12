@@ -13,9 +13,7 @@ public class ZigBeeNetwork implements Parcelable {
 	public int _band;  				// the channel
 	ArrayList<Integer> _lqis;		// link quality indicators (to all devices?)
 	ArrayList<ZigBeeDev> _devices;	// the devices in the network
-	
-	public Packet _beacon;
-	
+		
     public void writeToParcel(Parcel out, int flags) {
     	out.writeString(_mac);
     	out.writeString(_pan);
@@ -23,7 +21,6 @@ public class ZigBeeNetwork implements Parcelable {
     	out.writeInt(_band);
     	out.writeSerializable(_lqis);
     	out.writeSerializable(_devices);
-    	out.writeParcelable(_beacon, 0);
     }
     
     private ZigBeeNetwork(Parcel in) {
@@ -32,8 +29,6 @@ public class ZigBeeNetwork implements Parcelable {
     	_band = in.readInt();
     	_lqis = (ArrayList<Integer>) in.readSerializable();
     	_devices = (ArrayList<ZigBeeDev>) in.readSerializable();
-    	
-    	_beacon = in.readParcelable(Packet.class.getClassLoader());
     }
 	
 	public int describeContents()
@@ -54,6 +49,7 @@ public class ZigBeeNetwork implements Parcelable {
 	public ZigBeeNetwork() {
 		_band=-1;
 		_lqis = new ArrayList<Integer>();
+		_devices = new ArrayList<ZigBeeDev>();
 	}
 	
 	// Report the average RSSI

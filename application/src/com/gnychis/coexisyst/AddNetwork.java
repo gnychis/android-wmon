@@ -32,7 +32,7 @@ public class AddNetwork extends ExpandableListActivity {
     private static final String CHAN = "FREQ";
     
     ArrayList<WifiAP> netlist_80211;
-    ArrayList<ZigBeeDev> netlist_ZigBee;
+    ArrayList<ZigBeeNetwork> netlist_ZigBee;
 
     public List<Map<String, String>> groupData;
     public List<List<Map<String, String>>> childData;
@@ -49,7 +49,7 @@ public class AddNetwork extends ExpandableListActivity {
 	  super.onCreate(savedInstanceState);
 	  Bundle i = getIntent().getExtras();
 	  netlist_80211 = (ArrayList<WifiAP>)i.get("com.gnychis.coexisyst.80211");
-	  netlist_ZigBee = (ArrayList<ZigBeeDev>)i.get("com.gnychis.coexisyst.ZigBee");
+	  netlist_ZigBee = (ArrayList<ZigBeeNetwork>)i.get("com.gnychis.coexisyst.ZigBee");
 	  db = new DBAdapter(this);
 	  db.open();
 	  setup_groups();
@@ -98,14 +98,14 @@ public class AddNetwork extends ExpandableListActivity {
         curGroupMap.put(DESCRIPTION, "Description: 802.15.4 networks");
         children = new ArrayList<Map<String, String>>();
         if(netlist_ZigBee!=null) {
-	        for(ZigBeeDev result: netlist_ZigBee) {
+	        for(ZigBeeNetwork result: netlist_ZigBee) {
 	            Map<String, String> curChildMap = new HashMap<String, String>();
 	            children.add(curChildMap);
-	            curChildMap.put(NAME, result._mac);
+	            curChildMap.put(NAME, "Network ID: " + result._pan);
 	            
-	            curChildMap.put(MAC, "Network ID: " + result._pan);
+	            curChildMap.put(MAC, "Devices: " + result._devices.size());
 	            curChildMap.put(CHAN, "Frequency:  " + result._band + "KHz   (" + (result._band-2.5) + "->" + (result._band+2.5) + ")");             
-	            curChildMap.put(CMAC, result._mac);	// clear string mac
+	            curChildMap.put(CMAC, result._pan);	// clear string mac
 	            curChildMap.put(RSSI, "LQI: " + result.lqi());        	
 	        }
         }
