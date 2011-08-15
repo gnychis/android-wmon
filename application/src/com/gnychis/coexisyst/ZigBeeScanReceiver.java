@@ -95,7 +95,7 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
     	ZigBeeDev dev = devs.next();
     	
     	// First, see if it is a new network
-    	if(!networks_in_list.contains(dev._pan)) {
+    	if(!networks_in_list.containsKey(dev._pan)) {
     		ZigBeeNetwork net = new ZigBeeNetwork();
     		net._mac = "0x0000";
     		net._pan = dev._pan;
@@ -107,7 +107,7 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
     	} else { // it is not a new network
     		ZigBeeNetwork net = networks_in_list.get(dev._pan);
     		net._devices.add(dev);
-    		net._lqis.addAll(dev._lqis);	
+    		net._lqis.addAll(dev._lqis);
     	}
     }
     
