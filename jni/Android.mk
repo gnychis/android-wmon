@@ -14,5 +14,6 @@ subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk, \
     libwireshark \
 		lowpan \
     coexisyst \
+		wireless-tools \
 ))
 include $(subdirs)

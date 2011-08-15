@@ -101,21 +101,32 @@ public class Wifi {
 				scanIncrement();
 			}
 
-		}, 0, 300);
+		}, 0, 210);
 		
 		return true;  // in scanning state, and channel hopping
 	}
 	
+	// Keep incrementing, but let the timer run an additional 5 times to catch packets on the last
+	// several channels before we leave the "SCANNING" state (in which we save packets)
+	public static int _additional_ticks = 75;
 	private void scanIncrement() {
 		_scan_channel++;
-		if(_scan_channel==channels.length) {
+		if(_scan_channel<channels.length) {
+			Log.d(TAG, "Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
+			setChannel(channels[_scan_channel]);
+			Log.d(TAG, "... increment complete!");
+			_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+		}
+		else if(_scan_channel<channels.length+_additional_ticks) {
+			// Do nothing, just keep receiving
+			_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+		}
+		else { // finally, give up!
 			APScanStop();
 			_scan_timer.cancel();
 			return;
 		}
-		Log.d(TAG, "Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
-		setChannel(channels[_scan_channel]);
-		_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+		
 	}
 	
 	public boolean APScanStop() {
@@ -269,7 +280,7 @@ public class Wifi {
 		try {
 			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(channel));
 		} catch(Exception e) {
-			
+			Log.e(TAG, "exception trying to handle setChannel", e);
 		}
 	}
 	
