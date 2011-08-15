@@ -28,7 +28,7 @@ public class Wifi {
 	public static final int ATHEROS_CONNECT = 100;
 	public static final int ATHEROS_DISCONNECT = 101;
 	public static final String WIFI_SCAN_RESULT = "com.gnychis.coexisyst.WIFI_SCAN_RESULT";
-	public static final int MS_SLEEP_UNTIL_PCAPD = 5000;
+	public static final int MS_SLEEP_UNTIL_PCAPD = 1500;
 	
 	CoexiSyst coexisyst;
 	
@@ -346,7 +346,7 @@ public class Wifi {
 			while(!compatIsLoading(load_loc)) {
 				try {
 					RootTools.sendShell("echo 1 > " + load_loc);
-				} catch(Exception e) {} 
+				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
 			}
 			Log.d(TAG, "Wrote notification of impending firmware write");
 			
@@ -361,7 +361,7 @@ public class Wifi {
 			while(compatIsLoading(load_loc)) {
 				try {
 					RootTools.sendShell("echo 0 > " + load_loc);
-				} catch(Exception e) {} 
+				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
 			}
 			Log.d(TAG, "Notify of firmware complete");
 			
@@ -374,7 +374,7 @@ public class Wifi {
 			while(!wlan0_down()) {
 				try {
 					RootTools.sendShell("netcfg wlan0 down");
-				} catch(Exception e) {} 
+				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
 				trySleep(100);
 			}
 			Log.d(TAG, "interface has been taken down");
@@ -382,20 +382,20 @@ public class Wifi {
 			while(!wlan0_monitor()) {
 				try {
 					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
-				} catch(Exception e) {} 
+				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
 				trySleep(100);
 			}
 			Log.d(TAG, "interface set to monitor mode");
 			
 			try {
 			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
-			} catch(Exception e) {} 
+			} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
 			Log.d(TAG, "channel initialized");
 			
 			while(!wlan0_up()) {
 				try {
 					RootTools.sendShell("netcfg wlan0 up");
-				} catch(Exception e) {} 
+				} catch(Exception e) {  Log.e(TAG, "error writing to RootTools", e); } 
 				trySleep(100);
 			}			
 			Log.d(TAG, "interface is now up");

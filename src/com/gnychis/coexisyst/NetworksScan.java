@@ -12,11 +12,14 @@ public class NetworksScan {
 	public boolean _zigbee_connected;
 	public boolean _wifi_connected;
 	
+	public boolean _is_scanning;
+	
 	// Set the results to null to begin with, so that we can easily check
 	// when a scan of all protocols is complete.
 	NetworksScan() {
 		_zigbee_scan_result = null;
 		_wifi_scan_result = null;
+		_is_scanning = false;
 	}
 	
 	// A method to check if we have results for each of the networks
@@ -33,5 +36,6 @@ public class NetworksScan {
 	public void resetScan() {
 		_zigbee_scan_result=null;
 		_wifi_scan_result=null;
+		_is_scanning = false;
 	}
 }

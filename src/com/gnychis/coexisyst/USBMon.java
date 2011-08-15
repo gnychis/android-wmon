@@ -19,8 +19,6 @@ public class USBMon
 	CoexiSyst _coexisyst;
 	String TAG = "USBMon";
 	private Semaphore _state_lock;
-	private int _atheros_skip;
-	private int _zigbee_skip;
 	private Handler _handler;
 	
 	private Timer _scan_timer;
@@ -28,8 +26,6 @@ public class USBMon
 	public USBMon(CoexiSyst c, Handler h) {
 		_state_lock = new Semaphore(1,true);
 		_coexisyst = c;
-		_atheros_skip=0;
-		_zigbee_skip=0;
 		_handler = h;
 		_scan_timer=null;
 		startUSBMon();
@@ -91,29 +87,19 @@ public class USBMon
 		}
 		
 		// Atheros related checks, after a device is connected, skip a check while it initializes
-		if(_atheros_skip!=0) {
-			_atheros_skip--;
-			Log.d(TAG, "Skipping atheros...");
-		} else {
-			if(atheros_in_devlist==1 && _coexisyst.ath._device_connected==false) {
-				updateState(Wifi.ATHEROS_CONNECT);
-				_atheros_skip=5;
-			} else if(atheros_in_devlist==0 && _coexisyst.ath._device_connected==true) {
-				updateState(Wifi.ATHEROS_DISCONNECT);
-			}
+
+		if(atheros_in_devlist==1 && _coexisyst.ath._device_connected==false) {
+			updateState(Wifi.ATHEROS_CONNECT);
+		} else if(atheros_in_devlist==0 && _coexisyst.ath._device_connected==true) {
+			updateState(Wifi.ATHEROS_DISCONNECT);
 		}
 		
 		
-		if(_zigbee_skip!=0) {
-			_zigbee_skip--;
-			Log.d(TAG, "Skipping zigbee...");
-		} else {
-			if(econotag_in_devlist==1 && _coexisyst.zigbee._device_connected==false) {
-				updateState(ZigBee.ZIGBEE_CONNECT);
-				_zigbee_skip=5;
-			} else if(econotag_in_devlist==0 && _coexisyst.zigbee._device_connected==true) {
-				updateState(ZigBee.ZIGBEE_DISCONNECT);
-			}
+
+		if(econotag_in_devlist==1 && _coexisyst.zigbee._device_connected==false) {
+			updateState(ZigBee.ZIGBEE_CONNECT);
+		} else if(econotag_in_devlist==0 && _coexisyst.zigbee._device_connected==true) {
+			updateState(ZigBee.ZIGBEE_DISCONNECT);
 		}
 	}
 	
