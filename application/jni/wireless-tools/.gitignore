@@ -1,0 +1,4 @@
+# Keep a really really small set of filters in this file.
+.DS_Store
+.*.swp
+

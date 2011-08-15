@@ -423,7 +423,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		pd.setProgress(0);
 		
 		if(ath.isConnected())
-			max += ath.channels.length;
+			max += ath.channels.length + ath._additional_ticks;
 		if(zigbee.isConnected())
 			max += zigbee.channels.length;
 		
@@ -499,10 +499,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			clickManageDevs();
 		}
 		if(view.getId() == R.id.buttonScan) {
-			scanSpectrum();
+			//scanSpectrum();
 		}
 		if(view.getId() == R.id.buttonViewSpectrum) {
-			clickViewSpectrum();
+			//clickViewSpectrum();
 		}
 		if(view.getId() == R.id.buttonAdb) {
 			String[] adb_cmds = { 	"setprop service.adb.tcp.port 5555",
