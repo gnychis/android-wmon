@@ -101,7 +101,7 @@ public class Wifi {
 				scanIncrement();
 			}
 
-		}, 0, 200);
+		}, 0, 300);
 		
 		return true;  // in scanning state, and channel hopping
 	}
@@ -324,8 +324,12 @@ public class Wifi {
 			// FIXME: need to dynamically find the usb device id
 			
 			// Only initialize if it is not already initialized
-			if(wlan0_exists() && wlan0_up() && wlan0_monitor())
+			if(wlan0_exists() && wlan0_up() && wlan0_monitor()) {
+				Log.d(TAG, "Atheros device is already connected and initialized...");
 				return;
+			}
+			
+			
 			
 			// Find the location of the "loading" register in the filesystem to alert the hardware
 			// that the firmware is going to be loaded.
@@ -334,7 +338,9 @@ public class Wifi {
 				load_loc = compatLoading();
 				if(!load_loc.equals(""))
 					break;
+				trySleep(100);
 			}
+			Log.d(TAG, "Found loading location at: " + load_loc);
 			
 			// Write a "1" to notify of impending firmware write
 			while(!compatIsLoading(load_loc)) {
@@ -342,12 +348,14 @@ public class Wifi {
 					RootTools.sendShell("echo 1 > " + load_loc);
 				} catch(Exception e) {} 
 			}
+			Log.d(TAG, "Wrote notification of impending firmware write");
 			
 			// Write the firmware to the appropriate location
 			String firmware_loc = load_loc.substring(0, load_loc.length()-7);
 			try{
 			RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > " + firmware_loc + "data");
 			} catch(Exception e) { Log.e(TAG, "that is bad... not going to load firmware, fail", e); } 
+			Log.d(TAG, "Wrote the firmware to the device");
 			
 			// Notify that we are done writing the firmware
 			while(compatIsLoading(load_loc)) {
@@ -355,10 +363,13 @@ public class Wifi {
 					RootTools.sendShell("echo 0 > " + load_loc);
 				} catch(Exception e) {} 
 			}
+			Log.d(TAG, "Notify of firmware complete");
 			
 			// Wait for the firmware to settle, and device interface to pop up
-			while(!wlan0_exists())
+			while(!wlan0_exists()) {
 				trySleep(100);
+			}
+			Log.d(TAG, "wlan0 now exists");
 				
 			while(!wlan0_down()) {
 				try {
@@ -366,6 +377,7 @@ public class Wifi {
 				} catch(Exception e) {} 
 				trySleep(100);
 			}
+			Log.d(TAG, "interface has been taken down");
 			
 			while(!wlan0_monitor()) {
 				try {
@@ -373,10 +385,12 @@ public class Wifi {
 				} catch(Exception e) {} 
 				trySleep(100);
 			}
+			Log.d(TAG, "interface set to monitor mode");
 			
 			try {
 			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
 			} catch(Exception e) {} 
+			Log.d(TAG, "channel initialized");
 			
 			while(!wlan0_up()) {
 				try {
@@ -384,6 +398,7 @@ public class Wifi {
 				} catch(Exception e) {} 
 				trySleep(100);
 			}			
+			Log.d(TAG, "interface is now up");
 		}
 		
 		public void trySleep(int length) {
@@ -448,8 +463,10 @@ public class Wifi {
 					// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
 					// to our scan result.  This does not guarantee one beacon frame per network, but
 					// pruning can be done at the next level.
-					if(rpkt.getField("wlan_mgt.fixed.beacon")!=null)
+					if(rpkt.getField("wlan_mgt.fixed.beacon")!=null) {
+						Log.d(TAG, "Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
 						_scan_results.add(rpkt);
+					}
 					
 					break;
 				}

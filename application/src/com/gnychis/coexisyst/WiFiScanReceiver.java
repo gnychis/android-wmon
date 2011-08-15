@@ -66,10 +66,14 @@ public class WiFiScanReceiver extends BroadcastReceiver {
 		  // current access point.  Since we scan 2.4GHz before 5GHz, we are guaranteed
 		  // to have 2.4GHz before 5GHz in the list of bands.
 		  if(difference.equals(new BigInteger("-1")) || difference.equals(new BigInteger("1"))) {
-			  curr_ap._mac2 = ap._mac;
-			  curr_ap._band2 = ap._band;
-			  curr_ap._dualband = true;
-			  return true;
+			  
+			  // Also, they have to be on separate bands (2.4GHz vs 5GHz)
+			  if(curr_ap._band<5000 && ap._band > 5000) {
+				  curr_ap._mac2 = ap._mac;
+				  curr_ap._band2 = ap._band;
+				  curr_ap._dualband = true;
+				  return true;
+			  }
 		  }
 	  }
 	  return false;
@@ -106,7 +110,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     	// that the AP is on.
     	String channel_s = pkt.getField("wlan_mgt.ds.current_channel");
     	if(channel_s!=null)
-    		ap._band = Integer.parseInt(channel_s);  
+    		ap._band = Wifi.channelToFreq(Integer.parseInt(channel_s));  
     	else 
     		ap._band = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
     	

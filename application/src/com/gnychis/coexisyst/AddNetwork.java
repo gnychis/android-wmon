@@ -80,9 +80,9 @@ public class AddNetwork extends ExpandableListActivity {
 	            	curChildMap.put(MAC, "MAC: " + result._mac + " / " + result._mac2);
 	
 	            if(!result._dualband)
-	            	curChildMap.put(CHAN, "Channel: " + result._band);
+	            	curChildMap.put(CHAN, "Frequency: " + result._band);
 	            else
-	            	curChildMap.put(CHAN, "Channel: " + result._band + " / " + result._band2 + " (dual-band)");
+	            	curChildMap.put(CHAN, "Frequency: " + result._band + " / " + result._band2 + " (dual-band)");
 	            
 	            curChildMap.put(CMAC, result._mac);	// clear string mac
 	            
