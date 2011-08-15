@@ -84,6 +84,9 @@ public class Packet implements Parcelable {
 
 		_dissection_ptr = dissectPacket(_rawHeader, _rawData, _encap);
 		
+		if(_dissection_ptr == -1)
+			return false;
+		
 		return true;
 	}
 	
@@ -116,7 +119,9 @@ public class Packet implements Parcelable {
 	
 	public Hashtable<String,ArrayList<String>> getAllFields()
 	{
-		dissect();  // will only dissect if needed
+		if(!dissect())  // will only dissect if needed
+			return null;
+		
 		String last_tag = "";
 		
 		// First dissect the entire packet, getting all fields

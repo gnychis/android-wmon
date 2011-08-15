@@ -150,10 +150,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public void zigbeeSettling() {
 		pd = ProgressDialog.show(this, "", "Initializing ZigBee device...", true, false);  
+		usbmon.stopUSBMon();
 	}
 	
 	public void zigbeeInitialized() {
 		pd.dismiss();
+		usbmon.startUSBMon();
 	}
 	
 	public void zigbeeWaiting() {
@@ -162,11 +164,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	}
 	
 	public void atherosSettling() {
-		pd = ProgressDialog.show(this, "", "Initializing Atheros card...", true, false);  
+		pd = ProgressDialog.show(this, "", "Initializing Atheros card...", true, false); 
+		usbmon.stopUSBMon();
 	}
 	
 	public void atherosInitialized() {
 		pd.dismiss();
+		usbmon.startUSBMon();
 	}
 	
 	public void showProgressUpdate(String s) {
@@ -387,6 +391,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void networkScansComplete() {
 		pd.dismiss();
 		usbmon.startUSBMon();
+		_networks_scan._is_scanning=false;
 		
 		try {
 			Log.d(TAG,"Trying to load add networks window");
@@ -406,8 +411,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public void clickAddNetwork() {
 		int max=0;
+		
+		// Do not start another scan, if we already are
+		if(_networks_scan._is_scanning)
+			return;
+			
 		pd = new ProgressDialog(this);
-		pd.setCancelable(true);
+		pd.setCancelable(false);
 		pd.setMessage("Scanning for networks...");
 		pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		pd.setProgress(0);
