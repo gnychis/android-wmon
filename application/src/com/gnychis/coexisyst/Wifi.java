@@ -1,16 +1,15 @@
 package com.gnychis.coexisyst;
 
-import java.io.InputStream;
 import java.math.BigInteger;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
+import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapHeader;
+import org.jnetpcap.PcapIf;
 import org.jnetpcap.nio.JBuffer;
 
 import android.content.Context;
@@ -315,11 +314,8 @@ public class Wifi {
 	{
 		Context parent;
 		CoexiSyst coexisyst;
-		Socket skt;
-		InputStream skt_in;
 		private static final String WIMON_TAG = "WiFiMonitor";
 		private int PCAP_HDR_SIZE = 16;
-		Pcapd pcap_thread;
 		
 		// On pre-execute, we make sure that we initialize the card properly and set the state to IDLE
 		@Override 
@@ -436,30 +432,67 @@ public class Wifi {
 			
 			// Initialize the Atheros hardware
 			initAtherosCard();
+			
+			// Try to use jnetpcap straight up to open the interface
+			List<PcapIf> alldevs = new ArrayList<PcapIf>();
+			StringBuilder errbuf = new StringBuilder(); // For any error msgs  
+			int r = Pcap.findAllDevs(alldevs, errbuf);  
+			if (r == Pcap.NOT_OK || alldevs.isEmpty()) {  
+	            Log.d(TAG, "Can't read list of devices, error is " + errbuf.toString());  
+	            sendMainMessage(ThreadMessages.ATHEROS_FAILED);
+	            return "FAIL";  
+	        } 
+			
+			Log.d(TAG, "Network devices found:");  
+			int i = 0;  
+	        for (PcapIf device : alldevs) {  
+	            String description =  
+	                (device.getDescription() != null) ? device.getDescription()  
+	                    : "No description available";  
+	            Log.d(TAG, Integer.toString(i) + ": " + device.getName() + "[" + description + "]");  
+	            if(device.getName().equals("wlan0"))
+	            	break;
+	            else
+	            	i++;
+	        }  			
+	        
+	        // Get the wlan0 device
+	        PcapIf device = alldevs.get(i);
+	        int snaplen = 64 * 1024;
+	        int flags = Pcap.MODE_PROMISCUOUS;
+	        int timeout = 10 * 1000;
+	        Pcap pcap =  
+	                Pcap.openLive(device.getName(), snaplen, flags, timeout, errbuf);
+	        
+	        if (pcap == null) {  
+	            Log.d(TAG, "Error while opening device for capture: "  
+	                + errbuf.toString());  
+	            sendMainMessage(ThreadMessages.ATHEROS_FAILED);
+	            return "FAIL";  
+	        }  
 
-			// Connect to the pcap daemon to pull packets from the hardware
-			if(connectToPcapd() == false) {
-				Log.d(TAG, "failed to connect to the pcapd daemon, doh");
-				sendMainMessage(ThreadMessages.ATHEROS_FAILED);
-				return "FAIL";
-			}
 			sendMainMessage(ThreadMessages.ATHEROS_INITIALIZED);
 						
 			// Loop and read headers and packets
 			while(true) {
 				Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-
-				if((rpkt._rawHeader = getPcapHeader())==null) {
-					pcap_thread.cancel(true);
-					return "error reading pcap header";
-				}
+			    PcapHeader ph = new PcapHeader();
+		        JBuffer jb = new JBuffer(PCAP_HDR_SIZE);
+		        JBuffer data;
+		        
+		        // Pull in a packet
+		        if((data = pcap.next(ph, jb))==null) // returns null if fails
+		        		continue;
+		        
+		        // Get the raw bytes of the header
+		        byte[] hdr = new byte[PCAP_HDR_SIZE];
+		        ph.transferTo(hdr, 0);
+		        rpkt._rawHeader = hdr;
 				rpkt._headerLen = rpkt._rawHeader.length;
 								
 				// Get the raw data now from the wirelen in the pcap header
-				if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
-					pcap_thread.cancel(true);
-					return "error reading data";
-				}
+				rpkt._rawData = new byte[ph.wirelen()];
+				data.getByteArray(0, rpkt._rawData);
 				rpkt._dataLen = rpkt._rawData.length;
 				
 				// Based on the state of our wifi thread, we determine what to do with the packet
@@ -482,81 +515,6 @@ public class Wifi {
 					break;
 				}
 			}
-		}
-		
-		public boolean connectToPcapd() {
-			
-			// Generate a random port for Pcapd
-			Random generator = new Random();
-			int pcapd_port = 2000 + generator.nextInt(500);
-			
-			Log.d(WIMON_TAG, "a new Wifi monitor thread was started");
-			
-			// Attempt to create capture process spawned in the background
-			// which we will connect to for pcap information.
-			pcap_thread = new Pcapd(pcapd_port);
-			pcap_thread.execute(coexisyst);
-			
-			// Send a message to block the main dialog after the card is done initializing
-			try { Thread.sleep(MS_SLEEP_UNTIL_PCAPD); } catch (Exception e) {} // give some time for the process
-			
-			// Attempt to connect to the socket via TCP for the PCAP info
-			try {
-				skt = new Socket("localhost", pcapd_port);
-			} catch(Exception e) {
-				Log.e(WIMON_TAG, "exception trying to connect to wifi socket for pcap on " + Integer.toString(pcapd_port), e);
-				return false;
-			}
-			
-			try {
-				skt_in = skt.getInputStream();
-			} catch(Exception e) {
-				Log.e(WIMON_TAG, "exception trying to get inputbuffer from socket stream");
-				return false;
-			}
-			Log.d(WIMON_TAG, "successfully connected to pcapd on port " + Integer.toString(pcapd_port));
-			return true;
-		}
-		
-		public byte[] getPcapHeader() {
-			byte[] rawdata = getSocketData(PCAP_HDR_SIZE);
-			return rawdata;
-		}
-		
-		public byte[] getPcapPacket(byte[] rawHeader) {
-			byte[] rawdata;
-			PcapHeader header = null;
-
-			try {
-				header = new PcapHeader();
-				JBuffer headerBuffer = new JBuffer(rawHeader);  
-				header.peer(headerBuffer, 0);				
-			} catch(Exception e) {
-				Log.e("WifiMon", "exception trying to read pcap header",e);
-			}
-			
-			rawdata = getSocketData(header.wirelen());
-			return rawdata;
-		}
-		
-		public byte[] getSocketData(int length) {
-			byte[] data = new byte[length];
-			int v=0;
-			try {
-				int total=0;
-				while(total < length) {
-					v = skt_in.read(data, total, length-total);
-					//Log.d("WifiMon", "Read in " + Integer.toString(v) + " - " + Integer.toString(total+v) + " / " + Integer.toString(length));
-					if(v==-1)
-						cancel(true);  // cancel the thread if we have errors reading socket
-					total+=v;
-				}
-			} catch(Exception e) { 
-				Log.e("WifiMon", "unable to read from pcapd buffer",e);
-				return null;
-			}
-			
-			return data;
 		}
 	}	
 }
