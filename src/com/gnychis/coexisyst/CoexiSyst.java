@@ -203,7 +203,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.installBinary(this, R.raw.disabled_protos, "disabled_protos");
 	    	RootTools.installBinary(this, R.raw.iwconfig, "iwconfig", "755");
 	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
-	    	RootTools.installBinary(this, R.raw.pcapd, "pcapd", "755");
 	    	RootTools.installBinary(this, R.raw.htc_7010, "htc_7010.fw");
 	    	RootTools.installBinary(this, R.raw.iwlist, "iwlist", "755");
 	    	
