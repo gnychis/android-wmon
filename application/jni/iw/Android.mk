@@ -34,9 +34,9 @@ LOCAL_SRC_FILES:= \
 
 
 
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/../android \
-	$(LOCAL_PATH)/../include \
-	$(LOCAL_PATH)/../../libnl/include 
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../lowpan/include \
+	$(LOCAL_PATH)/../libnl/include
+	
 
 LOCAL_CFLAGS +=  -g
 LOCAL_CFLAGS += -fPIC -DPIC
@@ -47,8 +47,6 @@ ifeq ($(TARGET_BUILD_TYPE),release)
 	LOCAL_CFLAGS += -g
 endif
 
-LOCAL_MODULE:= liblowpan_common
+LOCAL_MODULE:= iw
 
-LOCAL_PRELINK_MODULE := false 
-include $(BUILD_STATIC_LIBRARY)
-
+include $(BUILD_EXECUTABLE)
