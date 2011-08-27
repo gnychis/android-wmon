@@ -48,6 +48,8 @@ public class Wifi {
 	private int _scan_channel;
 	private Timer _scan_timer;
 	
+	String _iw_phy;
+	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
 	static int[] channels = {1,2,3,4,5,6,7,8,9,10,11,36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
 	static int[] frequencies = {2412, 2417, 2422, 2427, 2432, 2437, 2442, 2447, 2452, 2457, 2462,5180, 5200, 5220, 5240, 5260, 5280, 5300, 5320, 
@@ -393,16 +395,22 @@ public class Wifi {
 			}
 			Log.d(TAG, "interface has been taken down");
 			
+			// Get the phy interface name
+			try {
+				List<String> r = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
+				_iw_phy = r.get(0);
+			} catch(Exception e) {Log.e(TAG, "error writing to RootTools", e); }
+			
 			while(!wlan0_monitor()) {
 				try {
-					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw phy phy1 interface add moni0 type monitor");
+					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " interface add moni0 type monitor");
 				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
 				trySleep(100);
 			}
 			Log.d(TAG, "interface set to monitor mode");
 			
 			try {
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw phy phy1 set channel 6");
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " set channel 6");
 			} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
 			Log.d(TAG, "channel initialized");
 			
