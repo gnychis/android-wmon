@@ -40,6 +40,7 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../lowpan/include \
 
 LOCAL_CFLAGS +=  -g
 LOCAL_CFLAGS += -fPIC -DPIC
+LOCAL_LDLIBS := -Wl,--no-gc-sections  
 
 LOCAL_STATIC_LIBRARIES := libnls libnl
 
