@@ -240,8 +240,8 @@ public class Wifi {
 	}
 	public boolean wlan0_monitor() {
 		try {
-			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 | busybox grep Monitor");
-			if(res.size()!=0)
+			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig moni0");
+			if(res.size()>1)
 				return true;
 		} catch (Exception e) { return false; }	
 
@@ -250,6 +250,15 @@ public class Wifi {
 	public boolean wlan0_up() {
 		try {
 			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep UP");
+			if(res.size()!=0)
+				return true;
+		} catch (Exception e) { return false; }	
+
+		return false;		
+	}
+	public boolean moni0_up() {
+		try {
+			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^moni0\" | busybox grep UP");
 			if(res.size()!=0)
 				return true;
 		} catch (Exception e) { return false; }	
@@ -336,8 +345,6 @@ public class Wifi {
 				return;
 			}
 			
-			
-			
 			// Find the location of the "loading" register in the filesystem to alert the hardware
 			// that the firmware is going to be loaded.
 			String load_loc;
@@ -388,20 +395,26 @@ public class Wifi {
 			
 			while(!wlan0_monitor()) {
 				try {
-					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 mode monitor");
+					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw phy phy1 interface add moni0 type monitor");
 				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
 				trySleep(100);
 			}
 			Log.d(TAG, "interface set to monitor mode");
 			
 			try {
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel 6");
+			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw phy phy1 set channel 6");
 			} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
 			Log.d(TAG, "channel initialized");
 			
 			while(!wlan0_up()) {
 				try {
 					RootTools.sendShell("netcfg wlan0 up");
+				} catch(Exception e) {  Log.e(TAG, "error writing to RootTools", e); } 
+				trySleep(100);
+			}
+			while(!moni0_up()) {
+				try {
+					RootTools.sendShell("netcfg moni0 up");
 				} catch(Exception e) {  Log.e(TAG, "error writing to RootTools", e); } 
 				trySleep(100);
 			}			
