@@ -1,0 +1,3 @@
+iw dev wlan0 scan
+iw phy phy1 set channel 6
+iw phy phy1 interface add moni0 type monitor
