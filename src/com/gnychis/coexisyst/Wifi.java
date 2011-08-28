@@ -49,6 +49,7 @@ public class Wifi {
 	private Timer _scan_timer;
 	
 	String _iw_phy;
+	String _rxpackets_loc;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
 	static int[] channels = {1,2,3,4,5,6,7,8,9,10,11,36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
@@ -198,20 +199,18 @@ public class Wifi {
 		_scan_results = new ArrayList<Packet>();
 		coexisyst = c;
 		_state = WifiState.IDLE;
-		try {
-			// All modules related to ath9k_htc that need to be inserted
-			RootTools.sendShell("insmod /system/lib/modules/compat.ko");
-			RootTools.sendShell("insmod /system/lib/modules/compat_firmware_class.ko");
-			RootTools.sendShell("insmod /system/lib/modules/cfg80211.ko");
-			RootTools.sendShell("insmod /system/lib/modules/mac80211.ko");
-			RootTools.sendShell("insmod /system/lib/modules/ath.ko");
-			RootTools.sendShell("insmod /system/lib/modules/ath9k_hw.ko");
-			RootTools.sendShell("insmod /system/lib/modules/ath9k_common.ko");
-			RootTools.sendShell("insmod /system/lib/modules/ath9k_htc.ko");
-			Log.d("AtherosDev", "Inserted kernel modules");
-		} catch (Exception e) {
-			Log.e("AtherosDev", "Error running shell commands for atheros dev", e);
-		}
+		
+		// All modules related to ath9k_htc that need to be inserted
+		runCommand("insmod /system/lib/modules/compat.ko");
+		runCommand("insmod /system/lib/modules/compat_firmware_class.ko");
+		runCommand("insmod /system/lib/modules/cfg80211.ko");
+		runCommand("insmod /system/lib/modules/mac80211.ko");
+		runCommand("insmod /system/lib/modules/ath.ko");
+		runCommand("insmod /system/lib/modules/ath9k_hw.ko");
+		runCommand("insmod /system/lib/modules/ath9k_common.ko");
+		runCommand("insmod /system/lib/modules/ath9k_htc.ko");
+		Log.d("AtherosDev", "Inserted kernel modules");
+
 	}
 	
 	public void connected() {
@@ -319,6 +318,15 @@ public class Wifi {
 		BigInteger ret = new BigInteger(newMac, 16);  // 16 specifies hex
 		return ret;
 	}
+	
+	public List<String> runCommand(String c) {
+		try {
+			return RootTools.sendShell(c);
+		} catch(Exception e) {
+			Log.e(TAG, "error writing to RootTools the command: " + c, e);
+			return null;
+		}
+	}
 
 	
 	protected class WifiMon extends AsyncTask<Context, Integer, String>
@@ -360,24 +368,18 @@ public class Wifi {
 			
 			// Write a "1" to notify of impending firmware write
 			while(!compatIsLoading(load_loc)) {
-				try {
-					RootTools.sendShell("echo 1 > " + load_loc);
-				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
+				runCommand("echo 1 > " + load_loc);
 			}
 			Log.d(TAG, "Wrote notification of impending firmware write");
 			
 			// Write the firmware to the appropriate location
 			String firmware_loc = load_loc.substring(0, load_loc.length()-7);
-			try{
-			RootTools.sendShell("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > " + firmware_loc + "data");
-			} catch(Exception e) { Log.e(TAG, "that is bad... not going to load firmware, fail", e); } 
+			runCommand("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > " + firmware_loc + "data");
 			Log.d(TAG, "Wrote the firmware to the device");
 			
 			// Notify that we are done writing the firmware
 			while(compatIsLoading(load_loc)) {
-				try {
-					RootTools.sendShell("echo 0 > " + load_loc);
-				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
+				runCommand("echo 0 > " + load_loc);
 			}
 			Log.d(TAG, "Notify of firmware complete");
 			
@@ -388,45 +390,38 @@ public class Wifi {
 			Log.d(TAG, "wlan0 now exists");
 				
 			while(!wlan0_down()) {
-				try {
-					RootTools.sendShell("netcfg wlan0 down");
-				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
+				runCommand("netcfg wlan0 down");
 				trySleep(100);
 			}
 			Log.d(TAG, "interface has been taken down");
 			
 			// Get the phy interface name
-			try {
-				List<String> r = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
-				_iw_phy = r.get(0);
-			} catch(Exception e) {Log.e(TAG, "error writing to RootTools", e); }
+			List<String> r = runCommand("/data/data/com.gnychis.coexisyst/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
+			_iw_phy = r.get(0);
 			
 			while(!wlan0_monitor()) {
-				try {
-					RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " interface add moni0 type monitor");
-				} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
+				runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " interface add moni0 type monitor");
 				trySleep(100);
 			}
 			Log.d(TAG, "interface set to monitor mode");
 			
-			try {
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " set channel 6");
-			} catch(Exception e) { Log.e(TAG, "error writing to RootTools", e); } 
+			runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " set channel 6");
 			Log.d(TAG, "channel initialized");
 			
 			while(!wlan0_up()) {
-				try {
-					RootTools.sendShell("netcfg wlan0 up");
-				} catch(Exception e) {  Log.e(TAG, "error writing to RootTools", e); } 
+				runCommand("netcfg wlan0 up");
 				trySleep(100);
 			}
+			
 			while(!moni0_up()) {
-				try {
-					RootTools.sendShell("netcfg moni0 up");
-				} catch(Exception e) {  Log.e(TAG, "error writing to RootTools", e); } 
+				runCommand("netcfg moni0 up");
 				trySleep(100);
 			}			
 			Log.d(TAG, "interface is now up");
+			
+			// Get the location of the rx packets file
+			List<String> l = runCommand("busybox find /sys -name rx_packets | busybox grep moni0");
+			_rxpackets_loc = l.get(0);
 		}
 		
 		public void trySleep(int length) {
