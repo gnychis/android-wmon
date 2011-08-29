@@ -48,6 +48,8 @@ public class Wifi {
 	boolean _device_connected;
 	WifiMon _monitor_thread;
 	
+	private static boolean _native_scan=true;
+	
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	
@@ -59,9 +61,12 @@ public class Wifi {
 	}
 	
 	ArrayList<Packet> _scan_results;
+	private int _scan_channel;
 	private Timer _scan_timer;
 	public static int SCAN_WAIT_COUNTS=20;
-	private int _timer_counts; 
+	private int _timer_counts;
+	private int _pkts_before_scan;
+	private int _pkts_after_scan;
 	
 	String _iw_phy;
 	String _rxpackets_loc;
@@ -103,59 +108,92 @@ public class Wifi {
 	// Set the state to scan and start to switch channels
 	public boolean APScan() {
 		
+		// Start monitoring the interface
+		_monitor_thread.openDev();
+		
 		// Only allow to enter scanning state IF idle
 		if(!WifiStateChange(WifiState.SCANNING))
 			return false;
 		
 		_scan_results.clear();
 		
-		_scan_timer = new Timer();
-		_scan_timer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				scanIncrement();
-			}
+		// Native scanning relies on doing the actual scanning (channel hopping)
+		// within CoexiSyst.  Non-native relies on the nl80211 driver to do the
+		// channel hopping for us.  It's not clear which is better, so I opted for
+		// tighter control as the default.
+		_pkts_before_scan = getRxPacketCount();
+		if(_native_scan) {
+			_scan_channel=0;
+			setChannel(channels[_scan_channel]);
+			_scan_timer = new Timer();
+			_scan_timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					scanIncrement();
+				}
 
-		}, 0, 250);
-		
-		// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
-		_timer_counts = SCAN_WAIT_COUNTS;
-		
-		// Send a message to the Wifi thread to start the scan
-		Message msg = new Message();
-		msg.obj = ThreadMessages.WIFI_SCAN_START;
-		_monitor_thread._handler.sendMessage(msg);
+			}, 0, 210);			
+		} else {
+			// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
+			_scan_timer = new Timer();
+			_scan_timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					scanIncrement();
+				}
+	
+			}, 0, 250);
+			_timer_counts = SCAN_WAIT_COUNTS;
+			runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan passive");
+		}
 		
 		return true;  // in scanning state, and channel hopping
 	}
 	
 	// Notify to increment progress to the main thread
 	private void scanIncrement() {
-		// Do nothing, just keep receiving
-		_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
-		_timer_counts--;
-		Log.d(TAG, "Wifi scan timer tick");
-		if(_timer_counts==0)
-			_scan_timer.cancel();
+		
+		if(_native_scan) {
+			_scan_channel++;
+			if(_scan_channel<channels.length) {
+				Log.d(TAG, "Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
+				setChannel(channels[_scan_channel]);
+				Log.d(TAG, "... increment complete!");
+				_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+			} else {
+				Log.d(TAG, "Stopping scan, packets in scan: " + Integer.toString(_pkts_after_scan-_pkts_before_scan));
+				APScanStop();
+				_pkts_after_scan = getRxPacketCount();
+				_scan_timer.cancel();
+			}
+		} else {	
+			_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+			_timer_counts--;
+			Log.d(TAG, "Wifi scan timer tick");
+			if(_timer_counts==0) {
+				APScanStop();
+				_pkts_after_scan = getRxPacketCount();
+				_scan_timer.cancel();
+			}
+		}
 	}
 	
 	public boolean APScanStop() {
+		
 		// Need to return the state back to IDLE from scanning
 		if(!WifiStateChange(WifiState.IDLE)) {
 			Log.d(TAG, "Failed to change from scanning to IDLE");
 			return false;
 		}
 		
+		_monitor_thread.closeDev();
+		
 		// Now, send out a broadcast with the results
 		Intent i = new Intent();
 		i.setAction(WIFI_SCAN_RESULT);
 		i.putExtra("packets", _scan_results);
 		coexisyst.sendBroadcast(i);
-				
-		// Send a message to stop the spinner if it is running
-		//Message msg 99999999999999999999999= new Message();
-		//msg.obj = ThreadMessages.WIFI_SCAN_COMPLETE;
-		//coexisyst.handler.sendMessage(msg);
+		
 		
 		return true;
 	}
@@ -293,6 +331,12 @@ public class Wifi {
 		return false;
 	}
 	
+	// cat the atheros hard statistics count for the number of received packets
+	public int getRxPacketCount() {
+		return Integer.parseInt(runCommand("cat " + _rxpackets_loc).get(0));
+	}
+	
+	
 	public void setChannel(int channel) {
 		runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
 	}
@@ -339,23 +383,9 @@ public class Wifi {
 		CoexiSyst coexisyst;
 		private static final String WIMON_TAG = "WiFiMonitor";
 		private int PCAP_HDR_SIZE = 16;
-		private int _scan_pkts_left;
-		
-		public Handler _handler = new Handler() {
-			@Override
-			public void handleMessage(Message msg) {
-				
-				// We invoke a scan, and then read in all of the packets
-				// captured from the scan.
-				if(msg.obj == ThreadMessages.WIFI_SCAN_START) {
-					Log.d(TAG, "Got message to start Wifi scan");
-					int start_rxpkts = getRxPacketCount();
-					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan");
-					_scan_pkts_left = getRxPacketCount() - start_rxpkts;
-					Log.d(TAG, "Finished Wifi scan");
-				}
-			}
-		};
+		private int _received_pkts;
+		private PcapIf _moni0_dev;
+		private Pcap _moni0_pcap;
 		
 		// On pre-execute, we make sure that we initialize the card properly and set the state to IDLE
 		@Override 
@@ -426,9 +456,6 @@ public class Wifi {
 			}
 			Log.d(TAG, "interface set to monitor mode");
 			
-			runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " set channel 6");
-			Log.d(TAG, "channel initialized");
-			
 			while(!wlan0_up()) {
 				runCommand("netcfg wlan0 up");
 				trySleep(100);
@@ -445,11 +472,6 @@ public class Wifi {
 			_rxpackets_loc = l.get(0);
 		}
 		
-		// cat the atheros hard statistics count for the number of received packets
-		public int getRxPacketCount() {
-			return Integer.parseInt(runCommand("cat " + _rxpackets_loc).get(0));
-		}
-		
 		public void trySleep(int length) {
 			try {
 				Thread.sleep(length);
@@ -463,6 +485,29 @@ public class Wifi {
 			Message msg = new Message();
 			msg.obj = t;
 			coexisyst._handler.sendMessage(msg);
+		}
+		
+		public boolean openDev() {
+			StringBuilder errbuf = new StringBuilder(); // For any error msgs  
+	        int snaplen = 64 * 1024;
+	        int flags = Pcap.MODE_PROMISCUOUS;
+	        int timeout = 10 * 1000;
+	        _moni0_pcap =  
+	                Pcap.openLive(_moni0_dev.getName(), snaplen, flags, timeout, errbuf);
+	        
+	        if (_moni0_pcap == null) {  
+	            Log.d(TAG, "Error while opening device for capture: "  
+	                + errbuf.toString());  
+	            sendMainMessage(ThreadMessages.ATHEROS_FAILED);
+	            return false;  
+	        }  
+	        
+	        return true;
+		}
+		
+		public boolean closeDev() {
+			_moni0_pcap.close();
+			return true;
 		}
 		
 		// The entire meat of the thread, pulls packets off the interface and dissects them
@@ -492,71 +537,59 @@ public class Wifi {
 	                (device.getDescription() != null) ? device.getDescription()  
 	                    : "No description available";  
 	            Log.d(TAG, Integer.toString(i) + ": " + device.getName() + "[" + description + "]");  
-	            if(device.getName().equals("wlan0"))
+	            if(device.getName().equals("moni0"))
 	            	break;
 	            else
 	            	i++;
 	        }  			
 	        
 	        // Get the wlan0 device
-	        PcapIf device = alldevs.get(i);
-	        int snaplen = 64 * 1024;
-	        int flags = Pcap.MODE_PROMISCUOUS;
-	        int timeout = 10 * 1000;
-	        Pcap pcap =  
-	                Pcap.openLive(device.getName(), snaplen, flags, timeout, errbuf);
-	        
-	        if (pcap == null) {  
-	            Log.d(TAG, "Error while opening device for capture: "  
-	                + errbuf.toString());  
-	            sendMainMessage(ThreadMessages.ATHEROS_FAILED);
-	            return "FAIL";  
-	        }  
+	        _moni0_dev = alldevs.get(i);
 
 			sendMainMessage(ThreadMessages.ATHEROS_INITIALIZED);
 						
 			// Loop and read headers and packets
 			while(true) {
-				Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-			    PcapHeader ph = new PcapHeader();
-		        JBuffer jb = new JBuffer(PCAP_HDR_SIZE);
-		        JBuffer data;
-		        
-		        // Pull in a packet
-		        if((data = pcap.next(ph, jb))==null) // returns null if fails
-		        		continue;
-		        
-		        // Get the raw bytes of the header
-		        byte[] hdr = new byte[PCAP_HDR_SIZE];
-		        ph.transferTo(hdr, 0);
-		        rpkt._rawHeader = hdr;
-				rpkt._headerLen = rpkt._rawHeader.length;
-								
-				// Get the raw data now from the wirelen in the pcap header
-				rpkt._rawData = new byte[ph.wirelen()];
-				data.getByteArray(0, rpkt._rawData);
-				rpkt._dataLen = rpkt._rawData.length;
 				
 				// Based on the state of our wifi thread, we determine what to do with the packet
 				switch(_state) {
 				
 				case IDLE:
+					trySleep(100);
 					break;
 				
 				// In the scanning state, we save all beacon frames as we hop channels (handled by a
 				// separate thread).
 				case SCANNING:
+					
+					Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+				    PcapHeader ph = new PcapHeader();
+			        JBuffer jb = new JBuffer(PCAP_HDR_SIZE);
+			        JBuffer data;
+			        
+			        // Pull in a packet
+			        if((data = _moni0_pcap.next(ph, jb))==null) // returns null if fails
+			        		continue;
+			        _received_pkts++;
+			        
+			        // Get the raw bytes of the header
+			        byte[] hdr = new byte[PCAP_HDR_SIZE];
+			        ph.transferTo(hdr, 0);
+			        rpkt._rawHeader = hdr;
+					rpkt._headerLen = rpkt._rawHeader.length;
+									
+					// Get the raw data now from the wirelen in the pcap header
+					rpkt._rawData = new byte[ph.wirelen()];
+					data.getByteArray(0, rpkt._rawData);
+					rpkt._dataLen = rpkt._rawData.length;
+					
 					// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
 					// to our scan result.  This does not guarantee one beacon frame per network, but
 					// pruning can be done at the next level.
 					if(rpkt.getField("wlan_mgt.fixed.beacon")!=null) {
-						Log.d(TAG, "Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
+						Log.d(TAG, "[" + Integer.toString(_received_pkts) + "] Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
 						_scan_results.add(rpkt);
 					}
-					
-					_scan_pkts_left--;
-					if(_scan_pkts_left==0)
-						APScanStop();
 					
 					break;
 				}
