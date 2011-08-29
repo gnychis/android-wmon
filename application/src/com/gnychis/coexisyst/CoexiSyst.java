@@ -70,6 +70,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public BlockingQueue<String> toastMessages;
 	
 	public enum ThreadMessages {
+		WIFI_SCAN_START,
 		WIFI_SCAN_COMPLETE,
 		WISPY_SCAN_COMPLETE,
 		ATHEROS_CONNECTED,
@@ -424,7 +425,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		pd.setProgress(0);
 		
 		if(ath.isConnected())
-			max += ath.channels.length + ath._additional_ticks;
+			max += Wifi.SCAN_WAIT_COUNTS;
 		if(zigbee.isConnected())
 			max += zigbee.channels.length;
 		
