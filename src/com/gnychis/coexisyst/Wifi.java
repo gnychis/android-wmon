@@ -15,12 +15,26 @@ import org.jnetpcap.nio.JBuffer;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.stericson.RootTools.RootTools;
 
+/* 
+ * record received packets
+set state to SCANNING
+initialize number of packets to -1
+initiate a non-blocking scan
+in the thread, count up the number of received packets while in SCANNING
+after 5 seconds record the received packets again
+keep receiving packets in thread, counting up
+if(num_pkts==-1) then just keep going
+once num_pkts != -1, and read>num_pkts, then leave scanning thread
+
+bingo.
+ */
 public class Wifi {
 	private static final String TAG = "AtherosDev";
 
@@ -45,8 +59,9 @@ public class Wifi {
 	}
 	
 	ArrayList<Packet> _scan_results;
-	private int _scan_channel;
 	private Timer _scan_timer;
+	public static int SCAN_WAIT_COUNTS=20;
+	private int _timer_counts; 
 	
 	String _iw_phy;
 	String _rxpackets_loc;
@@ -55,7 +70,7 @@ public class Wifi {
 	static int[] channels = {1,2,3,4,5,6,7,8,9,10,11,36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
 	static int[] frequencies = {2412, 2417, 2422, 2427, 2432, 2437, 2442, 2447, 2452, 2457, 2462,5180, 5200, 5220, 5240, 5260, 5280, 5300, 5320, 
 		5500, 5520, 5540, 5560, 5580, 5680, 5700, 5745, 5765, 5785, 5805, 5825};
-
+	
 	// Take an 802.11 channel number, get a frequency in KHz
 	static int channelToFreq(int chan) {
 		int index=-1;
@@ -94,8 +109,6 @@ public class Wifi {
 		
 		_scan_results.clear();
 		
-		_scan_channel=0;
-		setChannel(channels[_scan_channel]);
 		_scan_timer = new Timer();
 		_scan_timer.schedule(new TimerTask() {
 			@Override
@@ -103,32 +116,27 @@ public class Wifi {
 				scanIncrement();
 			}
 
-		}, 0, 210);
+		}, 0, 250);
+		
+		// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
+		_timer_counts = SCAN_WAIT_COUNTS;
+		
+		// Send a message to the Wifi thread to start the scan
+		Message msg = new Message();
+		msg.obj = ThreadMessages.WIFI_SCAN_START;
+		_monitor_thread._handler.sendMessage(msg);
 		
 		return true;  // in scanning state, and channel hopping
 	}
 	
-	// Keep incrementing, but let the timer run an additional 5 times to catch packets on the last
-	// several channels before we leave the "SCANNING" state (in which we save packets)
-	public static int _additional_ticks = 75;
+	// Notify to increment progress to the main thread
 	private void scanIncrement() {
-		_scan_channel++;
-		if(_scan_channel<channels.length) {
-			Log.d(TAG, "Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
-			setChannel(channels[_scan_channel]);
-			Log.d(TAG, "... increment complete!");
-			_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
-		}
-		else if(_scan_channel<channels.length+_additional_ticks) {
-			// Do nothing, just keep receiving
-			_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
-		}
-		else { // finally, give up!
-			APScanStop();
+		// Do nothing, just keep receiving
+		_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+		_timer_counts--;
+		Log.d(TAG, "Wifi scan timer tick");
+		if(_timer_counts==0)
 			_scan_timer.cancel();
-			return;
-		}
-		
 	}
 	
 	public boolean APScanStop() {
@@ -286,11 +294,7 @@ public class Wifi {
 	}
 	
 	public void setChannel(int channel) {
-		try {
-			RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0 channel " + Integer.toString(channel));
-		} catch(Exception e) {
-			Log.e(TAG, "exception trying to handle setChannel", e);
-		}
+		runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
 	}
 	
 	public void disconnected() {
@@ -335,6 +339,23 @@ public class Wifi {
 		CoexiSyst coexisyst;
 		private static final String WIMON_TAG = "WiFiMonitor";
 		private int PCAP_HDR_SIZE = 16;
+		private int _scan_pkts_left;
+		
+		public Handler _handler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				
+				// We invoke a scan, and then read in all of the packets
+				// captured from the scan.
+				if(msg.obj == ThreadMessages.WIFI_SCAN_START) {
+					Log.d(TAG, "Got message to start Wifi scan");
+					int start_rxpkts = getRxPacketCount();
+					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan");
+					_scan_pkts_left = getRxPacketCount() - start_rxpkts;
+					Log.d(TAG, "Finished Wifi scan");
+				}
+			}
+		};
 		
 		// On pre-execute, we make sure that we initialize the card properly and set the state to IDLE
 		@Override 
@@ -422,6 +443,11 @@ public class Wifi {
 			// Get the location of the rx packets file
 			List<String> l = runCommand("busybox find /sys -name rx_packets | busybox grep moni0");
 			_rxpackets_loc = l.get(0);
+		}
+		
+		// cat the atheros hard statistics count for the number of received packets
+		public int getRxPacketCount() {
+			return Integer.parseInt(runCommand("cat " + _rxpackets_loc).get(0));
 		}
 		
 		public void trySleep(int length) {
@@ -527,6 +553,10 @@ public class Wifi {
 						Log.d(TAG, "Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
 						_scan_results.add(rpkt);
 					}
+					
+					_scan_pkts_left--;
+					if(_scan_pkts_left==0)
+						APScanStop();
 					
 					break;
 				}
