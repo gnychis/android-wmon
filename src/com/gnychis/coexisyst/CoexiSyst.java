@@ -424,8 +424,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		pd.setProgress(0);
 		
-		if(ath.isConnected())
-			max += ath.channels.length;
+		if(ath.isConnected()) {
+			if(ath._native_scan)
+				max += ath.channels.length;
+			else
+				max += Wifi.SCAN_WAIT_COUNTS;
+		}
 		if(zigbee.isConnected())
 			max += zigbee.channels.length;
 		

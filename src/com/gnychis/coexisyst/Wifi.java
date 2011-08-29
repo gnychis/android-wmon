@@ -48,7 +48,7 @@ public class Wifi {
 	boolean _device_connected;
 	WifiScan _scan_thread;
 	
-	private static boolean _native_scan=true;
+	public static boolean _native_scan=false;
 	
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
@@ -65,8 +65,6 @@ public class Wifi {
 	private Timer _scan_timer;
 	public static int SCAN_WAIT_COUNTS=20;
 	private int _timer_counts;
-	private int _pkts_before_scan;
-	private int _pkts_after_scan;
 	
 	String _iw_phy;
 	String _rxpackets_loc;
@@ -118,63 +116,10 @@ public class Wifi {
 		// within CoexiSyst.  Non-native relies on the nl80211 driver to do the
 		// channel hopping for us.  It's not clear which is better, so I opted for
 		// tighter control as the default.
-		_pkts_before_scan = getRxPacketCount();
 		_scan_thread = new WifiScan();
 		_scan_thread.execute(coexisyst);
-		if(_native_scan) {
-			_scan_channel=0;
-			setChannel(channels[_scan_channel]);
-			_scan_timer = new Timer();
-			_scan_timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					scanIncrement();
-				}
-
-			}, 0, 210);			
-		} else {
-			// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
-			_scan_timer = new Timer();
-			_scan_timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					scanIncrement();
-				}
-	
-			}, 0, 250);
-			_timer_counts = SCAN_WAIT_COUNTS;
-			runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan passive");
-		}
 		
 		return true;  // in scanning state, and channel hopping
-	}
-	
-	// Notify to increment progress to the main thread
-	private void scanIncrement() {
-		
-		if(_native_scan) {
-			_scan_channel++;
-			if(_scan_channel<channels.length) {
-				Log.d(TAG, "Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
-				setChannel(channels[_scan_channel]);
-				Log.d(TAG, "... increment complete!");
-				_scan_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
-			} else {
-				Log.d(TAG, "Stopping scan, packets in scan: " + Integer.toString(_pkts_after_scan-_pkts_before_scan));
-				APScanStop();
-				_pkts_after_scan = getRxPacketCount();
-				_scan_timer.cancel();
-			}
-		} else {	
-			_scan_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
-			_timer_counts--;
-			Log.d(TAG, "Wifi scan timer tick");
-			if(_timer_counts==0) {
-				APScanStop();
-				_pkts_after_scan = getRxPacketCount();
-				_scan_timer.cancel();
-			}
-		}
 	}
 	
 	public boolean APScanStop() {
@@ -562,6 +507,57 @@ public class Wifi {
 			return true;
 		}
 		
+		public void setupChannelTimer() {
+			if(_native_scan) {
+				_scan_channel=0;
+				setChannel(channels[_scan_channel]);
+				_scan_timer = new Timer();
+				_scan_timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						scanIncrement();
+					}
+
+				}, 0, 210);			
+			} else {
+				// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
+				_scan_timer = new Timer();
+				_scan_timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						scanIncrement();
+					}
+		
+				}, 0, 250);
+				_timer_counts = SCAN_WAIT_COUNTS;
+				runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan passive");
+			}
+		}
+		
+		// Notify to increment progress to the main thread
+		private void scanIncrement() {
+			if(_native_scan) {
+				_scan_channel++;
+				if(_scan_channel<channels.length) {
+					Log.d(TAG, "Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
+					setChannel(channels[_scan_channel]);
+					Log.d(TAG, "... increment complete!");
+					sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+				} else {
+					APScanStop();
+					_scan_timer.cancel();
+				}
+			} else {	
+				sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+				_timer_counts--;
+				Log.d(TAG, "Wifi scan timer tick");
+				if(_timer_counts==0) {
+					APScanStop();
+					_scan_timer.cancel();
+				}
+			}
+		}	
+		
 		// The entire meat of the thread, pulls packets off the interface and dissects them
 		@Override
 		protected String doInBackground( Context ... params )
@@ -570,6 +566,7 @@ public class Wifi {
 			coexisyst = (CoexiSyst) params[0];
 
 			openDev();
+			setupChannelTimer();
 						
 			// Loop and read headers and packets
 			while(true) {
