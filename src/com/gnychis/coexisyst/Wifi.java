@@ -65,7 +65,7 @@ public class Wifi {
 	// which are useful for updating the main thread on progress.  Also, active scans
 	// are currently only implemented in non-native scanning methods.
 	WifiScan _scan_thread;
-	private static int SCAN_WAIT_TIME=6500;  // in milliseconds
+	private static int SCAN_WAIT_TIME=5500;  // in milliseconds
 	private static int SCAN_UPDATE_TIME=250; // update every 250ms to the main thread
 	public static int SCAN_WAIT_COUNTS=SCAN_WAIT_TIME/SCAN_UPDATE_TIME;
 	public static boolean _native_scan=false;
@@ -133,7 +133,7 @@ public class Wifi {
 	
 	public boolean APScanStop() {
 		
-		_scan_thread.cancel(true);
+		_scan_thread._stop=true;  // notify the thread to stop
 		
 		// Need to return the state back to IDLE from scanning
 		if(!WifiStateChange(WifiState.IDLE)) {
@@ -441,6 +441,8 @@ public class Wifi {
 		}		
 	}
 	
+	// WARNING: Do not cancel(true) this task!  It is unsafe for it to be interrupted in
+	// the middle of a dissection.  This will cause the application to segfault.
 	protected class WifiScan extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
@@ -452,6 +454,7 @@ public class Wifi {
 		private Pcap _moni0_pcap;
 		private int _timer_counts;		// to know how many timer ticks are left before scan over
 		private int _scan_channel;		// to keep track of the channel when scanning natively
+		public boolean _stop;
 		
 		public void trySleep(int length) {
 			try {
@@ -598,6 +601,7 @@ public class Wifi {
 		{
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
+			_stop=false;
 
 			openDev();
 			setupChannelTimer();
@@ -605,7 +609,7 @@ public class Wifi {
 			Log.d(TAG, "Waiting for packets in scan thread...");
 						
 			// Loop and read headers and packets
-			while(true) {
+			while(!_stop) {
 					
 				Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 			    PcapHeader ph = new PcapHeader();
@@ -635,15 +639,9 @@ public class Wifi {
 					Log.d(TAG, "[" + Integer.toString(_received_pkts) + "] Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
 					_scan_results.add(rpkt);
 				}
-
 			}
-		}
-		
-		@Override
-		protected void onCancelled()
-		{
 			closeDev();
-			Log.d(TAG, "Wifi scan thread is canceled...");
+			return "DONE";
 		}
 	}	
 }
