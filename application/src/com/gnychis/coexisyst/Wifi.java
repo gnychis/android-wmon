@@ -46,10 +46,7 @@ public class Wifi {
 	CoexiSyst coexisyst;
 	
 	boolean _device_connected;
-	WifiScan _scan_thread;
-	
-	public static boolean _native_scan=false;
-	public static boolean _one_shot_scan=true;
+
 	
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
@@ -61,11 +58,22 @@ public class Wifi {
 		SCANNING,
 	}
 	
+	// All scan related variables.  There are 3 kinds of scans that I've come up.
+	// There is native, which is when CoexiSyst modifies the channels and passively scans.
+	// Then, when triggering scans on the card and listening for the probe responses,
+	// it can be "one shot" which is a single timer triggers when done, or periodic updates
+	// which are useful for updating the main thread on progress.  Also, active scans
+	// are currently only implemented in non-native scanning methods.
+	WifiScan _scan_thread;
+	private static int SCAN_WAIT_TIME=6500;  // in milliseconds
+	private static int SCAN_UPDATE_TIME=250; // update every 250ms to the main thread
+	public static int SCAN_WAIT_COUNTS=SCAN_WAIT_TIME/SCAN_UPDATE_TIME;
+	public static boolean _native_scan=false;
+	public static boolean _one_shot_scan=false;
+	public static boolean _active_scan=true;
+	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	ArrayList<Packet> _scan_results;
-	private int _scan_channel;
-	private Timer _scan_timer;
-	public static int SCAN_WAIT_COUNTS=50;
-	private int _timer_counts;
+
 	
 	String _iw_phy;
 	String _rxpackets_loc;
@@ -442,6 +450,8 @@ public class Wifi {
 		private int _received_pkts;
 		private PcapIf _moni0_dev;
 		private Pcap _moni0_pcap;
+		private int _timer_counts;		// to know how many timer ticks are left before scan over
+		private int _scan_channel;		// to keep track of the channel when scanning natively
 		
 		public void trySleep(int length) {
 			try {
@@ -508,6 +518,8 @@ public class Wifi {
 			return true;
 		}
 		
+		// The way that the timer works is setup according to the type of scan
+		// specified (read the comment near the top of the Wifi class).
 		public void setupChannelTimer() {
 			if(_native_scan) {
 				_scan_channel=0;
@@ -523,17 +535,20 @@ public class Wifi {
 			} else if(!_one_shot_scan) {
 				// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
 				_scan_timer = new Timer();
-				_scan_timer.schedule(new TimerTask() {
+				_scan_timer.scheduleAtFixedRate(new TimerTask() {
 					@Override
 					public void run() {
 						scanIncrement();
 					}
 		
-				}, 0, 250);
+				}, 500, SCAN_UPDATE_TIME);
 				_timer_counts = SCAN_WAIT_COUNTS;
-				runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan passive");
+				if(_active_scan)
+					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan trigger");
+				else
+					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan trigger passive");
+					
 			} else {
-				// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
 				_scan_timer = new Timer();
 				_scan_timer.schedule(new TimerTask() {
 					@Override
@@ -541,8 +556,11 @@ public class Wifi {
 						scanIncrement();
 					}
 		
-				}, 5000);
-				runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan passive");				
+				}, Wifi.SCAN_WAIT_TIME);  // 6.5 seconds seems enough to let all of the packets trickle in from the scan
+				if(_active_scan)
+					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan trigger");
+				else
+					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan trigger passive");
 			}
 		}
 		
