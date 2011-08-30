@@ -49,6 +49,7 @@ public class Wifi {
 	WifiScan _scan_thread;
 	
 	public static boolean _native_scan=false;
+	public static boolean _one_shot_scan=true;
 	
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
@@ -63,7 +64,7 @@ public class Wifi {
 	ArrayList<Packet> _scan_results;
 	private int _scan_channel;
 	private Timer _scan_timer;
-	public static int SCAN_WAIT_COUNTS=20;
+	public static int SCAN_WAIT_COUNTS=50;
 	private int _timer_counts;
 	
 	String _iw_phy;
@@ -519,7 +520,7 @@ public class Wifi {
 					}
 
 				}, 0, 210);			
-			} else {
+			} else if(!_one_shot_scan) {
 				// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
 				_scan_timer = new Timer();
 				_scan_timer.schedule(new TimerTask() {
@@ -531,6 +532,17 @@ public class Wifi {
 				}, 0, 250);
 				_timer_counts = SCAN_WAIT_COUNTS;
 				runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan passive");
+			} else {
+				// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
+				_scan_timer = new Timer();
+				_scan_timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						scanIncrement();
+					}
+		
+				}, 5000);
+				runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan passive");				
 			}
 		}
 		
@@ -547,7 +559,7 @@ public class Wifi {
 					APScanStop();
 					_scan_timer.cancel();
 				}
-			} else {	
+			} else if(!_one_shot_scan) {	
 				sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
 				_timer_counts--;
 				Log.d(TAG, "Wifi scan timer tick");
@@ -555,6 +567,10 @@ public class Wifi {
 					APScanStop();
 					_scan_timer.cancel();
 				}
+			} else {
+				Log.d(TAG, "One shot expire");
+				APScanStop();
+				_scan_timer.cancel();
 			}
 		}	
 		
@@ -567,6 +583,8 @@ public class Wifi {
 
 			openDev();
 			setupChannelTimer();
+			
+			Log.d(TAG, "Waiting for packets in scan thread...");
 						
 			// Loop and read headers and packets
 			while(true) {
