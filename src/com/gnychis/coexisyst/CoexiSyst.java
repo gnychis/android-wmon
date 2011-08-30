@@ -427,8 +427,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		if(ath.isConnected()) {
 			if(ath._native_scan)
 				max += ath.channels.length;
-			else
+			else if(!ath._one_shot_scan) 
 				max += Wifi.SCAN_WAIT_COUNTS;
+			else
+				max += 1;
 		}
 		if(zigbee.isConnected())
 			max += zigbee.channels.length;
