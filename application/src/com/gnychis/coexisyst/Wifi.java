@@ -1,5 +1,7 @@
 package com.gnychis.coexisyst;
 
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +39,9 @@ bingo.
  */
 public class Wifi {
 	private static final String TAG = "AtherosDev";
+	
+	public static final boolean PCAP_DUMP = true;
+	DataOutputStream _pcap_dump; 
 
 	public static final int ATHEROS_CONNECT = 100;
 	public static final int ATHEROS_DISCONNECT = 101;
@@ -208,6 +213,22 @@ public class Wifi {
 		runCommand("insmod /system/lib/modules/ath9k_common.ko");
 		runCommand("insmod /system/lib/modules/ath9k_htc.ko");
 		Log.d("AtherosDev", "Inserted kernel modules");
+		
+		// If we are dumping all of our packets for debugging...
+		if(PCAP_DUMP) {
+			try {
+				_pcap_dump = new DataOutputStream(new FileOutputStream("/sdcard/coexisyst_wifi.pcap"));
+				byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
+				byte pcap_header[] = {(byte)0xd4, (byte)0xc3, (byte)0xb2, (byte)0xa1, 		// magic number
+						(byte)0x02, (byte)0x00, (byte)0x04,(byte) 0x00, 	// version numbers
+						(byte)0x00, (byte)0x00, (byte)0x00,(byte) 0x00, 	// thiszone
+						(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 	// sigfigs
+						(byte)0xff, (byte)0xff, (byte)0x00, (byte)0x00, 	// snaplen
+						(byte)0x7f, (byte)0x00, (byte)0x00, (byte)0x00};  	// wifi
+				
+				_pcap_dump.write(pcap_header);
+			} catch(Exception e) { Log.e(TAG, "Error trying to write output stream", e); }
+		}
 
 	}
 	
@@ -631,6 +652,15 @@ public class Wifi {
 				rpkt._rawData = new byte[ph.wirelen()];
 				data.getByteArray(0, rpkt._rawData);
 				rpkt._dataLen = rpkt._rawData.length;
+				
+				// Dump it if we have the debug enabled
+				if(PCAP_DUMP) {
+					try {
+						_pcap_dump.write(rpkt._rawHeader);
+						_pcap_dump.write(rpkt._rawData);
+						_pcap_dump.flush();
+					} catch(Exception e) { Log.e(TAG, "Error writing pcap packet", e); }
+				}
 				
 				// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
 				// to our scan result.  This does not guarantee one beacon frame per network, but

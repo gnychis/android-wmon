@@ -20,6 +20,7 @@ public class USBMon
 	String TAG = "USBMon";
 	private Semaphore _state_lock;
 	private Handler _handler;
+	private static int USB_POLL_TIME=7000;  // in milliseconds, poll time
 	
 	private Timer _scan_timer;
 	
@@ -41,7 +42,7 @@ public class USBMon
 				usbPoll();
 			}
 
-		}, 0, 2000);
+		}, 0, USB_POLL_TIME);
 		return true;
 	}
 	
@@ -72,8 +73,11 @@ public class USBMon
 	public void usbPoll( )
 	{
 		int wispy_in_devlist=_coexisyst.USBcheckForDevice(0x1781, 0x083f);
-		int atheros_in_devlist = checkAR9280() | _coexisyst.USBcheckForDevice(0x0411,0x017f);
+		int atheros_in_devlist = _coexisyst.USBcheckForDevice(0x0411,0x017f);
 		int econotag_in_devlist = _coexisyst.USBcheckForDevice(0x0403, 0x6010);
+		
+		if(atheros_in_devlist==0)
+			atheros_in_devlist = checkAR9280();  // this is a more expensive check, only do when necessary
 				
 		// Wispy related checks
 		if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==false) {
