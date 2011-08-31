@@ -70,11 +70,11 @@ public class Wifi {
 	// which are useful for updating the main thread on progress.  Also, active scans
 	// are currently only implemented in non-native scanning methods.
 	WifiScan _scan_thread;
-	private static int SCAN_WAIT_TIME=5500;  // in milliseconds
+	private static int SCAN_WAIT_TIME= 15000; //5500;  // in milliseconds
 	private static int SCAN_UPDATE_TIME=250; // update every 250ms to the main thread
 	public static int SCAN_WAIT_COUNTS=SCAN_WAIT_TIME/SCAN_UPDATE_TIME;
 	public static boolean _native_scan=false;
-	public static boolean _one_shot_scan=false;
+	public static boolean _one_shot_scan=true;
 	public static boolean _active_scan=true;
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	ArrayList<Packet> _scan_results;
@@ -665,10 +665,12 @@ public class Wifi {
 				// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
 				// to our scan result.  This does not guarantee one beacon frame per network, but
 				// pruning can be done at the next level.
-				if(rpkt.getField("wlan_mgt.fixed.beacon")!=null) {
+				rpkt.dissect();
+				/*if(rpkt.getField("wlan_mgt.fixed.beacon")!=null) {
 					Log.d(TAG, "[" + Integer.toString(_received_pkts) + "] Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
 					_scan_results.add(rpkt);
-				}
+				}*/
+				rpkt.cleanDissection();
 			}
 			closeDev();
 			return "DONE";
