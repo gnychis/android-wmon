@@ -250,7 +250,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, js
 #ifdef VERBOSE
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Finished dissecting (%d)\n", parsed);
 #endif
-		rval = wiresharkGet(dissect_ptr, "radiotap.channel.freq");
+		rval = wiresharkGet(dissect_ptr, "wlan_mgt.ssid");
 #ifdef VERBOSE
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got result: %s\n", rval);
 #endif
