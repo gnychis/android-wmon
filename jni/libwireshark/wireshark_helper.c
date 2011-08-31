@@ -282,29 +282,19 @@ Java_com_gnychis_coexisyst_Packet_dissectCleanup(JNIEnv* env, jobject thiz, jint
 	dissectCleanup(ptr);
 }
 
-//#define VERBOSE_CLEAN
 void
 dissectCleanup(int ptr)
 {
 	write_field_data_t *dissection = (write_field_data_t *) ptr;
-#ifdef VERBOSE_CLEAN
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "casted the pointer: %d - %d", ptr, (int) dissection->edt);
-#endif
+
   if(dissection->edt!=NULL)
 	  epan_dissect_cleanup(dissection->edt);
-#ifdef VERBOSE_CLEAN
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "cleaned up dissection: %d", ptr);
-#endif
+
   if(dissection->edt!=NULL)
     free(dissection->edt);
-#ifdef VERBOSE_CLEAN
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed edt: %d", ptr);
-#endif
+
   if(dissection!=NULL && dissection != -1)
     free(dissection);
-#ifdef VERBOSE_CLEAN
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "freed dissection: %d", ptr);
-#endif
 }
 
 int
@@ -321,38 +311,22 @@ dissectPacket(char *pHeader, char *pData, int encap)
 	gint64 offset = 0;
 	union wtap_pseudo_header psh;
 
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(hello!)");
-#endif
-
 	// This structure is *critical*, it holds two points which we hold and pass back to
 	// the Java code.  This way we don't have to dissect multiple times for a packet.
 	write_field_data_t *dissection = malloc(sizeof(write_field_data_t));
 	dissection->edt = malloc(sizeof(epan_dissect_t));
 	memset(dissection->edt, '\0', sizeof(epan_dissect_t));
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(created the dissection field)");
-#endif
 
 	// We are going to copy, not cast, in to the whdr because we need to set an additional value
 	memcpy(&whdr, pHeader, sizeof(struct wtap_pkthdr));
 	whdr.pkt_encap = encap;
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(set the encapsulation type)");
-#endif
 
 	// Set up the frame data
 	frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(initialized the frame data)");
-#endif
 
 	// Set up the dissection
 	epan_dissect_init(dissection->edt, create_proto_tree, 1);
 	tap_queue_init(dissection->edt);
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(initialized the dissection)");
-#endif
 
 	// Set some of the frame data
 	memset(&cfile.elapsed_time, '\0', sizeof(nstime_t));
@@ -362,29 +336,13 @@ dissectPacket(char *pHeader, char *pData, int encap)
 	frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
 									&first_ts, &prev_dis_ts, &prev_cap_ts);
 	fdata.file_off=0;
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(setup additional frame data)");
-#endif
 
 	// Run the actual dissection
 	memset(&psh, '\0', sizeof(union wtap_pseudo_header));
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(right before the dissection!)");
-#endif
 	epan_dissect_run(dissection->edt, &psh, pData, &fdata, NULL);
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(ran the dissection)");
-#endif
 
 	// Do some cleanup
 	frame_data_cleanup(&fdata);
-#ifdef VERBOSE
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dissectPacket(cleaned up the frame data)");
-#endif
-
-#ifdef VERBOSE_CLEAN
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "new dissection: %d - %d", (int)dissection, (int)dissection->edt);
-#endif
 
 	return (int)dissection;
 }
@@ -679,6 +637,9 @@ wiresharkGet(int wfd_ptr, gchar *field)
 	jstring result;
 	char *str_res = malloc(1024);	// assuming string result will be no more than 1024
 
+	if(str_res==NULL)
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error allocating memory for return string, doh");
+
 	memset(str_res, '\0', sizeof(str_res));
 
 	write_field_data_t *dissection = (write_field_data_t *) wfd_ptr;
@@ -706,7 +667,7 @@ wiresharkGet(int wfd_ptr, gchar *field)
 	// Run and get the value
 	proto_tree_children_foreach(dissection->edt->tree, proto_tree_get_node_field_values, dissection);
 	if(dissection->fields->field_values[0]!=NULL) {
-		strncpy(str_res, dissection->fields->field_values[0]->str, 1024);
+		strncpy(str_res, dissection->fields->field_values[0]->str, 1023);
   } else {
     myoutput_fields_free(dissection->fields);
     free(str_res);

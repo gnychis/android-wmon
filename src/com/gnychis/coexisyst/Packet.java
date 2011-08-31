@@ -109,6 +109,11 @@ public class Packet implements Parcelable {
 		return result;
 	}
 	
+	public void cleanDissection() {
+		if(_dissection_ptr!=-1)
+			dissectCleanup(_dissection_ptr);
+	}
+	
 	// On garbage collection (this raw data is no longer used), make sure to 
 	// cleanup the dissection memory.
 	protected void finalize() throws Throwable {
