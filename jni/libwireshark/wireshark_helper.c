@@ -57,6 +57,8 @@
 #include "capture-pcap-util.h"
 #include "print.h"
 
+unsigned long _pkt_count;
+
 void dissectCleanup(int ptr);
 int dissectPacket(char *pHeader, char *pData, int encap);
 char *wiresharkGet(int wfd_ptr, gchar *field);
@@ -293,7 +295,7 @@ dissectCleanup(int ptr)
   if(dissection->edt!=NULL)
     free(dissection->edt);
 
-  if(dissection!=NULL && dissection != -1)
+  if(dissection!=NULL)
     free(dissection);
 }
 
@@ -636,6 +638,8 @@ wiresharkGet(int wfd_ptr, gchar *field)
 	int z = 1;
 	jstring result;
 	char *str_res = malloc(1024);	// assuming string result will be no more than 1024
+		
+	//_pkt_count++;
 
 	if(str_res==NULL)
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error allocating memory for return string, doh");
@@ -666,6 +670,7 @@ wiresharkGet(int wfd_ptr, gchar *field)
 
 	// Run and get the value
 	proto_tree_children_foreach(dissection->edt->tree, proto_tree_get_node_field_values, dissection);
+
 	if(dissection->fields->field_values[0]!=NULL) {
 		strncpy(str_res, dissection->fields->field_values[0]->str, 1023);
   } else {
@@ -790,6 +795,8 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
   char                 badopt;
   GLogLevelFlags       log_flags;
   int                  optind_initial;
+
+	_pkt_count = 0;
   
   _env=env;
   _obj=thiz;
