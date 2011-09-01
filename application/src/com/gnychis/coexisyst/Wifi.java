@@ -40,7 +40,7 @@ bingo.
 public class Wifi {
 	private static final String TAG = "AtherosDev";
 	
-	public static final boolean PCAP_DUMP = true;
+	public static final boolean PCAP_DUMP = false;
 	DataOutputStream _pcap_dump; 
 
 	public static final int ATHEROS_CONNECT = 100;
@@ -70,11 +70,11 @@ public class Wifi {
 	// which are useful for updating the main thread on progress.  Also, active scans
 	// are currently only implemented in non-native scanning methods.
 	WifiScan _scan_thread;
-	private static int SCAN_WAIT_TIME= 15000; //5500;  // in milliseconds
+	private static int SCAN_WAIT_TIME=5500;  // in milliseconds
 	private static int SCAN_UPDATE_TIME=250; // update every 250ms to the main thread
 	public static int SCAN_WAIT_COUNTS=SCAN_WAIT_TIME/SCAN_UPDATE_TIME;
 	public static boolean _native_scan=false;
-	public static boolean _one_shot_scan=true;
+	public static boolean _one_shot_scan=false;
 	public static boolean _active_scan=true;
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	ArrayList<Packet> _scan_results;
@@ -117,6 +117,14 @@ public class Wifi {
 		return channels[index];
 	}
 	
+	public void trySleep(int length) {
+		try {
+			Thread.sleep(length);
+		} catch(Exception e) {
+			Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
+		}
+	}
+	
 	// Set the state to scan and start to switch channels
 	public boolean APScan() {
 		
@@ -137,14 +145,17 @@ public class Wifi {
 	}
 	
 	public boolean APScanStop() {
-		
-		_scan_thread._stop=true;  // notify the thread to stop
-		
+				
 		// Need to return the state back to IDLE from scanning
 		if(!WifiStateChange(WifiState.IDLE)) {
 			Log.d(TAG, "Failed to change from scanning to IDLE");
 			return false;
 		}
+		
+		Log.d(TAG, "Waiting for scan thread to stop");
+		while(_scan_thread.getStatus()!=AsyncTask.Status.FINISHED)
+			trySleep(100);
+		Log.d(TAG, "...finished!");
 				
 		// Now, send out a broadcast with the results
 		Intent i = new Intent();
@@ -362,14 +373,6 @@ public class Wifi {
 		CoexiSyst coexisyst;
 		private static final String WIMON_TAG = "WifiInit";
 		
-		public void trySleep(int length) {
-			try {
-				Thread.sleep(length);
-			} catch(Exception e) {
-				Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
-			}
-		}
-		
 		// Used to send messages to the main Activity (UI) thread
 		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
 			Message msg = new Message();
@@ -475,7 +478,6 @@ public class Wifi {
 		private Pcap _moni0_pcap;
 		private int _timer_counts;		// to know how many timer ticks are left before scan over
 		private int _scan_channel;		// to keep track of the channel when scanning natively
-		public boolean _stop;
 		
 		public void trySleep(int length) {
 			try {
@@ -622,7 +624,6 @@ public class Wifi {
 		{
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
-			_stop=false;
 
 			openDev();
 			setupChannelTimer();
@@ -630,7 +631,7 @@ public class Wifi {
 			Log.d(TAG, "Waiting for packets in scan thread...");
 						
 			// Loop and read headers and packets
-			while(!_stop) {
+			while(_state==WifiState.SCANNING) {
 					
 				Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 			    PcapHeader ph = new PcapHeader();
@@ -666,12 +667,13 @@ public class Wifi {
 				// to our scan result.  This does not guarantee one beacon frame per network, but
 				// pruning can be done at the next level.
 				rpkt.dissect();
-				/*if(rpkt.getField("wlan_mgt.fixed.beacon")!=null) {
+				if(rpkt.getField("wlan_mgt.fixed.beacon")!=null) {
 					Log.d(TAG, "[" + Integer.toString(_received_pkts) + "] Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
 					_scan_results.add(rpkt);
-				}*/
+				}
 				rpkt.cleanDissection();
 			}
+			Log.d(TAG, "Finished with scan thread, exiting now");
 			closeDev();
 			return "DONE";
 		}
