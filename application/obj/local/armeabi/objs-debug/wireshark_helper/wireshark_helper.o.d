@@ -115,9 +115,10 @@
  /Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/ctype.h \
  /Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/locale.h \
  /Users/gnychis/Documents/workspace/CoexiSyst/jni/libwireshark/config.h \
- jni/libwireshark/epan/epan_dissect.h jni/libwireshark/epan/tvbuff.h \
- jni/libwireshark/epan/ipv6-utils.h jni/libwireshark/epan/guid-utils.h \
- jni/libwireshark/epan/exceptions.h jni/libwireshark/epan/except.h \
+ jni/libwireshark/epan/jniexcept.h jni/libwireshark/epan/epan_dissect.h \
+ jni/libwireshark/epan/tvbuff.h jni/libwireshark/epan/ipv6-utils.h \
+ jni/libwireshark/epan/guid-utils.h jni/libwireshark/epan/exceptions.h \
+ jni/libwireshark/epan/except.h \
  /Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/setjmp.h \
  /Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/machine/setjmp.h \
  /Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/assert.h \
@@ -442,6 +443,8 @@ jni/libglib/glib/gtree.h:
 /Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/locale.h:
 
 /Users/gnychis/Documents/workspace/CoexiSyst/jni/libwireshark/config.h:
+
+jni/libwireshark/epan/jniexcept.h:
 
 jni/libwireshark/epan/epan_dissect.h:
 

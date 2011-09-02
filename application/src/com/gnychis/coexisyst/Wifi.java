@@ -141,6 +141,12 @@ public class Wifi {
 		_scan_thread = new WifiScan();
 		_scan_thread.execute(coexisyst);
 		
+		Log.d(TAG, "Waiting for scan thread to start");
+		while(_scan_thread.getStatus()!=AsyncTask.Status.RUNNING)
+			trySleep(100);
+		Log.d(TAG, "...finished!");
+				
+		
 		return true;  // in scanning state, and channel hopping
 	}
 	
@@ -152,7 +158,7 @@ public class Wifi {
 			return false;
 		}
 		
-		Log.d(TAG, "Waiting for scan thread to stop");
+		Log.d(TAG, "Waiting for scan thread to st	op");
 		while(_scan_thread.getStatus()!=AsyncTask.Status.FINISHED)
 			trySleep(100);
 		Log.d(TAG, "...finished!");
