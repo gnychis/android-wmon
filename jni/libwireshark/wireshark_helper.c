@@ -33,6 +33,7 @@
 
 #include "config.h"
 
+#include <epan/jniexcept.h>
 #include <epan/epan_dissect.h>
 #include <epan/packet.h>
 #include <epan/epan.h>
@@ -795,6 +796,9 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
   char                 badopt;
   GLogLevelFlags       log_flags;
   int                  optind_initial;
+
+	// Pass the java environment to libtshark so that it can throw exceptions
+	jniExceptionInit(env);
 
 	_pkt_count = 0;
   
