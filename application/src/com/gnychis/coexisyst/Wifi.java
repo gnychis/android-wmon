@@ -39,6 +39,7 @@ bingo.
  */
 public class Wifi {
 	private static final String TAG = "AtherosDev";
+	private static final boolean VERBOSE = false;
 	
 	public static final boolean PCAP_DUMP = false;
 	DataOutputStream _pcap_dump; 
@@ -63,6 +64,11 @@ public class Wifi {
 		SCANNING,
 	}
 	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			debugOut(msg);
+	}
+	
 	// All scan related variables.  There are 3 kinds of scans that I've come up.
 	// There is native, which is when CoexiSyst modifies the channels and passively scans.
 	// Then, when triggering scans on the card and listening for the probe responses,
@@ -70,7 +76,7 @@ public class Wifi {
 	// which are useful for updating the main thread on progress.  Also, active scans
 	// are currently only implemented in non-native scanning methods.
 	WifiScan _scan_thread;
-	private static int SCAN_WAIT_TIME=5500;  // in milliseconds
+	private static int SCAN_WAIT_TIME= 6000;  // in milliseconds
 	private static int SCAN_UPDATE_TIME=250; // update every 250ms to the main thread
 	public static int SCAN_WAIT_COUNTS=SCAN_WAIT_TIME/SCAN_UPDATE_TIME;
 	public static boolean _native_scan=false;
@@ -141,10 +147,10 @@ public class Wifi {
 		_scan_thread = new WifiScan();
 		_scan_thread.execute(coexisyst);
 		
-		Log.d(TAG, "Waiting for scan thread to start");
+		debugOut("Waiting for scan thread to start");
 		while(_scan_thread.getStatus()!=AsyncTask.Status.RUNNING)
 			trySleep(100);
-		Log.d(TAG, "...finished!");
+		debugOut("...finished!");
 				
 		
 		return true;  // in scanning state, and channel hopping
@@ -154,14 +160,16 @@ public class Wifi {
 				
 		// Need to return the state back to IDLE from scanning
 		if(!WifiStateChange(WifiState.IDLE)) {
-			Log.d(TAG, "Failed to change from scanning to IDLE");
+			debugOut("Failed to change from scanning to IDLE");
 			return false;
 		}
 		
-		Log.d(TAG, "Waiting for scan thread to st	op");
+		debugOut("Waiting for scan thread to stop");
 		while(_scan_thread.getStatus()!=AsyncTask.Status.FINISHED)
 			trySleep(100);
-		Log.d(TAG, "...finished!");
+		debugOut("...finished!");
+		
+		trySleep(1000);
 				
 		// Now, send out a broadcast with the results
 		Intent i = new Intent();
@@ -185,7 +193,7 @@ public class Wifi {
 				
 				// From the IDLE state, we can go anywhere...
 				case IDLE:
-					Log.d(TAG, "Switching state from " + _state.toString() + " to " + s.toString());
+					debugOut("Switching state from " + _state.toString() + " to " + s.toString());
 					_state = s;
 					res = true;
 				break;
@@ -194,7 +202,7 @@ public class Wifi {
 				// scan already.
 				case SCANNING:
 					if(s==WifiState.IDLE) {  // cannot go directly to IDLE from SCANNING
-						Log.d(TAG, "Switching state from " + _state.toString() + " to " + s.toString());
+						debugOut("Switching state from " + _state.toString() + " to " + s.toString());
 						_state = s;
 						res = true;
 					} else if(s==WifiState.SCANNING) {  // ignore an attempt to switch in to same state
@@ -396,7 +404,7 @@ public class Wifi {
 			// Initialize the Atheros hardware
 			// Only initialize if it is not already initialized
 			if(wlan0_exists() && wlan0_up() && wlan0_monitor()) {
-				Log.d(TAG, "Atheros device is already connected and initialized...");
+				debugOut("Atheros device is already connected and initialized...");
 				sendMainMessage(ThreadMessages.ATHEROS_INITIALIZED);
 				return "true";
 			}
@@ -410,36 +418,36 @@ public class Wifi {
 					break;
 				trySleep(100);
 			}
-			Log.d(TAG, "Found loading location at: " + load_loc);
+			debugOut("Found loading location at: " + load_loc);
 			
 			// Write a "1" to notify of impending firmware write
 			while(!compatIsLoading(load_loc)) {
 				runCommand("echo 1 > " + load_loc);
 			}
-			Log.d(TAG, "Wrote notification of impending firmware write");
+			debugOut("Wrote notification of impending firmware write");
 			
 			// Write the firmware to the appropriate location
 			String firmware_loc = load_loc.substring(0, load_loc.length()-7);
 			runCommand("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > " + firmware_loc + "data");
-			Log.d(TAG, "Wrote the firmware to the device");
+			debugOut("Wrote the firmware to the device");
 			
 			// Notify that we are done writing the firmware
 			while(compatIsLoading(load_loc)) {
 				runCommand("echo 0 > " + load_loc);
 			}
-			Log.d(TAG, "Notify of firmware complete");
+			debugOut("Notify of firmware complete");
 			
 			// Wait for the firmware to settle, and device interface to pop up
 			while(!wlan0_exists()) {
 				trySleep(100);
 			}
-			Log.d(TAG, "wlan0 now exists");
+			debugOut("wlan0 now exists");
 				
 			while(!wlan0_down()) {
 				runCommand("netcfg wlan0 down");
 				trySleep(100);
 			}
-			Log.d(TAG, "interface has been taken down");
+			debugOut("interface has been taken down");
 			
 			// Get the phy interface name
 			List<String> r = runCommand("/data/data/com.gnychis.coexisyst/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
@@ -449,7 +457,7 @@ public class Wifi {
 				runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " interface add moni0 type monitor");
 				trySleep(100);
 			}
-			Log.d(TAG, "interface set to monitor mode");
+			debugOut("interface set to monitor mode");
 			
 			while(!wlan0_up()) {
 				runCommand("netcfg wlan0 up");
@@ -460,7 +468,7 @@ public class Wifi {
 				runCommand("netcfg moni0 up");
 				trySleep(100);
 			}			
-			Log.d(TAG, "interface is now up");
+			debugOut("interface is now up");
 			
 			// Get the location of the rx packets file
 			List<String> l = runCommand("busybox find /sys -name rx_packets | busybox grep moni0");
@@ -508,18 +516,18 @@ public class Wifi {
 			StringBuilder errbuf = new StringBuilder(); // For any error msgs  
 			int r = Pcap.findAllDevs(alldevs, errbuf);  
 			if (r == Pcap.NOT_OK || alldevs.isEmpty()) {  
-	            Log.d(TAG, "Can't read list of devices, error is " + errbuf.toString());  
+	            debugOut("Can't read list of devices, error is " + errbuf.toString());  
 	            sendMainMessage(ThreadMessages.ATHEROS_FAILED);
 	            return false;  
 	        } 
 			
-			Log.d(TAG, "Network devices found:");  
+			debugOut("Network devices found:");  
 			int i = 0;  
 	        for (PcapIf device : alldevs) {  
 	            String description =  
 	                (device.getDescription() != null) ? device.getDescription()  
 	                    : "No description available";  
-	            Log.d(TAG, Integer.toString(i) + ": " + device.getName() + "[" + description + "]");  
+	            debugOut(Integer.toString(i) + ": " + device.getName() + "[" + description + "]");  
 	            if(device.getName().equals("moni0"))
 	            	break;
 	            else
@@ -536,7 +544,7 @@ public class Wifi {
 	                Pcap.openLive(_moni0_dev.getName(), snaplen, flags, timeout, errbuf);
 	        
 	        if (_moni0_pcap == null) {  
-	            Log.d(TAG, "Error while opening device for capture: "  
+	            debugOut("Error while opening device for capture: "  
 	                + errbuf.toString());  
 	            sendMainMessage(ThreadMessages.ATHEROS_FAILED);
 	            return false;  
@@ -601,9 +609,9 @@ public class Wifi {
 			if(_native_scan) {
 				_scan_channel++;
 				if(_scan_channel<channels.length) {
-					Log.d(TAG, "Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
+					debugOut("Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
 					setChannel(channels[_scan_channel]);
-					Log.d(TAG, "... increment complete!");
+					debugOut("... increment complete!");
 					sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
 				} else {
 					APScanStop();
@@ -612,13 +620,13 @@ public class Wifi {
 			} else if(!_one_shot_scan) {	
 				sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
 				_timer_counts--;
-				Log.d(TAG, "Wifi scan timer tick");
+				debugOut("Wifi scan timer tick");
 				if(_timer_counts==0) {
 					APScanStop();
 					_scan_timer.cancel();
 				}
 			} else {
-				Log.d(TAG, "One shot expire");
+				debugOut("One shot expire");
 				APScanStop();
 				_scan_timer.cancel();
 			}
@@ -634,7 +642,7 @@ public class Wifi {
 			openDev();
 			setupChannelTimer();
 			
-			Log.d(TAG, "Waiting for packets in scan thread...");
+			debugOut("Waiting for packets in scan thread...");
 						
 			// Loop and read headers and packets
 			while(_state==WifiState.SCANNING) {
@@ -646,7 +654,7 @@ public class Wifi {
 		        
 		        // Pull in a packet
 		        if((data = _moni0_pcap.next(ph, jb))==null) // returns null if fails
-		        		continue;
+		        	continue;
 		        _received_pkts++;
 		        
 		        // Get the raw bytes of the header
@@ -674,12 +682,12 @@ public class Wifi {
 				// pruning can be done at the next level.
 				rpkt.dissect();
 				if(rpkt.getField("wlan_mgt.fixed.beacon")!=null) {
-					Log.d(TAG, "[" + Integer.toString(_received_pkts) + "] Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
+					debugOut("[" + Integer.toString(_received_pkts) + "] Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
 					_scan_results.add(rpkt);
 				}
 				rpkt.cleanDissection();
 			}
-			Log.d(TAG, "Finished with scan thread, exiting now");
+			debugOut("Finished with scan thread, exiting now");
 			closeDev();
 			return "DONE";
 		}
