@@ -418,7 +418,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// Do not start another scan, if we already are
 		if(_networks_scan._is_scanning)
 			return;
-			
+					
 		pd = new ProgressDialog(this);
 		pd.setCancelable(false);
 		pd.setMessage("Scanning for networks...");
@@ -442,6 +442,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				
 		usbmon.stopUSBMon();
 		_networks_scan.resetScan();
+		_networks_scan._is_scanning=true;
 		
 		_networks_scan._wifi_connected=ath.isConnected();
 		_networks_scan._zigbee_connected=zigbee.isConnected();
