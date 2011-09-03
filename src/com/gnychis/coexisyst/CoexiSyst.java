@@ -290,7 +290,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		//pcapGetInterfaces();
 		
 		Log.d(TAG, "onCreate()");
-
+		
 		if(wiresharkInit()==1)
 			Log.d(TAG, "success with wireshark library");
 		else
