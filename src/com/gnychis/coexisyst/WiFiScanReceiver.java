@@ -79,7 +79,7 @@ public class WiFiScanReceiver extends BroadcastReceiver {
 	  return false;
   }
 
-  @Override
+  @Override @SuppressWarnings("unchecked")
   public void onReceive(Context c, Intent intent) {
 	   
 	Log.d(TAG, "Received incoming scan complete message");

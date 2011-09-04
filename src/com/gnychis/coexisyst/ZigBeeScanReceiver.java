@@ -1,6 +1,5 @@
 package com.gnychis.coexisyst;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,7 +45,7 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
 	}
   };
   
-  @Override
+  @Override @SuppressWarnings("unchecked")
   public void onReceive(Context c, Intent intent) {
 	   
 	Log.d(TAG, "Received incoming scan complete message");

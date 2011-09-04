@@ -27,7 +27,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
-import android.os.Bundle;
 import android.util.Log;
 
 /**

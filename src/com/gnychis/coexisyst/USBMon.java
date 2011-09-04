@@ -3,12 +3,10 @@ package com.gnychis.coexisyst;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Semaphore;
 
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.stericson.RootTools.RootTools;
@@ -16,20 +14,24 @@ import com.stericson.RootTools.RootTools;
 // A class to handle USB worker like things
 public class USBMon
 {
+	private static boolean VERBOSE = false;
+	
 	CoexiSyst _coexisyst;
-	String TAG = "USBMon";
-	private Semaphore _state_lock;
 	private Handler _handler;
 	private static int USB_POLL_TIME=7000;  // in milliseconds, poll time
 	
 	private Timer _scan_timer;
 	
 	public USBMon(CoexiSyst c, Handler h) {
-		_state_lock = new Semaphore(1,true);
 		_coexisyst = c;
 		_handler = h;
 		_scan_timer=null;
 		startUSBMon();
+	}
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d("USBMon", msg);
 	}
 	
 	public boolean startUSBMon() {
@@ -65,7 +67,7 @@ public class USBMon
 			if(res.size()!=0)
 				return 1;
 		} catch(Exception e) {
-			Log.e(TAG, "exception trying to check for AR9280", e);
+			Log.e("USBMon", "exception trying to check for AR9280", e);
 		}
 		return 0;
 	}
@@ -85,7 +87,7 @@ public class USBMon
 		} else if(wispy_in_devlist==0 && _coexisyst.wispy._device_connected==true) {
 			updateState(Wispy.WISPY_DISCONNECT);
 		} else if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==true && _coexisyst.wispy._is_polling==false) {
-			//Log.d(TAG, "determined that a re-poll is needed");
+			//debugOut("determined that a re-poll is needed");
 			//Thread.sleep( 1000 );
 			//publishProgress(CoexiSyst.WISPY_POLL);
 		}
@@ -113,7 +115,7 @@ public class USBMon
 	protected void updateState(int event)
 	{
 		if(event == Wispy.WISPY_CONNECT) {
-			Log.d(TAG, "got update that WiSpy was connected");
+			debugOut("got update that WiSpy was connected");
 			_coexisyst.sendToastMessage(_handler, "WiSpy device connected");
 			_coexisyst.wispy._device_connected=true;
 			
@@ -128,13 +130,13 @@ public class USBMon
 			_coexisyst.wispy._is_polling = true;
 		}
 		else if(event == Wispy.WISPY_DISCONNECT) {
-			Log.d(TAG, "got update that WiSpy was connected");
+			debugOut("got update that WiSpy was connected");
 			_coexisyst.sendToastMessage(_handler, "WiSpy device has been disconnected");
 			_coexisyst.wispy._device_connected=false;
 			_coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
 		}
 		else if(event == Wispy.WISPY_POLL) {
-			Log.d(TAG, "trying to re-poll the WiSpy device");
+			debugOut("trying to re-poll the WiSpy device");
 			_coexisyst.sendToastMessage(_handler, "Re-trying polling");
 			_coexisyst.wispyscan.cancel(true);
 			_coexisyst.wispyscan = _coexisyst.wispy.new WispyThread();
@@ -147,10 +149,10 @@ public class USBMon
 			Message msg = new Message();
 			msg.obj = ThreadMessages.ATHEROS_CONNECTED;
 			_coexisyst._handler.sendMessage(msg);
-			Log.d(TAG, "got update that Atheros card was connected");
+			debugOut("got update that Atheros card was connected");
 		}
 		else if(event == Wifi.ATHEROS_DISCONNECT) {
-			Log.d(TAG, "Atheros card now disconnected");
+			debugOut("Atheros card now disconnected");
 			_coexisyst.sendToastMessage(_handler, "Atheros device disconnected");
 			_coexisyst.ath.disconnected();
 		}
@@ -160,10 +162,10 @@ public class USBMon
 			Message msg = new Message();
 			msg.obj = ThreadMessages.ZIGBEE_CONNECTED;
 			_coexisyst._handler.sendMessage(msg);
-			Log.d(TAG, "got update that ZigBee device was connected");
+			debugOut("got update that ZigBee device was connected");
 		}
 		else if(event == ZigBee.ZIGBEE_DISCONNECT) {
-			Log.d(TAG, "ZigBee device now disconnected");
+			debugOut("ZigBee device now disconnected");
 			_coexisyst.sendToastMessage(_handler, "ZigBee device disconnected");
 			_coexisyst.zigbee.disconnected();
 		}

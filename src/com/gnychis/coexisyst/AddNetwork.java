@@ -8,7 +8,6 @@ import java.util.Map;
 import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
 import android.content.DialogInterface;
-import android.net.wifi.ScanResult;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -44,7 +43,7 @@ public class AddNetwork extends ExpandableListActivity {
     
     private ExpandableListAdapter mAdapter;
     
-	@Override
+	@Override @SuppressWarnings("unchecked")
 	public void onCreate(Bundle savedInstanceState) {
 	  super.onCreate(savedInstanceState);
 	  Bundle i = getIntent().getExtras();

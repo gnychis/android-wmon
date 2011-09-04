@@ -9,7 +9,6 @@ import java.util.concurrent.BlockingQueue;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -230,7 +229,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
        
     	wispy = new Wispy();
     	
-    	_networks_scan = new NetworksScan();
     	toastMessages = new ArrayBlockingQueue<String>(20);
         
         // Setup the database
@@ -298,6 +296,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		usbmon = new USBMon(this, _handler);
 		
+    	_networks_scan = new NetworksScan(ath, zigbee);
+		
 		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
 		//wiresharkTest("/sdcard/test.pcap");
 		//wiresharkTestGetAll("/sdcard/test.pcap");
@@ -322,53 +322,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 	
 	public void scanSpectrum() {		
-		// Disable interfaces first, and get the raw power in the spectrum from WiSpy
-		stopScans();
-		
 		// Get the WiSpy data
 		Log.d(TAG, "Waiting for results from WiSpy...");
 		wispy.getResultsBlock(Wispy.PASSES);
 		Log.d(TAG, "Got results from the WiSpy");
-		
-		startScans();
-		
-	}
-	
-	public void startScans() {
-		try {
-		
-			// Enable interfaces
-			if(_wifi_reenable)
-				wifi.setWifiEnabled(true);
-			if(_bt_reenable)
-				bt.enable();
-			
-			registerReceiver(rcvr_80211, new IntentFilter(
-					Wifi.WIFI_SCAN_RESULT));	
-			registerReceiver(rcvr_BTooth, new IntentFilter(
-					BluetoothDevice.ACTION_FOUND));
-			
-			bt.startDiscovery();
-		} catch (Exception e) {
-			Log.e(TAG, "Exception trying to register scan receivers");
-		}
-	}
-	
-	public void stopScans() {
-		try {
-		//unregisterReceiver(rcvr_80211);	
-		unregisterReceiver(rcvr_BTooth);
-		
-		bt.cancelDiscovery();
-		} catch (Exception e) {
-			Log.e(TAG, "Exception trying to unregister scan receivers",e);
-		}
-		
-		// Disable interfaces, store history to renable if they were enabled
-		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
-		_bt_reenable = (bt.isEnabled()) ? true : false;
-		bt.disable();
-		wifi.setWifiEnabled(false);
 	}
 	
 	// Invoked from the message handler when a message has been received
@@ -412,29 +369,27 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		}	
 	}
 	
+	// This triggers a scan through the networks to return a list of
+	// networks and devices for a user to add for management.
 	public void clickAddNetwork() {
 		int max=0;
 		
 		// Do not start another scan, if we already are
 		if(_networks_scan._is_scanning)
 			return;
-					
+		
+		// Create a progress dialog to show progress of the scan
+		// to the user.
 		pd = new ProgressDialog(this);
 		pd.setCancelable(false);
 		pd.setMessage("Scanning for networks...");
 		pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		pd.setProgress(0);
 		
-		if(ath.isConnected()) {
-			if(ath._native_scan)
-				max += ath.channels.length;
-			else if(!ath._one_shot_scan) 
-				max += Wifi.SCAN_WAIT_COUNTS;
-			else
-				max += 1;
-		}
-		if(zigbee.isConnected())
-			max += zigbee.channels.length;
+		// Call the networks scan class to initiate a new scan
+		// which, based on the devices connected for scanning,
+		// will return a maximum value for the progress bar
+
 		
 		pd.setMax(max);
 		
