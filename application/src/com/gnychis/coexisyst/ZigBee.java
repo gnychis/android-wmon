@@ -1,11 +1,7 @@
 package com.gnychis.coexisyst;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 import org.jnetpcap.PcapHeader;
@@ -18,7 +14,6 @@ import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
-import com.stericson.RootTools.RootTools;
 
 public class ZigBee {
 	private static final String TAG = "ZigbeeDev";
@@ -187,7 +182,6 @@ public class ZigBee {
 	{
 		Context parent;
 		CoexiSyst coexisyst;
-		private static final String ZIGMON_TAG = "ZigBeeMonitor";
 		private int PCAP_HDR_SIZE = 16;
 		int _channel;
 		private Semaphore _comm_lock;

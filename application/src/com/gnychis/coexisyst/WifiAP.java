@@ -6,6 +6,7 @@ import java.util.Iterator;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+@SuppressWarnings("unchecked")
 public class WifiAP implements Parcelable {
 
 	public String _mac;

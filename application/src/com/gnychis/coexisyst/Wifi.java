@@ -17,7 +17,6 @@ import org.jnetpcap.nio.JBuffer;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
@@ -38,7 +37,6 @@ once num_pkts != -1, and read>num_pkts, then leave scanning thread
 bingo.
  */
 public class Wifi {
-	private static final String TAG = "AtherosDev";
 	private static final boolean VERBOSE = false;
 	
 	public static final boolean PCAP_DUMP = false;
@@ -66,7 +64,7 @@ public class Wifi {
 	
 	private void debugOut(String msg) {
 		if(VERBOSE)
-			debugOut(msg);
+			Log.d("AtherosDev", msg);
 	}
 	
 	// All scan related variables.  There are 3 kinds of scans that I've come up.
@@ -252,7 +250,7 @@ public class Wifi {
 						(byte)0x7f, (byte)0x00, (byte)0x00, (byte)0x00};  	// wifi
 				
 				_pcap_dump.write(pcap_header);
-			} catch(Exception e) { Log.e(TAG, "Error trying to write output stream", e); }
+			} catch(Exception e) { Log.e("AtherosDev", "Error trying to write output stream", e); }
 		}
 
 	}
@@ -371,7 +369,7 @@ public class Wifi {
 		try {
 			return RootTools.sendShell(c);
 		} catch(Exception e) {
-			Log.e(TAG, "error writing to RootTools the command: " + c, e);
+			Log.e("AtherosDev", "error writing to RootTools the command: " + c, e);
 			return null;
 		}
 	}
@@ -385,7 +383,11 @@ public class Wifi {
 	{
 		Context parent;
 		CoexiSyst coexisyst;
-		private static final String WIMON_TAG = "WifiInit";
+		
+		private void debugOut(String msg) {
+			if(VERBOSE)
+				Log.d("WifiInit", msg);
+		}
 		
 		// Used to send messages to the main Activity (UI) thread
 		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
@@ -485,7 +487,6 @@ public class Wifi {
 	{
 		Context parent;
 		CoexiSyst coexisyst;
-		private static final String WIMON_TAG = "WiFiMonitor";
 		private int PCAP_HDR_SIZE = 16;
 		private int _received_pkts;
 		private PcapIf _moni0_dev;
@@ -674,7 +675,7 @@ public class Wifi {
 						_pcap_dump.write(rpkt._rawHeader);
 						_pcap_dump.write(rpkt._rawData);
 						_pcap_dump.flush();
-					} catch(Exception e) { Log.e(TAG, "Error writing pcap packet", e); }
+					} catch(Exception e) { Log.e("WifiScan", "Error writing pcap packet", e); }
 				}
 				
 				// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
