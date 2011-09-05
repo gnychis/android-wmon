@@ -1,6 +1,8 @@
 package com.gnychis.coexisyst;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import android.app.Activity;
 import android.os.Handler;
@@ -44,7 +46,12 @@ public class NetworksScan extends Activity {
 	public ArrayList<ZigBeeNetwork> _zigbee_scan_result;
 	public ArrayList<WifiAP> _wifi_scan_result;
 	
-	public boolean _is_scanning;  // to ensure we don't double-scan
+	public enum Scans {		// A List of possible scans to handle
+		Wifi,
+		ZigBee,
+	}
+	private Queue<Scans> _scan_list;
+	private boolean _is_scanning;
 	
 	// Setup a handler to receive messages from the broadcast receivers
 	// with the scan results.
@@ -52,17 +59,17 @@ public class NetworksScan extends Activity {
 	public Handler _handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
+			
+			// An incoming message that a wifi scan was complete
 			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE) {
-				Log.d("NetworksScan", "Wifi scan is now complete");
-				_wifi_scan_result = _rcvr_80211._last_scan;
-				if(isScanComplete())
-					networkScansComplete();
+				Log.d("NetworksScan", "Wifi scan is now complete");		// Log out
+				_wifi_scan_result = _rcvr_80211._last_scan;				// Save the scan result
+				startNextScan();										// Start next scan if there is one
 			}
 			if(msg.obj == ThreadMessages.ZIGBEE_SCAN_COMPLETE) {
-				Log.d("NetworksScan", "ZigBee scan is now complete");
-				_zigbee_scan_result = _rcvr_ZigBee._last_scan;
-				if(isScanComplete())
-					networkScansComplete();
+				Log.d("NetworksScan", "ZigBee scan is now complete");	// Log out
+				_zigbee_scan_result = _rcvr_ZigBee._last_scan;			// Save scan result
+				startNextScan();										// Start next scan if there is one
 			}
 		}
 	};
@@ -81,6 +88,7 @@ public class NetworksScan extends Activity {
 		_is_scanning = false;		
 		_zigbee_scan_result = null;
 		_wifi_scan_result = null;
+		_scan_list = new LinkedList<Scans>();
 		
 		// Setup the receivers
 		_rcvr_80211 = new WiFiScanReceiver(_handler);
@@ -89,53 +97,84 @@ public class NetworksScan extends Activity {
 		//registerReceiver(_rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		//registerReceiver(_rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 	}
+
+	// This method creates a list of scans that need to be completed, based
+	// on the devices that are connected to the phone.  This returns a value
+	// for the progress bar in the main UI to show scan progress.
+	private int createScanList() {
+		int max_progress = 0;
+		
+		_scan_list.clear();
+		
+		if(_wifi.isConnected()) {
+			_scan_list.add(Scans.Wifi);
+			if(Wifi._native_scan)
+				max_progress += Wifi.channels.length;
+			else if(!Wifi._one_shot_scan) 
+				max_progress += Wifi.SCAN_WAIT_COUNTS;
+			else
+				max_progress += 1;
+		}
+		
+		if(_zigbee.isConnected()) {
+			_scan_list.add(Scans.ZigBee);
+			max_progress += ZigBee.channels.length;
+		}
+		
+		return max_progress;
+	}
+	
+	// Start the next scan, based on what scans have already been completed.
+	private void startNextScan() {
+		
+		// First, if the scan queue is empty, then there is nothing left to scan!
+		if(_scan_list.size()==0) {
+			networkScansComplete();
+			return;
+		}
+
+		// Take the head of scan queue
+		Scans next_scan = _scan_list.remove();
+		
+		switch(next_scan) {
+			case Wifi:
+				_wifi.APScan();
+				break;
+				
+			case ZigBee:
+				_zigbee.scanStart();
+				break;
+				
+			default:
+				Log.d("NetworksScan", "Error: should never have hit here, no next network?");
+		}
+	}
 	
 	// For other classes to determine if a scan is already going on
 	public boolean isScanning() {
 		return _is_scanning;
 	}
 	
+	// A call to initiate the scan progress.  First we make sure that we
+	// are not already scanning, and then we create a scan based on the
+	// hardware that is connected.  This returns a value that is used
+	// by a progress dialogue in the main UI to show scan progress.
 	public int initiateScan() {
-		int max=0;	
+		int max_progress;
 		
 		// Just a double check
 		if(_is_scanning || (!_zigbee.isConnected() && !_wifi.isConnected()))
 			return -1;
 		
-		if(_wifi.isConnected()) {
-			if(Wifi._native_scan)
-				max += Wifi.channels.length;
-			else if(!Wifi._one_shot_scan) 
-				max += Wifi.SCAN_WAIT_COUNTS;
-			else
-				max += 1;
-		}
-		
-		if(_zigbee.isConnected())
-			max += ZigBee.channels.length;
-		
-		_is_scanning=true;
-		
+		_is_scanning = true;
+				
 		_usbmon.stopUSBMon();	// We need to stop the USB monitor, otherwise it interferes
 		resetScanResults();		// Clear the scan results for new results
+
+		max_progress = createScanList();		// Create a list of scans to complete based on hardware connected
+		startNextScan();						// Start the scan process
 		
-		// start the scanning process, which happens in another thread
-		if(_wifi.isConnected())
-			_wifi.APScan();
-		if(_zigbee.isConnected())
-			_zigbee.scanStart();
-		
-		return max;
-	}
-	
-	// A method to check if we have results for each of the networks
-	public boolean isScanComplete() {
-		if(_zigbee_scan_result==null && _zigbee.isConnected())
-			return false;
-		if(_wifi_scan_result==null && _wifi.isConnected())
-			return false;
-		
-		return true;
+		return max_progress;
 	}
 	
 	private void networkScansComplete() {
