@@ -264,7 +264,7 @@ public class ZigBee {
 					_channel = (int)_dev.getByte() & 0xff;
 					
 					if(_state==ZigBeeState.SCANNING)
-						_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+						_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);
 				}
 				
 				if(cmd==SCAN_DONE) {

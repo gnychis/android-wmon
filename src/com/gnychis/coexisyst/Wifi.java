@@ -50,7 +50,6 @@ public class Wifi {
 	CoexiSyst coexisyst;
 	
 	boolean _device_connected;
-
 	
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
@@ -74,6 +73,7 @@ public class Wifi {
 	// which are useful for updating the main thread on progress.  Also, active scans
 	// are currently only implemented in non-native scanning methods.
 	WifiScan _scan_thread;
+	WiFiScanReceiver rcvr_80211;
 	private static int SCAN_WAIT_TIME= 6000;  // in milliseconds
 	private static int SCAN_UPDATE_TIME=250; // update every 250ms to the main thread
 	public static int SCAN_WAIT_COUNTS=SCAN_WAIT_TIME/SCAN_UPDATE_TIME;
@@ -83,7 +83,6 @@ public class Wifi {
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	ArrayList<Packet> _scan_results;
 
-	
 	String _iw_phy;
 	String _rxpackets_loc;
 	
@@ -613,13 +612,13 @@ public class Wifi {
 					debugOut("Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
 					setChannel(channels[_scan_channel]);
 					debugOut("... increment complete!");
-					sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+					sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);
 				} else {
 					APScanStop();
 					_scan_timer.cancel();
 				}
 			} else if(!_one_shot_scan) {	
-				sendMainMessage(ThreadMessages.INCREMENT_PROGRESS);
+				sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);
 				_timer_counts--;
 				debugOut("Wifi scan timer tick");
 				if(_timer_counts==0) {

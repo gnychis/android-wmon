@@ -9,7 +9,6 @@ import java.util.concurrent.BlockingQueue;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -39,11 +38,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	protected Wispy.WispyThread wispyscan;
 	
 	private ProgressDialog pd;
-	
-	// Receivers
-	WiFiScanReceiver rcvr_80211;
-	BroadcastReceiver rcvr_BTooth;
-	ZigBeeScanReceiver rcvr_ZigBee;
 	
 	TextView textStatus;
 	
@@ -81,57 +75,44 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		ZIGBEE_WAIT_RESET,
 		ZIGBEE_SCAN_COMPLETE,
 		SHOW_TOAST,
-		INCREMENT_PROGRESS,
+		INCREMENT_SCAN_PROGRESS,
+		NETWORK_SCANS_COMPLETE,
 	}
 	
 	public Handler _handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 
-			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE)
-				wifiScanComplete();
-			
-			if(msg.obj == ThreadMessages.ZIGBEE_SCAN_COMPLETE)
-				zigbeeScanComplete();
-			
-			if(msg.obj == ThreadMessages.ATHEROS_CONNECTED) {
+			///////////////////////////////////////////////////////////////////////
+			// A set of messages referring to scans goes to the scan class
+			if(msg.obj == ThreadMessages.INCREMENT_SCAN_PROGRESS)
+				pd.incrementProgressBy(1);
+			if(msg.obj == ThreadMessages.NETWORK_SCANS_COMPLETE)
+				networkScansComplete();
+						
+			///////////////////////////////////////////////////////////////////////
+			// A set of messages that that deal with hardware connections
+			if(msg.obj == ThreadMessages.ATHEROS_CONNECTED)
 				atherosSettling();
-				ath.connected();
-			}
-			
-			if(msg.obj == ThreadMessages.ATHEROS_INITIALIZED) {
+			if(msg.obj == ThreadMessages.ATHEROS_INITIALIZED)
 				atherosInitialized();
-				Toast.makeText(getApplicationContext(), "Successfully initialized Atheros card", Toast.LENGTH_LONG).show();	
-			}
-			
-			if(msg.obj == ThreadMessages.ATHEROS_FAILED) {
+			if(msg.obj == ThreadMessages.ATHEROS_FAILED)
 				Toast.makeText(getApplicationContext(), "Failed to initialize Atheros card", Toast.LENGTH_LONG).show();	
-			}
-			
-			if(msg.obj == ThreadMessages.ZIGBEE_CONNECTED) {
+			if(msg.obj == ThreadMessages.ZIGBEE_CONNECTED)
 				zigbeeSettling();
-				zigbee.connected();
-			}
-			
-			if(msg.obj == ThreadMessages.ZIGBEE_WAIT_RESET) {
+			if(msg.obj == ThreadMessages.ZIGBEE_WAIT_RESET) 
 				zigbeeWaiting();
-			}
-			
-			if(msg.obj == ThreadMessages.ZIGBEE_INITIALIZED) {
+			if(msg.obj == ThreadMessages.ZIGBEE_INITIALIZED) 
 				zigbeeInitialized();
-			}
 			
+			///////////////////////////////////////////////////////////////////////
+			// A set of messages that that deal with hardware connections
 			if(msg.obj == ThreadMessages.SHOW_TOAST) {
 				try {
 					String m = toastMessages.remove();
 					Toast.makeText(getApplicationContext(), m, Toast.LENGTH_LONG).show();	
 				} catch(Exception e) { }
 			}
-
-			if(msg.obj == ThreadMessages.INCREMENT_PROGRESS) {
-				pd.incrementProgressBy(1);
-			}
-
 		}
 	};
 	
@@ -151,6 +132,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void zigbeeSettling() {
 		pd = ProgressDialog.show(this, "", "Initializing ZigBee device...", true, false);  
 		usbmon.stopUSBMon();
+		zigbee.connected();
 	}
 	
 	public void zigbeeInitialized() {
@@ -166,9 +148,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void atherosSettling() {
 		pd = ProgressDialog.show(this, "", "Initializing Atheros card...", true, false); 
 		usbmon.stopUSBMon();
+		ath.connected();
 	}
 	
 	public void atherosInitialized() {
+		Toast.makeText(getApplicationContext(), "Successfully initialized Atheros card", Toast.LENGTH_LONG).show();	
 		pd.dismiss();
 		usbmon.startUSBMon();
 	}
@@ -255,20 +239,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
 		_bt_reenable = (bt.isEnabled()) ? true : false;
 
-		// Register Broadcast Receivers for all of the different protocols.
-		// These receivers handle incoming scan completes to parse through results.
-		if (rcvr_80211 == null) {
-			rcvr_80211 = new WiFiScanReceiver(_handler);
-			registerReceiver(rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
-		}
-		if (rcvr_BTooth == null) {
-			rcvr_BTooth = new BluetoothManager(this);
-		}
-		if(rcvr_ZigBee == null) {
-			rcvr_ZigBee = new ZigBeeScanReceiver(_handler);
-			registerReceiver(rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
-		}
-
 		textStatus.append(initUSB());
 		
 		// Print out the USB device names
@@ -296,7 +266,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		usbmon = new USBMon(this, _handler);
 		
-    	_networks_scan = new NetworksScan(usbmon, ath, zigbee);
+    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee);
+		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
+		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 		
 		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
 		//wiresharkTest("/sdcard/test.pcap");
@@ -327,48 +299,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		wispy.getResultsBlock(Wispy.PASSES);
 		Log.d(TAG, "Got results from the WiSpy");
 	}
-	
-	// Invoked from the message handler when a message has been received
-	// that a Wifi scan has completed.  That message is sent by WifiScanReceiver.
-	public void wifiScanComplete() {
-		Log.d(TAG, "Wifi scan is now complete");
-		_networks_scan._wifi_scan_result = rcvr_80211._last_scan;
-		if(_networks_scan.isScanComplete())
-			networkScansComplete();
-	}
-	
-	// Invoked from the message handler when a message has been received that
-	// a ZigBee network scan has been completed.  This message is sent to
-	// the handler from ZigBeeScanReceiver.
-	public void zigbeeScanComplete() {
-		Log.d(TAG, "ZigBee scan is now complete");
-		_networks_scan._zigbee_scan_result = rcvr_ZigBee._last_scan;
-		if(_networks_scan.isScanComplete())
-			networkScansComplete();
-	}
-	
-	// Invoked once we have received the results from all of the network scans.
-	public void networkScansComplete() {
-		pd.dismiss();
-		usbmon.startUSBMon();
-		_networks_scan._is_scanning=false;
-		
-		try {
-			Log.d(TAG,"Trying to load add networks window");
-			Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
-			
-			// Hopefully this is not broken, using it as a WifiScanReceiver rather
-			// than BroadcastReceiver type.
-			i.putExtra("com.gnychis.coexisyst.80211", _networks_scan._wifi_scan_result);
-			i.putExtra("com.gnychis.coexisyst.ZigBee", _networks_scan._zigbee_scan_result);
-			
-			startActivity(i);
-		} catch (Exception e) {
-			Log.e(TAG, "Exception trying to load network add window",e);
-			return;
-		}	
-	}
-	
+
 	// This triggers a scan through the networks to return a list of
 	// networks and devices for a user to add for management.
 	public void clickAddNetwork() {
@@ -392,6 +323,26 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		max_progress = _networks_scan.initiateScan();
 		pd.setMax(max_progress);
 		pd.show();
+	}
+	
+	// Invoked once we have received the results from all of the network scans.
+	public void networkScansComplete() {
+		pd.dismiss();
+		
+		try {
+			Log.d(TAG,"Trying to load add networks window");
+			Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
+			
+			// Hopefully this is not broken, using it as a WifiScanReceiver rather
+			// than BroadcastReceiver type.
+			i.putExtra("com.gnychis.coexisyst.80211", _networks_scan._wifi_scan_result);
+			i.putExtra("com.gnychis.coexisyst.ZigBee", _networks_scan._zigbee_scan_result);
+			
+			startActivity(i);
+		} catch (Exception e) {
+			Log.e(TAG, "Exception trying to load network add window",e);
+			return;
+		}	
 	}
 	
 	public void clickViewSpectrum() {
