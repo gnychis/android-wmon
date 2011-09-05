@@ -296,7 +296,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		usbmon = new USBMon(this, _handler);
 		
-    	_networks_scan = new NetworksScan(ath, zigbee);
+    	_networks_scan = new NetworksScan(usbmon, ath, zigbee);
 		
 		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
 		//wiresharkTest("/sdcard/test.pcap");
@@ -372,10 +372,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// This triggers a scan through the networks to return a list of
 	// networks and devices for a user to add for management.
 	public void clickAddNetwork() {
-		int max=0;
+		int max_progress;
 		
 		// Do not start another scan, if we already are
-		if(_networks_scan._is_scanning)
+		if(_networks_scan.isScanning())
 			return;
 		
 		// Create a progress dialog to show progress of the scan
@@ -389,24 +389,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// Call the networks scan class to initiate a new scan
 		// which, based on the devices connected for scanning,
 		// will return a maximum value for the progress bar
-
-		
-		pd.setMax(max);
-		
+		max_progress = _networks_scan.initiateScan();
+		pd.setMax(max_progress);
 		pd.show();
-				
-		usbmon.stopUSBMon();
-		_networks_scan.resetScan();
-		_networks_scan._is_scanning=true;
-		
-		_networks_scan._wifi_connected=ath.isConnected();
-		_networks_scan._zigbee_connected=zigbee.isConnected();
-		
-		// start the scanning process, which happens in another thread
-		if(ath.isConnected())
-			ath.APScan();
-		if(zigbee.isConnected())
-			zigbee.scanStart();
 	}
 	
 	public void clickViewSpectrum() {
