@@ -395,7 +395,7 @@ public class Wifi {
 			coexisyst._handler.sendMessage(msg);
 		}
 		
-		// The entire meat of the thread, pulls packets off the interface and dissects them
+		// Initialize the hardware
 		@Override
 		protected String doInBackground( Context ... params )
 		{

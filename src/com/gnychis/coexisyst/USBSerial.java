@@ -29,6 +29,15 @@ public class USBSerial {
 		return true;
 	}
 	
+	public boolean closePort() {
+		if(closeCommPort(fd)==-1)
+			return false;
+		
+		fd = -1;
+		return true;
+		
+	}
+	
 	public byte getByte() {
 		try {
 			char c = blockRead1(fd);
@@ -71,6 +80,7 @@ public class USBSerial {
     private native int readInt32(int fd);
     private native void writeBytes(int fd, byte[] data, int length);
 	private native int openCommPort(String port);
+	private native int closeCommPort(int fd);
 	private native char blockRead1(int fd);
     private native byte[] blockReadBytes(int fd, int nBytes);
 }
