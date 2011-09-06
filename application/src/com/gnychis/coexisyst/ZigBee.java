@@ -17,6 +17,7 @@ import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 
 public class ZigBee {
 	private static final String TAG = "ZigbeeDev";
+	private static final boolean VERBOSE = true;
 
 	public static final int ZIGBEE_CONNECT = 200;
 	public static final int ZIGBEE_DISCONNECT = 201;
@@ -26,7 +27,7 @@ public class ZigBee {
 	CoexiSyst coexisyst;
 	
 	boolean _device_connected;
-	ZigBeeMon _monitor_thread;
+	ZigBeeScan _monitor_thread;
 	
 	static int WTAP_ENCAP_802_15 = 127;
 	
@@ -73,7 +74,9 @@ public class ZigBee {
 			return false;
 		
 		_scan_results.clear();
-		_monitor_thread.startScan();
+		
+		_monitor_thread = new ZigBeeScan();
+		_monitor_thread.execute(coexisyst);
 		
 		return true;  // in scanning state, and channel hopping
 	}
@@ -147,13 +150,12 @@ public class ZigBee {
 	
 	public void connected() {
 		_device_connected=true;
-		coexisyst.zigbee._monitor_thread = new ZigBeeMon();
-		coexisyst.zigbee._monitor_thread.execute(coexisyst);
+		ZigBeeInit zbi = new ZigBeeInit();
+		zbi.execute(coexisyst);
 	}
 	
 	public void disconnected() {
 		_device_connected=false;
-		coexisyst.zigbee._monitor_thread.cancel(true);
 	}
 	
 	public static byte[] parseMacAddress(String macAddress)
@@ -177,8 +179,72 @@ public class ZigBee {
 		return ret;
 	}
 
+	protected class ZigBeeInit extends AsyncTask<Context, Integer, String>
+	{
+		Context parent;
+		CoexiSyst coexisyst;
+		USBSerial _dev;
+		
+		// The initialized sequence (hardware sends it when it is initialized)
+		byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
+		
+		private void debugOut(String msg) {
+			if(VERBOSE)
+				Log.d("ZigBeeInit", msg);
+		}
+		
+		// Used to send messages to the main Activity (UI) thread
+		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
+			Message msg = new Message();
+			msg.obj = t;
+			coexisyst._handler.sendMessage(msg);
+		}
+		
+		public boolean checkInitSeq(byte buf[]) {
+			
+			for(int i=0; i<initialized_sequence.length; i++)
+				if(initialized_sequence[i]!=buf[i])
+					return false;
+						
+			return true;
+		}
+		
+		@Override
+		protected String doInBackground( Context ... params )
+		{
+			parent = params[0];
+			coexisyst = (CoexiSyst) params[0];
+			
+			// Create a serial device
+			_dev = new USBSerial();
+			if(!_dev.openPort("/dev/ttyUSB5"))
+				return "FAIL";
+			
+			debugOut("opened device, now waiting for sequence");
+			
+			// Wait for the initialized sequence...
+			byte[] readSeq = new byte[initialized_sequence.length];
+			sendMainMessage(ThreadMessages.ZIGBEE_WAIT_RESET);
+			while(!checkInitSeq(readSeq)) {
+				for(int i=0; i<initialized_sequence.length-1; i++)
+					readSeq[i] = readSeq[i+1];
+				readSeq[initialized_sequence.length-1] = _dev.getByte();
+			}
+			
+			debugOut("received the initialization sequence!");
+			
+			// Close the port
+			if(!_dev.closePort())
+				sendMainMessage(ThreadMessages.ZIGBEE_FAILED);
+
+			sendMainMessage(ThreadMessages.ZIGBEE_INITIALIZED);
+
+			return "OK";
+		}
+		
+	}
 	
-	protected class ZigBeeMon extends AsyncTask<Context, Integer, String>
+	protected class ZigBeeScan extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
 		CoexiSyst coexisyst;
@@ -197,16 +263,6 @@ public class ZigBee {
 		byte SCAN_DONE=0x0006;
 		byte CHAN_IS=0x0007;
 		
-		// The initialized sequence (hardware sends it when it is initialized)
-		byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
-		
-		// On pre-execute, we make sure that we initialize the card properly and set the state to IDLE
-		@Override 
-		protected void onPreExecute( )
-		{
-			_state = ZigBeeState.IDLE;			
-		}
-		
 		// Used to send messages to the main Activity (UI) thread
 		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
 			Message msg = new Message();
@@ -218,15 +274,6 @@ public class ZigBee {
 		protected void onCancelled()
 		{
 			Log.d(TAG, "ZigBee monitor thread is canceled...");
-		}
-		
-		public boolean checkInitSeq(byte buf[]) {
-			
-			for(int i=0; i<initialized_sequence.length; i++)
-				if(initialized_sequence[i]!=buf[i])
-					return false;
-						
-			return true;
 		}
 		
 		// The entire meat of the thread, pulls packets off the interface and dissects them
@@ -242,19 +289,7 @@ public class ZigBee {
 			if(!_dev.openPort("/dev/ttyUSB5"))
 				return "FAIL";
 			
-			// Wait for the initialized sequence...
-			byte[] readSeq = new byte[initialized_sequence.length];
-			sendMainMessage(ThreadMessages.ZIGBEE_WAIT_RESET);
-			while(!checkInitSeq(readSeq)) {
-				for(int i=0; i<initialized_sequence.length-1; i++)
-					readSeq[i] = readSeq[i+1];
-				readSeq[initialized_sequence.length-1] = _dev.getByte();
-			}
-			
-			sendMainMessage(ThreadMessages.ZIGBEE_INITIALIZED);
-
-			// Send a command to set the channel to 1
-			setChannel(0);
+			startScan(); 	// Initialize the scan
 						
 			// Loop and read headers and packets
 			while(true) {
@@ -263,13 +298,12 @@ public class ZigBee {
 				if(cmd==CHAN_IS) {
 					_channel = (int)_dev.getByte() & 0xff;
 					
-					if(_state==ZigBeeState.SCANNING)
-						_monitor_thread.sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);
+					// Our way of tracking progress with the main UI
+					sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);
 				}
 				
-				if(cmd==SCAN_DONE) {
-					scanStop();
-				}
+				if(cmd==SCAN_DONE)
+					break;
 				
 				// Wait for a byte which signals a command
 				if(cmd==RECEIVED_PACKET) {
@@ -301,24 +335,19 @@ public class ZigBee {
 						return "FAIL";
 					}
 					rpkt._dataLen = rpkt._rawData.length;
-				
-					switch(_state) {
-					
-					case IDLE:
-						break;
-					
-					// In the scanning state, we save all beacon frames as we hop channels (handled by a
-					// separate thread).
-					case SCANNING:
-						// To identify a beacon from ZigBee, check for the field zbee.beacon.protocol.
-						// If it exists, save the packet as part of our scan.
-						if(rpkt.getField("zbee.beacon.protocol")!=null)
-							_scan_results.add(rpkt);
-						
-						break;
-					}
+
+					// To identify a beacon from ZigBee, check for the field zbee.beacon.protocol.
+					// If it exists, save the packet as part of our scan.
+					if(rpkt.getField("zbee.beacon.protocol")!=null)
+						_scan_results.add(rpkt);
 				}
 			}
+			
+			if(!_dev.closePort())
+				sendMainMessage(ThreadMessages.ZIGBEE_FAILED);
+			
+			scanStop();
+			return "PASS";
 		}
 		
 		// First, acquire the lock to communicate with the ZigBee device,

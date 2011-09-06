@@ -217,6 +217,12 @@ Java_com_gnychis_coexisyst_USBSerial_blockReadBytes(JNIEnv* env, jobject thiz, i
 }
 
 jint
+Java_com_gnychis_coexisyst_USBSerial_closeCommPort(JNIEnv* env, jobject thiz, jint fd)
+{
+	return close(fd);
+}
+
+jint
 Java_com_gnychis_coexisyst_USBSerial_openCommPort(JNIEnv* env, jobject thiz, jstring port_name)
 {
 	const char *nativePort = (*env)->GetStringUTFChars(env, port_name, 0);
