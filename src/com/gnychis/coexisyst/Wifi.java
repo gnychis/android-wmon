@@ -79,7 +79,7 @@ public class Wifi {
 	public static int SCAN_WAIT_COUNTS=SCAN_WAIT_TIME/SCAN_UPDATE_TIME;
 	public static boolean _native_scan=false;
 	public static boolean _one_shot_scan=false;
-	public static boolean _active_scan=true;
+	public static boolean _active_scan=false;
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	ArrayList<Packet> _scan_results;
 
