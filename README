@@ -1,2 +1,6 @@
 All documentation can be found at:
   https://github.com/gnychis/android-wmon/wiki
+
+The AWMon core code is included as a submodule.  Get it using:
+  git submodule init
+  git submodule update
