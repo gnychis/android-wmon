@@ -1,14 +1,13 @@
-/Users/gnychis/Documents/workspace/CoexiSyst/obj/local/armeabi/objs-debug/jnetpcap/util_crc32.o: \
- /Users/gnychis/Documents/workspace/CoexiSyst/jni/jnetpcap/util_crc32.c \
- /Users/gnychis/Documents/workspace/CoexiSyst/jni/jnetpcap/util_crc32.h \
- /Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/stdint.h \
- /Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/sys/_types.h \
- /Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/machine/_types.h
+obj/local/armeabi/objs-debug/jnetpcap/util_crc32.o: \
+ jni/jnetpcap/util_crc32.c jni/jnetpcap/util_crc32.h \
+ /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/stdint.h \
+ /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/_types.h \
+ /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/_types.h
 
-/Users/gnychis/Documents/workspace/CoexiSyst/jni/jnetpcap/util_crc32.h:
+jni/jnetpcap/util_crc32.h:
 
-/Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/stdint.h:
+/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/stdint.h:
 
-/Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/sys/_types.h:
+/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/_types.h:
 
-/Users/gnychis/Documents/android-ndk/platforms/android-8/arch-arm/usr/include/machine/_types.h:
+/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/_types.h:
