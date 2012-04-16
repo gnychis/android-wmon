@@ -268,13 +268,13 @@ public class Wifi {
 	
 	public String compatLoading() {
 		try {
-			List<String> res = RootTools.sendShell("busybox find /sys -name loading");
+			List<String> res = RootTools.sendShell("busybox find /sys -name loading",0);
 			return res.get(0);
 		} catch (Exception e) { return ""; }	
 	}
 	public boolean compatIsLoading(String loc) {
 		try {
-			List<String> res = RootTools.sendShell("cat " + loc);
+			List<String> res = RootTools.sendShell("cat " + loc,0);
 			
 			if(Integer.parseInt(res.get(0))==1)
 				return true;
@@ -284,7 +284,7 @@ public class Wifi {
 	}
 	public boolean wlan0_monitor() {
 		try {
-			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig moni0");
+			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig moni0",0);
 			if(res.size()>1)
 				return true;
 		} catch (Exception e) { return false; }	
@@ -293,7 +293,7 @@ public class Wifi {
 	}
 	public boolean wlan0_up() {
 		try {
-			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep UP");
+			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep UP",0);
 			if(res.size()!=0)
 				return true;
 		} catch (Exception e) { return false; }	
@@ -302,7 +302,7 @@ public class Wifi {
 	}
 	public boolean moni0_up() {
 		try {
-			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^moni0\" | busybox grep UP");
+			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^moni0\" | busybox grep UP",0);
 			if(res.size()!=0)
 				return true;
 		} catch (Exception e) { return false; }	
@@ -311,7 +311,7 @@ public class Wifi {
 	}
 	public boolean wlan0_down() {
 		try {
-			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep DOWN");
+			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep DOWN",0);
 			if(res.size()!=0)
 				return true;
 		} catch (Exception e) { return false; }	
@@ -320,7 +320,7 @@ public class Wifi {
 	}
 	public boolean wlan0_exists() {
 		try {
-			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0");
+			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0",0);
 			if(res.size()>1)
 				return true;
 		} catch (Exception e) { return false; }	
@@ -366,7 +366,7 @@ public class Wifi {
 	
 	public List<String> runCommand(String c) {
 		try {
-			return RootTools.sendShell(c);
+			return RootTools.sendShell(c,0);
 		} catch(Exception e) {
 			Log.e("AtherosDev", "error writing to RootTools the command: " + c, e);
 			return null;

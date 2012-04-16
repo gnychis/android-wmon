@@ -1,0 +1,128 @@
+mpi-mul.lo: mpi-mul.c \
+  /home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h \
+  ../config.h /home/android/mydroid2/bionic/libc/include/stdio.h \
+  /home/android/mydroid2/bionic/libc/include/sys/cdefs.h \
+  /home/android/mydroid2/bionic/libc/include/sys/cdefs_elf.h \
+  /home/android/mydroid2/bionic/libc/include/sys/_types.h \
+  /home/android/mydroid2/bionic/libc/arch-arm/include/machine/_types.h \
+  /home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stdarg.h \
+  /home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h \
+  /home/android/mydroid2/bionic/libc/include/sys/types.h \
+  /home/android/mydroid2/bionic/libc/include/stdint.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/posix_types.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/stddef.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/compiler.h \
+  /home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/posix_types.h \
+  /home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/types.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/types.h \
+  /home/android/mydroid2/bionic/libc/arch-arm/include/machine/kernel.h \
+  /home/android/mydroid2/bionic/libc/include/sys/sysmacros.h \
+  /home/android/mydroid2/bionic/libc/include/stdlib.h \
+  /home/android/mydroid2/bionic/libc/include/string.h \
+  /home/android/mydroid2/bionic/libc/include/malloc.h \
+  /home/android/mydroid2/bionic/libc/include/alloca.h \
+  /home/android/mydroid2/bionic/libc/include/strings.h \
+  /home/android/mydroid2/bionic/libc/include/memory.h mpi-internal.h \
+  mpi-asm-defs.h ../src/mpi.h ../src/types.h ../src/../mpi/mpi-asm-defs.h \
+  ../src/g10lib.h ../src/visibility.h ../src/gcrypt.h \
+  /home/android/vpnc-4-thedroid/libgpg-error-1.7/src/gpg-error.h \
+  /home/android/mydroid2/bionic/libc/include/sys/select.h \
+  /home/android/mydroid2/bionic/libc/include/sys/time.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/time.h \
+  /home/android/mydroid2/bionic/libc/include/sys/socket.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/socket.h \
+  /home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/socket.h \
+  /home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/sockios.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/sockios.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/uio.h \
+  ../src/gcrypt-module.h mpi-inline.h
+
+/home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h:
+
+../config.h:
+
+/home/android/mydroid2/bionic/libc/include/stdio.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/cdefs.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/cdefs_elf.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/_types.h:
+
+/home/android/mydroid2/bionic/libc/arch-arm/include/machine/_types.h:
+
+/home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stdarg.h:
+
+/home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/types.h:
+
+/home/android/mydroid2/bionic/libc/include/stdint.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/posix_types.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/stddef.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/compiler.h:
+
+/home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/posix_types.h:
+
+/home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/types.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/types.h:
+
+/home/android/mydroid2/bionic/libc/arch-arm/include/machine/kernel.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/sysmacros.h:
+
+/home/android/mydroid2/bionic/libc/include/stdlib.h:
+
+/home/android/mydroid2/bionic/libc/include/string.h:
+
+/home/android/mydroid2/bionic/libc/include/malloc.h:
+
+/home/android/mydroid2/bionic/libc/include/alloca.h:
+
+/home/android/mydroid2/bionic/libc/include/strings.h:
+
+/home/android/mydroid2/bionic/libc/include/memory.h:
+
+mpi-internal.h:
+
+mpi-asm-defs.h:
+
+../src/mpi.h:
+
+../src/types.h:
+
+../src/../mpi/mpi-asm-defs.h:
+
+../src/g10lib.h:
+
+../src/visibility.h:
+
+../src/gcrypt.h:
+
+/home/android/vpnc-4-thedroid/libgpg-error-1.7/src/gpg-error.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/select.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/time.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/time.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/socket.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/socket.h:
+
+/home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/socket.h:
+
+/home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/sockios.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/sockios.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/uio.h:
+
+../src/gcrypt-module.h:
+
+mpi-inline.h:

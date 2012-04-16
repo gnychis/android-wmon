@@ -63,7 +63,7 @@ public class USBMon
 	protected int checkAR9280()
 	{
 		try {
-			List<String> res = RootTools.sendShell("busybox find /sys -name loading");
+			List<String> res = RootTools.sendShell("busybox find /sys -name loading",0);
 			if(res.size()!=0)
 				return 1;
 		} catch(Exception e) {

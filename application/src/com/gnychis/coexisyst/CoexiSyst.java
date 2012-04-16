@@ -167,18 +167,18 @@ public class CoexiSyst extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         try {
-	    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system");
-	    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb");
-	    	RootTools.sendShell("mount -o remount,rw rootfs /");
-	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp");
+	    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system",0);
+	    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb",0);
+	    	RootTools.sendShell("mount -o remount,rw rootfs /",0);
+	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
 	    	
 	    	// Disable in releases
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libgmodule-2.0.so /system/lib/");
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb.so /system/lib/");
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb-compat.so /system/lib/");
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libpcap.so /system/lib/");
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libnl.so /system/lib/");
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libglib-2.0.so /system/lib/");
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libgmodule-2.0.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb-compat.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libpcap.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libnl.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libglib-2.0.so /system/lib/",0);
 	    	
 	    	// WARNING: these files do NOT get overwritten if they already exist on the file
 	    	// system with RootTools.  If you are updating ANY of these, you need to do:
@@ -204,6 +204,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
     		System.loadLibrary("usb-compat");
     		System.loadLibrary("wispy");
     		System.loadLibrary("pcap");
+    		System.loadLibrary("gpg-error");
+    		System.loadLibrary("gcrypt");
     		System.loadLibrary("tshark");
     		System.loadLibrary("wireshark_helper");
     		System.loadLibrary("coexisyst");
@@ -211,74 +213,74 @@ public class CoexiSyst extends Activity implements OnClickListener {
     		Log.e(TAG, "error trying to load a USB related library", e);
     	}
        
-    	wispy = new Wispy();
-    	
-    	toastMessages = new ArrayBlockingQueue<String>(20);
-        
-        // Setup the database
-    	db = new DBAdapter(this);
-    	db.open();
-      
-		// Setup UI
-		textStatus = (TextView) findViewById(R.id.textStatus);
-		textStatus.setText("");
-		buttonAddNetwork = (Button) findViewById(R.id.buttonAddNetwork); buttonAddNetwork.setOnClickListener(this);
-		buttonViewSpectrum = (Button) findViewById(R.id.buttonViewSpectrum); buttonViewSpectrum.setOnClickListener(this);
-		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets); buttonManageNets.setOnClickListener(this);
-		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs); buttonManageDevs.setOnClickListener(this);
-		buttonADB = (Button) findViewById(R.id.buttonAdb); buttonADB.setOnClickListener(this);
-		buttonScanSpectrum = (Button) findViewById(R.id.buttonScan); buttonScanSpectrum.setOnClickListener(this);
-		
-		wispyGraph = new GraphWispy();
-
-		// Setup wireless devices
-		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		bt = BluetoothAdapter.getDefaultAdapter();
-		
-		// Check the states of the interfaces
-		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
-		_bt_reenable = (bt.isEnabled()) ? true : false;
-
-		textStatus.append(initUSB());
-		
-		// Print out the USB device names
-		textStatus.append("\n\nUSB Devices:\n");
-		String devices[] = getDeviceNames();
-		for (int i=0; i<devices.length; i++)
-			textStatus.append("\t* " + devices[i] + "\n");
-			
-		// Start the USB monitor thread, but only instantiate the wispy scan
-		try {
-			wispyscan = wispy.new WispyThread();
-		} catch (Exception e) { Log.e(TAG, "exception trying to start wispy thread", e); }
-		ath = new Wifi(this);
-		zigbee = new ZigBee(this);
-		
-		// Check the pcap interfaces
-		//pcapGetInterfaces();
-		
-		Log.d(TAG, "onCreate()");
-		
-		if(wiresharkInit()==1)
-			Log.d(TAG, "success with wireshark library");
-		else
-			Log.d(TAG, "error with wireshark library");
-		
-		usbmon = new USBMon(this, _handler);
-		
-    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee);
-		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
-		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
-		
-		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
-		//wiresharkTest("/sdcard/test.pcap");
-		//wiresharkTestGetAll("/sdcard/test.pcap");
-		//Log.d(TAG, "Successfully run wireshark test!");
+//    	wispy = new Wispy();
+//    	
+//    	toastMessages = new ArrayBlockingQueue<String>(20);
+//        
+//        // Setup the database
+//    	db = new DBAdapter(this);
+//    	db.open();
+//      
+//		// Setup UI
+//		textStatus = (TextView) findViewById(R.id.textStatus);
+//		textStatus.setText("");
+//		buttonAddNetwork = (Button) findViewById(R.id.buttonAddNetwork); buttonAddNetwork.setOnClickListener(this);
+//		buttonViewSpectrum = (Button) findViewById(R.id.buttonViewSpectrum); buttonViewSpectrum.setOnClickListener(this);
+//		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets); buttonManageNets.setOnClickListener(this);
+//		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs); buttonManageDevs.setOnClickListener(this);
+//		buttonADB = (Button) findViewById(R.id.buttonAdb); buttonADB.setOnClickListener(this);
+//		buttonScanSpectrum = (Button) findViewById(R.id.buttonScan); buttonScanSpectrum.setOnClickListener(this);
+//		
+//		wispyGraph = new GraphWispy();
+//
+//		// Setup wireless devices
+//		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+//		bt = BluetoothAdapter.getDefaultAdapter();
+//		
+//		// Check the states of the interfaces
+//		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
+//		_bt_reenable = (bt.isEnabled()) ? true : false;
+//
+//		textStatus.append(initUSB());
+//		
+//		// Print out the USB device names
+//		textStatus.append("\n\nUSB Devices:\n");
+//		String devices[] = getDeviceNames();
+//		for (int i=0; i<devices.length; i++)
+//			textStatus.append("\t* " + devices[i] + "\n");
+//			
+//		// Start the USB monitor thread, but only instantiate the wispy scan
+//		try {
+//			wispyscan = wispy.new WispyThread();
+//		} catch (Exception e) { Log.e(TAG, "exception trying to start wispy thread", e); }
+//		ath = new Wifi(this);
+//		zigbee = new ZigBee(this);
+//		
+//		// Check the pcap interfaces
+//		//pcapGetInterfaces();
+//		
+//		Log.d(TAG, "onCreate()");
+//		
+//		if(wiresharkInit()==1)
+//			Log.d(TAG, "success with wireshark library");
+//		else
+//			Log.d(TAG, "error with wireshark library");
+//		
+//		usbmon = new USBMon(this, _handler);
+//		
+//    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee);
+//		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
+//		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
+//		
+//		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
+//		//wiresharkTest("/sdcard/test.pcap");
+//		//wiresharkTestGetAll("/sdcard/test.pcap");
+//		//Log.d(TAG, "Successfully run wireshark test!");
     }
     
     public String getAppUser() {
     	try {
-    		List<String> res = RootTools.sendShell("ls -l /data/data/com.gnychis.coexisyst");
+    		List<String> res = RootTools.sendShell("ls -l /data/data/com.gnychis.coexisyst",0);
     		return res.get(0).split(" ")[1];
     	} catch(Exception e) {
     		return "FAIL";
@@ -410,7 +412,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 									"stop adbd",
 									"start adbd"};
 			try {
-				RootTools.sendShell(adb_cmds,0);
+				RootTools.sendShell(adb_cmds,0,0);
 			} catch(Exception e) {
 				Log.e(TAG, "error trying to set ADB over TCP");
 				return;

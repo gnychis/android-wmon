@@ -1,0 +1,36 @@
+camellia.lo: camellia.c \
+  /home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h \
+  /home/android/mydroid2/bionic/libc/include/string.h \
+  /home/android/mydroid2/bionic/libc/include/sys/cdefs.h \
+  /home/android/mydroid2/bionic/libc/include/sys/cdefs_elf.h \
+  /home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h \
+  /home/android/mydroid2/bionic/libc/include/malloc.h \
+  /home/android/mydroid2/bionic/libc/include/stdlib.h \
+  /home/android/mydroid2/bionic/libc/include/alloca.h \
+  /home/android/mydroid2/bionic/libc/include/strings.h \
+  /home/android/mydroid2/bionic/libc/include/memory.h camellia.h \
+  ../config.h
+
+/home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h:
+
+/home/android/mydroid2/bionic/libc/include/string.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/cdefs.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/cdefs_elf.h:
+
+/home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h:
+
+/home/android/mydroid2/bionic/libc/include/malloc.h:
+
+/home/android/mydroid2/bionic/libc/include/stdlib.h:
+
+/home/android/mydroid2/bionic/libc/include/alloca.h:
+
+/home/android/mydroid2/bionic/libc/include/strings.h:
+
+/home/android/mydroid2/bionic/libc/include/memory.h:
+
+camellia.h:
+
+../config.h:

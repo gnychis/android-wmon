@@ -1,0 +1,96 @@
+hmac256-hmac256.o: hmac256.c \
+  /home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h \
+  ../config.h /home/android/mydroid2/bionic/libc/include/stdio.h \
+  /home/android/mydroid2/bionic/libc/include/sys/cdefs.h \
+  /home/android/mydroid2/bionic/libc/include/sys/cdefs_elf.h \
+  /home/android/mydroid2/bionic/libc/include/sys/_types.h \
+  /home/android/mydroid2/bionic/libc/arch-arm/include/machine/_types.h \
+  /home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stdarg.h \
+  /home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h \
+  /home/android/mydroid2/bionic/libc/include/sys/types.h \
+  /home/android/mydroid2/bionic/libc/include/stdint.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/posix_types.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/stddef.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/compiler.h \
+  /home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/posix_types.h \
+  /home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/types.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/types.h \
+  /home/android/mydroid2/bionic/libc/arch-arm/include/machine/kernel.h \
+  /home/android/mydroid2/bionic/libc/include/sys/sysmacros.h \
+  /home/android/mydroid2/bionic/libc/include/stdlib.h \
+  /home/android/mydroid2/bionic/libc/include/string.h \
+  /home/android/mydroid2/bionic/libc/include/malloc.h \
+  /home/android/mydroid2/bionic/libc/include/alloca.h \
+  /home/android/mydroid2/bionic/libc/include/strings.h \
+  /home/android/mydroid2/bionic/libc/include/memory.h \
+  /home/android/mydroid2/bionic/libc/include/assert.h \
+  /home/android/mydroid2/bionic/libc/include/errno.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/errno.h \
+  /home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/errno.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/asm-generic/errno.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/asm-generic/errno-base.h \
+  hmac256.h
+
+/home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h:
+
+../config.h:
+
+/home/android/mydroid2/bionic/libc/include/stdio.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/cdefs.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/cdefs_elf.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/_types.h:
+
+/home/android/mydroid2/bionic/libc/arch-arm/include/machine/_types.h:
+
+/home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stdarg.h:
+
+/home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/types.h:
+
+/home/android/mydroid2/bionic/libc/include/stdint.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/posix_types.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/stddef.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/compiler.h:
+
+/home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/posix_types.h:
+
+/home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/types.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/types.h:
+
+/home/android/mydroid2/bionic/libc/arch-arm/include/machine/kernel.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/sysmacros.h:
+
+/home/android/mydroid2/bionic/libc/include/stdlib.h:
+
+/home/android/mydroid2/bionic/libc/include/string.h:
+
+/home/android/mydroid2/bionic/libc/include/malloc.h:
+
+/home/android/mydroid2/bionic/libc/include/alloca.h:
+
+/home/android/mydroid2/bionic/libc/include/strings.h:
+
+/home/android/mydroid2/bionic/libc/include/memory.h:
+
+/home/android/mydroid2/bionic/libc/include/assert.h:
+
+/home/android/mydroid2/bionic/libc/include/errno.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/errno.h:
+
+/home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/errno.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/asm-generic/errno.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/asm-generic/errno-base.h:
+
+hmac256.h:

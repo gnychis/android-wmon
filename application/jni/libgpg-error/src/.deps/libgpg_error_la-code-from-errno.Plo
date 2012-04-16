@@ -1,0 +1,36 @@
+libgpg_error_la-code-from-errno.lo: code-from-errno.c \
+  /home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h \
+  ../config.h /home/android/mydroid2/bionic/libc/include/errno.h \
+  /home/android/mydroid2/bionic/libc/include/sys/cdefs.h \
+  /home/android/mydroid2/bionic/libc/include/sys/cdefs_elf.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/linux/errno.h \
+  /home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/errno.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/asm-generic/errno.h \
+  /home/android/mydroid2/bionic/libc/kernel/common/asm-generic/errno-base.h \
+  /home/android/vpnc-4-thedroid/libgpg-error-1.7/src/gpg-error.h \
+  /home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h \
+  code-from-errno.h
+
+/home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h:
+
+../config.h:
+
+/home/android/mydroid2/bionic/libc/include/errno.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/cdefs.h:
+
+/home/android/mydroid2/bionic/libc/include/sys/cdefs_elf.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/linux/errno.h:
+
+/home/android/mydroid2/bionic/libc/kernel/arch-arm/asm/errno.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/asm-generic/errno.h:
+
+/home/android/mydroid2/bionic/libc/kernel/common/asm-generic/errno-base.h:
+
+/home/android/vpnc-4-thedroid/libgpg-error-1.7/src/gpg-error.h:
+
+/home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h:
+
+code-from-errno.h:

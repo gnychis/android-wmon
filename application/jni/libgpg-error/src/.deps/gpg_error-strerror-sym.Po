@@ -1,0 +1,18 @@
+gpg_error-strerror-sym.o: strerror-sym.c \
+  /home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h \
+  ../config.h \
+  /home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h \
+  /home/android/vpnc-4-thedroid/libgpg-error-1.7/src/gpg-error.h \
+  err-codes-sym.h errnos-sym.h
+
+/home/android/mydroid2/system/core/include/arch/linux-arm/AndroidConfig.h:
+
+../config.h:
+
+/home/android/mydroid2/prebuilt/linux-x86/toolchain/arm-eabi-4.3.1/bin/../lib/gcc/arm-eabi/4.3.1/include/stddef.h:
+
+/home/android/vpnc-4-thedroid/libgpg-error-1.7/src/gpg-error.h:
+
+err-codes-sym.h:
+
+errnos-sym.h:
