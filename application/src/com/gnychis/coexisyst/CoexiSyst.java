@@ -191,6 +191,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.installBinary(this, R.raw.iwlist, "iwlist", "755");
 	    	RootTools.installBinary(this, R.raw.iw, "iw", "755");
 	    	
+	    	// Kick the phone in to USB host mode
+	    	RootTools.sendShell("echo a > /sys/devices/platform/s3c-usbgadget/opmode", 0);
 	    			
         } catch(Exception e) {
         	Log.e(TAG, "error running RootTools commands for init", e);
