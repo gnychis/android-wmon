@@ -78,8 +78,8 @@ public class USBMon
 		int atheros_in_devlist = _coexisyst.USBcheckForDevice(0x0411,0x017f);
 		int econotag_in_devlist = _coexisyst.USBcheckForDevice(0x0403, 0x6010);
 		
-		if(atheros_in_devlist==0)
-			atheros_in_devlist = checkAR9280();  // this is a more expensive check, only do when necessary
+		//if(atheros_in_devlist==0)
+		//	atheros_in_devlist = checkAR9280();  // this is a more expensive check, only do when necessary
 				
 		// Wispy related checks
 		if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==false) {
