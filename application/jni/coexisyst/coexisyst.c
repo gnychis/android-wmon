@@ -47,10 +47,13 @@ Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
 {
   int r;
   libusb_init(NULL);
-  if(r < 0)
+  if(r < 0) {
     return (*env)->NewStringUTF(env, "Failed to initialize libusb!");
-  else
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "failed to initialize libusb");
+  } else {
     return (*env)->NewStringUTF(env, "CoexiSyst system library and USB enabled...");
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "successfully initialized libusb");
+  }
 }
 
 jint
@@ -423,7 +426,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_getWiSpy( JNIEnv* env, jobject thiz)
 	return devh ? 1 : -1;
 }
 
-jobjectArray
+jint
 Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thiz, jint vid, jint pid )
 {
   ssize_t cnt;
