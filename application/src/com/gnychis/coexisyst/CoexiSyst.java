@@ -98,8 +98,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				atherosInitialized();
 			if(msg.obj == ThreadMessages.ATHEROS_FAILED)
 				Toast.makeText(getApplicationContext(), "Failed to initialize Atheros card", Toast.LENGTH_LONG).show();	
-			if(msg.obj == ThreadMessages.ZIGBEE_CONNECTED)
+			if(msg.obj == ThreadMessages.ZIGBEE_CONNECTED) {
 				zigbeeSettling();
+				textStatus.append("ZigBee Econotag device connected\n");
+			}
 			if(msg.obj == ThreadMessages.ZIGBEE_WAIT_RESET) 
 				zigbeeWaiting();
 			if(msg.obj == ThreadMessages.ZIGBEE_INITIALIZED) 
@@ -244,14 +246,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// Check the states of the interfaces
 		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
 		_bt_reenable = (bt.isEnabled()) ? true : false;
-
-		textStatus.append(initUSB());
-		
-		// Print out the USB device names
-		textStatus.append("\n\nUSB Devices:\n");
-		String devices[] = getDeviceNames();
-		for (int i=0; i<devices.length; i++)
-			textStatus.append("\t* " + devices[i] + "\n");
 			
 		// Start the USB monitor thread, but only instantiate the wispy scan
 		try {
@@ -281,8 +275,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		//wiresharkTestGetAll("/sdcard/test.pcap");
 		//Log.d(TAG, "Successfully run wireshark test!");
 		
-		libusbTest();
-
+		USBcheckForDevice(1, 0);
     }
     
     public String getAppUser() {

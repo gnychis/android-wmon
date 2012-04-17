@@ -45,7 +45,11 @@ int sample = 0;
 jstring
 Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
 {
-	usb_init();
+  int r;
+  libusb_init(NULL);
+  if(r < 0)
+    return (*env)->NewStringUTF(env, "Failed to initialize libusb!");
+  else
     return (*env)->NewStringUTF(env, "CoexiSyst system library and USB enabled...");
 }
 
@@ -422,34 +426,33 @@ Java_com_gnychis_coexisyst_CoexiSyst_getWiSpy( JNIEnv* env, jobject thiz)
 jobjectArray
 Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thiz, jint vid, jint pid )
 {
-	struct usb_bus *bus;
-  struct usb_bus *busses;
-  	jobjectArray names = 0;
-	jstring      str;
-  	jsize        len = 0;
+  ssize_t cnt;
+  libusb_device **devs;
+	libusb_device *dev;
+  int i,ret;
 
-    usb_init();
-  		
-  	if(usb_find_busses()<0)
-  		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB busses"); 	 
-	if(usb_find_devices()<0)
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB devices"); 
+  // Get the usb device list
+  cnt = libusb_get_device_list(NULL, &devs);
+  if(cnt < 0)
+    return -1;
 
-  usb_busses = usb_get_busses();
+  // Go through the devices and see if the one we are looking for exists
+  ret=0;
+	while ((dev = devs[i++]) != NULL) {
+		struct libusb_device_descriptor desc;
+		int r = libusb_get_device_descriptor(dev, &desc);
+		if (r < 0) {
+			return -1;
+		}
 
-//	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Checking for 0x%x and 0x%x", vid, pid); 
-  for(bus = usb_busses; bus; bus = bus->next) {
-    struct usb_device * dev;
-    for(dev = bus->devices; dev; dev = dev->next) {
-//			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, ".... 0x%x:0x%x", dev->descriptor.idVendor, dev->descriptor.idProduct); 
-			if(dev->descriptor.idVendor==vid && dev->descriptor.idProduct==pid) {
-//	      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, ".. found!"); 
-				return 1;
-      }
+    if(desc.idVendor==vid && desc.idProduct==pid) {
+      ret=1;
+      break;
     }
-  }
-	
-	return 0;
+	}
+
+  libusb_free_device_list(devs, 1);
+  return ret;
 }
 
 void
@@ -481,8 +484,6 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
   	jsize        len = 0;
 	int          i=0;
 
-  usb_init();
-	
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, 
             "in getDeviceNames() within driver"); 
 
@@ -490,23 +491,28 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
   	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB busses"); 	 
 	if(usb_find_devices()<0)
 		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "error finding USB devices"); 
+
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "usb_find_busses(): %d\n", usb_find_busses());
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "usb_find_devices(): %d\n", usb_find_devices());
 		
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "USB bus head address: 0x%x", usb_busses);
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "USB bus head address: 0x%x", usb_busses->next);
 
 //  busses = usb_get_busses();
-  
-	// Find the number of devices
-  for(bus = usb_busses; bus; bus = bus->next) {
-    struct usb_device * dev;
-    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "At bus: 0x%x", bus); 
-    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Devices: 0x%x", bus->devices); 
-    for(dev = bus->devices; dev; dev = dev->next) {
-      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "device: 0x%x", dev); 
+  for (bus = usb_busses; bus; bus = bus->next) {
+    if (bus->root_dev) {
+      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...RootDev");
       len++;
+    } else {
+      struct usb_device *dev;
+
+      for (dev = bus->devices; dev; dev = dev->next) {
+        __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "...Dev");
+        len++;
+      }
     }
   }
-	
+  
  	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, 
             "the number of USB devices: %d", len); 
  

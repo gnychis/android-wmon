@@ -138,6 +138,9 @@ int main(int argc, char *argv[])
   usb_find_busses();
   usb_find_devices();
 
+  printf("Number of busses: %d\n", usb_find_devices());
+  printf("Number of devices: %d\n", usb_find_devices());
+
   for (bus = usb_busses; bus; bus = bus->next) {
     if (bus->root_dev && !verbose)
       print_device(bus->root_dev, 0);
