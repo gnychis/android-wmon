@@ -41,10 +41,13 @@ obj/local/armeabi/objs-debug/coexisyst/coexisyst.o: \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/strings.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/memory.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/dirent.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/android/log.h \
- jni/wispy/spectool_container.h \
+ jni/libusb-compat/libusb/libusb.h \
+ /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/endian.h \
+ /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/endian.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/time.h \
- jni/wispy/spectool_net_client.h jni/wispy/config.h \
+ /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/android/log.h \
+ jni/wispy/spectool_container.h jni/wispy/spectool_net_client.h \
+ jni/wispy/config.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/stdio.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/file.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/fcntl.h \
@@ -53,8 +56,6 @@ obj/local/armeabi/objs-debug/coexisyst/coexisyst.o: \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm-generic/fcntl.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/stat.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/stat.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/endian.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/endian.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/socket.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/socket.h \
  /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm/socket.h \
@@ -169,11 +170,17 @@ jni/libusb-compat/libusb/usb.h:
 
 /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/dirent.h:
 
+jni/libusb-compat/libusb/libusb.h:
+
+/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/endian.h:
+
+/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/endian.h:
+
+/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/time.h:
+
 /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/android/log.h:
 
 jni/wispy/spectool_container.h:
-
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/time.h:
 
 jni/wispy/spectool_net_client.h:
 
@@ -194,10 +201,6 @@ jni/wispy/config.h:
 /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/stat.h:
 
 /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/stat.h:
-
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/endian.h:
-
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/endian.h:
 
 /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/socket.h:
 

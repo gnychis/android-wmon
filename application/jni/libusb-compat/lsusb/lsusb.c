@@ -32,6 +32,8 @@ int main(void)
 	busses = usb_get_busses();
 	for (bus = busses; bus; bus = bus->next) {
 		struct usb_device *dev;
+    printf("At bus 0x%x\n", bus);
+    printf("Devices 0x%x\n", bus->devices);
 		for (dev = bus->devices; dev; dev = dev->next) {
 			printf("%04x:%04x\n",
 				dev->descriptor.idVendor, dev->descriptor.idProduct);

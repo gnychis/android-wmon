@@ -5,3 +5,5 @@ cp jni/libpcap/grammar_good.c jni/libpcap/grammar.c
 cp jni/libtshark/libtshark.so libs/armeabi/
 cp libs/armeabi/iwlist res/raw
 cp libs/armeabi/iw res/raw
+cp libs/armeabi/testlibusb res/raw
+cp libs/armeabi/lsusb_core res/raw

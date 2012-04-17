@@ -187,12 +187,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.installBinary(this, R.raw.disabled_protos, "disabled_protos");
 	    	RootTools.installBinary(this, R.raw.iwconfig, "iwconfig", "755");
 	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
+	    	RootTools.installBinary(this, R.raw.lsusb_core, "lsusb_core", "755");
+	    	RootTools.installBinary(this, R.raw.testlibusb, "testlibusb", "755");
 	    	RootTools.installBinary(this, R.raw.htc_7010, "htc_7010.fw");
 	    	RootTools.installBinary(this, R.raw.iwlist, "iwlist", "755");
 	    	RootTools.installBinary(this, R.raw.iw, "iw", "755");
 	    	
 	    	// Kick the phone in to USB host mode
-	    	RootTools.sendShell("echo a > /sys/devices/platform/s3c-usbgadget/opmode", 0);
+	    	//RootTools.sendShell("echo a > /sys/devices/platform/s3c-usbgadget/opmode", 0);
 	    			
         } catch(Exception e) {
         	Log.e(TAG, "error running RootTools commands for init", e);
@@ -278,6 +280,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		//wiresharkTest("/sdcard/test.pcap");
 		//wiresharkTestGetAll("/sdcard/test.pcap");
 		//Log.d(TAG, "Successfully run wireshark test!");
+		
+		libusbTest();
 
     }
     
@@ -428,6 +432,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public native String[] getDeviceNames();
 	public native int getWiSpy();
 	public native int USBcheckForDevice(int vid, int pid);
+	public native void libusbTest();
 	public native String[] getWiSpyList();
 	public native int initWiSpyDevices();
 	public native int[] pollWiSpy();

@@ -17,6 +17,7 @@
 #include <string.h>
 #include <jni.h>
 #include <usb.h>
+#include <libusb.h>
 #include <android/log.h>
 #include "spectool_container.h" 
 #include "spectool_net_client.h"
@@ -451,6 +452,25 @@ Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thi
 	return 0;
 }
 
+void
+Java_com_gnychis_coexisyst_CoexiSyst_libusbTest( JNIEnv* env, jobject thiz )
+{
+	libusb_device **devs;
+	int r;
+	ssize_t cnt;
+
+	r = libusb_init(NULL);
+	if (r < 0)
+		return r;
+
+	cnt = libusb_get_device_list(NULL, &devs);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "libusb count: %d\n", cnt);
+
+	libusb_free_device_list(devs, 1);
+
+	libusb_exit(NULL);
+}
+
 jobjectArray
 Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 {
@@ -474,13 +494,17 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "USB bus head address: 0x%x", usb_busses);
 	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "USB bus head address: 0x%x", usb_busses->next);
 
-  busses = usb_get_busses();
+//  busses = usb_get_busses();
   
 	// Find the number of devices
   for(bus = usb_busses; bus; bus = bus->next) {
     struct usb_device * dev;
-    for(dev = bus->devices; dev; dev = dev->next) 
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "At bus: 0x%x", bus); 
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Devices: 0x%x", bus->devices); 
+    for(dev = bus->devices; dev; dev = dev->next) {
+      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "device: 0x%x", dev); 
       len++;
+    }
   }
 	
  	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, 
