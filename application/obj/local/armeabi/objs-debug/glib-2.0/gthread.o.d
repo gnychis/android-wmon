@@ -2,14 +2,14 @@ obj/local/armeabi/objs-debug/glib-2.0/gthread.o: \
  jni/libglib/glib/gthread.c jni/libglib/glib/../android/config.h \
  jni/libglib/glib/../android/glibconfig.h \
  jni/libglib/glib/../glib/gmacros.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/limits.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/cdefs.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/cdefs_elf.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/limits.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/limits.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/internal_types.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/limits.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/syslimits.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/limits.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/cdefs.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/cdefs_elf.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/limits.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/limits.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/machine/internal_types.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/machine/limits.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/syslimits.h \
  jni/libglib/glib/glib.h jni/libglib/glib/../glib/galloca.h \
  jni/libglib/glib/../glib/gtypes.h jni/libglib/glib/../glib/garray.h \
  jni/libglib/glib/../glib/gasyncqueue.h \
@@ -18,23 +18,23 @@ obj/local/armeabi/objs-debug/glib-2.0/gthread.o: \
  jni/libglib/glib/../glib/gatomic.h jni/libglib/glib/../glib/gbacktrace.h \
  jni/libglib/glib/../glib/gbase64.h \
  jni/libglib/glib/../glib/gbookmarkfile.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/time.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/time.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/types.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/stdint.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/_types.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/_types.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/posix_types.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/stddef.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/compiler.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm/posix_types.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm/types.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/types.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/kernel.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/sysmacros.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/time.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm/siginfo.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm-generic/siginfo.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/time.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/time.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/types.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/stdint.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/_types.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/machine/_types.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/posix_types.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/stddef.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/compiler.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm/posix_types.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm/types.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/types.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/machine/kernel.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/sysmacros.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/time.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm/siginfo.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm-generic/siginfo.h \
  jni/libglib/glib/../glib/gcache.h jni/libglib/glib/../glib/glist.h \
  jni/libglib/glib/../glib/gmem.h jni/libglib/glib/../glib/gslice.h \
  jni/libglib/glib/../glib/gcompletion.h \
@@ -47,7 +47,7 @@ obj/local/armeabi/objs-debug/glib-2.0/gthread.o: \
  jni/libglib/glib/../glib/gkeyfile.h \
  jni/libglib/glib/../glib/gmappedfile.h \
  jni/libglib/glib/../glib/gmarkup.h jni/libglib/glib/../glib/gmessages.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/android/log.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/android/log.h \
  jni/libglib/glib/../glib/gnode.h jni/libglib/glib/../glib/goption.h \
  jni/libglib/glib/../glib/gpattern.h jni/libglib/glib/../glib/gprimes.h \
  jni/libglib/glib/../glib/gqsort.h jni/libglib/glib/../glib/gqueue.h \
@@ -57,16 +57,16 @@ obj/local/armeabi/objs-debug/glib-2.0/gthread.o: \
  jni/libglib/glib/../glib/gspawn.h jni/libglib/glib/../glib/gstrfuncs.h \
  jni/libglib/glib/../glib/gthreadpool.h jni/libglib/glib/../glib/gtimer.h \
  jni/libglib/glib/../glib/gtree.h jni/libglib/glib/gthreadprivate.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/unistd.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/select.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/signal.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/string.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/malloc.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm/signal.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm-generic/signal.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/sysconf.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/capability.h \
- /home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/pathconf.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/unistd.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/select.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/signal.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/string.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/malloc.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm/signal.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm-generic/signal.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/sysconf.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/capability.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/pathconf.h \
  jni/libglib/glib/galias.h jni/libglib/glib/galiasdef.c
 
 jni/libglib/glib/../android/config.h:
@@ -75,21 +75,21 @@ jni/libglib/glib/../android/glibconfig.h:
 
 jni/libglib/glib/../glib/gmacros.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/limits.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/limits.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/cdefs.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/cdefs.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/cdefs_elf.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/cdefs_elf.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/limits.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/limits.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/limits.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/limits.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/internal_types.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/machine/internal_types.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/limits.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/machine/limits.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/syslimits.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/syslimits.h:
 
 jni/libglib/glib/glib.h:
 
@@ -117,39 +117,39 @@ jni/libglib/glib/../glib/gbase64.h:
 
 jni/libglib/glib/../glib/gbookmarkfile.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/time.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/time.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/time.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/time.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/types.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/types.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/stdint.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/stdint.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/_types.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/_types.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/_types.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/machine/_types.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/posix_types.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/posix_types.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/stddef.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/stddef.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/compiler.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/compiler.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm/posix_types.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm/posix_types.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm/types.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm/types.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/types.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/types.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/machine/kernel.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/machine/kernel.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/sysmacros.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/sysmacros.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/time.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/time.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm/siginfo.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm/siginfo.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm-generic/siginfo.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm-generic/siginfo.h:
 
 jni/libglib/glib/../glib/gcache.h:
 
@@ -193,7 +193,7 @@ jni/libglib/glib/../glib/gmarkup.h:
 
 jni/libglib/glib/../glib/gmessages.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/android/log.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/android/log.h:
 
 jni/libglib/glib/../glib/gnode.h:
 
@@ -231,25 +231,25 @@ jni/libglib/glib/../glib/gtree.h:
 
 jni/libglib/glib/gthreadprivate.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/unistd.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/unistd.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/select.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/select.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/signal.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/signal.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/string.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/string.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/malloc.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/malloc.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm/signal.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm/signal.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/asm-generic/signal.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm-generic/signal.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/sys/sysconf.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sys/sysconf.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/linux/capability.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/linux/capability.h:
 
-/home/owner/Documents/android-wmon/core/android-ndk-r7b-linux/platforms/android-14/arch-arm/usr/include/pathconf.h:
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/pathconf.h:
 
 jni/libglib/glib/galias.h:
 
