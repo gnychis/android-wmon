@@ -18,7 +18,8 @@ public class USBSerial {
 		
 		// First set the user permissions
 		try {
-			RootTools.sendShell("chown " + getAppUser() + " " + port_name,0);
+			String cmd = "chown " + getAppUser() + " " + port_name;
+			RootTools.sendShell(cmd,0);
 		} catch(Exception e) {}
 		
 		fd = openCommPort(port_name);

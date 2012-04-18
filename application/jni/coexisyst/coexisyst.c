@@ -65,11 +65,11 @@ Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thi
 	libusb_device *dev;
   int i=0,ret;
   
-  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "entering USBcheckForDevice");
+  //__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "entering USBcheckForDevice");
 
   // Get the usb device list
   cnt = libusb_get_device_list(NULL, &devs);
-  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "device count: %d\n", cnt);
+  //__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "device count: %d\n", cnt);
   if(cnt < 0)
     return -1;
 
@@ -89,6 +89,13 @@ Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thi
 	}
 
   libusb_free_device_list(devs, 1);
+  
+  /*if(ret==1)
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "..device found!");
+  else
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "..device not found");
+  */
+
   return ret;
 }
 

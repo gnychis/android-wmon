@@ -264,7 +264,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		else
 			Log.d(TAG, "error with wireshark library");
 		
-		//usbmon = new USBMon(this, _handler);
+		usbmon = new USBMon(this, _handler);
 		
     	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee);
 		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
@@ -274,9 +274,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		//wiresharkTest("/sdcard/test.pcap");
 		//wiresharkTestGetAll("/sdcard/test.pcap");
 		//Log.d(TAG, "Successfully run wireshark test!");
-		
-		USBcheckForDevice(1, 1);
-		
+				
     }
     
     public String getAppUser() {

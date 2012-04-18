@@ -2,6 +2,7 @@ package com.gnychis.coexisyst;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.jnetpcap.PcapHeader;
@@ -14,6 +15,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+import com.stericson.RootTools.RootTools;
 
 public class ZigBee {
 	private static final String TAG = "ZigbeeDev";
@@ -217,7 +219,16 @@ public class ZigBee {
 			
 			// Create a serial device
 			_dev = new USBSerial();
-			if(!_dev.openPort("/dev/ttyUSB5"))
+			
+			// Get the name of the USB device, which will be the last thing in dmesg
+			String ttyUSB_name;
+			try {
+				List<String> res = RootTools.sendShell("dmesg | grep ttyUSB | tail -n 1 | awk '{print $NF}'",0);
+				ttyUSB_name = res.get(0);
+			} catch (Exception e) { return ""; }	
+			
+			// Attempt to open the COM port which calls the native libraries
+			if(!_dev.openPort("/dev/" + ttyUSB_name))
 				return "FAIL";
 			
 			debugOut("opened device, now waiting for sequence");
