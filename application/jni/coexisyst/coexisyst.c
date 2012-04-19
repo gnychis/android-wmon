@@ -369,23 +369,18 @@ Java_com_gnychis_coexisyst_USBSerial_closeCommPort(JNIEnv* env, jobject thiz, ji
 jint
 Java_com_gnychis_coexisyst_USBSerial_openCommPort(JNIEnv* env, jobject thiz, jstring port_name)
 {
-  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "in openCommPort! %s\n", port_name);
-
 	const char *nativePort = (*env)->GetStringUTFChars(env, port_name, 0);
-  
-  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "openCommPort: %s\n", port_name);
-	
-  int fd = open (nativePort, O_RDWR | O_NOCTTY | O_SYNC);
+	int fd = open (nativePort, O_RDWR | O_NOCTTY | O_SYNC);
 
 	if (fd < 0)
 	{
-		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ERROR OPENING COMM PORT! (%s)\n", port_name);
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "ERROR OPENING COMM PORT!\n");
 		return -1;
 	}
 
 	set_interface_attribs (fd, B115200, 0);  // set speed to 115,200 bps, 8n1 (no parity)
 	set_blocking (fd, 0);                // set no blocking
-	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Success in opening comm port (%s)\n", port_name);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Success in opening comm port\n");
 	
 	(*env)->ReleaseStringUTFChars(env, port_name, nativePort);
 
