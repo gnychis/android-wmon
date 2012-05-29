@@ -226,14 +226,14 @@ public class Wifi {
 		_state = WifiState.IDLE;
 		
 		// All modules related to ath9k_htc that need to be inserted
-		runCommand("insmod /system/lib/modules/compat.ko");
-		runCommand("insmod /system/lib/modules/compat_firmware_class.ko");
-		runCommand("insmod /system/lib/modules/cfg80211.ko");
-		runCommand("insmod /system/lib/modules/mac80211.ko");
-		runCommand("insmod /system/lib/modules/ath.ko");
-		runCommand("insmod /system/lib/modules/ath9k_hw.ko");
-		runCommand("insmod /system/lib/modules/ath9k_common.ko");
-		runCommand("insmod /system/lib/modules/ath9k_htc.ko");
+		runCommand("insmod /system/etc/awmon_modules/compat.ko");
+		runCommand("insmod /system/etc/awmon_modules/compat_firmware_class.ko");
+		runCommand("insmod /system/etc/awmon_modules/cfg80211.ko");
+		runCommand("insmod /system/etc/awmon_modules/mac80211.ko");
+		runCommand("insmod /system/etc/awmon_modules/ath.ko");
+		runCommand("insmod /system/etc/awmon_modules/ath9k_hw.ko");
+		runCommand("insmod /system/etc/awmon_modules/ath9k_common.ko");
+		runCommand("insmod /system/etc/awmon_modules/ath9k_htc.ko");
 		Log.d("AtherosDev", "Inserted kernel modules");
 		
 		// If we are dumping all of our packets for debugging...
