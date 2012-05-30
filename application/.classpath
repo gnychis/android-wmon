@@ -6,6 +6,6 @@
 	<classpathentry kind="lib" path="libs/achartengine-0.6.0.jar"/>
 	<classpathentry kind="lib" path="libs/jnetpcap.jar"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry kind="lib" path="libs/RootTools-1.6.1-sdk3-generic.jar"/>
+	<classpathentry kind="lib" path="libs/RootTools-1.7.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
