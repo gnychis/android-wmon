@@ -2,6 +2,8 @@ package com.gnychis.coexisyst;
 
 // do a random port number for pcapd
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -173,6 +175,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
 	    	
 	    	// Disable in releases
+	    	ArrayList<String> lib_list = runCommand("ls /data/data/com.gnychis.coexisyst/lib/ | grep \".so\"");
+	    	for(int i=0; i<lib_list.size(); i++)
+	    		runCommand("ln -s /data/data/com.gnychis.coexisyst/lib/" + lib_list.get(i) + " /system/lib/" + lib_list.get(i));
+
+	    	
 	    	/*RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libgmodule-2.0.so /system/lib/",0);
 	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb.so /system/lib/",0);
 	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb-compat.so /system/lib/",0);
@@ -278,6 +285,33 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		//Log.d(TAG, "Successfully run wireshark test!");
 				
     }
+    
+	public ArrayList<String> runCommand(String c) {
+		ArrayList<String> res = new ArrayList<String>();
+		try {
+			// First, run the command push the result to an ArrayList
+			List<String> res_list = RootTools.sendShell(c,0);
+			Iterator it=res_list.iterator();
+			while(it.hasNext()) 
+				res.add((String)it.next());
+			
+			res.remove(res.size()-1);
+			
+			// Trim the ArrayList of an extra blank lines at the end
+			while(true) {
+				int index = res.size()-1;
+				if(index>=0 && res.get(index).length()==0)
+					res.remove(index);
+				else
+					break;
+			}
+			return res;
+			
+		} catch(Exception e) {
+			Log.e("AtherosDev", "error writing to RootTools the command: " + c, e);
+			return null;
+		}
+	}
     
     public String getAppUser() {
     	try {
