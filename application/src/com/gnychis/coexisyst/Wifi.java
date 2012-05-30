@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -226,14 +227,14 @@ public class Wifi {
 		_state = WifiState.IDLE;
 		
 		// All modules related to ath9k_htc that need to be inserted
-		runCommand("insmod /system/lib/modules/compat.ko");
-		runCommand("insmod /system/lib/modules/compat_firmware_class.ko");
-		runCommand("insmod /system/lib/modules/cfg80211.ko");
-		runCommand("insmod /system/lib/modules/mac80211.ko");
-		runCommand("insmod /system/lib/modules/ath.ko");
-		runCommand("insmod /system/lib/modules/ath9k_hw.ko");
-		runCommand("insmod /system/lib/modules/ath9k_common.ko");
-		runCommand("insmod /system/lib/modules/ath9k_htc.ko");
+		runCommand("insmod /system/etc/awmon_modules/compat.ko");
+		runCommand("insmod /system/etc/awmon_modules/compat_firmware_class.ko");
+		runCommand("insmod /system/etc/awmon_modules/cfg80211.ko");
+		runCommand("insmod /system/etc/awmon_modules/mac80211.ko");
+		runCommand("insmod /system/etc/awmon_modules/ath.ko");
+		runCommand("insmod /system/etc/awmon_modules/ath9k_hw.ko");
+		runCommand("insmod /system/etc/awmon_modules/ath9k_common.ko");
+		runCommand("insmod /system/etc/awmon_modules/ath9k_htc.ko");
 		Log.d("AtherosDev", "Inserted kernel modules");
 		
 		// If we are dumping all of our packets for debugging...
@@ -266,66 +267,36 @@ public class Wifi {
 		return _device_connected;
 	}
 	
-	public String compatLoading() {
-		try {
-			List<String> res = RootTools.sendShell("busybox find /sys -name loading",0);
-			return res.get(0);
-		} catch (Exception e) { return ""; }	
+	// Returns -1 if the interface specified doesn't exist, 1 if up, 0 if down
+	public int iface_up(String iface) {
+		if(!iface_exists(iface))
+			return -1;
+		
+		ArrayList<String> res = runCommand("netcfg | grep \"^" + iface + "\" | grep UP");
+		if(res.size()==1)
+			return 1;
+		else
+			return 0;
 	}
-	public boolean compatIsLoading(String loc) {
-		try {
-			List<String> res = RootTools.sendShell("cat " + loc,0);
-			
-			if(Integer.parseInt(res.get(0))==1)
-				return true;
-			else
-				return false;
-		} catch (Exception e) { return false; }	
+	
+	// Returns -1 if the interface specified doesn't exist, 1 if down, 0 if up
+	public int iface_down(String iface) {
+		if(!iface_exists(iface))
+			return -1;
+		
+		ArrayList<String> res = runCommand("netcfg | grep \"^" + iface + "\" | grep DOWN");
+		if(res.size()==1)
+			return 1;
+		else
+			return 0;
 	}
-	public boolean wlan0_monitor() {
-		try {
-			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig moni0",0);
-			if(res.size()>1)
-				return true;
-		} catch (Exception e) { return false; }	
-
-		return false;		
-	}
-	public boolean wlan0_up() {
-		try {
-			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep UP",0);
-			if(res.size()!=0)
-				return true;
-		} catch (Exception e) { return false; }	
-
-		return false;		
-	}
-	public boolean moni0_up() {
-		try {
-			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^moni0\" | busybox grep UP",0);
-			if(res.size()!=0)
-				return true;
-		} catch (Exception e) { return false; }	
-
-		return false;		
-	}
-	public boolean wlan0_down() {
-		try {
-			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep DOWN",0);
-			if(res.size()!=0)
-				return true;
-		} catch (Exception e) { return false; }	
-
-		return false;		
-	}
-	public boolean wlan0_exists() {
-		try {
-			List<String> res = RootTools.sendShell("/data/data/com.gnychis.coexisyst/files/iwconfig wlan0",0);
-			if(res.size()>1)
-				return true;
-		} catch (Exception e) { return false; }	
-
-		return false;
+	
+	public boolean iface_exists(String iface) {
+		ArrayList<String> res = runCommand("netcfg | grep \"^" + iface + "\"");
+		if(res.size()==1)
+			return true;
+		else
+			return false;	
 	}
 	
 	// cat the atheros hard statistics count for the number of received packets
@@ -364,9 +335,27 @@ public class Wifi {
 		return ret;
 	}
 	
-	public List<String> runCommand(String c) {
+	public ArrayList<String> runCommand(String c) {
+		ArrayList<String> res = new ArrayList<String>();
 		try {
-			return RootTools.sendShell(c,0);
+			// First, run the command push the result to an ArrayList
+			List<String> res_list = RootTools.sendShell(c,0);
+			Iterator it=res_list.iterator();
+			while(it.hasNext()) 
+				res.add((String)it.next());
+			
+			res.remove(res.size()-1);
+			
+			// Trim the ArrayList of an extra blank lines at the end
+			while(true) {
+				int index = res.size()-1;
+				if(index>=0 && res.get(index).length()==0)
+					res.remove(index);
+				else
+					break;
+			}
+			return res;
+			
 		} catch(Exception e) {
 			Log.e("AtherosDev", "error writing to RootTools the command: " + c, e);
 			return null;
@@ -402,74 +391,46 @@ public class Wifi {
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			
-			// Initialize the Atheros hardware
-			// Only initialize if it is not already initialized
-			if(wlan0_exists() && wlan0_up() && wlan0_monitor()) {
+			// Spin a little bit if it takes a second to bring the interface up
+			// after we catch the USB device being inserted.
+			while(!iface_exists("wlan0"))
+				trySleep(100);
+			
+			// If we already have the monitoring interface up, we are already initialized
+			if(iface_up("wlan0")==1 && iface_up("moni0")==1) {
 				debugOut("Atheros device is already connected and initialized...");
 				sendMainMessage(ThreadMessages.ATHEROS_INITIALIZED);
-				return "true";
+				return "true";				
 			}
-			
-			// Find the location of the "loading" register in the filesystem to alert the hardware
-			// that the firmware is going to be loaded.
-			String load_loc;
-			while(true) {
-				load_loc = compatLoading();
-				if(!load_loc.equals(""))
-					break;
-				trySleep(100);
-			}
-			debugOut("Found loading location at: " + load_loc);
-			
-			// Write a "1" to notify of impending firmware write
-			while(!compatIsLoading(load_loc)) {
-				runCommand("echo 1 > " + load_loc);
-			}
-			debugOut("Wrote notification of impending firmware write");
-			
-			// Write the firmware to the appropriate location
-			String firmware_loc = load_loc.substring(0, load_loc.length()-7);
-			runCommand("cat /data/data/com.gnychis.coexisyst/files/htc_7010.fw > " + firmware_loc + "data");
-			debugOut("Wrote the firmware to the device");
-			
-			// Notify that we are done writing the firmware
-			while(compatIsLoading(load_loc)) {
-				runCommand("echo 0 > " + load_loc);
-			}
-			debugOut("Notify of firmware complete");
-			
-			// Wait for the firmware to settle, and device interface to pop up
-			while(!wlan0_exists()) {
-				trySleep(100);
-			}
-			debugOut("wlan0 now exists");
-				
-			while(!wlan0_down()) {
+
+			// Otherwise, let's take wlan0 if it's not already
+			while(iface_down("wlan0")==0) {
 				runCommand("netcfg wlan0 down");
 				trySleep(100);
 			}
-			debugOut("interface has been taken down");
+			debugOut("wlan0 interface has been taken down");
 			
 			// Get the phy interface name
 			List<String> r = runCommand("/data/data/com.gnychis.coexisyst/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
 			_iw_phy = r.get(0);
 			
-			while(!wlan0_monitor()) {
+			while(!iface_exists("moni0")) {
 				runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " interface add moni0 type monitor");
 				trySleep(100);
 			}
 			debugOut("interface set to monitor mode");
 			
-			while(!wlan0_up()) {
+			while(iface_up("wlan0")==0) {
 				runCommand("netcfg wlan0 up");
 				trySleep(100);
 			}
 			
-			while(!moni0_up()) {
+			while(iface_up("moni0")==0) {
 				runCommand("netcfg moni0 up");
 				trySleep(100);
 			}			
 			debugOut("interface is now up");
+			
 			
 			// Get the location of the rx packets file
 			List<String> l = runCommand("busybox find /sys -name rx_packets | busybox grep moni0");
