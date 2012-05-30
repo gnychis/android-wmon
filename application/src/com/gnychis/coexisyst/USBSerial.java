@@ -67,7 +67,7 @@ public class USBSerial {
 	
     public String getAppUser() {
     	try {
-    		List<String> res = RootTools.sendShell("ls -l /data/data/com.gnychis.coexisyst",0);
+    		List<String> res = RootTools.sendShell("ls -l /data/data | grep com.gnychis.coexisyst",0);
     		return res.get(0).split(" ")[1];
     	} catch(Exception e) {
     		return "FAIL";

@@ -173,12 +173,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
 	    	
 	    	// Disable in releases
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libgmodule-2.0.so /system/lib/",0);
+	    	/*RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libgmodule-2.0.so /system/lib/",0);
 	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb.so /system/lib/",0);
 	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb-compat.so /system/lib/",0);
 	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libpcap.so /system/lib/",0);
 	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libnl.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libglib-2.0.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libglib-2.0.so /system/lib/",0);*/
 	    	
 	    	// WARNING: these files do NOT get overwritten if they already exist on the file
 	    	// system with RootTools.  If you are updating ANY of these, you need to do:
@@ -204,6 +204,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	// Load the libusb related libraries
     	try {
     		System.loadLibrary("glib-2.0");
+    		System.loadLibrary("nl");
+    		System.loadLibrary("gmodule-2.0");
     		System.loadLibrary("usb");
     		System.loadLibrary("usb-compat");
     		System.loadLibrary("wispy");
