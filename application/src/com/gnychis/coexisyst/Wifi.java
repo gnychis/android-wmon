@@ -293,7 +293,7 @@ public class Wifi {
 	}
 	public boolean wlan0_up() {
 		try {
-			List<String> res = RootTools.sendShell("netcfg | busybox grep \"^wlan0\" | busybox grep UP",0);
+			List<String> res = RootTools.sendShell("netcfg | grep \"^wlan0\" | grep UP",0);
 			if(res.size()!=0)
 				return true;
 		} catch (Exception e) { return false; }	
