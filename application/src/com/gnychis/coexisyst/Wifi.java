@@ -340,7 +340,7 @@ public class Wifi {
 		try {
 			// First, run the command push the result to an ArrayList
 			List<String> res_list = RootTools.sendShell(c,0);
-			Iterator it=res_list.iterator();
+			Iterator<String> it=res_list.iterator();
 			while(it.hasNext()) 
 				res.add((String)it.next());
 			
