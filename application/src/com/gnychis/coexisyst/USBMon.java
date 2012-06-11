@@ -75,7 +75,7 @@ public class USBMon
 	public void usbPoll( )
 	{
 		int wispy_in_devlist=_coexisyst.USBcheckForDevice(0x1781, 0x083f);
-		int wifidev_in_devlist = _coexisyst.USBcheckForDevice(0x002f,0x13b1) + _coexisyst.USBcheckForDevice(0x0411,0x017f);
+		int wifidev_in_devlist = _coexisyst.USBcheckForDevice(0x13b1,0x002f) + _coexisyst.USBcheckForDevice(0x0411,0x017f);
 		int econotag_in_devlist = _coexisyst.USBcheckForDevice(0x0403, 0x6010);
 		
 		//if(atheros_in_devlist==0)
@@ -92,8 +92,6 @@ public class USBMon
 			//publishProgress(CoexiSyst.WISPY_POLL);
 		}
 		
-		// Atheros related checks, after a device is connected, skip a check while it initializes
-
 		if(wifidev_in_devlist==1 && _coexisyst.ath._device_connected==false) {
 			updateState(Wifi.WIFIDEV_CONNECT);
 		} else if(wifidev_in_devlist==0 && _coexisyst.ath._device_connected==true) {
@@ -144,16 +142,16 @@ public class USBMon
 			_coexisyst.wispy._is_polling = true;
 		}
 		
-		// Handling events of Atheros device
+		// Handling events of Wifi device
 		if(event == Wifi.WIFIDEV_CONNECT) {
 			Message msg = new Message();
 			msg.obj = ThreadMessages.WIFIDEV_CONNECTED;
 			_coexisyst._handler.sendMessage(msg);
-			debugOut("got update that Atheros card was connected");
+			debugOut("got update that Wifi card was connected");
 		}
 		else if(event == Wifi.WIFIDEV_DISCONNECT) {
-			debugOut("Atheros card now disconnected");
-			_coexisyst.sendToastMessage(_handler, "Atheros device disconnected");
+			debugOut("Wifi device now disconnected");
+			_coexisyst.sendToastMessage(_handler, "Wifi device disconnected");
 			_coexisyst.ath.disconnected();
 		}
 		

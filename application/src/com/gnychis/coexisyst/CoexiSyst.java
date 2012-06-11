@@ -95,11 +95,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			///////////////////////////////////////////////////////////////////////
 			// A set of messages that that deal with hardware connections
 			if(msg.obj == ThreadMessages.WIFIDEV_CONNECTED)
-				atherosSettling();
+				wifidevSettling();
 			if(msg.obj == ThreadMessages.WIFIDEV_INITIALIZED)
-				atherosInitialized();
+				wifidevInitialized();
 			if(msg.obj == ThreadMessages.WIFIDEV_FAILED)
-				Toast.makeText(getApplicationContext(), "Failed to initialize Atheros card", Toast.LENGTH_LONG).show();	
+				Toast.makeText(getApplicationContext(), "Failed to initialize Wifi device", Toast.LENGTH_LONG).show();	
 			if(msg.obj == ThreadMessages.ZIGBEE_CONNECTED)
 				zigbeeSettling();
 			if(msg.obj == ThreadMessages.ZIGBEE_WAIT_RESET) 
@@ -147,14 +147,14 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		pd = ProgressDialog.show(this, "", "Press ZigBee reset button...", true, false); 
 	}
 	
-	public void atherosSettling() {
-		pd = ProgressDialog.show(this, "", "Initializing Atheros card...", true, false); 
+	public void wifidevSettling() {
+		pd = ProgressDialog.show(this, "", "Initializing Wifi device...", true, false); 
 		usbmon.stopUSBMon();
 		ath.connected();
 	}
 	
-	public void atherosInitialized() {
-		Toast.makeText(getApplicationContext(), "Successfully initialized Atheros card", Toast.LENGTH_LONG).show();	
+	public void wifidevInitialized() {
+		Toast.makeText(getApplicationContext(), "Successfully initialized Wifi device", Toast.LENGTH_LONG).show();	
 		pd.dismiss();
 		usbmon.startUSBMon();
 	}
@@ -308,7 +308,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			return res;
 			
 		} catch(Exception e) {
-			Log.e("AtherosDev", "error writing to RootTools the command: " + c, e);
+			Log.e("WifiDev", "error writing to RootTools the command: " + c, e);
 			return null;
 		}
 	}
