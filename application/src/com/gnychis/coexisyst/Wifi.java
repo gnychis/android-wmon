@@ -43,8 +43,8 @@ public class Wifi {
 	public static final boolean PCAP_DUMP = false;
 	DataOutputStream _pcap_dump; 
 
-	public static final int ATHEROS_CONNECT = 100;
-	public static final int ATHEROS_DISCONNECT = 101;
+	public static final int WIFIDEV_CONNECT = 100;
+	public static final int WIFIDEV_DISCONNECT = 101;
 	public static final String WIFI_SCAN_RESULT = "com.gnychis.coexisyst.WIFI_SCAN_RESULT";
 	public static final int MS_SLEEP_UNTIL_PCAPD = 1500;
 	
@@ -64,7 +64,7 @@ public class Wifi {
 	
 	private void debugOut(String msg) {
 		if(VERBOSE)
-			Log.d("AtherosDev", msg);
+			Log.d("WifiDev", msg);
 	}
 	
 	// All scan related variables.  There are 3 kinds of scans that I've come up.
@@ -125,7 +125,7 @@ public class Wifi {
 		try {
 			Thread.sleep(length);
 		} catch(Exception e) {
-			Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
+			Log.e("WiFiMonitor", "Error running commands for connecting wifi device", e);
 		}
 	}
 	
@@ -226,16 +226,16 @@ public class Wifi {
 		coexisyst = c;
 		_state = WifiState.IDLE;
 		
-		// All modules related to ath9k_htc that need to be inserted
+		// All modules related to wireless card that need to be inserted
 		runCommand("insmod /system/etc/awmon_modules/compat.ko");
 		runCommand("insmod /system/etc/awmon_modules/compat_firmware_class.ko");
 		runCommand("insmod /system/etc/awmon_modules/cfg80211.ko");
 		runCommand("insmod /system/etc/awmon_modules/mac80211.ko");
-		runCommand("insmod /system/etc/awmon_modules/ath.ko");
-		runCommand("insmod /system/etc/awmon_modules/ath9k_hw.ko");
-		runCommand("insmod /system/etc/awmon_modules/ath9k_common.ko");
-		runCommand("insmod /system/etc/awmon_modules/ath9k_htc.ko");
-		Log.d("AtherosDev", "Inserted kernel modules");
+		runCommand("insmod /system/etc/awmon_modules/rt2x00lib.ko");
+		runCommand("insmod /system/etc/awmon_modules/rt2x00usb.ko");
+		runCommand("insmod /system/etc/awmon_modules/rt2800lib.ko");
+		runCommand("insmod /system/etc/awmon_modules/rt2800usb.ko");
+		Log.d("WifiDev", "Inserted kernel modules");
 		
 		// If we are dumping all of our packets for debugging...
 		if(PCAP_DUMP) {
@@ -250,12 +250,12 @@ public class Wifi {
 						(byte)0x7f, (byte)0x00, (byte)0x00, (byte)0x00};  	// wifi
 				
 				_pcap_dump.write(pcap_header);
-			} catch(Exception e) { Log.e("AtherosDev", "Error trying to write output stream", e); }
+			} catch(Exception e) { Log.e("WifiDev", "Error trying to write output stream", e); }
 		}
 
 	}
 	
-	// When an atheros device is connected, spawn a thread which
+	// When a wifi device is connected, spawn a thread which
 	// initializes the hardware
 	public void connected() {
 		_device_connected=true;
@@ -298,12 +298,6 @@ public class Wifi {
 		else
 			return false;	
 	}
-	
-	// cat the atheros hard statistics count for the number of received packets
-	public int getRxPacketCount() {
-		return Integer.parseInt(runCommand("cat " + _rxpackets_loc).get(0));
-	}
-	
 	
 	public void setChannel(int channel) {
 		runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
@@ -357,16 +351,14 @@ public class Wifi {
 			return res;
 			
 		} catch(Exception e) {
-			Log.e("AtherosDev", "error writing to RootTools the command: " + c, e);
+			Log.e("WifiDev", "error writing to RootTools the command: " + c, e);
 			return null;
 		}
 	}
 
 	
-	// The purpose of this thread is solely to initialize the Atheros hardware
+	// The purpose of this thread is solely to initialize the Wifi hardware
 	// that will be used for monitoring.
-	// Initializes the Atheros hardware strictly.  First writes the firmware, then sets the
-	// interface to be in monitor mode
 	protected class WifiInit extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
@@ -398,8 +390,8 @@ public class Wifi {
 			
 			// If we already have the monitoring interface up, we are already initialized
 			if(iface_up("wlan0")==1 && iface_up("moni0")==1) {
-				debugOut("Atheros device is already connected and initialized...");
-				sendMainMessage(ThreadMessages.ATHEROS_INITIALIZED);
+				debugOut("WiFi device is already connected and initialized...");
+				sendMainMessage(ThreadMessages.WIFIDEV_INITIALIZED);
 				return "true";				
 			}
 
@@ -436,7 +428,7 @@ public class Wifi {
 			List<String> l = runCommand("busybox find /sys -name rx_packets | busybox grep moni0");
 			_rxpackets_loc = l.get(0);
 
-			sendMainMessage(ThreadMessages.ATHEROS_INITIALIZED);
+			sendMainMessage(ThreadMessages.WIFIDEV_INITIALIZED);
 			return "true";
 		}		
 	}
@@ -458,7 +450,7 @@ public class Wifi {
 			try {
 				Thread.sleep(length);
 			} catch(Exception e) {
-				Log.e("WiFiMonitor", "Error running commands for connect atheros device", e);
+				Log.e("WiFiMonitor", "Error running commands for connect wifi device", e);
 			}
 		}
 		
@@ -478,7 +470,7 @@ public class Wifi {
 			int r = Pcap.findAllDevs(alldevs, errbuf);  
 			if (r == Pcap.NOT_OK || alldevs.isEmpty()) {  
 	            debugOut("Can't read list of devices, error is " + errbuf.toString());  
-	            sendMainMessage(ThreadMessages.ATHEROS_FAILED);
+	            sendMainMessage(ThreadMessages.WIFIDEV_FAILED);
 	            return false;  
 	        } 
 			
@@ -507,7 +499,7 @@ public class Wifi {
 	        if (_moni0_pcap == null) {  
 	            debugOut("Error while opening device for capture: "  
 	                + errbuf.toString());  
-	            sendMainMessage(ThreadMessages.ATHEROS_FAILED);
+	            sendMainMessage(ThreadMessages.WIFIDEV_FAILED);
 	            return false;  
 	        }  
 	        

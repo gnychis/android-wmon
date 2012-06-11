@@ -68,9 +68,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		WIFI_SCAN_START,
 		WIFI_SCAN_COMPLETE,
 		WISPY_SCAN_COMPLETE,
-		ATHEROS_CONNECTED,
-		ATHEROS_INITIALIZED,
-		ATHEROS_FAILED,
+		WIFIDEV_CONNECTED,
+		WIFIDEV_INITIALIZED,
+		WIFIDEV_FAILED,
 		ZIGBEE_CONNECTED,
 		ZIGBEE_INITIALIZED,
 		ZIGBEE_FAILED,
@@ -94,11 +94,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 						
 			///////////////////////////////////////////////////////////////////////
 			// A set of messages that that deal with hardware connections
-			if(msg.obj == ThreadMessages.ATHEROS_CONNECTED)
+			if(msg.obj == ThreadMessages.WIFIDEV_CONNECTED)
 				atherosSettling();
-			if(msg.obj == ThreadMessages.ATHEROS_INITIALIZED)
+			if(msg.obj == ThreadMessages.WIFIDEV_INITIALIZED)
 				atherosInitialized();
-			if(msg.obj == ThreadMessages.ATHEROS_FAILED)
+			if(msg.obj == ThreadMessages.WIFIDEV_FAILED)
 				Toast.makeText(getApplicationContext(), "Failed to initialize Atheros card", Toast.LENGTH_LONG).show();	
 			if(msg.obj == ThreadMessages.ZIGBEE_CONNECTED)
 				zigbeeSettling();
