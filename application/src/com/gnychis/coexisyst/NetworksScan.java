@@ -43,7 +43,7 @@ public class NetworksScan extends Activity {
 	// Scan receivers for incoming broadcasts (which include results)
 	public WiFiScanReceiver _rcvr_80211;
 	public ZigBeeScanReceiver _rcvr_ZigBee;
-	//BroadcastReceiver _rcvr_BTooth;
+	public BluetoothScanReceiver _rcvr_BTooth;
 	
 	public ArrayList<ZigBeeNetwork> _zigbee_scan_result;
 	public ArrayList<WifiAP> _wifi_scan_result;
@@ -53,8 +53,12 @@ public class NetworksScan extends Activity {
 		ZigBee,
 		Bluetooth,
 	}
-	private Queue<Scans> _scan_list;
+	
+	// For keeping track of the current scan progress
+	private ArrayList<Scans> _scan_list;
+	private Queue<Scans> _finished_scans;
 	private boolean _is_scanning;
+	private int _next_scan;
 	
 	// Setup a handler to receive messages from the broadcast receivers
 	// with the scan results.
@@ -74,6 +78,11 @@ public class NetworksScan extends Activity {
 				_zigbee_scan_result = _rcvr_ZigBee._last_scan;			// Save scan result
 				startNextScan();										// Start next scan if there is one
 			}
+			if(msg.obj == ThreadMessages.BLUETOOTH_SCAN_COMPLETE) {
+				Log.d("NetworksScan", "Bluetooth scan is now complete");	// Log out
+				//_bluetooth_scan_result = _rcvr_BTooth._last_scan;				// Save the scan result
+				startNextScan();
+			}
 		}
 	};
 	
@@ -92,12 +101,12 @@ public class NetworksScan extends Activity {
 		_is_scanning = false;		
 		_zigbee_scan_result = null;
 		_wifi_scan_result = null;
-		_scan_list = new LinkedList<Scans>();
+		_scan_list = new ArrayList<Scans>();
 		
 		// Setup the receivers
 		_rcvr_80211 = new WiFiScanReceiver(_handler);
 		_rcvr_ZigBee = new ZigBeeScanReceiver(_handler);
-		//_rcvr_BTooth = new BluetoothManager(this);
+		_rcvr_BTooth = new BluetoothScanReceiver(_handler);
 		//registerReceiver(_rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		//registerReceiver(_rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 	}
@@ -109,6 +118,13 @@ public class NetworksScan extends Activity {
 		int max_progress = 0;
 		
 		_scan_list.clear();
+		
+		// Bluetooth _should_ be added to the scan list first, that way it is
+		// the first thing initialized AND it should run in parallel because
+		// it takes around 12 seconds to scan.
+		if(_bluetooth.isEnabled()) {
+			_scan_list.add(Scans.Bluetooth);
+		}
 		
 		if(_wifi.isConnected()) {
 			_scan_list.add(Scans.Wifi);
@@ -132,15 +148,20 @@ public class NetworksScan extends Activity {
 	private void startNextScan() {
 		
 		// First, if the scan queue is empty, then there is nothing left to scan!
-		if(_scan_list.size()==0) {
+		if(_finished_scans.size()==_scan_list.size()) {
 			networkScansComplete();
 			return;
 		}
 
 		// Take the head of scan queue
-		Scans next_scan = _scan_list.remove();
+		Scans next_scan = _scan_list.get(_next_scan++);
 		
 		switch(next_scan) {
+			case Bluetooth:
+				_bluetooth.startDiscovery();
+				startNextScan();	// immediately start scanning the next for Bluetooth (overlap)
+				break;
+		
 			case Wifi:
 				_wifi.APScan();
 				break;
@@ -176,6 +197,7 @@ public class NetworksScan extends Activity {
 		resetScanResults();		// Clear the scan results for new results
 
 		max_progress = createScanList();		// Create a list of scans to complete based on hardware connected
+		_next_scan=0;							// Start at the beginning of the list
 		startNextScan();						// Start the scan process
 		
 		return max_progress;
