@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -37,6 +38,7 @@ public class NetworksScan extends Activity {
 	Wifi _wifi;
 	ZigBee _zigbee;
 	USBMon _usbmon;
+	BluetoothAdapter _bluetooth;
 	
 	// Scan receivers for incoming broadcasts (which include results)
 	public WiFiScanReceiver _rcvr_80211;
@@ -49,6 +51,7 @@ public class NetworksScan extends Activity {
 	public enum Scans {		// A List of possible scans to handle
 		Wifi,
 		ZigBee,
+		Bluetooth,
 	}
 	private Queue<Scans> _scan_list;
 	private boolean _is_scanning;
@@ -76,7 +79,7 @@ public class NetworksScan extends Activity {
 	
 	// Set the results to null to begin with, so that we can easily check
 	// when a scan of all protocols is complete.
-	NetworksScan(Handler h, USBMon m, Wifi w, ZigBee z) {
+	NetworksScan(Handler h, USBMon m, Wifi w, ZigBee z, BluetoothAdapter b) {
 		
 		_coexisyst_handler = h;
 		
@@ -84,6 +87,7 @@ public class NetworksScan extends Activity {
 		_usbmon = m;
 		_wifi = w;
 		_zigbee = z;
+		_bluetooth = b;
 		
 		_is_scanning = false;		
 		_zigbee_scan_result = null;

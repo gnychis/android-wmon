@@ -76,6 +76,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		ZIGBEE_FAILED,
 		ZIGBEE_WAIT_RESET,
 		ZIGBEE_SCAN_COMPLETE,
+		BLUETOOTH_SCAN_COMPLETE,
 		SHOW_TOAST,
 		INCREMENT_SCAN_PROGRESS,
 		NETWORK_SCANS_COMPLETE,
@@ -275,7 +276,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		usbmon = new USBMon(this, _handler);
 		
-    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee);
+    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee, bt);
 		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 		
