@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gnychis.coexisyst.Interfaces.ManageNetworks;
 import com.gnychis.coexisyst.ScanReceivers.NetworksScan;
 import com.stericson.RootTools.RootTools;
 

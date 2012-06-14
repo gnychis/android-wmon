@@ -4,18 +4,16 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.USBMon;
 import com.gnychis.coexisyst.Wifi;
 import com.gnychis.coexisyst.WifiAP;
 import com.gnychis.coexisyst.ZigBee;
 import com.gnychis.coexisyst.ZigBeeNetwork;
-import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 
 /*
  * Ditch thread messages, use the broadcast as the message of the

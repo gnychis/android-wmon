@@ -1,7 +1,5 @@
 package com.gnychis.coexisyst.ScanReceivers;
 
-import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -10,6 +8,8 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 
 public class BluetoothScanReceiver extends BroadcastReceiver {
 	
@@ -28,16 +28,16 @@ public class BluetoothScanReceiver extends BroadcastReceiver {
 		return devs_str;
 	}
 	  
-	@Override @SuppressWarnings("unchecked")
+//	@Override @SuppressWarnings("unchecked")
 	public void onReceive(Context c, Intent intent) {
 		
 		if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
 			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-			Log.d("BluetoothDev", "Got a device: " + device.getName());
+			Log.d(TAG, "Got a device: " + device.getName());
 		}
 		
 		if(_handler != null && BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
-			Log.d("BluetoothDev", "Got an action that device discovery has finished");
+			Log.d(TAG, "Got an action that device discovery has finished");
 			Message msg = new Message();
 			msg.obj = ThreadMessages.BLUETOOTH_SCAN_COMPLETE;
 			_handler.sendMessage(msg);
