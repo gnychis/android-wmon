@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.Interfaces;
 
 import java.util.Date;
 import java.util.List;
@@ -28,6 +28,8 @@ import org.achartengine.renderer.DefaultRenderer;
 import org.achartengine.renderer.SimpleSeriesRenderer;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
+
+import com.gnychis.coexisyst.IChart;
 
 /**
  * An abstract class for the demo charts to extend.

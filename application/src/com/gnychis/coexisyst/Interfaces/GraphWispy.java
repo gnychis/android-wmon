@@ -29,7 +29,6 @@ import android.graphics.Color;
 import android.graphics.Paint.Align;
 import android.util.Log;
 
-import com.gnychis.coexisyst.AbstractDemoChart;
 import com.gnychis.coexisyst.CoexiSyst;
 
 /**
