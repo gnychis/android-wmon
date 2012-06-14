@@ -1,10 +1,11 @@
 package com.gnychis.coexisyst;
 
-import java.util.AbstractQueue;
 import java.util.ArrayList;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -179,6 +180,10 @@ public class NetworksScan extends Activity {
 			networkScansComplete();
 			return;
 		}
+		
+		// If there are no more scans left, just return
+		if(_next_scan>=_scan_list.size())
+			return;
 
 		// Take the head of scan queue
 		Scans next_scan = _scan_list.get(_next_scan++);

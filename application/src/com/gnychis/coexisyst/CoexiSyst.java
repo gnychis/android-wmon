@@ -11,6 +11,7 @@ import java.util.concurrent.BlockingQueue;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -279,6 +280,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee, bt);
 		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
+		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		
 		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
 		//wiresharkTest("/sdcard/test.pcap");

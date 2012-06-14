@@ -30,7 +30,6 @@ public class BluetoothScanReceiver extends BroadcastReceiver {
 	  
 	@Override @SuppressWarnings("unchecked")
 	public void onReceive(Context c, Intent intent) {
-		Log.d(TAG, "Received incoming scan complete message");
 		
 		if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
 			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -38,7 +37,7 @@ public class BluetoothScanReceiver extends BroadcastReceiver {
 		}
 		
 		if(_handler != null && BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
-			// Send a message to stop the spinner if it is running
+			Log.d("BluetoothDev", "Got an action that device discovery has finished");
 			Message msg = new Message();
 			msg.obj = ThreadMessages.BLUETOOTH_SCAN_COMPLETE;
 			_handler.sendMessage(msg);
