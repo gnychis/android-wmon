@@ -28,6 +28,7 @@ public class BluetoothScanReceiver extends BroadcastReceiver {
 	public BluetoothScanReceiver(Handler h) {
 	  super();
 	  _handler = h;
+	  _last_scan = new ArrayList<BluetoothDev>();
 	}
 	
 	public String[] get_devs() {

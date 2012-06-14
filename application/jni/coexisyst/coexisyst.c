@@ -242,7 +242,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz
 }
 
 jchar
-Java_com_gnychis_coexisyst_USBSerial_blockRead1(JNIEnv* env, jobject thiz, int fd) {
+Java_com_gnychis_coexisyst_Core_USBSerial_blockRead1(JNIEnv* env, jobject thiz, int fd) {
 	int n;
 	char c;
 
@@ -287,7 +287,7 @@ jchar blockRead1(JNIEnv* env, jobject thiz, int fd) {
 }
 
 jint
-Java_com_gnychis_coexisyst_USBSerial_readInt32(JNIEnv* env, jobject thiz, int fd) {
+Java_com_gnychis_coexisyst_Core_USBSerial_readInt32(JNIEnv* env, jobject thiz, int fd) {
 	int i;
 	uint32_t v = 0;
 
@@ -302,7 +302,7 @@ Java_com_gnychis_coexisyst_USBSerial_readInt32(JNIEnv* env, jobject thiz, int fd
 }
 
 void
-Java_com_gnychis_coexisyst_USBSerial_writeBytes(JNIEnv* env, jobject thiz, int fd, jbyteArray data, int length)
+Java_com_gnychis_coexisyst_Core_USBSerial_writeBytes(JNIEnv* env, jobject thiz, int fd, jbyteArray data, int length)
 {
 	int nwrote=0;
 	int n;
@@ -331,7 +331,7 @@ Java_com_gnychis_coexisyst_USBSerial_writeBytes(JNIEnv* env, jobject thiz, int f
 
 
 jbyteArray
-Java_com_gnychis_coexisyst_USBSerial_blockReadBytes(JNIEnv* env, jobject thiz, int fd, int nbytes) {
+Java_com_gnychis_coexisyst_Core_USBSerial_blockReadBytes(JNIEnv* env, jobject thiz, int fd, int nbytes) {
 	int nread=0;
 	jbyteArray buf;
 	char *pBuf;
@@ -361,13 +361,13 @@ Java_com_gnychis_coexisyst_USBSerial_blockReadBytes(JNIEnv* env, jobject thiz, i
 }
 
 jint
-Java_com_gnychis_coexisyst_USBSerial_closeCommPort(JNIEnv* env, jobject thiz, jint fd)
+Java_com_gnychis_coexisyst_Core_USBSerial_closeCommPort(JNIEnv* env, jobject thiz, jint fd)
 {
 	return close(fd);
 }
 
 jint
-Java_com_gnychis_coexisyst_USBSerial_openCommPort(JNIEnv* env, jobject thiz, jstring port_name)
+Java_com_gnychis_coexisyst_Core_USBSerial_openCommPort(JNIEnv* env, jobject thiz, jstring port_name)
 {
 	const char *nativePort = (*env)->GetStringUTFChars(env, port_name, 0);
 	int fd = open (nativePort, O_RDWR | O_NOCTTY | O_SYNC);

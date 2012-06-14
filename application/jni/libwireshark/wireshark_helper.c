@@ -277,7 +277,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, j
 	dissectCleanup(ptr);
 }
 void
-Java_com_gnychis_coexisyst_Packet_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
+Java_com_gnychis_coexisyst_Core_Packet_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
 {
   
   _env=env;
@@ -372,7 +372,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jb
 	return ret;
 }
 jint
-Java_com_gnychis_coexisyst_Packet_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
+Java_com_gnychis_coexisyst_Core_Packet_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
 {
 	char *pHeader;
 	char *pData;
@@ -462,7 +462,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAllTest(JNIEnv* env, jobject th
 
 // Return a list of all the fields
 jobjectArray
-Java_com_gnychis_coexisyst_Packet_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
+Java_com_gnychis_coexisyst_Core_Packet_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
 {
   jobjectArray fields = 0;
 	jstring      str;
@@ -748,7 +748,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jin
 	return result;
 }
 jstring
-Java_com_gnychis_coexisyst_Packet_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
+Java_com_gnychis_coexisyst_Core_Packet_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
 {
 	gchar *field;
 	char *str_result;
@@ -960,10 +960,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
   if(env==NULL)
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Could not grab env");
 
-  cls = (*env)->FindClass(env, "com/gnychis/coexisyst/Packet");
+  cls = (*env)->FindClass(env, "com/gnychis/coexisyst/Core/Packet");
 
   if(cls==NULL)
-    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Could not find class");
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Could not find class called Packet");
 
   nativeCrashed  = (*env)->GetMethodID(env, cls,  "nativeCrashed", "()V");
 
