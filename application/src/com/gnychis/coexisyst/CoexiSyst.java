@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.Interfaces.AddNetwork;
+import com.gnychis.coexisyst.Interfaces.GraphWispy;
 import com.gnychis.coexisyst.Interfaces.ManageNetworks;
 import com.gnychis.coexisyst.ScanReceivers.NetworksScan;
 import com.stericson.RootTools.RootTools;
@@ -57,7 +58,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	Button buttonADB;
 	
 	// USB device related
-	Wispy wispy;
+	public Wispy wispy;
 	Wifi ath;
 	ZigBee zigbee;
 	IChart wispyGraph;

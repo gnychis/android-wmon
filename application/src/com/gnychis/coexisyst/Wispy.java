@@ -24,12 +24,12 @@ public class Wispy {
 	FileOutputStream _wispyOut;
 	PrintStream _wispyPrint;
 	
-	boolean _device_connected;
+	public boolean _device_connected;
 	boolean _is_polling;
 	boolean _reset_max;
 	boolean _save_scans;
 	int _poll_count;
-	int _maxresults[];
+	public int _maxresults[];
 	
 	Semaphore _lock;
 	

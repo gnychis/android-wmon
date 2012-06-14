@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.Interfaces;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +22,9 @@ import org.achartengine.ChartFactory;
 import org.achartengine.chart.PointStyle;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
+
+import com.gnychis.coexisyst.AbstractDemoChart;
+import com.gnychis.coexisyst.CoexiSyst;
 
 import android.content.Context;
 import android.content.Intent;
