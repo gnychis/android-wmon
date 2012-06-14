@@ -1,4 +1,4 @@
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.DeviceHandlers;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -14,6 +14,9 @@ import android.os.AsyncTask;
 import android.os.Message;
 import android.util.Log;
 
+import com.gnychis.coexisyst.CoexiSyst;
+import com.gnychis.coexisyst.Packet;
+import com.gnychis.coexisyst.USBSerial;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.stericson.RootTools.RootTools;
 
@@ -28,7 +31,7 @@ public class ZigBee {
 	
 	CoexiSyst coexisyst;
 	
-	boolean _device_connected;
+	public boolean _device_connected;
 	ZigBeeScan _monitor_thread;
 	
 	static int WTAP_ENCAP_802_15 = 127;

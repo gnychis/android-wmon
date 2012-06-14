@@ -9,6 +9,8 @@ import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+import com.gnychis.coexisyst.DeviceHandlers.Wifi;
+import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;
 
 // A class to handle USB worker like things

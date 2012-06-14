@@ -27,6 +27,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gnychis.coexisyst.DeviceHandlers.Wifi;
+import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.Interfaces.AddNetwork;
 import com.gnychis.coexisyst.Interfaces.ManageNetworks;
 import com.gnychis.coexisyst.ScanReceivers.NetworksScan;

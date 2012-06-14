@@ -10,7 +10,7 @@ public class USBSerial {
 	
 	private int fd;
 	
-	USBSerial() {
+	public USBSerial() {
 		fd = -1;
 	}
 	

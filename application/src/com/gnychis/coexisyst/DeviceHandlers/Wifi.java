@@ -1,4 +1,4 @@
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.DeviceHandlers;
 
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
@@ -21,6 +21,8 @@ import android.os.AsyncTask;
 import android.os.Message;
 import android.util.Log;
 
+import com.gnychis.coexisyst.CoexiSyst;
+import com.gnychis.coexisyst.Packet;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.ScanReceivers.WiFiScanReceiver;
 import com.stericson.RootTools.RootTools;
@@ -51,7 +53,7 @@ public class Wifi {
 	
 	CoexiSyst coexisyst;
 	
-	boolean _device_connected;
+	public boolean _device_connected;
 	
 	static int WTAP_ENCAP_ETHERNET = 1;
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;

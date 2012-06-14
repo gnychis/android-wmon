@@ -9,10 +9,10 @@ import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+import com.gnychis.coexisyst.DeviceHandlers.Wifi;
+import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.USBMon;
-import com.gnychis.coexisyst.Wifi;
 import com.gnychis.coexisyst.WifiAP;
-import com.gnychis.coexisyst.ZigBee;
 import com.gnychis.coexisyst.ZigBeeNetwork;
 
 /*
