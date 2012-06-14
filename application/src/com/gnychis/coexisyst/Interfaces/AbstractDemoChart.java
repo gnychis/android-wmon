@@ -29,7 +29,6 @@ import org.achartengine.renderer.SimpleSeriesRenderer;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
-import com.gnychis.coexisyst.IChart;
 
 /**
  * An abstract class for the demo charts to extend.

@@ -33,6 +33,7 @@ import com.gnychis.coexisyst.DeviceHandlers.Wispy;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.Interfaces.AddNetwork;
 import com.gnychis.coexisyst.Interfaces.GraphWispy;
+import com.gnychis.coexisyst.Interfaces.IChart;
 import com.gnychis.coexisyst.Interfaces.ManageNetworks;
 import com.gnychis.coexisyst.ScanReceivers.NetworksScan;
 import com.stericson.RootTools.RootTools;
