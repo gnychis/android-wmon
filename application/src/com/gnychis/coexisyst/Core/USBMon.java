@@ -1,4 +1,4 @@
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.Core;
 
 import java.util.List;
 import java.util.Timer;
@@ -8,8 +8,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
+import com.gnychis.coexisyst.DeviceHandlers.Wispy;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;
 

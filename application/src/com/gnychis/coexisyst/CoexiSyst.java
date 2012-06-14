@@ -27,7 +27,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gnychis.coexisyst.Core.USBMon;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
+import com.gnychis.coexisyst.DeviceHandlers.Wispy;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.Interfaces.AddNetwork;
 import com.gnychis.coexisyst.Interfaces.GraphWispy;
@@ -44,11 +46,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	WifiManager wifi;
 	BluetoothAdapter bt;
 	protected USBMon usbmon;
-	protected Wispy.WispyThread wispyscan;
+	public Wispy.WispyThread wispyscan;  // FIXME: check if should be protected
 	
 	private ProgressDialog pd;
 	
-	TextView textStatus;
+	public TextView textStatus;
 	
 	Button buttonAddNetwork; 
 	Button buttonManageNets; 
@@ -59,9 +61,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	// USB device related
 	public Wispy wispy;
-	Wifi ath;
-	ZigBee zigbee;
-	IChart wispyGraph;
+	public Wifi ath;
+	public ZigBee zigbee;
+	public IChart wispyGraph;
 	
 	NetworksScan _networks_scan;
 	

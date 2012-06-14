@@ -23,14 +23,14 @@ import org.achartengine.chart.PointStyle;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
-import com.gnychis.coexisyst.AbstractDemoChart;
-import com.gnychis.coexisyst.CoexiSyst;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
 import android.util.Log;
+
+import com.gnychis.coexisyst.AbstractDemoChart;
+import com.gnychis.coexisyst.CoexiSyst;
 
 /**
  * Average temperature demo chart.
