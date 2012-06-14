@@ -56,7 +56,7 @@ public class AddNetwork extends ExpandableListActivity {
 	  Bundle i = getIntent().getExtras();
 	  netlist_80211 = (ArrayList<WifiAP>)i.get("com.gnychis.coexisyst.80211");
 	  netlist_ZigBee = (ArrayList<ZigBeeNetwork>)i.get("com.gnychis.coexisyst.ZigBee");
-	  devlist_Bluetooth = (ArrayList<BluetoothDev>)i.get("com.gnychis.coeexisyst.Bluetooth");
+	  devlist_Bluetooth = (ArrayList<BluetoothDev>)i.get("com.gnychis.coexisyst.Bluetooth");
 	  db = new DBAdapter(this);
 	  db.open();
 	  setup_groups();
@@ -65,7 +65,7 @@ public class AddNetwork extends ExpandableListActivity {
 	
 	public void setup_groups() {
 		
-        groupData = new ArrayList<Map<String, String>>();
+        groupData = new ArrayList<Map<String, String>>(); 
         childData = new ArrayList<List<Map<String, String>>>();
         
         //////////////// 802.11 Networks
@@ -124,7 +124,7 @@ public class AddNetwork extends ExpandableListActivity {
         curGroupMap.put(NAME, "Bluetooth");  
         curGroupMap.put(DESCRIPTION, "Description: Bluetooth devices");
         children = new ArrayList<Map<String, String>>();
-        if(netlist_ZigBee!=null) {
+        if(devlist_Bluetooth!=null) {
 	        for(BluetoothDev result: devlist_Bluetooth) {
 	            Map<String, String> curChildMap = new HashMap<String, String>();
 	            children.add(curChildMap);
