@@ -9,11 +9,11 @@ import android.os.Parcelable;
 @SuppressWarnings("unchecked")
 public class ZigBeeNetwork implements Parcelable {
 
-	public String _mac;				// the source address (of the coordinator?)
-	public String _pan;  			// the network address
-	public int _band;  				// the channel
-	ArrayList<Integer> _lqis;		// link quality indicators (to all devices?)
-	ArrayList<ZigBeeDev> _devices;	// the devices in the network
+	public String _mac;						// the source address (of the coordinator?)
+	public String _pan;  					// the network address
+	public int _band;  						// the channel
+	public ArrayList<Integer> _lqis;		// link quality indicators (to all devices?)
+	public ArrayList<ZigBeeDev> _devices;	// the devices in the network
 		
     public void writeToParcel(Parcel out, int flags) {
     	out.writeString(_mac);

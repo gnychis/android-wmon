@@ -12,7 +12,7 @@ public class ZigBeeDev implements Parcelable {
 	public String _mac;			// the source address
 	public String _pan;  		// the network address
 	public int _band;  			// the channel
-	ArrayList<Integer> _lqis;	// link quality indicators
+	public ArrayList<Integer> _lqis;	// link quality indicators
 	
 	public Packet _beacon;
 	

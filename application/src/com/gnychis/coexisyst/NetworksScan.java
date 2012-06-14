@@ -11,6 +11,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+import com.gnychis.coexisyst.ScanReceivers.ZigBeeScanReceiver;
 
 /*
  * Ditch thread messages, use the broadcast as the message of the
