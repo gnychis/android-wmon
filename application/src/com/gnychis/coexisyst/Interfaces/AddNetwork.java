@@ -1,4 +1,4 @@
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.Interfaces;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +16,11 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.Toast;
+
+import com.gnychis.coexisyst.DBAdapter;
+import com.gnychis.coexisyst.R;
+import com.gnychis.coexisyst.WifiAP;
+import com.gnychis.coexisyst.ZigBeeNetwork;
 
 
 public class AddNetwork extends ExpandableListActivity {

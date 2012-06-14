@@ -23,7 +23,7 @@
         <activity android:name="org.achartengine.GraphicalActivity" />
 		<activity android:name=".GeneratedChartDemo" />
         <activity android:name=".Interfaces.ManageNetworks" class=".ManageDevices" android:label="Device Management"></activity>
-        <activity android:name="AddNetwork" class=".AddNetwork" android:label="Add Network"></activity>
+        <activity android:name=".Interfaces.AddNetwork" class=".AddNetwork" android:label="Add Network"></activity>
         <activity android:name="GraphWispy" class=".GraphWispy" android:label="Graph Wispy"></activity>
     </application>
 </manifest>
