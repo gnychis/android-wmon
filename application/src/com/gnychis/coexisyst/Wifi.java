@@ -22,6 +22,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+import com.gnychis.coexisyst.ScanReceivers.WiFiScanReceiver;
 import com.stericson.RootTools.RootTools;
 
 /* 
@@ -93,7 +94,7 @@ public class Wifi {
 		5500, 5520, 5540, 5560, 5580, 5680, 5700, 5745, 5765, 5785, 5805, 5825};
 	
 	// Take an 802.11 channel number, get a frequency in KHz
-	static int channelToFreq(int chan) {
+	public static int channelToFreq(int chan) {
 		int index=-1;
 		int i;
 		

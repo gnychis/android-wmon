@@ -15,7 +15,7 @@ public class WifiAP implements Parcelable {
 	public boolean _dualband;
 	public int _band;  // kilohertz
 	public int _band2;
-	ArrayList<Integer> _rssis;
+	public ArrayList<Integer> _rssis;
 	
 	public Packet _beacon;
 	
