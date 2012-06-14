@@ -11,6 +11,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+import com.gnychis.coexisyst.ScanReceivers.BluetoothScanReceiver;
 import com.gnychis.coexisyst.ScanReceivers.WiFiScanReceiver;
 import com.gnychis.coexisyst.ScanReceivers.ZigBeeScanReceiver;
 

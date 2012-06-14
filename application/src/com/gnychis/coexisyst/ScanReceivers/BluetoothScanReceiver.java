@@ -1,4 +1,4 @@
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.ScanReceivers;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 
