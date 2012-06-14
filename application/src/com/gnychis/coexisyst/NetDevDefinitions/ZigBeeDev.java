@@ -49,7 +49,7 @@ public class ZigBeeDev implements Parcelable {
 		public ZigBeeDev[] newArray(int size) {
 			return new ZigBeeDev[size];
 		}
-};
+    };
 	
 	public ZigBeeDev() {
 		_band=-1;
