@@ -12,6 +12,7 @@ import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.Core.USBMon;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
+import com.gnychis.coexisyst.NetDevDefinitions.BluetoothDev;
 import com.gnychis.coexisyst.NetDevDefinitions.WifiAP;
 import com.gnychis.coexisyst.NetDevDefinitions.ZigBeeNetwork;
 
@@ -50,6 +51,7 @@ public class NetworksScan extends Activity {
 	
 	public ArrayList<ZigBeeNetwork> _zigbee_scan_result;
 	public ArrayList<WifiAP> _wifi_scan_result;
+	public ArrayList<BluetoothDev> _bluetooth_scan_result;
 	
 	public enum Scans {		// A List of possible scans to handle
 		Wifi,
@@ -86,7 +88,7 @@ public class NetworksScan extends Activity {
 			if(msg.obj == ThreadMessages.BLUETOOTH_SCAN_COMPLETE) {
 				Log.d("NetworksScan", "Bluetooth scan is now complete");	// Log out
 				_finished_scans.add(Scans.Bluetooth);
-				//_bluetooth_scan_result = _rcvr_BTooth._last_scan;				// Save the scan result
+				_bluetooth_scan_result = _rcvr_BTooth._last_scan;				// Save the scan result
 				startNextScan();
 			}
 		}
@@ -193,6 +195,7 @@ public class NetworksScan extends Activity {
 		
 		switch(next_scan) {
 			case Bluetooth:
+				_rcvr_BTooth.reset();
 				_bluetooth.startDiscovery();
 				startNextScan();	// immediately start scanning the next for Bluetooth (overlap)
 				break;

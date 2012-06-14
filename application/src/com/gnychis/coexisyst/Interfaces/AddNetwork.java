@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.gnychis.coexisyst.R;
 import com.gnychis.coexisyst.Core.DBAdapter;
+import com.gnychis.coexisyst.NetDevDefinitions.BluetoothDev;
 import com.gnychis.coexisyst.NetDevDefinitions.WifiAP;
 import com.gnychis.coexisyst.NetDevDefinitions.ZigBeeNetwork;
 
@@ -37,6 +38,7 @@ public class AddNetwork extends ExpandableListActivity {
     
     ArrayList<WifiAP> netlist_80211;
     ArrayList<ZigBeeNetwork> netlist_ZigBee;
+    ArrayList<BluetoothDev> devlist_Bluetooth;
 
     public List<Map<String, String>> groupData;
     public List<List<Map<String, String>>> childData;
@@ -54,6 +56,7 @@ public class AddNetwork extends ExpandableListActivity {
 	  Bundle i = getIntent().getExtras();
 	  netlist_80211 = (ArrayList<WifiAP>)i.get("com.gnychis.coexisyst.80211");
 	  netlist_ZigBee = (ArrayList<ZigBeeNetwork>)i.get("com.gnychis.coexisyst.ZigBee");
+	  devlist_Bluetooth = (ArrayList<BluetoothDev>)i.get("com.gnychis.coeexisyst.Bluetooth");
 	  db = new DBAdapter(this);
 	  db.open();
 	  setup_groups();
@@ -115,6 +118,25 @@ public class AddNetwork extends ExpandableListActivity {
         }
         childData.add(children);
         
+        //////////////// Bluetooth Networks
+        curGroupMap = new HashMap<String, String>();
+        groupData.add(curGroupMap);
+        curGroupMap.put(NAME, "Bluetooth");  
+        curGroupMap.put(DESCRIPTION, "Description: Bluetooth devices");
+        children = new ArrayList<Map<String, String>>();
+        if(netlist_ZigBee!=null) {
+	        for(BluetoothDev result: devlist_Bluetooth) {
+	            Map<String, String> curChildMap = new HashMap<String, String>();
+	            children.add(curChildMap);
+	            curChildMap.put(NAME, "Device Name: " + result.name());
+	            
+	            curChildMap.put(MAC, "Device ID: " + result.mac());
+	            curChildMap.put(CHAN, "Frequency:  2.4GHz");             
+	            curChildMap.put(CMAC, result.mac());	// clear string mac
+	            curChildMap.put(RSSI, "RSSI: " + result.rssi());        	
+	        }
+        }
+        childData.add(children);
 		
         // Set up our adapter
         mAdapter = new SimpleExpandableListAdapter(
