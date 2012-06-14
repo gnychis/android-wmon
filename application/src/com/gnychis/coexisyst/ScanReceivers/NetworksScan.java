@@ -12,8 +12,8 @@ import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.Core.USBMon;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
-import com.gnychis.coexisyst.WifiAP;
-import com.gnychis.coexisyst.ZigBeeNetwork;
+import com.gnychis.coexisyst.NetDevDefinitions.WifiAP;
+import com.gnychis.coexisyst.NetDevDefinitions.ZigBeeNetwork;
 
 /*
  * Ditch thread messages, use the broadcast as the message of the

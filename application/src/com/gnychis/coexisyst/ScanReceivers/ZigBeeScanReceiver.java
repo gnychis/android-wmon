@@ -14,9 +14,9 @@ import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
-import com.gnychis.coexisyst.Packet;
-import com.gnychis.coexisyst.ZigBeeDev;
-import com.gnychis.coexisyst.ZigBeeNetwork;
+import com.gnychis.coexisyst.Core.Packet;
+import com.gnychis.coexisyst.NetDevDefinitions.ZigBeeDev;
+import com.gnychis.coexisyst.NetDevDefinitions.ZigBeeNetwork;
 
 // Can pass a handler that will perform a callback when a scan
 // is received.  This is helpful for alerting the parent class

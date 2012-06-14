@@ -1,8 +1,9 @@
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.Core;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.concurrent.BlockingQueue;
+
 
 import android.content.Context;
 import android.os.AsyncTask;

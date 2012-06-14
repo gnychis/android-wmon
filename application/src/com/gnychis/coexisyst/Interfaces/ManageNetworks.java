@@ -17,8 +17,8 @@ import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.Toast;
 
-import com.gnychis.coexisyst.DBAdapter;
 import com.gnychis.coexisyst.R;
+import com.gnychis.coexisyst.Core.DBAdapter;
 
 
 public class ManageNetworks extends ExpandableListActivity {

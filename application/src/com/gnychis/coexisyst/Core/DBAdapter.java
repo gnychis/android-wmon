@@ -1,4 +1,4 @@
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.Core;
 
 import java.util.ArrayList;
 import java.util.List;

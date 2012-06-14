@@ -1,7 +1,8 @@
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.NetDevDefinitions;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+
 
 import android.os.Parcel;
 import android.os.Parcelable;

@@ -17,10 +17,10 @@ import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.Toast;
 
-import com.gnychis.coexisyst.DBAdapter;
 import com.gnychis.coexisyst.R;
-import com.gnychis.coexisyst.WifiAP;
-import com.gnychis.coexisyst.ZigBeeNetwork;
+import com.gnychis.coexisyst.Core.DBAdapter;
+import com.gnychis.coexisyst.NetDevDefinitions.WifiAP;
+import com.gnychis.coexisyst.NetDevDefinitions.ZigBeeNetwork;
 
 
 public class AddNetwork extends ExpandableListActivity {
