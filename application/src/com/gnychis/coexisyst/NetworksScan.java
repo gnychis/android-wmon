@@ -1,8 +1,7 @@
 package com.gnychis.coexisyst;
 
+import java.util.AbstractQueue;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -56,7 +55,7 @@ public class NetworksScan extends Activity {
 	
 	// For keeping track of the current scan progress
 	private ArrayList<Scans> _scan_list;
-	private Queue<Scans> _finished_scans;
+	private ArrayList<Scans> _finished_scans;
 	private boolean _is_scanning;
 	private int _next_scan;
 	
@@ -70,16 +69,19 @@ public class NetworksScan extends Activity {
 			// An incoming message that a wifi scan was complete
 			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE) {
 				Log.d("NetworksScan", "Wifi scan is now complete");		// Log out
+				_finished_scans.add(Scans.Wifi);
 				_wifi_scan_result = _rcvr_80211._last_scan;				// Save the scan result
 				startNextScan();										// Start next scan if there is one
 			}
 			if(msg.obj == ThreadMessages.ZIGBEE_SCAN_COMPLETE) {
 				Log.d("NetworksScan", "ZigBee scan is now complete");	// Log out
+				_finished_scans.add(Scans.ZigBee);
 				_zigbee_scan_result = _rcvr_ZigBee._last_scan;			// Save scan result
 				startNextScan();										// Start next scan if there is one
 			}
 			if(msg.obj == ThreadMessages.BLUETOOTH_SCAN_COMPLETE) {
 				Log.d("NetworksScan", "Bluetooth scan is now complete");	// Log out
+				_finished_scans.add(Scans.Bluetooth);
 				//_bluetooth_scan_result = _rcvr_BTooth._last_scan;				// Save the scan result
 				startNextScan();
 			}
@@ -102,6 +104,7 @@ public class NetworksScan extends Activity {
 		_zigbee_scan_result = null;
 		_wifi_scan_result = null;
 		_scan_list = new ArrayList<Scans>();
+		_finished_scans = new ArrayList<Scans>();
 		
 		// Setup the receivers
 		_rcvr_80211 = new WiFiScanReceiver(_handler);
@@ -118,6 +121,8 @@ public class NetworksScan extends Activity {
 		int max_progress = 0;
 		
 		_scan_list.clear();
+		_next_scan=0;							// Start at the beginning of the list
+		_finished_scans = new ArrayList<Scans>();
 		
 		// Bluetooth _should_ be added to the scan list first, that way it is
 		// the first thing initialized AND it should run in parallel because
@@ -140,6 +145,28 @@ public class NetworksScan extends Activity {
 			_scan_list.add(Scans.ZigBee);
 			max_progress += ZigBee.channels.length;
 		}
+		
+		return max_progress;
+	}
+	
+	// A call to initiate the scan progress.  First we make sure that we
+	// are not already scanning, and then we create a scan based on the
+	// hardware that is connected.  This returns a value that is used
+	// by a progress dialogue in the main UI to show scan progress.
+	public int initiateScan() {
+		int max_progress;
+		
+		// Just a double check
+		if(_is_scanning || (!_bluetooth.isEnabled() && !_zigbee.isConnected() && !_wifi.isConnected()))
+			return -1;
+		
+		_is_scanning = true;
+				
+		_usbmon.stopUSBMon();	// We need to stop the USB monitor, otherwise it interferes
+		resetScanResults();		// Clear the scan results for new results
+
+		max_progress = createScanList();		// Create a list of scans to complete based on hardware connected
+		startNextScan();						// Start the scan process
 		
 		return max_progress;
 	}
@@ -178,29 +205,6 @@ public class NetworksScan extends Activity {
 	// For other classes to determine if a scan is already going on
 	public boolean isScanning() {
 		return _is_scanning;
-	}
-	
-	// A call to initiate the scan progress.  First we make sure that we
-	// are not already scanning, and then we create a scan based on the
-	// hardware that is connected.  This returns a value that is used
-	// by a progress dialogue in the main UI to show scan progress.
-	public int initiateScan() {
-		int max_progress;
-		
-		// Just a double check
-		if(_is_scanning || (!_zigbee.isConnected() && !_wifi.isConnected()))
-			return -1;
-		
-		_is_scanning = true;
-				
-		_usbmon.stopUSBMon();	// We need to stop the USB monitor, otherwise it interferes
-		resetScanResults();		// Clear the scan results for new results
-
-		max_progress = createScanList();		// Create a list of scans to complete based on hardware connected
-		_next_scan=0;							// Start at the beginning of the list
-		startNextScan();						// Start the scan process
-		
-		return max_progress;
 	}
 	
 	private void networkScansComplete() {

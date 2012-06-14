@@ -359,6 +359,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// which, based on the devices connected for scanning,
 		// will return a maximum value for the progress bar
 		max_progress = _networks_scan.initiateScan();
+		if(max_progress==-1) {
+			Toast.makeText(getApplicationContext(), "No networks available to scan!", Toast.LENGTH_LONG).show();
+			return;
+		}
 		pd.setMax(max_progress);
 		pd.show();
 	}
