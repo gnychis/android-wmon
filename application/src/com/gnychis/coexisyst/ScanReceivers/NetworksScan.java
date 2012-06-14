@@ -1,4 +1,4 @@
-package com.gnychis.coexisyst;
+package com.gnychis.coexisyst.ScanReceivers;
 
 import java.util.ArrayList;
 
@@ -10,10 +10,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.gnychis.coexisyst.USBMon;
+import com.gnychis.coexisyst.Wifi;
+import com.gnychis.coexisyst.WifiAP;
+import com.gnychis.coexisyst.ZigBee;
+import com.gnychis.coexisyst.ZigBeeNetwork;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
-import com.gnychis.coexisyst.ScanReceivers.BluetoothScanReceiver;
-import com.gnychis.coexisyst.ScanReceivers.WiFiScanReceiver;
-import com.gnychis.coexisyst.ScanReceivers.ZigBeeScanReceiver;
 
 /*
  * Ditch thread messages, use the broadcast as the message of the
@@ -94,7 +96,7 @@ public class NetworksScan extends Activity {
 	
 	// Set the results to null to begin with, so that we can easily check
 	// when a scan of all protocols is complete.
-	NetworksScan(Handler h, USBMon m, Wifi w, ZigBee z, BluetoothAdapter b) {
+	public NetworksScan(Handler h, USBMon m, Wifi w, ZigBee z, BluetoothAdapter b) {
 		
 		_coexisyst_handler = h;
 		

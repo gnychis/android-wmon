@@ -43,8 +43,8 @@ public class ZigBee {
 	ArrayList<Packet> _scan_results;
 	
 	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
-	static int[] channels = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-	static int[] frequencies = {2405, 2410, 2415, 2420, 2425, 2430, 2435, 
+	public static int[] channels = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+	public static int[] frequencies = {2405, 2410, 2415, 2420, 2425, 2430, 2435, 
 			2440, 2445, 2450, 2455, 2460, 2465, 2470, 2475, 2480};
 	
 	static public int freqToChan(int freq) {

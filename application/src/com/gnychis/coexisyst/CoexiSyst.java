@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gnychis.coexisyst.ScanReceivers.NetworksScan;
 import com.stericson.RootTools.RootTools;
 
 public class CoexiSyst extends Activity implements OnClickListener {
