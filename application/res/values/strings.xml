@@ -11,4 +11,5 @@
         <item>Belize</item>
         <item>Benin</item>
     </string-array>
+        <string name="sdata">Spectrum Data</string>
 </resources>
