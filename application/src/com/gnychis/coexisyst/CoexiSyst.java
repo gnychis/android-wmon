@@ -30,7 +30,7 @@ import android.widget.Toast;
 import com.gnychis.coexisyst.Core.DBAdapter;
 import com.gnychis.coexisyst.Core.USBMon;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
-import com.gnychis.coexisyst.DeviceHandlers.Wispy;
+import com.gnychis.coexisyst.DeviceHandlers.WispyOld;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.Interfaces.AddNetwork;
 import com.gnychis.coexisyst.Interfaces.GraphWispy;
@@ -48,7 +48,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	WifiManager wifi;
 	BluetoothAdapter bt;
 	protected USBMon usbmon;
-	public Wispy.WispyThread wispyscan;  // FIXME: check if should be protected
+	public WispyOld.WispyThread wispyscan;  // FIXME: check if should be protected
 	
 	private ProgressDialog pd;
 	
@@ -62,7 +62,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	Button buttonADB;
 	
 	// USB device related
-	public Wispy wispy;
+	public WispyOld wispy;
 	public Wifi ath;
 	public ZigBee zigbee;
 	public IChart wispyGraph;
@@ -78,6 +78,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public enum ThreadMessages {
 		WIFI_SCAN_START,
 		WIFI_SCAN_COMPLETE,
+		WISPY_INITIALIZED,
+		WISPY_FAILED,
 		WISPY_SCAN_COMPLETE,
 		WIFIDEV_CONNECTED,
 		WIFIDEV_INITIALIZED,
@@ -238,7 +240,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     		Log.e(TAG, "error trying to load a USB related library", e);
     	}
        
-    	wispy = new Wispy();
+    	wispy = new WispyOld();
     	
     	toastMessages = new ArrayBlockingQueue<String>(20);
         
@@ -347,7 +349,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public void scanSpectrum() {		
 		// Get the WiSpy data
 		Log.d(TAG, "Waiting for results from WiSpy...");
-		wispy.getResultsBlock(Wispy.PASSES);
+		wispy.getResultsBlock(WispyOld.PASSES);
 		Log.d(TAG, "Got results from the WiSpy");
 	}
 
@@ -477,12 +479,8 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public native String  initUSB();
 	public native String[] getDeviceNames();
-	public native int getWiSpy();
 	public native int USBcheckForDevice(int vid, int pid);
 	public native void libusbTest();
-	public native String[] getWiSpyList();
-	public native int initWiSpyDevices();
-	public native int[] pollWiSpy();
 	public native int pcapGetInterfaces();
 	public native int wiresharkInit();
 	public native int dissectPacket(byte[] header, byte[] data, int encap);

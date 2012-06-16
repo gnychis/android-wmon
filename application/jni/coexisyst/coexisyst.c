@@ -193,7 +193,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 }
 
 jint
-Java_com_gnychis_coexisyst_CoexiSyst_initWiSpyDevices( JNIEnv* env, jobject thiz )
+Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_initWiSpyDevices( JNIEnv* env, jobject thiz )
 {
 	int x;
 	sample = 0;
@@ -388,7 +388,7 @@ Java_com_gnychis_coexisyst_Core_USBSerial_openCommPort(JNIEnv* env, jobject thiz
 }
 
 jintArray
-Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
+Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_pollWiSpy( JNIEnv* env, jobject thiz)
 {
 	int x,r;
 	fd_set rfds;
@@ -501,7 +501,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_pollWiSpy( JNIEnv* env, jobject thiz)
 }
 
 jobjectArray
-Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
+Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_getWiSpyList( JNIEnv* env, jobject thiz)
 {
 	jobjectArray names = 0;
 	int ndev = 0;
@@ -556,7 +556,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
 }
 
 jint
-Java_com_gnychis_coexisyst_CoexiSyst_getWiSpy( JNIEnv* env, jobject thiz)
+Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_getWiSpy( JNIEnv* env, jobject thiz)
 {
 	devh = libusb_open_device_with_vid_pid(NULL, 0x1781, 0x083f);
 	return devh ? 1 : -1;

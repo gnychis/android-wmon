@@ -11,7 +11,7 @@ import android.util.Log;
 import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
-import com.gnychis.coexisyst.DeviceHandlers.Wispy;
+import com.gnychis.coexisyst.DeviceHandlers.WispyOld;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;
 
@@ -87,9 +87,9 @@ public class USBMon
 				
 		// Wispy related checks
 		if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==false) {
-			updateState(Wispy.WISPY_CONNECT);
+			updateState(WispyOld.WISPY_CONNECT);
 		} else if(wispy_in_devlist==0 && _coexisyst.wispy._device_connected==true) {
-			updateState(Wispy.WISPY_DISCONNECT);
+			updateState(WispyOld.WISPY_DISCONNECT);
 		} else if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==true && _coexisyst.wispy._is_polling==false) {
 			//debugOut("determined that a re-poll is needed");
 			//Thread.sleep( 1000 );
@@ -116,7 +116,7 @@ public class USBMon
 	 */
 	protected void updateState(int event)
 	{
-		if(event == Wispy.WISPY_CONNECT) {
+		if(event == WispyOld.WISPY_CONNECT) {
 			debugOut("got update that WiSpy was connected");
 			_coexisyst.sendToastMessage(_handler, "WiSpy device connected");
 			_coexisyst.wispy._device_connected=true;
@@ -131,13 +131,13 @@ public class USBMon
 			_coexisyst.wispyscan.execute(_coexisyst);
 			_coexisyst.wispy._is_polling = true;
 		}
-		else if(event == Wispy.WISPY_DISCONNECT) {
+		else if(event == WispyOld.WISPY_DISCONNECT) {
 			debugOut("got update that WiSpy was connected");
 			_coexisyst.sendToastMessage(_handler, "WiSpy device has been disconnected");
 			_coexisyst.wispy._device_connected=false;
 			_coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
 		}
-		else if(event == Wispy.WISPY_POLL) {
+		else if(event == WispyOld.WISPY_POLL) {
 			debugOut("trying to re-poll the WiSpy device");
 			_coexisyst.sendToastMessage(_handler, "Re-trying polling");
 			_coexisyst.wispyscan.cancel(true);

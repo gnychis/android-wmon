@@ -1,167 +1,217 @@
 package com.gnychis.coexisyst.DeviceHandlers;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
-
-import com.gnychis.coexisyst.CoexiSyst;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Environment;
+import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
-public class Wispy {
-	public static final int WISPY_CONNECT = 0;
-	public static final int WISPY_DISCONNECT = 1;
-	public static final int WISPY_POLL = 2;
-	public static final int WISPY_POLL_FAIL = 3;
-	public static final int WISPY_POLL_THREAD = 4;
+import com.gnychis.coexisyst.CoexiSyst;
+import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+import com.gnychis.coexisyst.Core.Packet;
+import com.gnychis.coexisyst.Core.USBSerial;
+import com.gnychis.coexisyst.DeviceHandlers.ZigBee.ZigBeeInit;
+import com.gnychis.coexisyst.DeviceHandlers.ZigBee.ZigBeeScan;
+import com.gnychis.coexisyst.DeviceHandlers.ZigBee.ZigBeeState;
+import com.stericson.RootTools.RootTools;
+
+public class WiSpy {
+
+	private static final String TAG = "WiSpyDev";
+	private static final boolean VERBOSE = true;
+
+	public static final int WISPY_CONNECT = 200;
+	public static final int WISPY_DISCONNECT = 201;
+	public static final String WISPY_SCAN_RESULT = "com.gnychis.coexisyst.WISPY_SCAN_RESULT";
 	
-	public static final int PASSES = 20;
-	
-	File _root;
-	FileOutputStream _wispyOut;
-	PrintStream _wispyPrint;
+	CoexiSyst coexisyst;
 	
 	public boolean _device_connected;
-	public boolean _is_polling;
-	public boolean _reset_max;
-	boolean _save_scans;
-	public int _poll_count;
-	public int _maxresults[];
-	
-	Semaphore _lock;
-	
-	public Wispy() {
-		_lock = new Semaphore(1,true);
-        _device_connected=false;
-        _is_polling=false;
-        _reset_max=false;
-        _poll_count=0;
-        _save_scans=false;
-        _maxresults = new int[256];
-        for(int i=0; i<256; i++)
-        	_maxresults[i]=-200;
-        
-        // For writing to SD card
-        try {
-	        _root = Environment.getExternalStorageDirectory();
-	        _wispyOut = new FileOutputStream(new File(_root, "wispy.dat"));
-	        _wispyPrint = new PrintStream(_wispyOut);
-        } catch(Exception e) {
-        	//Log.e(TAG, "Error opening output file", e);
-        }
+	WiSpyScan _monitor_thread;
+
+	WiSpyState _state;
+	private Semaphore _state_lock;
+	public enum WiSpyState {
+		IDLE,
+		SCANNING,
 	}
 	
-	public void getResultsBlock(int count_length) {
-		
-		Log.d("wispy", "attempting to get results");
-		// Reset everything here, making sure not to conflict with the polling thread
-		try {
-			_lock.acquire();
-
-			_poll_count=0;
-			_reset_max=false;
-			for(int i=0; i<256; i++)
-	        	_maxresults[i]=-200;
-			_save_scans=true;
-			_lock.release();
-		} catch (Exception e) {
-			Log.d("wispy", "error acquiring lock to reset results");
-		}
-
-		// Take a second lock which 
-		try {
-			while(true) {
-				_lock.acquire();
-				if(_poll_count==count_length) {
-					_save_scans=false;
-					break;
-				}
-				_lock.release();
-			}
-			_lock.release();
-		} catch (Exception e) {
-			Log.d("wispy", "error acquiring lock to not save any more scans");
-		}
-		Log.d("wispy", "finished getting results!");
+	ArrayList<Packet> _scan_results;
+	
+	public WiSpy(CoexiSyst c) {
+		_state_lock = new Semaphore(1,true);
+		_scan_results = new ArrayList<Packet>();
+		coexisyst = c;
+		_state = WiSpyState.IDLE;
+		Log.d(TAG, "Initializing ZigBee class...");
 	}
 	
-	// A class to handle USB worker like things
-	public class WispyThread extends AsyncTask<Context, Integer, String>
+	public boolean isConnected() {
+		return _device_connected;
+	}
+	
+	public void connected() {
+		_device_connected=true;
+		WiSpyInit wsi = new WiSpyInit();
+		wsi.execute(coexisyst);
+	}
+	
+	public void disconnected() {
+		_device_connected=false;
+	}
+	
+	protected class WiSpyInit extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
-		CoexiSyst coexisyst;	
+		CoexiSyst coexisyst;
+		USBSerial _dev;
+		
+		// The initialized sequence (hardware sends it when it is initialized)
+		byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
+		
+		private void debugOut(String msg) {
+			if(VERBOSE)
+				Log.d("WiSpyInit", msg);
+		}
+		
+		// Used to send messages to the main Activity (UI) thread
+		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
+			Message msg = new Message();
+			msg.obj = t;
+			coexisyst._handler.sendMessage(msg);
+		}
+		
+		public boolean checkInitSeq(byte buf[]) {
+			
+			for(int i=0; i<initialized_sequence.length; i++)
+				if(initialized_sequence[i]!=buf[i])
+					return false;
+						
+			return true;
+		}
 		
 		@Override
-		protected String doInBackground( Context... params )
+		protected String doInBackground( Context ... params )
 		{
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			
-			//publishProgress(CoexiSyst.WISPY_POLL_THREAD);
-			
-			if(coexisyst.initWiSpyDevices()==1) {
-				publishProgress(Wispy.WISPY_POLL);
-			} else {
-				publishProgress(Wispy.WISPY_POLL_FAIL);
-				_is_polling = false;
-				return "FAIL";
+			if(initWiSpyDevices()!=1) {
+				sendMainMessage(ThreadMessages.WISPY_FAILED);
+				debugOut("Failed to initialize WiSpy device");
 			}
-			
-			while(true) {
-				int[] scan_res = coexisyst.pollWiSpy();
 				
-				if(scan_res==null) {
-					publishProgress(Wispy.WISPY_POLL_FAIL);
-					_is_polling = false;
-					break;
-				}
-				
-				//publishProgress(CoexiSyst.WISPY_POLL);		
-				
-				// What to do once we get a response!
-				try {
-					_lock.acquire();
-					if(scan_res.length==256 && _save_scans) {
-						for(int i=0; i<scan_res.length; i++)
-							if(scan_res[i] > _maxresults[i]) 
-								_maxresults[i] = scan_res[i];
-						
-						_poll_count++;
-						Log.d("wispy_thread", "saved result from wispy thread");
-					}
-					_lock.release();
-				} catch (Exception e) {
-					Log.e("Wispy", "exception trying to claim lock to save new results",e);
-				}
-			}
-			
+			sendMainMessage(ThreadMessages.WISPY_INITIALIZED);
+			debugOut("Successfully initialized WiSpy device");
+
 			return "OK";
 		}
 		
-		@Override
-		protected void onProgressUpdate(Integer... values)
-		{
-			super.onProgressUpdate(values);
-			int event = values[0];
-			
-			if(event==Wispy.WISPY_POLL_THREAD) {
-				//Toast.makeText(parent, "In WiSpy poll thread...",
-				//		Toast.LENGTH_LONG).show();
-			}
-			else if(event==Wispy.WISPY_POLL) {
-				//Toast.makeText(parent, "WiSpy started polling...",
-				//		Toast.LENGTH_LONG).show();
-				//textStatus.append(".");
-			}
-			else if(event==Wispy.WISPY_POLL_FAIL) {
-				Toast.makeText(parent, "--- WiSpy poll failed ---",
-						Toast.LENGTH_LONG).show();
-			}
-		}
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Below here is all related to the scanning functionality of the WiSpy device
+	
+	// Set the state to scan and start to switch channels
+	public boolean scanStart() {
+		
+		// Only allow to enter scanning state IF idle
+		if(!WiSpyStateChange(WiSpyState.SCANNING))
+			return false;
+		
+		_scan_results.clear();
+		
+		_monitor_thread = new WiSpyScan();
+		_monitor_thread.execute(coexisyst);
+		
+		return true;  // in scanning state, and channel hopping
+	}
+	
+	// Attempts to change the current state, will return
+	// the state after the change if successful/failure.
+	// This is the state of the use of the hardware for scanning, whether
+	// it is idle or it is currently scanning.
+	public boolean WiSpyStateChange(WiSpyState s) {
+		boolean res = false;
+		if(_state_lock.tryAcquire()) {
+			try {
+				
+				// Can add logic here to only allow certain state changes
+				// Given a _state... then...
+				switch(_state) {
+				
+				// From the IDLE state, we can go anywhere...
+				case IDLE:
+					Log.d(TAG, "Switching state from " + _state.toString() + " to " + s.toString());
+					_state = s;
+					res = true;
+				break;
+				
+				// We can go to idle, or ignore if we are in a
+				// scan already.
+				case SCANNING:
+					if(s==WiSpyState.IDLE) {  // cannot go directly to IDLE from SCANNING
+						Log.d(TAG, "Switching state from " + _state.toString() + " to " + s.toString());
+						_state = s;
+						res = true;
+					} else if(s==WiSpyState.SCANNING) {  // ignore an attempt to switch in to same state
+						res = false;
+					} 
+				break;
+				
+				default:
+					res = false;
+				}
+				
+			} finally {
+				_state_lock.release();
+			}
+		} 		
+		
+		return res;
+	}
+	
+	protected class WiSpyScan extends AsyncTask<Context, Integer, String>
+	{
+		Context parent;
+		CoexiSyst coexisyst;
+		private Semaphore _comm_lock;
+		
+		// Used to send messages to the main Activity (UI) thread
+		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
+			Message msg = new Message();
+			msg.obj = t;
+			coexisyst._handler.sendMessage(msg);
+		}
+		
+		// The entire meat of the thread, pulls packets off the interface and dissects them
+		@Override
+		protected String doInBackground( Context ... params )
+		{
+			parent = params[0];
+			coexisyst = (CoexiSyst) params[0];
+			_comm_lock = new Semaphore(1,true);		// FIXME: Not really sure if we need a comm lock here
+			
+			try {
+				_comm_lock.acquire();
+			} catch(Exception e) {
+				_comm_lock.release();
+				return "FAIL";
+			}			
+			
+			
+			_comm_lock.release();
+			
+			return "PASS";
+		}
+		
+	}
+	
+	public native int getWiSpy();
+	public native String[] getWiSpyList();
+	public native int initWiSpyDevices();
+	public native int[] pollWiSpy();
 }

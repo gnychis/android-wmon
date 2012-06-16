@@ -11,6 +11,7 @@ import android.util.Log;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.Core.USBMon;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
+import com.gnychis.coexisyst.DeviceHandlers.WispyOld;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.NetDevDefinitions.BluetoothDev;
 import com.gnychis.coexisyst.NetDevDefinitions.WifiAP;
@@ -43,6 +44,7 @@ public class NetworksScan extends Activity {
 	ZigBee _zigbee;
 	USBMon _usbmon;
 	BluetoothAdapter _bluetooth;
+	WispyOld _wispy;
 	
 	// Scan receivers for incoming broadcasts (which include results)
 	public WiFiScanReceiver _rcvr_80211;
