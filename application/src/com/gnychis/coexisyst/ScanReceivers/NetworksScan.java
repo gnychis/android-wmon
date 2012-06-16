@@ -154,6 +154,7 @@ public class NetworksScan extends Activity {
 			max_progress += ZigBee.channels.length;
 		}
 		
+		
 		return max_progress;
 	}
 	

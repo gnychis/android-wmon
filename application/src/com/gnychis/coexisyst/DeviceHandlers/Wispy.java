@@ -1,10 +1,10 @@
 package com.gnychis.coexisyst.DeviceHandlers;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Message;
 import android.util.Log;
@@ -13,10 +13,7 @@ import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.Core.Packet;
 import com.gnychis.coexisyst.Core.USBSerial;
-import com.gnychis.coexisyst.DeviceHandlers.ZigBee.ZigBeeInit;
-import com.gnychis.coexisyst.DeviceHandlers.ZigBee.ZigBeeScan;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee.ZigBeeState;
-import com.stericson.RootTools.RootTools;
 
 public class WiSpy {
 
@@ -26,11 +23,14 @@ public class WiSpy {
 	public static final int WISPY_CONNECT = 200;
 	public static final int WISPY_DISCONNECT = 201;
 	public static final String WISPY_SCAN_RESULT = "com.gnychis.coexisyst.WISPY_SCAN_RESULT";
+	public static final int POLLS_IN_MAX = 10;
 	
 	CoexiSyst coexisyst;
 	
 	public boolean _device_connected;
 	WiSpyScan _monitor_thread;
+	
+	ArrayList<Integer> _scan_result;
 
 	WiSpyState _state;
 	private Semaphore _state_lock;
@@ -129,6 +129,22 @@ public class WiSpy {
 		
 		return true;  // in scanning state, and channel hopping
 	}
+
+	public boolean scanStop() {
+		// Need to return the state back to IDLE from scanning
+		if(!WiSpyStateChange(WiSpyState.IDLE)) {
+			Log.d(TAG, "Failed to change from scanning to IDLE");
+			return false;
+		}
+		
+		// Now, send out a broadcast with the results
+		Intent i = new Intent();
+		i.setAction(WISPY_SCAN_RESULT);
+		i.putExtra("packets", _scan_results);
+		coexisyst.sendBroadcast(i);
+		
+		return true;
+	}
 	
 	// Attempts to change the current state, will return
 	// the state after the change if successful/failure.
@@ -213,7 +229,7 @@ public class WiSpy {
 	        for(int i=0; i<256; i++)
 	        	max_results[i]=-200;			
 			
-			for(int poll_count=0; poll_count<5; poll_count++) {
+			for(int poll_count=0; poll_count < WiSpy.POLLS_IN_MAX; poll_count++) {
 				int[] scan_res = pollWiSpy();
 				
 				if(scan_res==null) {
@@ -231,11 +247,16 @@ public class WiSpy {
 					debugOut("Failed WiSpy poll, the length was not 256");
 					break;
 				}
-
+				sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);  // Increment with each poll
 			}
+			
+			_scan_result = new ArrayList<Integer>();
+			for(int i=0; i<max_results.length; i++)
+				_scan_result.add(max_results[i]);
 			
 			_comm_lock.release();
 			
+			scanStop();
 			return "PASS";
 		}
 		
