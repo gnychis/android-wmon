@@ -140,7 +140,7 @@ public class WiSpy {
 		// Now, send out a broadcast with the results
 		Intent i = new Intent();
 		i.setAction(WISPY_SCAN_RESULT);
-		i.putExtra("packets", _scan_results);
+		i.putExtra("spectrum-bins", _scan_results);
 		coexisyst.sendBroadcast(i);
 		
 		return true;
@@ -208,7 +208,6 @@ public class WiSpy {
 				Log.d("WiSpyScan", msg);
 		}
 		
-		// The entire meat of the thread, pulls packets off the interface and dissects them
 		@Override
 		protected String doInBackground( Context ... params )
 		{

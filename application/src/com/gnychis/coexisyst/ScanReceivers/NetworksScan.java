@@ -50,6 +50,7 @@ public class NetworksScan extends Activity {
 	public WiFiScanReceiver _rcvr_80211;
 	public ZigBeeScanReceiver _rcvr_ZigBee;
 	public BluetoothScanReceiver _rcvr_BTooth;
+	public WiSpyScanReceiver _rcvr_WiSpy;
 	
 	public ArrayList<ZigBeeNetwork> _zigbee_scan_result;
 	public ArrayList<WifiAP> _wifi_scan_result;
@@ -95,6 +96,12 @@ public class NetworksScan extends Activity {
 				_bluetooth_scan_result = _rcvr_BTooth._last_scan;				// Save the scan result
 				startNextScan();
 			}
+			if(msg.obj == ThreadMessages.WISPY_SCAN_COMPLETE) {
+				Log.d("NetworksScan", "WiSpy scan is now complete");
+				_finished_scans.add(Scans.WiSpy);
+				_wispy_scan_result = _rcvr_WiSpy._last_scan;
+				startNextScan();
+			}
 		}
 	};
 	
@@ -113,6 +120,7 @@ public class NetworksScan extends Activity {
 		_is_scanning = false;		
 		_zigbee_scan_result = null;
 		_wifi_scan_result = null;
+		_wispy_scan_result = null;
 		_scan_list = new ArrayList<Scans>();
 		_finished_scans = new ArrayList<Scans>();
 		
@@ -120,6 +128,7 @@ public class NetworksScan extends Activity {
 		_rcvr_80211 = new WiFiScanReceiver(_handler);
 		_rcvr_ZigBee = new ZigBeeScanReceiver(_handler);
 		_rcvr_BTooth = new BluetoothScanReceiver(_handler);
+		_rcvr_WiSpy = new WiSpyScanReceiver(_handler);
 		//registerReceiver(_rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		//registerReceiver(_rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 	}
@@ -245,5 +254,7 @@ public class NetworksScan extends Activity {
 	public void resetScanResults() {
 		_zigbee_scan_result=null;
 		_wifi_scan_result=null;
+		_wispy_scan_result=null;
+		_bluetooth_scan_result=null;
 	}
 }
