@@ -16,7 +16,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -31,7 +30,6 @@ import com.gnychis.coexisyst.Core.DBAdapter;
 import com.gnychis.coexisyst.Core.USBMon;
 import com.gnychis.coexisyst.DeviceHandlers.WiSpy;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
-import com.gnychis.coexisyst.DeviceHandlers.WispyOld;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.Interfaces.AddNetwork;
 import com.gnychis.coexisyst.Interfaces.GraphWispy;
@@ -49,7 +47,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	WifiManager wifi;
 	BluetoothAdapter bt;
 	protected USBMon usbmon;
-	public WispyOld.WispyThread wispyscan;  // FIXME: check if should be protected
 	
 	private ProgressDialog pd;
 	
@@ -63,7 +60,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	Button buttonADB;
 	
 	// USB device related
-	public WispyOld wispy;
+	public WiSpy wispy;
 	public Wifi ath;
 	public ZigBee zigbee;
 	public IChart wispyGraph;
@@ -79,6 +76,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public enum ThreadMessages {
 		WIFI_SCAN_START,
 		WIFI_SCAN_COMPLETE,
+		WISPY_CONNECTED,
 		WISPY_INITIALIZED,
 		WISPY_FAILED,
 		WISPY_SCAN_COMPLETE,
@@ -122,6 +120,12 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				zigbeeWaiting();
 			if(msg.obj == ThreadMessages.ZIGBEE_INITIALIZED) 
 				zigbeeInitialized();
+			if(msg.obj == ThreadMessages.WISPY_CONNECTED)
+				WiSpySettling();
+			if(msg.obj == ThreadMessages.WISPY_INITIALIZED)
+				WiSpyInitialized();
+			if(msg.obj == ThreadMessages.WISPY_FAILED)
+				WiSpyFailed();
 			
 			///////////////////////////////////////////////////////////////////////
 			// A set of messages that that deal with hardware connections
@@ -145,6 +149,23 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		} catch (Exception e) {
 			Log.e(TAG, "Exception trying to put toast msg in queue:", e);
 		}
+	}
+	
+	public void WiSpySettling() {
+		pd = ProgressDialog.show(this, "", "Initializing WiSpy device...", true, false);  
+		usbmon.stopUSBMon();
+		wispy.connected();		
+	}
+	
+	public void WiSpyInitialized() {
+		pd.dismiss();
+		usbmon.startUSBMon();
+	}
+	
+	public void WiSpyFailed() {
+		pd.dismiss();
+		usbmon.startUSBMon();
+		Toast.makeText(getApplicationContext(), "Failed to initialize WiSpy device", Toast.LENGTH_LONG).show();
 	}
 	
 	public void zigbeeSettling() {
@@ -241,9 +262,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
     	} catch (Exception e) {
     		Log.e(TAG, "error trying to load a USB related library", e);
     	}
-       
-    	wispy = new WispyOld();
-    	
+           	
     	toastMessages = new ArrayBlockingQueue<String>(20);
         
         // Setup the database
@@ -273,11 +292,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		textStatus.append(initUSB());
 		
 		// Start the USB monitor thread, but only instantiate the wispy scan
-		try {
-			wispyscan = wispy.new WispyThread();
-		} catch (Exception e) { Log.e(TAG, "exception trying to start wispy thread", e); }
 		ath = new Wifi(this);
 		zigbee = new ZigBee(this);
+    	wispy = new WiSpy(this);
 		
 		// Check the pcap interfaces
 		//pcapGetInterfaces();
@@ -351,9 +368,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public void scanSpectrum() {		
 		// Get the WiSpy data
-		Log.d(TAG, "Waiting for results from WiSpy...");
-		wispy.getResultsBlock(WispyOld.PASSES);
-		Log.d(TAG, "Got results from the WiSpy");
+		Log.d(TAG, "This button is dead, remove it");
 	}
 
 	// This triggers a scan through the networks to return a list of
@@ -409,32 +424,32 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		}	
 	}
 	
-	public void clickViewSpectrum() {
-		try {
-			Intent i = null;
-			
-			if(wispyscan.getStatus()==Status.RUNNING) {
-				wispyscan.cancel(true);
-				wispy._is_polling=false;
-				Log.d(TAG, "canceling wispy scan");
-			}
-			
-			/* TODO: fix this
-			if(usbmon.getStatus()==Status.RUNNING) {
-				if(usbmon.cancel(true))
-					Log.d(TAG, "canceled USB monitor");
-				else
-					Log.d(TAG, "error trying to cancel USB monitor");	
-				usbmon = null;
-			}*/
-			
-			i = wispyGraph.execute(this);
-			i.putExtra("com.gnychis.coexisyst.results", wispy._maxresults);
-			startActivity(i);
-		} catch(Exception e) {
-			Log.e(TAG, "error trying to load spectrum view", e);
-		}
-	}
+//	public void clickViewSpectrum() {
+//		try {
+//			Intent i = null;
+//			
+//			if(wispyscan.getStatus()==Status.RUNNING) {
+//				wispyscan.cancel(true);
+//				wispy._is_polling=false;
+//				Log.d(TAG, "canceling wispy scan");
+//			}
+//			
+//			/* TODO: fix this
+//			if(usbmon.getStatus()==Status.RUNNING) {
+//				if(usbmon.cancel(true))
+//					Log.d(TAG, "canceled USB monitor");
+//				else
+//					Log.d(TAG, "error trying to cancel USB monitor");	
+//				usbmon = null;
+//			}*/
+//			
+//			i = wispyGraph.execute(this);
+//			i.putExtra("com.gnychis.coexisyst.results", wispy._maxresults);
+//			startActivity(i);
+//		} catch(Exception e) {
+//			Log.e(TAG, "error trying to load spectrum view", e);
+//		}
+//	}
 	
 	public void getUserText() {
 	

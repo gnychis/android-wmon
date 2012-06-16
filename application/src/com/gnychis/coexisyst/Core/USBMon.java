@@ -10,8 +10,8 @@ import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+import com.gnychis.coexisyst.DeviceHandlers.WiSpy;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
-import com.gnychis.coexisyst.DeviceHandlers.WispyOld;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;
 
@@ -87,14 +87,15 @@ public class USBMon
 				
 		// Wispy related checks
 		if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==false) {
-			updateState(WispyOld.WISPY_CONNECT);
+			updateState(WiSpy.WISPY_CONNECT);
 		} else if(wispy_in_devlist==0 && _coexisyst.wispy._device_connected==true) {
-			updateState(WispyOld.WISPY_DISCONNECT);
-		} else if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==true && _coexisyst.wispy._is_polling==false) {
-			//debugOut("determined that a re-poll is needed");
-			//Thread.sleep( 1000 );
-			//publishProgress(CoexiSyst.WISPY_POLL);
-		}
+			updateState(WiSpy.WISPY_DISCONNECT);
+		} 
+//		else if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==true && _coexisyst.wispy._is_polling==false) {
+//			//debugOut("determined that a re-poll is needed");
+//			//Thread.sleep( 1000 );
+//			//publishProgress(CoexiSyst.WISPY_POLL);
+//		}
 		
 		if(wifidev_in_devlist==1 && _coexisyst.ath._device_connected==false) {
 			updateState(Wifi.WIFIDEV_CONNECT);
@@ -111,41 +112,21 @@ public class USBMon
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-	 */
+	// FIXME:  This seems redundant with the function above it (usbPoll())
 	protected void updateState(int event)
 	{
-		if(event == WispyOld.WISPY_CONNECT) {
-			debugOut("got update that WiSpy was connected");
-			_coexisyst.sendToastMessage(_handler, "WiSpy device connected");
-			_coexisyst.wispy._device_connected=true;
-			
-			// List the wispy devices
-			_coexisyst.textStatus.append("\n\nWiSpy Devices:\n");
-			String devices[] = _coexisyst.getWiSpyList();
-			for (int i=0; i<devices.length; i++)
-				_coexisyst.textStatus.append(devices[i] + "\n");
-			
-			// Start the poll thread now
-			_coexisyst.wispyscan.execute(_coexisyst);
-			_coexisyst.wispy._is_polling = true;
+		if(event == WiSpy.WISPY_CONNECT) {
+			Message msg = new Message();
+			msg.obj = ThreadMessages.WISPY_CONNECTED;
+			_coexisyst._handler.sendMessage(msg);
+			debugOut("got update that Wifi card was connected");
 		}
-		else if(event == WispyOld.WISPY_DISCONNECT) {
-			debugOut("got update that WiSpy was connected");
-			_coexisyst.sendToastMessage(_handler, "WiSpy device has been disconnected");
-			_coexisyst.wispy._device_connected=false;
-			_coexisyst.wispyscan.cancel(true);  // make sure to stop polling thread
+		else if(event == WiSpy.WISPY_DISCONNECT) {
+			debugOut("WiSpy device now disconnected");
+			_coexisyst.sendToastMessage(_handler, "WiSpy device disconnected");
+			_coexisyst.wispy.disconnected();
 		}
-		else if(event == WispyOld.WISPY_POLL) {
-			debugOut("trying to re-poll the WiSpy device");
-			_coexisyst.sendToastMessage(_handler, "Re-trying polling");
-			_coexisyst.wispyscan.cancel(true);
-			_coexisyst.wispyscan = _coexisyst.wispy.new WispyThread();
-			_coexisyst.wispyscan.execute(_coexisyst);
-			_coexisyst.wispy._is_polling = true;
-		}
-		
+
 		// Handling events of Wifi device
 		if(event == Wifi.WIFIDEV_CONNECT) {
 			Message msg = new Message();

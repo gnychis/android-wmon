@@ -13,15 +13,14 @@ import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.Core.Packet;
 import com.gnychis.coexisyst.Core.USBSerial;
-import com.gnychis.coexisyst.DeviceHandlers.ZigBee.ZigBeeState;
 
 public class WiSpy {
 
 	private static final String TAG = "WiSpyDev";
 	private static final boolean VERBOSE = true;
 
-	public static final int WISPY_CONNECT = 200;
-	public static final int WISPY_DISCONNECT = 201;
+	public static final int WISPY_CONNECT = 300;
+	public static final int WISPY_DISCONNECT = 301;
 	public static final String WISPY_SCAN_RESULT = "com.gnychis.coexisyst.WISPY_SCAN_RESULT";
 	public static final int POLLS_IN_MAX = 10;
 	
@@ -69,9 +68,6 @@ public class WiSpy {
 		CoexiSyst coexisyst;
 		USBSerial _dev;
 		
-		// The initialized sequence (hardware sends it when it is initialized)
-		byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
-		
 		private void debugOut(String msg) {
 			if(VERBOSE)
 				Log.d("WiSpyInit", msg);
@@ -84,15 +80,6 @@ public class WiSpy {
 			coexisyst._handler.sendMessage(msg);
 		}
 		
-		public boolean checkInitSeq(byte buf[]) {
-			
-			for(int i=0; i<initialized_sequence.length; i++)
-				if(initialized_sequence[i]!=buf[i])
-					return false;
-						
-			return true;
-		}
-		
 		@Override
 		protected String doInBackground( Context ... params )
 		{
@@ -102,6 +89,7 @@ public class WiSpy {
 			if(initWiSpyDevices()!=1) {
 				sendMainMessage(ThreadMessages.WISPY_FAILED);
 				debugOut("Failed to initialize WiSpy device");
+				return "FAIL";
 			}
 				
 			sendMainMessage(ThreadMessages.WISPY_INITIALIZED);

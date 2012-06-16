@@ -73,8 +73,8 @@ public class GraphWispy extends AbstractDemoChart {
     }
     List<double[]> values = new ArrayList<double[]>();
     double d2[] = new double[256];
-    for(int j=0; j<256; j++)
-    	d2[j] = coexisyst.wispy._maxresults[j];
+//    for(int j=0; j<256; j++)
+//    	d2[j] = coexisyst.wispy.last_scan[j];
     values.add(d2);
     int[] colors = new int[] { Color.BLUE};
     PointStyle[] styles = new PointStyle[] { PointStyle.POINT, PointStyle.POINT,

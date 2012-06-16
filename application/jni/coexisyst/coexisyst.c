@@ -193,7 +193,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 }
 
 jint
-Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_initWiSpyDevices( JNIEnv* env, jobject thiz )
+Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_initWiSpyDevices( JNIEnv* env, jobject thiz )
 {
 	int x;
 	sample = 0;
@@ -204,6 +204,7 @@ Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_initWiSpyDevices( JNIEnv* env, j
 	
 	// Make sure that a device is connected
 	if(ndev <= 0) {
+		__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "There seem to be no devices listed as WiSpy devices...\n");
 		return 0;
 	}
 
@@ -220,10 +221,12 @@ Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_initWiSpyDevices( JNIEnv* env, j
 		devs = pi;
 		
 		if(wispy_device_init(pi, &(list.list[x])) < 0) {
+		  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Unable to initialize the WiSpy device\n");
 			return 0;
 		}
 		
 		if(wispy_phy_open(pi) < 0) {
+      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Unable to open the WiSpy physical layer\n");
 			return 0;		
 		}
 		
@@ -235,8 +238,8 @@ Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_initWiSpyDevices( JNIEnv* env, j
 	}
 	
 	wispy_device_scan_free(&list);
-		printf("x");
-		fflush(stdout);
+  printf("x");
+  fflush(stdout);
 		
 	return 1;
 }
@@ -388,7 +391,7 @@ Java_com_gnychis_coexisyst_Core_USBSerial_openCommPort(JNIEnv* env, jobject thiz
 }
 
 jintArray
-Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_pollWiSpy( JNIEnv* env, jobject thiz)
+Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_pollWiSpy( JNIEnv* env, jobject thiz)
 {
 	int x,r;
 	fd_set rfds;
@@ -556,7 +559,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
 }
 
 jobjectArray
-Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_getWiSpyList( JNIEnv* env, jobject thiz)
+Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_getWiSpyList( JNIEnv* env, jobject thiz)
 {
 	jobjectArray names = 0;
 	int ndev = 0;
@@ -611,7 +614,7 @@ Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_getWiSpyList( JNIEnv* env, jobje
 }
 
 jint
-Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_getWiSpy( JNIEnv* env, jobject thiz)
+Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_getWiSpy( JNIEnv* env, jobject thiz)
 {
 	devh = libusb_open_device_with_vid_pid(NULL, 0x1781, 0x083f);
 	return devh ? 1 : -1;

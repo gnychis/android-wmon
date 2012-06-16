@@ -15,7 +15,6 @@ import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.NetDevDefinitions.BluetoothDev;
-import com.gnychis.coexisyst.NetDevDefinitions.ZigBeeNetwork;
 
 public class BluetoothScanReceiver extends BroadcastReceiver {
 	

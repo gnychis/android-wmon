@@ -2,15 +2,14 @@ package com.gnychis.coexisyst.ScanReceivers;
 
 import java.util.ArrayList;
 
-import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
-import com.gnychis.coexisyst.Core.Packet;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 
 public class WiSpyScanReceiver extends BroadcastReceiver {
 	
