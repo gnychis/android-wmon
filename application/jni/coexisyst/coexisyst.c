@@ -501,6 +501,61 @@ Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_pollWiSpy( JNIEnv* env, jobject 
 }
 
 jobjectArray
+Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
+{
+	jobjectArray names = 0;
+	int ndev = 0;
+	int x,r;
+	jstring str1, str2, str3;
+	
+	ndev = wispy_device_scan(&list);
+	if (ndev > 0) {
+    	rangeset = (int *) malloc(sizeof(int) * ndev);
+    	memset(rangeset, 0, sizeof(int) * ndev);
+  	}
+	
+	if(ndev <= 0)
+		return names;
+	names = (*env)->NewObjectArray(env, (jsize)ndev, (*env)->FindClass(env, "java/lang/String"), 0);
+	__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "found %d WiSpy devices", ndev);
+	
+    for (x = 0; x < ndev; x++) {
+      char tname[512];
+      memset(tname, '\0', sizeof(tname));
+      
+      snprintf(tname, sizeof(tname), "Device %d: %s id %u\n",
+           x, list.list[x].name, list.list[x].device_id);
+
+      for (r = 0; r < list.list[x].num_sweep_ranges; r++) {
+        
+        wispy_sample_sweep *ran =
+          &(list.list[x].supported_ranges[r]);
+          
+        
+
+        snprintf(tname+strlen(tname), sizeof(tname)-strlen(tname), "  Range %d: \"%s\" %d%s-%d%s @ %0.2f%s, %d samples\n", r,
+             ran->name,
+             ran->start_khz > 1000 ?
+             ran->start_khz / 1000 : ran->start_khz,
+             ran->start_khz > 1000 ? "MHz" : "KHz",
+             ran->end_khz > 1000 ? ran->end_khz / 1000 : ran->end_khz,
+             ran->end_khz > 1000 ? "MHz" : "KHz",
+             (ran->res_hz / 1000) > 1000 ?
+                ((float) ran->res_hz / 1000) / 1000 : ran->res_hz / 1000,
+             (ran->res_hz / 1000) > 1000 ? "MHz" : "KHz",
+             ran->num_samples);
+      }
+	  str1 = (*env)->NewStringUTF( env, tname );
+	  (*env)->SetObjectArrayElement(env, names, x, str1);
+	  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "WiSpy description: %s", tname);
+    }
+    
+    wispy_device_scan_free(&list);
+
+	return names;
+}
+
+jobjectArray
 Java_com_gnychis_coexisyst_DeviceHandlers_Wispy_getWiSpyList( JNIEnv* env, jobject thiz)
 {
 	jobjectArray names = 0;

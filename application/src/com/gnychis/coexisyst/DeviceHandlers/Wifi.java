@@ -488,7 +488,12 @@ public class Wifi {
 	            	break;
 	            else
 	            	i++;
-	        }  			
+	        }  
+	        
+	        if(i>=alldevs.size()) {
+	        	sendMainMessage(ThreadMessages.WIFIDEV_FAILED);
+	        	return false;
+	        }
 	        
 	        // Get the wlan0 device
 	        _moni0_dev = alldevs.get(i);

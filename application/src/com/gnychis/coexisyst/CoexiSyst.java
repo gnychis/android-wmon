@@ -479,6 +479,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public native String  initUSB();
 	public native String[] getDeviceNames();
+	public native String[] getWiSpyList();
 	public native int USBcheckForDevice(int vid, int pid);
 	public native void libusbTest();
 	public native int pcapGetInterfaces();
