@@ -10,8 +10,8 @@ import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.Core.USBMon;
+import com.gnychis.coexisyst.DeviceHandlers.WiSpy;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
-import com.gnychis.coexisyst.DeviceHandlers.WispyOld;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.NetDevDefinitions.BluetoothDev;
 import com.gnychis.coexisyst.NetDevDefinitions.WifiAP;
@@ -44,7 +44,7 @@ public class NetworksScan extends Activity {
 	ZigBee _zigbee;
 	USBMon _usbmon;
 	BluetoothAdapter _bluetooth;
-	WispyOld _wispy;
+	WiSpy _wispy;
 	
 	// Scan receivers for incoming broadcasts (which include results)
 	public WiFiScanReceiver _rcvr_80211;
@@ -54,10 +54,12 @@ public class NetworksScan extends Activity {
 	public ArrayList<ZigBeeNetwork> _zigbee_scan_result;
 	public ArrayList<WifiAP> _wifi_scan_result;
 	public ArrayList<BluetoothDev> _bluetooth_scan_result;
+	public ArrayList<Integer> _wispy_scan_result;
 	
 	public enum Scans {		// A List of possible scans to handle
 		Wifi,
 		ZigBee,
+		WiSpy,
 		Bluetooth,
 	}
 	
@@ -154,6 +156,10 @@ public class NetworksScan extends Activity {
 			max_progress += ZigBee.channels.length;
 		}
 		
+		if(_wispy.isConnected()) {
+			_scan_list.add(Scans.WiSpy);
+			max_progress += WiSpy.POLLS_IN_MAX;
+		}
 		
 		return max_progress;
 	}
@@ -209,6 +215,10 @@ public class NetworksScan extends Activity {
 				
 			case ZigBee:
 				_zigbee.scanStart();
+				break;
+				
+			case WiSpy:
+				_wispy.scanStart();
 				break;
 				
 			default:

@@ -398,6 +398,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			i.putExtra("com.gnychis.coexisyst.80211", _networks_scan._wifi_scan_result);
 			i.putExtra("com.gnychis.coexisyst.ZigBee", _networks_scan._zigbee_scan_result);
 			i.putExtra("com.gnychis.coexisyst.Bluetooth", _networks_scan._bluetooth_scan_result);
+			i.putExtra("com.gnychis.coexisyst.WiSpy", _networks_scan._wispy_scan_result);
 			
 			startActivity(i);
 		} catch (Exception e) {
