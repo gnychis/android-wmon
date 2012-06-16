@@ -187,6 +187,11 @@ public class WiSpy {
 			coexisyst._handler.sendMessage(msg);
 		}
 		
+		private void debugOut(String msg) {
+			if(VERBOSE)
+				Log.d("WiSpyScan", msg);
+		}
+		
 		// The entire meat of the thread, pulls packets off the interface and dissects them
 		@Override
 		protected String doInBackground( Context ... params )
@@ -202,6 +207,32 @@ public class WiSpy {
 				return "FAIL";
 			}			
 			
+			// Initialize the array to do a "max" on the spectrum
+			int max_results[];
+			max_results = new int[256];
+	        for(int i=0; i<256; i++)
+	        	max_results[i]=-200;			
+			
+			for(int poll_count=0; poll_count<5; poll_count++) {
+				int[] scan_res = pollWiSpy();
+				
+				if(scan_res==null) {
+					sendMainMessage(ThreadMessages.WISPY_SCAN_FAILED);
+					break;
+				}				
+
+				if(scan_res.length==256) {
+					for(int i=0; i<scan_res.length; i++) {
+						if(scan_res[i] > max_results[i]) 
+							max_results[i] = scan_res[i];
+					}
+				} else {
+					sendMainMessage(ThreadMessages.WISPY_SCAN_FAILED);
+					debugOut("Failed WiSpy poll, the length was not 256");
+					break;
+				}
+
+			}
 			
 			_comm_lock.release();
 			

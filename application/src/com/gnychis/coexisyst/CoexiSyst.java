@@ -81,6 +81,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		WISPY_INITIALIZED,
 		WISPY_FAILED,
 		WISPY_SCAN_COMPLETE,
+		WISPY_SCAN_FAILED,
 		WIFIDEV_CONNECTED,
 		WIFIDEV_INITIALIZED,
 		WIFIDEV_FAILED,
@@ -367,8 +368,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		pd = new ProgressDialog(this);
 		pd.setCancelable(false);
 		pd.setMessage("Scanning for networks...");
-		pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		pd.setProgress(0);
 		
 		// Call the networks scan class to initiate a new scan
 		// which, based on the devices connected for scanning,
@@ -378,7 +377,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Toast.makeText(getApplicationContext(), "No networks available to scan!", Toast.LENGTH_LONG).show();
 			return;
 		}
-		pd.setMax(max_progress);
+		if(max_progress > 0) {
+			pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			pd.setProgress(0);
+			pd.setMax(max_progress);
+		}
 		pd.show();
 	}
 	
