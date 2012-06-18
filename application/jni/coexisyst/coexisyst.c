@@ -27,9 +27,9 @@
 // For keeping track of the devices, made global to handle callbacks and still
 // have the device information
 static struct libusb_device_handle *devh = NULL;
-wispy_device_list list;
-wispy_phy *pi;
-wispy_phy *devs = NULL;
+wispy_device_list wispy_list;
+wispy_phy *wispy_pi;
+wispy_phy *wispy_devs = NULL;
 int ndev = 0;
 int *rangeset = NULL;
 FILE *fh;
@@ -54,6 +54,85 @@ Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
   } else {
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "successfully initialized libusb");
     return (*env)->NewStringUTF(env, "CoexiSyst system library and USB enabled...");
+  }
+}
+
+int print_device(struct usb_device *dev, int level)
+{
+  usb_dev_handle *udev;
+  char description[256];
+  char string[256];
+  int ret, i;
+
+  udev = usb_open(dev);
+  if (udev) {
+    if (dev->descriptor.iManufacturer) {
+      ret = usb_get_string_simple(udev, dev->descriptor.iManufacturer, string, sizeof(string));
+      if (ret > 0)
+        snprintf(description, sizeof(description), "%s - ", string);
+      else
+        snprintf(description, sizeof(description), "%04X - ",
+                 dev->descriptor.idVendor);
+    } else
+      snprintf(description, sizeof(description), "%04X - ",
+               dev->descriptor.idVendor);
+
+    if (dev->descriptor.iProduct) {
+      ret = usb_get_string_simple(udev, dev->descriptor.iProduct, string, sizeof(string));
+      if (ret > 0)
+        snprintf(description + strlen(description), sizeof(description) -
+                 strlen(description), "%s", string);
+      else
+        snprintf(description + strlen(description), sizeof(description) -
+                 strlen(description), "%04X", dev->descriptor.idProduct);
+    } else
+      snprintf(description + strlen(description), sizeof(description) -
+               strlen(description), "%04X", dev->descriptor.idProduct);
+
+  } else
+    snprintf(description, sizeof(description), "%04X - %04X",
+             dev->descriptor.idVendor, dev->descriptor.idProduct);
+
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%.*sDev #%d: %s\n", level * 2, "                    ", dev->devnum,
+         description);
+
+  if (udev) {
+    if (dev->descriptor.iSerialNumber) {
+      ret = usb_get_string_simple(udev, dev->descriptor.iSerialNumber, string, sizeof(string));
+      if (ret > 0)
+      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%.*s  - Serial Number: %s\n", level * 2,
+               "                    ", string);
+    }
+  }
+
+  if (udev)
+    usb_close(udev);
+
+  return 0;
+}
+
+jint
+Java_com_gnychis_coexisyst_Core_USBMon_USBList( JNIEnv* env, jobject thiz )
+{
+  struct usb_bus *bus;
+
+  usb_init();
+  usb_find_busses();
+  usb_find_devices();
+
+  for (bus = usb_busses; bus; bus = bus->next) {
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "bus: 0x%x (%s - %u)", bus,bus->dirname,bus->location);
+    if (bus->root_dev) {
+      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "root_dev: 0x%x", bus->root_dev);
+      print_device(bus->root_dev, 0);
+    } else {
+      struct usb_device *dev;
+
+      for (dev = bus->devices; dev; dev = dev->next) {
+        __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "dev: 0x%x", dev);
+        print_device(dev, 0);
+      }
+    }
   }
 }
 
@@ -198,7 +277,7 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_initWiSpyDevices( JNIEnv* env, j
 	int x;
 	sample = 0;
 	
-	ndev = wispy_device_scan(&list);
+	ndev = wispy_device_scan(&wispy_list);
 
 	fh = fopen("/sdcard/coexisyst_raw.txt","w+");
 	
@@ -216,28 +295,28 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_initWiSpyDevices( JNIEnv* env, j
 	// Initialize each of the devices
 	for(x = 0; x < ndev; x++) {
 			
-		pi = (wispy_phy *) malloc(WISPY_PHY_SIZE);
-		pi->next = devs;
-		devs = pi;
+		wispy_pi = (wispy_phy *) malloc(WISPY_PHY_SIZE);
+		wispy_pi->next = wispy_devs;
+		wispy_devs = wispy_pi;
 		
-		if(wispy_device_init(pi, &(list.list[x])) < 0) {
+		if(wispy_device_init(wispy_pi, &(wispy_list.list[x])) < 0) {
 		  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Unable to initialize the WiSpy device\n");
 			return 0;
 		}
 		
-		if(wispy_phy_open(pi) < 0) {
+		if(wispy_phy_open(wispy_pi) < 0) {
       __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Unable to open the WiSpy physical layer\n");
 			return 0;		
 		}
 		
-		wispy_phy_setcalibration(pi, 1);
+		wispy_phy_setcalibration(wispy_pi, 1);
 		
 		// Configure the default sweep block
 		// TODO: can we change this?
-		wispy_phy_setposition(pi, rangeset[x],0,0);
+		wispy_phy_setposition(wispy_pi, rangeset[x],0,0);
 	}
 	
-	wispy_device_scan_free(&list);
+	wispy_device_scan_free(&wispy_list);
   printf("x");
   fflush(stdout);
 		
@@ -405,15 +484,15 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_pollWiSpy( JNIEnv* env, jobject 
 	FD_ZERO(&rfds);
 	FD_ZERO(&wfds);
 	
-	pi = devs;
-	while(pi != NULL) {
-		if(wispy_phy_getpollfd(pi) >= 0) {
-			FD_SET(wispy_phy_getpollfd(pi), &rfds);
+	wispy_pi = wispy_devs;
+	while(wispy_pi != NULL) {
+		if(wispy_phy_getpollfd(wispy_pi) >= 0) {
+			FD_SET(wispy_phy_getpollfd(wispy_pi), &rfds);
 			
-			if(wispy_phy_getpollfd(pi) > maxfd)
-				maxfd = wispy_phy_getpollfd(pi);
+			if(wispy_phy_getpollfd(wispy_pi) > maxfd)
+				maxfd = wispy_phy_getpollfd(wispy_pi);
 		}
-		pi = pi->next;
+		wispy_pi = wispy_pi->next;
 	}
 	
 	// Polling timeout, which also ratelimits the higher layer java function calling it
@@ -426,10 +505,10 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_pollWiSpy( JNIEnv* env, jobject 
 		return result;
 	}
 	
-	pi = devs;
-	while(pi != NULL) {
-		wispy_phy *di = pi;
-		pi = pi->next;
+	wispy_pi = wispy_devs;
+	while(wispy_pi != NULL) {
+		wispy_phy *di = wispy_pi;
+		wispy_pi = wispy_pi->next;
 		
 		if(wispy_phy_getpollfd(di) < 0) {
 			if(wispy_get_state(di) == WISPY_STATE_ERROR) {
@@ -511,7 +590,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
 	int x,r;
 	jstring str1, str2, str3;
 	
-	ndev = wispy_device_scan(&list);
+	ndev = wispy_device_scan(&wispy_list);
 	if (ndev > 0) {
     	rangeset = (int *) malloc(sizeof(int) * ndev);
     	memset(rangeset, 0, sizeof(int) * ndev);
@@ -527,12 +606,12 @@ Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
       memset(tname, '\0', sizeof(tname));
       
       snprintf(tname, sizeof(tname), "Device %d: %s id %u\n",
-           x, list.list[x].name, list.list[x].device_id);
+           x, wispy_list.list[x].name, wispy_list.list[x].device_id);
 
-      for (r = 0; r < list.list[x].num_sweep_ranges; r++) {
+      for (r = 0; r < wispy_list.list[x].num_sweep_ranges; r++) {
         
         wispy_sample_sweep *ran =
-          &(list.list[x].supported_ranges[r]);
+          &(wispy_list.list[x].supported_ranges[r]);
           
         
 
@@ -553,7 +632,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
 	  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "WiSpy description: %s", tname);
     }
     
-    wispy_device_scan_free(&list);
+    wispy_device_scan_free(&wispy_list);
 
 	return names;
 }
@@ -566,7 +645,7 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_getWiSpyList( JNIEnv* env, jobje
 	int x,r;
 	jstring str1, str2, str3;
 	
-	ndev = wispy_device_scan(&list);
+	ndev = wispy_device_scan(&wispy_list);
 	if (ndev > 0) {
     	rangeset = (int *) malloc(sizeof(int) * ndev);
     	memset(rangeset, 0, sizeof(int) * ndev);
@@ -582,12 +661,12 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_getWiSpyList( JNIEnv* env, jobje
       memset(tname, '\0', sizeof(tname));
       
       snprintf(tname, sizeof(tname), "Device %d: %s id %u\n",
-           x, list.list[x].name, list.list[x].device_id);
+           x, wispy_list.list[x].name, wispy_list.list[x].device_id);
 
-      for (r = 0; r < list.list[x].num_sweep_ranges; r++) {
+      for (r = 0; r < wispy_list.list[x].num_sweep_ranges; r++) {
         
         wispy_sample_sweep *ran =
-          &(list.list[x].supported_ranges[r]);
+          &(wispy_list.list[x].supported_ranges[r]);
           
         
 
@@ -608,7 +687,7 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_getWiSpyList( JNIEnv* env, jobje
 	  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "WiSpy description: %s", tname);
     }
     
-    wispy_device_scan_free(&list);
+    wispy_device_scan_free(&wispy_list);
 
 	return names;
 }

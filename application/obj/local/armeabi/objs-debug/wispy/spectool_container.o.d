@@ -29,7 +29,8 @@ obj/local/armeabi/objs-debug/wispy/spectool_container.o: \
  /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/asm-generic/siginfo.h \
  /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/inttypes.h \
  jni/wispy/wispy_hw_gen1.h jni/wispy/wispy_hw_24x.h \
- jni/wispy/wispy_hw_dbx.h
+ jni/wispy/wispy_hw_dbx.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/android/log.h
 
 /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/stdio.h:
 
@@ -94,3 +95,5 @@ jni/wispy/wispy_hw_gen1.h:
 jni/wispy/wispy_hw_24x.h:
 
 jni/wispy/wispy_hw_dbx.h:
+
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/android/log.h:

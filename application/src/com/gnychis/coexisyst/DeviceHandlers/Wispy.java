@@ -86,6 +86,8 @@ public class WiSpy {
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			
+			trySleep(1000);
+			
 			if(initWiSpyDevices()!=1) {
 				sendMainMessage(ThreadMessages.WISPY_FAILED);
 				debugOut("Failed to initialize WiSpy device");
@@ -98,6 +100,13 @@ public class WiSpy {
 			return "OK";
 		}
 		
+		public void trySleep(int length) {
+			try {
+				Thread.sleep(length);
+			} catch(Exception e) {
+				Log.e("WiFiMonitor", "Error running commands for connecting wifi device", e);
+			}
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

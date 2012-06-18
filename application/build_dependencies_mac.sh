@@ -7,3 +7,5 @@ cp libs/armeabi/iwlist res/raw
 cp libs/armeabi/iw res/raw
 cp libs/armeabi/testlibusb res/raw
 cp libs/armeabi/lsusb_core res/raw
+cp libs/armeabi/spectool_mine res/raw
+cp libs/armeabi/spectool_raw res/raw

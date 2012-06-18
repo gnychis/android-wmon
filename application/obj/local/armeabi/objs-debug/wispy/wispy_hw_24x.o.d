@@ -51,6 +51,7 @@ obj/local/armeabi/objs-debug/wispy/wispy_hw_24x.o: \
  /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/time.h \
  /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sched.h \
  /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/math.h \
+ /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/android/log.h \
  jni/wispy/values.h \
  /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/features.h \
  /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/unistd.h \
@@ -183,6 +184,8 @@ jni/wispy/config.h:
 /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/sched.h:
 
 /Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/math.h:
+
+/Users/gnychis/Documents/android-wmon/core/android-ndk-r7b-macosx/platforms/android-14/arch-arm/usr/include/android/log.h:
 
 jni/wispy/values.h:
 

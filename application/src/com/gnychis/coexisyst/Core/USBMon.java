@@ -82,6 +82,8 @@ public class USBMon
 		int wifidev_in_devlist = _coexisyst.USBcheckForDevice(0x13b1,0x002f) + _coexisyst.USBcheckForDevice(0x0411,0x017f);
 		int econotag_in_devlist = _coexisyst.USBcheckForDevice(0x0403, 0x6010);
 		
+		USBList();
+		
 		//if(atheros_in_devlist==0)
 		//	atheros_in_devlist = checkAR9280();  // this is a more expensive check, only do when necessary
 				
@@ -153,5 +155,5 @@ public class USBMon
 			_coexisyst.zigbee.disconnected();
 		}
 	}
-	
+	public native void USBList();
 }

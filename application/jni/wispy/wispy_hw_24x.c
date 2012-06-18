@@ -12,6 +12,8 @@
  * Extra thanks to Ryan Woodings @ Metageek for interface documentation
  */
 
+#define LOG_TAG "WiSpy" // text for log tag 
+
 #include "config.h"
 
 #include <stdio.h>
@@ -25,6 +27,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <math.h>
+#include <android/log.h>
 #ifdef HAVE_VALUES_H
 #include <values.h>
 #endif
@@ -39,6 +42,7 @@
 #ifndef __user
 #define __user
 #endif
+
 
 #include <linux/usbdevice_fs.h>
 #include <errno.h>
@@ -254,6 +258,8 @@ int wispy24x_usb_device_scan(wispy_device_list *list) {
 	int num_found = 0;
 	wispy24x_usb_pair *auxpair;
 	char combopath[128];
+  
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "looking for wispy24x usb devices...");
 
 	/* Libusb init */
 	usb_init();
@@ -262,6 +268,7 @@ int wispy24x_usb_device_scan(wispy_device_list *list) {
 
 	for (bus = usb_busses; bus; bus = bus->next) {
 		for (dev = bus->devices; dev; dev = dev->next) {
+      __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "VID: 0x%x .. PID: 0x%x", dev->descriptor.idVendor, dev->descriptor.idProduct);
 			if (((dev->descriptor.idVendor == METAGEEK_WISPY24x_VID) &&
 				 (dev->descriptor.idProduct == METAGEEK_WISPY24x_PID))) {
 

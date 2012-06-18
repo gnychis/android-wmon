@@ -142,13 +142,17 @@ int main(int argc, char *argv[])
   printf("Number of devices: %d\n", usb_find_devices());
 
   for (bus = usb_busses; bus; bus = bus->next) {
-    if (bus->root_dev && !verbose)
+    printf("bus: 0x%x (%s - %u)\n", bus,bus->dirname,bus->location);
+    if (bus->root_dev && !verbose) {
+      printf("root_dev: 0x%x\n", bus->root_dev);
       print_device(bus->root_dev, 0);
-    else {
+    } else {
       struct usb_device *dev;
 
-      for (dev = bus->devices; dev; dev = dev->next)
+      for (dev = bus->devices; dev; dev = dev->next) {
+        printf("dev: 0x%x\n", dev);
         print_device(dev, 0);
+      }
     }
   }
 
