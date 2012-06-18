@@ -177,6 +177,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	
 	public void zigbeeInitialized() {
 		pd.dismiss();
+		Toast.makeText(getApplicationContext(), "Successfully initialized ZigBee device", Toast.LENGTH_LONG).show();	
 		usbmon.startUSBMon();
 	}
 	
