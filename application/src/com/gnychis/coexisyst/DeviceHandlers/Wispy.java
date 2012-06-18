@@ -1,6 +1,8 @@
 package com.gnychis.coexisyst.DeviceHandlers;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import android.content.Context;
@@ -13,6 +15,7 @@ import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.Core.Packet;
 import com.gnychis.coexisyst.Core.USBSerial;
+import com.stericson.RootTools.RootTools;
 
 public class WiSpy {
 
@@ -86,7 +89,8 @@ public class WiSpy {
 			parent = params[0];
 			coexisyst = (CoexiSyst) params[0];
 			
-			trySleep(1000);
+			// To use the WiSpy device, we need to give the USB device the application's permissions
+			runCommand("find /dev/bus -exec chown " + coexisyst.getAppUser() + " {} \\;");
 			
 			if(initWiSpyDevices()!=1) {
 				sendMainMessage(ThreadMessages.WISPY_FAILED);
@@ -100,11 +104,30 @@ public class WiSpy {
 			return "OK";
 		}
 		
-		public void trySleep(int length) {
+		public ArrayList<String> runCommand(String c) {
+			ArrayList<String> res = new ArrayList<String>();
 			try {
-				Thread.sleep(length);
+				// First, run the command push the result to an ArrayList
+				List<String> res_list = RootTools.sendShell(c,0);
+				Iterator<String> it=res_list.iterator();
+				while(it.hasNext()) 
+					res.add((String)it.next());
+				
+				res.remove(res.size()-1);
+				
+				// Trim the ArrayList of an extra blank lines at the end
+				while(true) {
+					int index = res.size()-1;
+					if(index>=0 && res.get(index).length()==0)
+						res.remove(index);
+					else
+						break;
+				}
+				return res;
+				
 			} catch(Exception e) {
-				Log.e("WiFiMonitor", "Error running commands for connecting wifi device", e);
+				Log.e("WifiDev", "error writing to RootTools the command: " + c, e);
+				return null;
 			}
 		}
 	}
