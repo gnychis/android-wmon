@@ -264,6 +264,7 @@ public class WiSpy {
 				} else {
 					sendMainMessage(ThreadMessages.WISPY_SCAN_FAILED);
 					debugOut("Failed WiSpy poll, the length was not 256");
+					scanStop();
 					break;
 				}
 				sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);  // Increment with each poll

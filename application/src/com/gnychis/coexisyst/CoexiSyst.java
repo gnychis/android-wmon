@@ -312,7 +312,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		usbmon = new USBMon(this, _handler);
 		
-    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee, bt);
+    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee, bt, wispy);
 		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 		registerReceiver(_networks_scan._rcvr_WiSpy, new IntentFilter(WiSpy.WISPY_SCAN_RESULT));

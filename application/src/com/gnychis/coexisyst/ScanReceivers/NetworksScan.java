@@ -107,7 +107,7 @@ public class NetworksScan extends Activity {
 	
 	// Set the results to null to begin with, so that we can easily check
 	// when a scan of all protocols is complete.
-	public NetworksScan(Handler h, USBMon m, Wifi w, ZigBee z, BluetoothAdapter b) {
+	public NetworksScan(Handler h, USBMon m, Wifi w, ZigBee z, BluetoothAdapter b, WiSpy ws) {
 		
 		_coexisyst_handler = h;
 		
@@ -116,6 +116,7 @@ public class NetworksScan extends Activity {
 		_wifi = w;
 		_zigbee = z;
 		_bluetooth = b;
+		_wispy = ws;
 		
 		_is_scanning = false;		
 		_zigbee_scan_result = null;

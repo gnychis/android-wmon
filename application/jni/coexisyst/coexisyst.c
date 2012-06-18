@@ -554,6 +554,7 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_pollWiSpy( JNIEnv* env, jobject 
 				return result;
 			} else if((r & WISPY_POLL_SWEEPCOMPLETE)) {
 				sb = wispy_phy_getsweep(di);
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "got a sweep, sb: 0x%x", sb);
 				if(sb==NULL)
 					continue;
 
@@ -561,13 +562,14 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_pollWiSpy( JNIEnv* env, jobject 
 				result = (jintArray)(*env)->NewIntArray(env, sb->num_samples);
 				jint *fill = (int *)malloc(sizeof(int) * sb->num_samples);
         
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "WiSpy polled for %d samples", sb->num_samples);
 				for(r = 0; r < sb->num_samples; r++) {
 					fill[r] = WISPY_RSSI_CONVERT(sb->amp_offset_mdbm, sb->amp_res_mdbm,sb->sample_data[r]);
-					//fprintf(fh, "%d ", v);
+					fprintf(fh, "%d ", fill[r]);
 				}
-				//fprintf(fh, "\n");
+				fprintf(fh, "\n");
 				
-				//fflush(fh);
+				fflush(fh);
 				(*env)->SetIntArrayRegion(env, (jintArray)result, (jsize)0, (jsize)sb->num_samples, fill);
 				free(fill);
 				return result;
