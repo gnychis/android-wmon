@@ -40,4 +40,3 @@ analyser software. e.g.
 
 will use feedgnuplot to drive gnuplot to draw a realtime animated 3D plot of the
 frequency spectrum.
-

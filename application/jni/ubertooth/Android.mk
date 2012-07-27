@@ -7,3 +7,5 @@ LOCAL_C_INCLUDES += jni/libusb jni/libbtbb
 LOCAL_SHARED_LIBRARIES := libc libusb libbtbb
 LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog 
 include $(BUILD_EXECUTABLE)
+
+
