@@ -247,7 +247,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
 	    	
 	    	// Disable in releases
-	    	ArrayList<String> lib_list = runCommand("lgs /data/data/com.gnychis.coexisyst/lib/ | grep \".so\"");
+	    	ArrayList<String> lib_list = runCommand("ls /data/data/com.gnychis.coexisyst/lib/ | grep \".so\"");
 	    	for(int i=0; i<lib_list.size(); i++)
 	    		runCommand("ln -s /data/data/com.gnychis.coexisyst/lib/" + lib_list.get(i) + " /system/lib/" + lib_list.get(i));
 
@@ -273,6 +273,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.installBinary(this, R.raw.iw, "iw", "755");
 	    	RootTools.installBinary(this, R.raw.spectool_mine, "spectool_mine", "755");
 	    	RootTools.installBinary(this, R.raw.spectool_raw, "spectool_raw", "755");
+	    	RootTools.installBinary(this, R.raw.ubertooth_util, "ubertooth_util", "755");
 	    	
 	    	// Kick the phone in to USB host mode
 	    	//RootTools.sendShell("echo a > /sys/devices/platform/s3c-usbgadget/opmode", 0);
