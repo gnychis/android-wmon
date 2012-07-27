@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
+import com.gnychis.coexisyst.DeviceHandlers.UbertoothOne;
 import com.gnychis.coexisyst.DeviceHandlers.WiSpy;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
@@ -81,35 +82,34 @@ public class USBMon
 		int wispy_in_devlist=_coexisyst.USBcheckForDevice(0x1781, 0x083f);
 		int wifidev_in_devlist = _coexisyst.USBcheckForDevice(0x13b1,0x002f) + _coexisyst.USBcheckForDevice(0x0411,0x017f);
 		int econotag_in_devlist = _coexisyst.USBcheckForDevice(0x0403, 0x6010);
+		int ubertooth_in_devlist = _coexisyst.USBcheckForDevice(0xffff, 0x0004);
 				
 		//if(atheros_in_devlist==0)
 		//	atheros_in_devlist = checkAR9280();  // this is a more expensive check, only do when necessary
 				
 		// Wispy related checks
-		if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==false) {
+		if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==false)
 			updateState(WiSpy.WISPY_CONNECT);
-		} else if(wispy_in_devlist==0 && _coexisyst.wispy._device_connected==true) {
+		else if(wispy_in_devlist==0 && _coexisyst.wispy._device_connected==true)
 			updateState(WiSpy.WISPY_DISCONNECT);
-		} 
-//		else if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==true && _coexisyst.wispy._is_polling==false) {
-//			//debugOut("determined that a re-poll is needed");
-//			//Thread.sleep( 1000 );
-//			//publishProgress(CoexiSyst.WISPY_POLL);
-//		}
 		
-		if(wifidev_in_devlist==1 && _coexisyst.ath._device_connected==false) {
+		// Wifi device check
+		if(wifidev_in_devlist==1 && _coexisyst.ath._device_connected==false)
 			updateState(Wifi.WIFIDEV_CONNECT);
-		} else if(wifidev_in_devlist==0 && _coexisyst.ath._device_connected==true) {
+		else if(wifidev_in_devlist==0 && _coexisyst.ath._device_connected==true)
 			updateState(Wifi.WIFIDEV_DISCONNECT);
-		}
-		
-		
 
-		if(econotag_in_devlist==1 && _coexisyst.zigbee._device_connected==false) {
+		// Econotag check
+		if(econotag_in_devlist==1 && _coexisyst.zigbee._device_connected==false)
 			updateState(ZigBee.ZIGBEE_CONNECT);
-		} else if(econotag_in_devlist==0 && _coexisyst.zigbee._device_connected==true) {
+		else if(econotag_in_devlist==0 && _coexisyst.zigbee._device_connected==true)
 			updateState(ZigBee.ZIGBEE_DISCONNECT);
-		}
+		
+		// Ubertooth check
+		if(ubertooth_in_devlist==1 && _coexisyst.ubertooth._device_connected==false)
+			updateState(UbertoothOne.UBERTOOTH_CONNECT);
+		else if(ubertooth_in_devlist==0 && _coexisyst.ubertooth._device_connected==true)
+			updateState(UbertoothOne.UBERTOOTH_DISCONNECT);
 	}
 	
 	// FIXME:  This seems redundant with the function above it (usbPoll())
@@ -151,6 +151,18 @@ public class USBMon
 			debugOut("ZigBee device now disconnected");
 			_coexisyst.sendToastMessage(_handler, "ZigBee device disconnected");
 			_coexisyst.zigbee.disconnected();
+		}
+		
+		if(event == UbertoothOne.UBERTOOTH_CONNECT) {
+			Message msg = new Message();
+			msg.obj = ThreadMessages.UBERTOOTH_CONNECTED;
+			_coexisyst._handler.sendMessage(msg);
+			debugOut("got update that Ubertooth device was connected");
+		}
+		else if(event == UbertoothOne.UBERTOOTH_DISCONNECT) {
+			debugOut("Ubertooth device now disconnected");
+			_coexisyst.sendToastMessage(_handler, "Ubertooth device disconnected");
+			_coexisyst.ubertooth.disconnected();
 		}
 	}
 	public native void USBList();
