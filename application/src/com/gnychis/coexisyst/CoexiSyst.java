@@ -247,7 +247,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
 	    	
 	    	// Disable in releases
-	    	ArrayList<String> lib_list = runCommand("ls /data/data/com.gnychis.coexisyst/lib/ | grep \".so\"");
+	    	ArrayList<String> lib_list = runCommand("lgs /data/data/com.gnychis.coexisyst/lib/ | grep \".so\"");
 	    	for(int i=0; i<lib_list.size(); i++)
 	    		runCommand("ln -s /data/data/com.gnychis.coexisyst/lib/" + lib_list.get(i) + " /system/lib/" + lib_list.get(i));
 
