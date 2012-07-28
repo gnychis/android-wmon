@@ -88,7 +88,11 @@ public class UbertoothOne {
 			// To use the WiSpy device, we need to give the USB device the application's permissions
 			runCommand("find /dev/bus -exec chown " + coexisyst.getAppUser() + " {} \\;");
 			
-			sendMainMessage(ThreadMessages.UBERTOOTH_INITIALIZED);
+			// Try to initialize the Ubertooth One
+			if(startUbertooth()==1)
+				sendMainMessage(ThreadMessages.UBERTOOTH_INITIALIZED);
+			else
+				sendMainMessage(ThreadMessages.UBERTOOTH_FAILED);
 
 			return "OK";
 		}
@@ -120,4 +124,7 @@ public class UbertoothOne {
 			}
 		}
 	}
+	
+	public native int startUbertooth();
+	public native int stopUbertooth();
 }
