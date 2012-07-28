@@ -24,6 +24,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
+#include <endian.h>
 
 #include <bluetooth_packet.h>
 
@@ -221,7 +222,7 @@ int stream_rx_file(FILE* fp, uint16_t num_blocks, rx_callback cb, void* cb_args)
 		nitems = fread(&systime_be, sizeof(systime_be), 1, fp);
 		if (nitems != 1)
 			return 0;
-		systime = (time_t)be32toh(systime_be);
+		systime = (time_t)betoh32(systime_be);
 
 		nitems = fread(buf, sizeof(buf[0]), PKT_LEN, fp);
 		if (nitems != PKT_LEN)
@@ -278,7 +279,7 @@ static void cb_lap(void* args, usb_pkt_rx *rx, int bank)
 	/* Copy packet (for dump) */
 	memcpy(&packets[bank], rx, sizeof(usb_pkt_rx));
 
-	clk100ns = le32toh(rx->clk100ns); /* wire format is le32 */
+	clk100ns = letoh32(rx->clk100ns); /* wire format is le32 */
 	/*
 	printf("%10u %02x %02d %3.02d %3d %3d %3d\n", rx->clk100ns, rx->status, rx->channel, rx->rssi_min-54, rx->rssi_max-54, rx->rssi_avg-54, rx->rssi_count);
 	*/
@@ -414,7 +415,7 @@ static void cb_hop(void* args, usb_pkt_rx *rx, int bank)
 	uint8_t uap = pn->UAP;
 
 	channel = rx->channel;
-	time = le32toh(rx->clk100ns);  /* wire format is le32 */
+	time = letoh32(rx->clk100ns);  /* wire format is le32 */
 	clkn_high = rx->clkn_high;
 	unpack_symbols(rx->data, symbols[bank]);
 	/*
@@ -503,7 +504,7 @@ static void cb_btle(void* args, usb_pkt_rx *rx, int bank)
 	if (rx->channel > (NUM_CHANNELS-1))
 		return;
 
-	clk100ns = le32toh(rx->clk100ns); /* wire format is le32 */
+	clk100ns = letoh32(rx->clk100ns); /* wire format is le32 */
 	unpack_symbols(rx->data, symbols[bank]);
 
 	/* Shift rssi max history and append current max */

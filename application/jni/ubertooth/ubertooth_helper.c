@@ -16,14 +16,13 @@
  */
 #include <string.h>
 #include <jni.h>
-#include <usb.h>
-#include <libusb.h>
-#include <android/log.h>
-#include "spectool_container.h" 
-#include "spectool_net_client.h"
 #include <errno.h>
 #include <stdbool.h>
+#include <android/log.h>
 #include "ubertooth.h"
+#include <stdio.h>
+#include <getopt.h>
+#include <unistd.h>
 
 #define LOG_TAG "UbertoothDriver" // text for log tag 
 
@@ -31,6 +30,10 @@ extern char Quiet;
 extern char Ubertooth_Device;
 	
 struct libusb_device_handle *devh = NULL;
+
+int main(int argc, char *argv[]) {
+  return 1;
+}
 
 jint
 Java_com_gnychis_coexisyst_DeviceHandlers_UbertoothOne_startUbertooth(JNIEnv* env, jobject thiz)
