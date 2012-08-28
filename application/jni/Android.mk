@@ -1,5 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk, \
+    libbtbb \
     libglib \
     libgpg-error \
     libgcrypt \
@@ -18,5 +19,6 @@ subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk, \
     coexisyst \
 		wireless-tools \
 		iw \
+    ubertooth \
 ))
 include $(subdirs)

@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.gnychis.coexisyst.Core.DBAdapter;
 import com.gnychis.coexisyst.Core.USBMon;
+import com.gnychis.coexisyst.DeviceHandlers.UbertoothOne;
 import com.gnychis.coexisyst.DeviceHandlers.WiSpy;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
@@ -64,6 +65,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public Wifi ath;
 	public ZigBee zigbee;
 	public IChart wispyGraph;
+	public UbertoothOne ubertooth;
 	
 	NetworksScan _networks_scan;
 	
@@ -89,6 +91,11 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		ZIGBEE_FAILED,
 		ZIGBEE_WAIT_RESET,
 		ZIGBEE_SCAN_COMPLETE,
+		UBERTOOTH_CONNECTED,
+		UBERTOOTH_INITIALIZED,
+		UBERTOOTH_FAILED,
+		UBERTOOTH_SCAN_COMPLETE,
+		UBERTOOTH_SCAN_FAILED,
 		BLUETOOTH_SCAN_COMPLETE,
 		SHOW_TOAST,
 		INCREMENT_SCAN_PROGRESS,
@@ -126,6 +133,13 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				WiSpyInitialized();
 			if(msg.obj == ThreadMessages.WISPY_FAILED)
 				WiSpyFailed();
+			if(msg.obj == ThreadMessages.UBERTOOTH_CONNECTED)
+				ubertoothSettling();
+			if(msg.obj == ThreadMessages.UBERTOOTH_INITIALIZED)
+				ubertoothInitialized();
+			if(msg.obj == ThreadMessages.UBERTOOTH_FAILED)
+				ubertoothFailed();
+			
 			
 			///////////////////////////////////////////////////////////////////////
 			// A set of messages that that deal with hardware connections
@@ -150,6 +164,25 @@ public class CoexiSyst extends Activity implements OnClickListener {
 			Log.e(TAG, "Exception trying to put toast msg in queue:", e);
 		}
 	}
+	
+	public void ubertoothSettling() {
+		pd = ProgressDialog.show(this, "", "Initializing Ubertooth One device...", true, false);
+		usbmon.stopUSBMon();
+		ubertooth.connected();
+	}
+	
+	public void ubertoothInitialized() {
+		pd.dismiss();
+		Toast.makeText(getApplicationContext(), "Successfully initialized Ubertooth One device", Toast.LENGTH_LONG).show();	
+		usbmon.startUSBMon();		
+	}
+	
+	public void ubertoothFailed() {
+		pd.dismiss();
+		usbmon.startUSBMon();
+		Toast.makeText(getApplicationContext(), "Failed to initialize Ubertooth One device", Toast.LENGTH_LONG).show();
+	}
+	
 	
 	public void WiSpySettling() {
 		pd = ProgressDialog.show(this, "", "Initializing WiSpy device...", true, false);  
@@ -240,6 +273,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.installBinary(this, R.raw.iw, "iw", "755");
 	    	RootTools.installBinary(this, R.raw.spectool_mine, "spectool_mine", "755");
 	    	RootTools.installBinary(this, R.raw.spectool_raw, "spectool_raw", "755");
+	    	RootTools.installBinary(this, R.raw.ubertooth_util, "ubertooth_util", "755");
 	    	
 	    	// Kick the phone in to USB host mode
 	    	//RootTools.sendShell("echo a > /sys/devices/platform/s3c-usbgadget/opmode", 0);
@@ -299,6 +333,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		ath = new Wifi(this);
 		zigbee = new ZigBee(this);
     	wispy = new WiSpy(this);
+    	ubertooth = new UbertoothOne(this);
 		
 		// Check the pcap interfaces
 		//pcapGetInterfaces();
