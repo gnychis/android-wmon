@@ -51,6 +51,9 @@ public class Wifi {
 	public static final String WIFI_SCAN_RESULT = "com.gnychis.coexisyst.WIFI_SCAN_RESULT";
 	public static final int MS_SLEEP_UNTIL_PCAPD = 1500;
 	
+	// A non-CM9 device likely to use wlan0
+	public static final String WLAN_IFACE_NAME = "wlan1";
+	
 	CoexiSyst coexisyst;
 	
 	public boolean _device_connected;
@@ -389,22 +392,22 @@ public class Wifi {
 			
 			// Spin a little bit if it takes a second to bring the interface up
 			// after we catch the USB device being inserted.
-			while(!iface_exists("wlan0"))
+			while(!iface_exists(WLAN_IFACE_NAME))
 				trySleep(100);
 			
 			// If we already have the monitoring interface up, we are already initialized
-			if(iface_up("wlan0")==1 && iface_up("moni0")==1) {
+			if(iface_up(WLAN_IFACE_NAME)==1 && iface_up("moni0")==1) {
 				debugOut("WiFi device is already connected and initialized...");
 				sendMainMessage(ThreadMessages.WIFIDEV_INITIALIZED);
 				return "true";				
 			}
 
-			// Otherwise, let's take wlan0 if it's not already
-			while(iface_down("wlan0")==0) {
-				runCommand("netcfg wlan0 down");
+			// Otherwise, let's take wlan if it's not already
+			while(iface_down(WLAN_IFACE_NAME)==0) {
+				runCommand("netcfg " + WLAN_IFACE_NAME + " down");
 				trySleep(100);
 			}
-			debugOut("wlan0 interface has been taken down");
+			debugOut(WLAN_IFACE_NAME + " interface has been taken down");
 			
 			// Get the phy interface name
 			List<String> r = runCommand("/data/data/com.gnychis.coexisyst/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
@@ -416,8 +419,8 @@ public class Wifi {
 			}
 			debugOut("interface set to monitor mode");
 			
-			while(iface_up("wlan0")==0) {
-				runCommand("netcfg wlan0 up");
+			while(iface_up(WLAN_IFACE_NAME)==0) {
+				runCommand("netcfg " + WLAN_IFACE_NAME + " up");
 				trySleep(100);
 			}
 			
@@ -546,9 +549,9 @@ public class Wifi {
 				}, 500, SCAN_UPDATE_TIME);
 				_timer_counts = SCAN_WAIT_COUNTS;
 				if(_active_scan)
-					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan trigger");
+					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger");
 				else
-					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan trigger passive");
+					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger passive");
 					
 			} else {
 				_scan_timer = new Timer();
@@ -560,9 +563,9 @@ public class Wifi {
 		
 				}, Wifi.SCAN_WAIT_TIME);  // 6.5 seconds seems enough to let all of the packets trickle in from the scan
 				if(_active_scan)
-					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan trigger");
+					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger");
 				else
-					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev wlan0 scan trigger passive");
+					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger passive");
 			}
 		}
 		
