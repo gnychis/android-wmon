@@ -232,16 +232,6 @@ public class Wifi {
 		coexisyst = c;
 		_state = WifiState.IDLE;
 		
-		// All modules related to wireless card that need to be inserted
-		// THIS SHOULD NOT BE NECESSARY FOR RUNNING ON CM9.
-		/*runCommand("insmod /system/etc/awmon_modules/compat.ko");
-		runCommand("insmod /system/etc/awmon_modules/compat_firmware_class.ko");
-		runCommand("insmod /system/etc/awmon_modules/cfg80211.ko");
-		runCommand("insmod /system/etc/awmon_modules/mac80211.ko");
-		runCommand("insmod /system/etc/awmon_modules/rt2x00lib.ko");
-		runCommand("insmod /system/etc/awmon_modules/rt2x00usb.ko");
-		runCommand("insmod /system/etc/awmon_modules/rt2800lib.ko");
-		runCommand("insmod /system/etc/awmon_modules/rt2800usb.ko");*/
 		Log.d("WifiDev", "Inserted kernel modules");
 		
 		// If we are dumping all of our packets for debugging...
