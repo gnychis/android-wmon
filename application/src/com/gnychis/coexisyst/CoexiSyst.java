@@ -29,7 +29,6 @@ import android.widget.Toast;
 import com.gnychis.coexisyst.Core.DBAdapter;
 import com.gnychis.coexisyst.Core.USBMon;
 import com.gnychis.coexisyst.DeviceHandlers.UbertoothOne;
-import com.gnychis.coexisyst.DeviceHandlers.WiSpy;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.Interfaces.AddNetwork;
@@ -61,7 +60,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	Button buttonADB;
 	
 	// USB device related
-	public WiSpy wispy;
 	public Wifi ath;
 	public ZigBee zigbee;
 	public IChart wispyGraph;
@@ -78,11 +76,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public enum ThreadMessages {
 		WIFI_SCAN_START,
 		WIFI_SCAN_COMPLETE,
-		WISPY_CONNECTED,
-		WISPY_INITIALIZED,
-		WISPY_FAILED,
-		WISPY_SCAN_COMPLETE,
-		WISPY_SCAN_FAILED,
 		WIFIDEV_CONNECTED,
 		WIFIDEV_INITIALIZED,
 		WIFIDEV_FAILED,
@@ -127,12 +120,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				zigbeeWaiting();
 			if(msg.what == ThreadMessages.ZIGBEE_INITIALIZED.ordinal()) 
 				zigbeeInitialized();
-			if(msg.what == ThreadMessages.WISPY_CONNECTED.ordinal())
-				WiSpySettling();
-			if(msg.what == ThreadMessages.WISPY_INITIALIZED.ordinal())
-				WiSpyInitialized();
-			if(msg.what == ThreadMessages.WISPY_FAILED.ordinal())
-				WiSpyFailed();
 			if(msg.what == ThreadMessages.UBERTOOTH_CONNECTED.ordinal())
 				ubertoothSettling();
 			if(msg.what == ThreadMessages.UBERTOOTH_INITIALIZED.ordinal())
@@ -181,25 +168,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		pd.dismiss();
 		usbmon.startUSBMon();
 		Toast.makeText(getApplicationContext(), "Failed to initialize Ubertooth One device", Toast.LENGTH_LONG).show();
-	}
-	
-	
-	public void WiSpySettling() {
-		pd = ProgressDialog.show(this, "", "Initializing WiSpy device...", true, false);  
-		usbmon.stopUSBMon();
-		wispy.connected();		
-	}
-	
-	public void WiSpyInitialized() {
-		pd.dismiss();
-		Toast.makeText(getApplicationContext(), "Successfully initialized WiSpy device", Toast.LENGTH_LONG).show();	
-		usbmon.startUSBMon();
-	}
-	
-	public void WiSpyFailed() {
-		pd.dismiss();
-		usbmon.startUSBMon();
-		Toast.makeText(getApplicationContext(), "Failed to initialize WiSpy device", Toast.LENGTH_LONG).show();
 	}
 	
 	public void zigbeeSettling() {
@@ -332,7 +300,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// Start the USB monitor thread, but only instantiate the wispy scan
 		ath = new Wifi(this);
 		zigbee = new ZigBee(this);
-    	wispy = new WiSpy(this);
     	ubertooth = new UbertoothOne(this);
 		
 		// Check the pcap interfaces
@@ -347,10 +314,9 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		
 		usbmon = new USBMon(this, _handler);
 		
-    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee, bt, wispy);
+    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee, bt);
 		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
-		registerReceiver(_networks_scan._rcvr_WiSpy, new IntentFilter(WiSpy.WISPY_SCAN_RESULT));
 		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
 		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		

@@ -11,7 +11,6 @@ import android.util.Log;
 import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.DeviceHandlers.UbertoothOne;
-import com.gnychis.coexisyst.DeviceHandlers.WiSpy;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;
@@ -86,13 +85,7 @@ public class USBMon
 				
 		//if(atheros_in_devlist==0)
 		//	atheros_in_devlist = checkAR9280();  // this is a more expensive check, only do when necessary
-				
-		// Wispy related checks
-		if(wispy_in_devlist==1 && _coexisyst.wispy._device_connected==false)
-			updateState(WiSpy.WISPY_CONNECT);
-		else if(wispy_in_devlist==0 && _coexisyst.wispy._device_connected==true)
-			updateState(WiSpy.WISPY_DISCONNECT);
-		
+
 		// Wifi device check
 		if(wifidev_in_devlist==1 && _coexisyst.ath._device_connected==false)
 			updateState(Wifi.WIFIDEV_CONNECT);
@@ -115,18 +108,6 @@ public class USBMon
 	// FIXME:  This seems redundant with the function above it (usbPoll())
 	protected void updateState(int event)
 	{
-		if(event == WiSpy.WISPY_CONNECT) {
-			Message msg = new Message();
-			msg.what = ThreadMessages.WISPY_CONNECTED.ordinal();
-			_coexisyst._handler.sendMessage(msg);
-			debugOut("got update that Wifi card was connected");
-		}
-		else if(event == WiSpy.WISPY_DISCONNECT) {
-			debugOut("WiSpy device now disconnected");
-			_coexisyst.sendToastMessage(_handler, "WiSpy device disconnected");
-			_coexisyst.wispy.disconnected();
-		}
-
 		// Handling events of Wifi device
 		if(event == Wifi.WIFIDEV_CONNECT) {
 			Message msg = new Message();

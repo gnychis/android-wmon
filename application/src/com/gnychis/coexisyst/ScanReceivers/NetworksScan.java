@@ -10,7 +10,6 @@ import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.Core.USBMon;
-import com.gnychis.coexisyst.DeviceHandlers.WiSpy;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.NetDevDefinitions.BluetoothDev;
@@ -44,13 +43,11 @@ public class NetworksScan extends Activity {
 	ZigBee _zigbee;
 	USBMon _usbmon;
 	BluetoothAdapter _bluetooth;
-	WiSpy _wispy;
 	
 	// Scan receivers for incoming broadcasts (which include results)
 	public WiFiScanReceiver _rcvr_80211;
 	public ZigBeeScanReceiver _rcvr_ZigBee;
 	public BluetoothScanReceiver _rcvr_BTooth;
-	public WiSpyScanReceiver _rcvr_WiSpy;
 	
 	public ArrayList<ZigBeeNetwork> _zigbee_scan_result;
 	public ArrayList<WifiAP> _wifi_scan_result;
@@ -96,18 +93,12 @@ public class NetworksScan extends Activity {
 				_bluetooth_scan_result = (ArrayList<BluetoothDev>)msg.obj;	// Save the scan result
 				startNextScan();
 			}
-			if(msg.what == ThreadMessages.WISPY_SCAN_COMPLETE.ordinal()) {
-				Log.d("NetworksScan", "WiSpy scan is now complete");
-				_finished_scans.add(Scans.WiSpy);
-				_wispy_scan_result = _rcvr_WiSpy._last_scan;
-				startNextScan();
-			}
 		}
 	};
 	
 	// Set the results to null to begin with, so that we can easily check
 	// when a scan of all protocols is complete.
-	public NetworksScan(Handler h, USBMon m, Wifi w, ZigBee z, BluetoothAdapter b, WiSpy ws) {
+	public NetworksScan(Handler h, USBMon m, Wifi w, ZigBee z, BluetoothAdapter b) {
 		
 		_coexisyst_handler = h;
 		
@@ -116,7 +107,6 @@ public class NetworksScan extends Activity {
 		_wifi = w;
 		_zigbee = z;
 		_bluetooth = b;
-		_wispy = ws;
 		
 		_is_scanning = false;		
 		_zigbee_scan_result = null;
@@ -129,7 +119,6 @@ public class NetworksScan extends Activity {
 		_rcvr_80211 = new WiFiScanReceiver(_handler);
 		_rcvr_ZigBee = new ZigBeeScanReceiver(_handler);
 		_rcvr_BTooth = new BluetoothScanReceiver(_handler);
-		_rcvr_WiSpy = new WiSpyScanReceiver(_handler);
 		//registerReceiver(_rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		//registerReceiver(_rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 	}
@@ -164,11 +153,6 @@ public class NetworksScan extends Activity {
 		if(_zigbee.isConnected()) {
 			_scan_list.add(Scans.ZigBee);
 			max_progress += ZigBee.channels.length;
-		}
-		
-		if(_wispy.isConnected()) {
-			_scan_list.add(Scans.WiSpy);
-			max_progress += WiSpy.POLLS_IN_MAX;
 		}
 		
 		return max_progress;
@@ -226,11 +210,7 @@ public class NetworksScan extends Activity {
 			case ZigBee:
 				_zigbee.scanStart();
 				break;
-				
-			case WiSpy:
-				_wispy.scanStart();
-				break;
-				
+
 			default:
 				Log.d("NetworksScan", "Error: should never have hit here, no next network?");
 		}
