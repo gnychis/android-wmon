@@ -76,24 +76,148 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public enum ThreadMessages {
 		WIFI_SCAN_START,
 		WIFI_SCAN_COMPLETE,
+		
 		WIFIDEV_CONNECTED,
 		WIFIDEV_INITIALIZED,
 		WIFIDEV_FAILED,
+		
 		ZIGBEE_CONNECTED,
 		ZIGBEE_INITIALIZED,
 		ZIGBEE_FAILED,
 		ZIGBEE_WAIT_RESET,
 		ZIGBEE_SCAN_COMPLETE,
+		
 		UBERTOOTH_CONNECTED,
 		UBERTOOTH_INITIALIZED,
 		UBERTOOTH_FAILED,
 		UBERTOOTH_SCAN_COMPLETE,
 		UBERTOOTH_SCAN_FAILED,
+		
 		BLUETOOTH_SCAN_COMPLETE,
+		
 		SHOW_TOAST,
 		INCREMENT_SCAN_PROGRESS,
 		NETWORK_SCANS_COMPLETE,
 	}
+	
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+        try {
+	    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system",0);
+	    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb",0);
+	    	RootTools.sendShell("mount -o remount,rw rootfs /",0);
+	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
+	    	
+	    	// Disable in releases
+	    	ArrayList<String> lib_list = runCommand("ls /data/data/com.gnychis.coexisyst/lib/ | grep \".so\"");
+	    	for(int i=0; i<lib_list.size(); i++)
+	    		runCommand("ln -s /data/data/com.gnychis.coexisyst/lib/" + lib_list.get(i) + " /system/lib/" + lib_list.get(i));
+
+	    	
+	    	/*RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libgmodule-2.0.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb-compat.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libpcap.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libnl.so /system/lib/",0);
+	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libglib-2.0.so /system/lib/",0);*/
+	    	
+	    	// WARNING: these files do NOT get overwritten if they already exist on the file
+	    	// system with RootTools.  If you are updating ANY of these, you need to do:
+	    	//   adb uninstall com.gnychis.coexisyst
+	    	// And then any updates to these files will be installed on the next build/run.
+	    	RootTools.installBinary(this, R.raw.disabled_protos, "disabled_protos");
+	    	RootTools.installBinary(this, R.raw.iwconfig, "iwconfig", "755");
+	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
+	    	RootTools.installBinary(this, R.raw.lsusb_core, "lsusb_core", "755");
+	    	RootTools.installBinary(this, R.raw.testlibusb, "testlibusb", "755");
+	    	RootTools.installBinary(this, R.raw.htc_7010, "htc_7010.fw");
+	    	RootTools.installBinary(this, R.raw.iwlist, "iwlist", "755");
+	    	RootTools.installBinary(this, R.raw.iw, "iw", "755");
+	    	RootTools.installBinary(this, R.raw.spectool_mine, "spectool_mine", "755");
+	    	RootTools.installBinary(this, R.raw.spectool_raw, "spectool_raw", "755");
+	    	RootTools.installBinary(this, R.raw.ubertooth_util, "ubertooth_util", "755");
+	    	
+	    	// Kick the phone in to USB host mode
+	    	//RootTools.sendShell("echo a > /sys/devices/platform/s3c-usbgadget/opmode", 0);
+	    			
+        } catch(Exception e) {
+        	Log.e(TAG, "error running RootTools commands for init", e);
+        }
+
+
+    	// Load the libusb related libraries
+    	try {
+    		System.loadLibrary("glib-2.0");
+    		System.loadLibrary("nl");
+    		System.loadLibrary("gmodule-2.0");
+    		System.loadLibrary("usb");
+    		System.loadLibrary("usb-compat");
+    		System.loadLibrary("wispy");
+    		System.loadLibrary("pcap");
+    		System.loadLibrary("gpg-error");
+    		System.loadLibrary("gcrypt");
+    		System.loadLibrary("tshark");
+    		System.loadLibrary("wireshark_helper");
+    		System.loadLibrary("coexisyst");
+    	} catch (Exception e) {
+    		Log.e(TAG, "error trying to load a USB related library", e);
+    	}
+           	
+    	toastMessages = new ArrayBlockingQueue<String>(20);
+        
+        // Setup the database
+    	db = new DBAdapter(this);
+    	db.open();
+      
+		// Setup UI
+		textStatus = (TextView) findViewById(R.id.textStatus);
+		textStatus.setText("");
+		buttonAddNetwork = (Button) findViewById(R.id.buttonAddNetwork); buttonAddNetwork.setOnClickListener(this);
+		buttonViewSpectrum = (Button) findViewById(R.id.buttonViewSpectrum); buttonViewSpectrum.setOnClickListener(this);
+		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets); buttonManageNets.setOnClickListener(this);
+		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs); buttonManageDevs.setOnClickListener(this);
+		buttonADB = (Button) findViewById(R.id.buttonAdb); buttonADB.setOnClickListener(this);
+		buttonScanSpectrum = (Button) findViewById(R.id.buttonScan); buttonScanSpectrum.setOnClickListener(this);
+		
+		wispyGraph = new GraphWispy();
+
+		// Setup wireless devices
+		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		bt = BluetoothAdapter.getDefaultAdapter();
+		
+		// Check the states of the interfaces
+		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
+		_bt_reenable = (bt.isEnabled()) ? true : false;
+
+		textStatus.append(initUSB());
+		
+		// Start the USB monitor thread, but only instantiate the wispy scan
+		ath = new Wifi(this);
+		zigbee = new ZigBee(this);
+    	ubertooth = new UbertoothOne(this);
+				
+		if(wiresharkInit()==1)
+			Log.d(TAG, "success with wireshark library");
+		else
+			Log.d(TAG, "error with wireshark library");
+		
+		usbmon = new USBMon(this, _handler);
+		
+    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee, bt);
+		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
+		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
+		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+		
+		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
+		//wiresharkTest("/sdcard/test.pcap");
+		//wiresharkTestGetAll("/sdcard/test.pcap");
+		//Log.d(TAG, "Successfully run wireshark test!");		
+    }
+    
 	
 	public Handler _handler = new Handler() {
 		@Override
@@ -203,130 +327,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		pd = ProgressDialog.show(this, "", s, true, false);  
 	}
 	
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        try {
-	    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system",0);
-	    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb",0);
-	    	RootTools.sendShell("mount -o remount,rw rootfs /",0);
-	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
-	    	
-	    	// Disable in releases
-	    	ArrayList<String> lib_list = runCommand("ls /data/data/com.gnychis.coexisyst/lib/ | grep \".so\"");
-	    	for(int i=0; i<lib_list.size(); i++)
-	    		runCommand("ln -s /data/data/com.gnychis.coexisyst/lib/" + lib_list.get(i) + " /system/lib/" + lib_list.get(i));
 
-	    	
-	    	/*RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libgmodule-2.0.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb-compat.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libpcap.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libnl.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libglib-2.0.so /system/lib/",0);*/
-	    	
-	    	// WARNING: these files do NOT get overwritten if they already exist on the file
-	    	// system with RootTools.  If you are updating ANY of these, you need to do:
-	    	//   adb uninstall com.gnychis.coexisyst
-	    	// And then any updates to these files will be installed on the next build/run.
-	    	RootTools.installBinary(this, R.raw.disabled_protos, "disabled_protos");
-	    	RootTools.installBinary(this, R.raw.iwconfig, "iwconfig", "755");
-	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
-	    	RootTools.installBinary(this, R.raw.lsusb_core, "lsusb_core", "755");
-	    	RootTools.installBinary(this, R.raw.testlibusb, "testlibusb", "755");
-	    	RootTools.installBinary(this, R.raw.htc_7010, "htc_7010.fw");
-	    	RootTools.installBinary(this, R.raw.iwlist, "iwlist", "755");
-	    	RootTools.installBinary(this, R.raw.iw, "iw", "755");
-	    	RootTools.installBinary(this, R.raw.spectool_mine, "spectool_mine", "755");
-	    	RootTools.installBinary(this, R.raw.spectool_raw, "spectool_raw", "755");
-	    	RootTools.installBinary(this, R.raw.ubertooth_util, "ubertooth_util", "755");
-	    	
-	    	// Kick the phone in to USB host mode
-	    	//RootTools.sendShell("echo a > /sys/devices/platform/s3c-usbgadget/opmode", 0);
-	    			
-        } catch(Exception e) {
-        	Log.e(TAG, "error running RootTools commands for init", e);
-        }
-
-
-    	// Load the libusb related libraries
-    	try {
-    		System.loadLibrary("glib-2.0");
-    		System.loadLibrary("nl");
-    		System.loadLibrary("gmodule-2.0");
-    		System.loadLibrary("usb");
-    		System.loadLibrary("usb-compat");
-    		System.loadLibrary("wispy");
-    		System.loadLibrary("pcap");
-    		System.loadLibrary("gpg-error");
-    		System.loadLibrary("gcrypt");
-    		System.loadLibrary("tshark");
-    		System.loadLibrary("wireshark_helper");
-    		System.loadLibrary("coexisyst");
-    	} catch (Exception e) {
-    		Log.e(TAG, "error trying to load a USB related library", e);
-    	}
-           	
-    	toastMessages = new ArrayBlockingQueue<String>(20);
-        
-        // Setup the database
-    	db = new DBAdapter(this);
-    	db.open();
-      
-		// Setup UI
-		textStatus = (TextView) findViewById(R.id.textStatus);
-		textStatus.setText("");
-		buttonAddNetwork = (Button) findViewById(R.id.buttonAddNetwork); buttonAddNetwork.setOnClickListener(this);
-		buttonViewSpectrum = (Button) findViewById(R.id.buttonViewSpectrum); buttonViewSpectrum.setOnClickListener(this);
-		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets); buttonManageNets.setOnClickListener(this);
-		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs); buttonManageDevs.setOnClickListener(this);
-		buttonADB = (Button) findViewById(R.id.buttonAdb); buttonADB.setOnClickListener(this);
-		buttonScanSpectrum = (Button) findViewById(R.id.buttonScan); buttonScanSpectrum.setOnClickListener(this);
-		
-		wispyGraph = new GraphWispy();
-
-		// Setup wireless devices
-		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		bt = BluetoothAdapter.getDefaultAdapter();
-		
-		// Check the states of the interfaces
-		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
-		_bt_reenable = (bt.isEnabled()) ? true : false;
-
-		textStatus.append(initUSB());
-		
-		// Start the USB monitor thread, but only instantiate the wispy scan
-		ath = new Wifi(this);
-		zigbee = new ZigBee(this);
-    	ubertooth = new UbertoothOne(this);
-		
-		// Check the pcap interfaces
-		//pcapGetInterfaces();
-		
-		Log.d(TAG, "onCreate()");
-		
-		if(wiresharkInit()==1)
-			Log.d(TAG, "success with wireshark library");
-		else
-			Log.d(TAG, "error with wireshark library");
-		
-		usbmon = new USBMon(this, _handler);
-		
-    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee, bt);
-		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
-		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
-		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-		
-		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
-		//wiresharkTest("/sdcard/test.pcap");
-		//wiresharkTestGetAll("/sdcard/test.pcap");
-		//Log.d(TAG, "Successfully run wireshark test!");
-				
-    }
-    
 	public ArrayList<String> runCommand(String c) {
 		ArrayList<String> res = new ArrayList<String>();
 		try {
