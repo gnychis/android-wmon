@@ -108,42 +108,42 @@ public class CoexiSyst extends Activity implements OnClickListener {
 
 			///////////////////////////////////////////////////////////////////////
 			// A set of messages referring to scans goes to the scan class
-			if(msg.obj == ThreadMessages.INCREMENT_SCAN_PROGRESS)
+			if(msg.what == ThreadMessages.INCREMENT_SCAN_PROGRESS.ordinal())
 				pd.incrementProgressBy(1);
-			if(msg.obj == ThreadMessages.NETWORK_SCANS_COMPLETE)
+			if(msg.what == ThreadMessages.NETWORK_SCANS_COMPLETE.ordinal())
 				networkScansComplete();
 						
 			///////////////////////////////////////////////////////////////////////
 			// A set of messages that that deal with hardware connections
-			if(msg.obj == ThreadMessages.WIFIDEV_CONNECTED)
+			if(msg.what == ThreadMessages.WIFIDEV_CONNECTED.ordinal())
 				wifidevSettling();
-			if(msg.obj == ThreadMessages.WIFIDEV_INITIALIZED)
+			if(msg.what == ThreadMessages.WIFIDEV_INITIALIZED.ordinal())
 				wifidevInitialized();
-			if(msg.obj == ThreadMessages.WIFIDEV_FAILED)
+			if(msg.what == ThreadMessages.WIFIDEV_FAILED.ordinal())
 				Toast.makeText(getApplicationContext(), "Failed to initialize Wifi device", Toast.LENGTH_LONG).show();	
-			if(msg.obj == ThreadMessages.ZIGBEE_CONNECTED)
+			if(msg.what == ThreadMessages.ZIGBEE_CONNECTED.ordinal())
 				zigbeeSettling();
-			if(msg.obj == ThreadMessages.ZIGBEE_WAIT_RESET) 
+			if(msg.what == ThreadMessages.ZIGBEE_WAIT_RESET.ordinal()) 
 				zigbeeWaiting();
-			if(msg.obj == ThreadMessages.ZIGBEE_INITIALIZED) 
+			if(msg.what == ThreadMessages.ZIGBEE_INITIALIZED.ordinal()) 
 				zigbeeInitialized();
-			if(msg.obj == ThreadMessages.WISPY_CONNECTED)
+			if(msg.what == ThreadMessages.WISPY_CONNECTED.ordinal())
 				WiSpySettling();
-			if(msg.obj == ThreadMessages.WISPY_INITIALIZED)
+			if(msg.what == ThreadMessages.WISPY_INITIALIZED.ordinal())
 				WiSpyInitialized();
-			if(msg.obj == ThreadMessages.WISPY_FAILED)
+			if(msg.what == ThreadMessages.WISPY_FAILED.ordinal())
 				WiSpyFailed();
-			if(msg.obj == ThreadMessages.UBERTOOTH_CONNECTED)
+			if(msg.what == ThreadMessages.UBERTOOTH_CONNECTED.ordinal())
 				ubertoothSettling();
-			if(msg.obj == ThreadMessages.UBERTOOTH_INITIALIZED)
+			if(msg.what == ThreadMessages.UBERTOOTH_INITIALIZED.ordinal())
 				ubertoothInitialized();
-			if(msg.obj == ThreadMessages.UBERTOOTH_FAILED)
+			if(msg.what == ThreadMessages.UBERTOOTH_FAILED.ordinal())
 				ubertoothFailed();
 			
 			
 			///////////////////////////////////////////////////////////////////////
 			// A set of messages that that deal with hardware connections
-			if(msg.obj == ThreadMessages.SHOW_TOAST) {
+			if(msg.what == ThreadMessages.SHOW_TOAST.ordinal()) {
 				try {
 					String m = toastMessages.remove();
 					Toast.makeText(getApplicationContext(), m, Toast.LENGTH_LONG).show();	
@@ -158,7 +158,7 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		try {
 			toastMessages.put(msg);
 			Message m = new Message();
-			m.obj = ThreadMessages.SHOW_TOAST;
+			m.what = ThreadMessages.SHOW_TOAST.ordinal();
 			h.sendMessage(m);
 		} catch (Exception e) {
 			Log.e(TAG, "Exception trying to put toast msg in queue:", e);

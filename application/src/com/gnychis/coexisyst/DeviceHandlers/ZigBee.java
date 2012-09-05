@@ -201,7 +201,7 @@ public class ZigBee {
 		// Used to send messages to the main Activity (UI) thread
 		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
 			Message msg = new Message();
-			msg.obj = t;
+			msg.what = t.ordinal();
 			coexisyst._handler.sendMessage(msg);
 		}
 		
@@ -280,7 +280,7 @@ public class ZigBee {
 		// Used to send messages to the main Activity (UI) thread
 		protected void sendMainMessage(CoexiSyst.ThreadMessages t) {
 			Message msg = new Message();
-			msg.obj = t;
+			msg.what = t.ordinal();
 			coexisyst._handler.sendMessage(msg);
 		}
 		

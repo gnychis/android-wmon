@@ -117,7 +117,7 @@ public class USBMon
 	{
 		if(event == WiSpy.WISPY_CONNECT) {
 			Message msg = new Message();
-			msg.obj = ThreadMessages.WISPY_CONNECTED;
+			msg.what = ThreadMessages.WISPY_CONNECTED.ordinal();
 			_coexisyst._handler.sendMessage(msg);
 			debugOut("got update that Wifi card was connected");
 		}
@@ -130,7 +130,7 @@ public class USBMon
 		// Handling events of Wifi device
 		if(event == Wifi.WIFIDEV_CONNECT) {
 			Message msg = new Message();
-			msg.obj = ThreadMessages.WIFIDEV_CONNECTED;
+			msg.what = ThreadMessages.WIFIDEV_CONNECTED.ordinal();
 			_coexisyst._handler.sendMessage(msg);
 			debugOut("got update that Wifi card was connected");
 		}
@@ -143,7 +143,7 @@ public class USBMon
 		// Handling events for ZigBee device
 		if(event == ZigBee.ZIGBEE_CONNECT) {
 			Message msg = new Message();
-			msg.obj = ThreadMessages.ZIGBEE_CONNECTED;
+			msg.what = ThreadMessages.ZIGBEE_CONNECTED.ordinal();
 			_coexisyst._handler.sendMessage(msg);
 			debugOut("got update that ZigBee device was connected");
 		}
@@ -155,7 +155,7 @@ public class USBMon
 		
 		if(event == UbertoothOne.UBERTOOTH_CONNECT) {
 			Message msg = new Message();
-			msg.obj = ThreadMessages.UBERTOOTH_CONNECTED;
+			msg.what = ThreadMessages.UBERTOOTH_CONNECTED.ordinal();
 			_coexisyst._handler.sendMessage(msg);
 			debugOut("got update that Ubertooth device was connected");
 		}

@@ -78,25 +78,25 @@ public class NetworksScan extends Activity {
 		public void handleMessage(Message msg) {
 			
 			// An incoming message that a wifi scan was complete
-			if(msg.obj == ThreadMessages.WIFI_SCAN_COMPLETE) {
+			if(msg.what == ThreadMessages.WIFI_SCAN_COMPLETE.ordinal()) {
 				Log.d("NetworksScan", "Wifi scan is now complete");		// Log out
 				_finished_scans.add(Scans.Wifi);
 				_wifi_scan_result = _rcvr_80211._last_scan;				// Save the scan result
 				startNextScan();										// Start next scan if there is one
 			}
-			if(msg.obj == ThreadMessages.ZIGBEE_SCAN_COMPLETE) {
+			if(msg.what == ThreadMessages.ZIGBEE_SCAN_COMPLETE.ordinal()) {
 				Log.d("NetworksScan", "ZigBee scan is now complete");	// Log out
 				_finished_scans.add(Scans.ZigBee);
 				_zigbee_scan_result = _rcvr_ZigBee._last_scan;			// Save scan result
 				startNextScan();										// Start next scan if there is one
 			}
-			if(msg.obj == ThreadMessages.BLUETOOTH_SCAN_COMPLETE) {
+			if(msg.what == ThreadMessages.BLUETOOTH_SCAN_COMPLETE.ordinal()) {
 				Log.d("NetworksScan", "Bluetooth scan is now complete");	// Log out
 				_finished_scans.add(Scans.Bluetooth);
 				_bluetooth_scan_result = _rcvr_BTooth._last_scan;				// Save the scan result
 				startNextScan();
 			}
-			if(msg.obj == ThreadMessages.WISPY_SCAN_COMPLETE) {
+			if(msg.what == ThreadMessages.WISPY_SCAN_COMPLETE.ordinal()) {
 				Log.d("NetworksScan", "WiSpy scan is now complete");
 				_finished_scans.add(Scans.WiSpy);
 				_wispy_scan_result = _rcvr_WiSpy._last_scan;
@@ -247,7 +247,7 @@ public class NetworksScan extends Activity {
 
 		// Send a message to CoexiSyst that the network scans are complete
 		Message msg = new Message();
-		msg.obj = ThreadMessages.NETWORK_SCANS_COMPLETE;
+		msg.what = ThreadMessages.NETWORK_SCANS_COMPLETE.ordinal();
 		_coexisyst_handler.sendMessage(msg);
 	}
 	

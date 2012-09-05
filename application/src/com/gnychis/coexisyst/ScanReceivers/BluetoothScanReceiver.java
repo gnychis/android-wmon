@@ -69,7 +69,7 @@ public class BluetoothScanReceiver extends BroadcastReceiver {
 		if(_handler != null && BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
 			Log.d(TAG, "Got an action that device discovery has finished");
 			Message msg = new Message();
-			msg.obj = ThreadMessages.BLUETOOTH_SCAN_COMPLETE;
+			msg.what = ThreadMessages.BLUETOOTH_SCAN_COMPLETE.ordinal();
 			_handler.sendMessage(msg);
 		}
 	}

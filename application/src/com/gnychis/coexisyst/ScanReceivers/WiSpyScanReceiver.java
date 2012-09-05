@@ -35,7 +35,7 @@ public class WiSpyScanReceiver extends BroadcastReceiver {
 	    if(_handler != null) {
 			// Send a message to stop the spinner if it is running
 			Message msg = new Message();
-			msg.obj = ThreadMessages.WISPY_SCAN_COMPLETE;
+			msg.what = ThreadMessages.WISPY_SCAN_COMPLETE.ordinal();
 			_handler.sendMessage(msg);
 	    }
 	}
