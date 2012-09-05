@@ -28,7 +28,6 @@ import android.widget.Toast;
 
 import com.gnychis.coexisyst.Core.DBAdapter;
 import com.gnychis.coexisyst.Core.USBMon;
-import com.gnychis.coexisyst.DeviceHandlers.UbertoothOne;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.Interfaces.AddNetwork;
@@ -63,7 +62,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	public Wifi ath;
 	public ZigBee zigbee;
 	public IChart wispyGraph;
-	public UbertoothOne ubertooth;
 	
 	NetworksScan _networks_scan;
 	
@@ -86,12 +84,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		ZIGBEE_FAILED,
 		ZIGBEE_WAIT_RESET,
 		ZIGBEE_SCAN_COMPLETE,
-		
-		UBERTOOTH_CONNECTED,
-		UBERTOOTH_INITIALIZED,
-		UBERTOOTH_FAILED,
-		UBERTOOTH_SCAN_COMPLETE,
-		UBERTOOTH_SCAN_FAILED,
 		
 		BLUETOOTH_SCAN_COMPLETE,
 		
@@ -116,14 +108,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	for(int i=0; i<lib_list.size(); i++)
 	    		runCommand("ln -s /data/data/com.gnychis.coexisyst/lib/" + lib_list.get(i) + " /system/lib/" + lib_list.get(i));
 
-	    	
-	    	/*RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libgmodule-2.0.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libusb-compat.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libpcap.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libnl.so /system/lib/",0);
-	    	RootTools.sendShell("busybox cp /data/data/com.gnychis.coexisyst/lib/libglib-2.0.so /system/lib/",0);*/
-	    	
 	    	// WARNING: these files do NOT get overwritten if they already exist on the file
 	    	// system with RootTools.  If you are updating ANY of these, you need to do:
 	    	//   adb uninstall com.gnychis.coexisyst
@@ -197,7 +181,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		// Start the USB monitor thread, but only instantiate the wispy scan
 		ath = new Wifi(this);
 		zigbee = new ZigBee(this);
-    	ubertooth = new UbertoothOne(this);
 				
 		if(wiresharkInit()==1)
 			Log.d(TAG, "success with wireshark library");
@@ -244,13 +227,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 				zigbeeWaiting();
 			if(msg.what == ThreadMessages.ZIGBEE_INITIALIZED.ordinal()) 
 				zigbeeInitialized();
-			if(msg.what == ThreadMessages.UBERTOOTH_CONNECTED.ordinal())
-				ubertoothSettling();
-			if(msg.what == ThreadMessages.UBERTOOTH_INITIALIZED.ordinal())
-				ubertoothInitialized();
-			if(msg.what == ThreadMessages.UBERTOOTH_FAILED.ordinal())
-				ubertoothFailed();
-			
 			
 			///////////////////////////////////////////////////////////////////////
 			// A set of messages that that deal with hardware connections
@@ -274,24 +250,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		} catch (Exception e) {
 			Log.e(TAG, "Exception trying to put toast msg in queue:", e);
 		}
-	}
-	
-	public void ubertoothSettling() {
-		pd = ProgressDialog.show(this, "", "Initializing Ubertooth One device...", true, false);
-		usbmon.stopUSBMon();
-		ubertooth.connected();
-	}
-	
-	public void ubertoothInitialized() {
-		pd.dismiss();
-		Toast.makeText(getApplicationContext(), "Successfully initialized Ubertooth One device", Toast.LENGTH_LONG).show();	
-		usbmon.startUSBMon();		
-	}
-	
-	public void ubertoothFailed() {
-		pd.dismiss();
-		usbmon.startUSBMon();
-		Toast.makeText(getApplicationContext(), "Failed to initialize Ubertooth One device", Toast.LENGTH_LONG).show();
 	}
 	
 	public void zigbeeSettling() {

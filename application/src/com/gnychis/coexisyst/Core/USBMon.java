@@ -10,7 +10,6 @@ import android.util.Log;
 
 import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
-import com.gnychis.coexisyst.DeviceHandlers.UbertoothOne;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;
@@ -97,12 +96,7 @@ public class USBMon
 			updateState(ZigBee.ZIGBEE_CONNECT);
 		else if(econotag_in_devlist==0 && _coexisyst.zigbee._device_connected==true)
 			updateState(ZigBee.ZIGBEE_DISCONNECT);
-		
-		// Ubertooth check
-		if(ubertooth_in_devlist==1 && _coexisyst.ubertooth._device_connected==false)
-			updateState(UbertoothOne.UBERTOOTH_CONNECT);
-		else if(ubertooth_in_devlist==0 && _coexisyst.ubertooth._device_connected==true)
-			updateState(UbertoothOne.UBERTOOTH_DISCONNECT);
+ 
 	}
 	
 	// FIXME:  This seems redundant with the function above it (usbPoll())
@@ -132,18 +126,6 @@ public class USBMon
 			debugOut("ZigBee device now disconnected");
 			_coexisyst.sendToastMessage(_handler, "ZigBee device disconnected");
 			_coexisyst.zigbee.disconnected();
-		}
-		
-		if(event == UbertoothOne.UBERTOOTH_CONNECT) {
-			Message msg = new Message();
-			msg.what = ThreadMessages.UBERTOOTH_CONNECTED.ordinal();
-			_coexisyst._handler.sendMessage(msg);
-			debugOut("got update that Ubertooth device was connected");
-		}
-		else if(event == UbertoothOne.UBERTOOTH_DISCONNECT) {
-			debugOut("Ubertooth device now disconnected");
-			_coexisyst.sendToastMessage(_handler, "Ubertooth device disconnected");
-			_coexisyst.ubertooth.disconnected();
 		}
 	}
 	public native void USBList();
