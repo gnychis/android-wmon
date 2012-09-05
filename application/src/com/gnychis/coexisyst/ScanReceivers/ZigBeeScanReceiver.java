@@ -121,6 +121,7 @@ public class ZigBeeScanReceiver extends BroadcastReceiver {
 		// Send a message to stop the spinner if it is running
 		Message msg = new Message();
 		msg.what = ThreadMessages.ZIGBEE_SCAN_COMPLETE.ordinal();
+		msg.obj = parsed_networks;
 		_handler.sendMessage(msg);
     }
   }

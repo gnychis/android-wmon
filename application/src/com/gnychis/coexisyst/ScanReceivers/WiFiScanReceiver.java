@@ -139,14 +139,16 @@ public class WiFiScanReceiver extends BroadcastReceiver {
     
     // Save this scan as our most current scan
     Collections.sort(parsed_result, comp);
-    _last_scan = parsed_result;
     
     if(_handler != null) {
 		// Send a message to stop the spinner if it is running
 		Message msg = new Message();
 		msg.what = ThreadMessages.WIFI_SCAN_COMPLETE.ordinal();
+		msg.obj = parsed_result;
 		_handler.sendMessage(msg);
     }
+    
+    _last_scan=parsed_result;
   }
 
 }

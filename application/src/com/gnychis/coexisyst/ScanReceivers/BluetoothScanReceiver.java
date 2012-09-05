@@ -70,6 +70,7 @@ public class BluetoothScanReceiver extends BroadcastReceiver {
 			Log.d(TAG, "Got an action that device discovery has finished");
 			Message msg = new Message();
 			msg.what = ThreadMessages.BLUETOOTH_SCAN_COMPLETE.ordinal();
+			msg.obj = _last_scan;
 			_handler.sendMessage(msg);
 		}
 	}

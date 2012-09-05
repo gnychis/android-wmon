@@ -74,26 +74,26 @@ public class NetworksScan extends Activity {
 	// with the scan results.
 	private Handler _coexisyst_handler;
 	public Handler _handler = new Handler() {
-		@Override
+		@Override @SuppressWarnings("unchecked")
 		public void handleMessage(Message msg) {
 			
 			// An incoming message that a wifi scan was complete
 			if(msg.what == ThreadMessages.WIFI_SCAN_COMPLETE.ordinal()) {
-				Log.d("NetworksScan", "Wifi scan is now complete");		// Log out
+				Log.d("NetworksScan", "Wifi scan is now complete");			// Log out
 				_finished_scans.add(Scans.Wifi);
-				_wifi_scan_result = _rcvr_80211._last_scan;				// Save the scan result
-				startNextScan();										// Start next scan if there is one
+				_wifi_scan_result = (ArrayList<WifiAP>)msg.obj;				// Save the scan result
+				startNextScan();											// Start next scan if there is one
 			}
 			if(msg.what == ThreadMessages.ZIGBEE_SCAN_COMPLETE.ordinal()) {
-				Log.d("NetworksScan", "ZigBee scan is now complete");	// Log out
+				Log.d("NetworksScan", "ZigBee scan is now complete");		// Log out
 				_finished_scans.add(Scans.ZigBee);
-				_zigbee_scan_result = _rcvr_ZigBee._last_scan;			// Save scan result
-				startNextScan();										// Start next scan if there is one
+				_zigbee_scan_result = (ArrayList<ZigBeeNetwork>)msg.obj;	// Save scan result
+				startNextScan();											// Start next scan if there is one
 			}
 			if(msg.what == ThreadMessages.BLUETOOTH_SCAN_COMPLETE.ordinal()) {
 				Log.d("NetworksScan", "Bluetooth scan is now complete");	// Log out
 				_finished_scans.add(Scans.Bluetooth);
-				_bluetooth_scan_result = _rcvr_BTooth._last_scan;				// Save the scan result
+				_bluetooth_scan_result = (ArrayList<BluetoothDev>)msg.obj;	// Save the scan result
 				startNextScan();
 			}
 			if(msg.what == ThreadMessages.WISPY_SCAN_COMPLETE.ordinal()) {
