@@ -123,9 +123,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	    	RootTools.installBinary(this, R.raw.spectool_mine, "spectool_mine", "755");
 	    	RootTools.installBinary(this, R.raw.spectool_raw, "spectool_raw", "755");
 	    	RootTools.installBinary(this, R.raw.ubertooth_util, "ubertooth_util", "755");
-	    	
-	    	// Kick the phone in to USB host mode
-	    	//RootTools.sendShell("echo a > /sys/devices/platform/s3c-usbgadget/opmode", 0);
 	    			
         } catch(Exception e) {
         	Log.e(TAG, "error running RootTools commands for init", e);
@@ -201,40 +198,116 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		//Log.d(TAG, "Successfully run wireshark test!");		
     }
     
+    // Everything related to clicking buttons in the main interface
+	public void onClick(View view) {
+		
+		Log.d(TAG,"Got a click");
+		
+		if (view.getId() == R.id.buttonAddNetwork) {
+			clickAddNetwork();
+		}
+		//if(view.getId() == R.id.buttonManageNets) {
+		//	clickManageNets();
+		//}
+		if(view.getId() == R.id.buttonManageDevs) {
+			clickManageDevs();
+		}
+		if(view.getId() == R.id.buttonScan) {
+			//scanSpectrum();
+		}
+		if(view.getId() == R.id.buttonViewSpectrum) {
+			//clickViewSpectrum();
+		}
+		if(view.getId() == R.id.buttonAdb) {
+			String[] adb_cmds = { 	"setprop service.adb.tcp.port 5555",
+									"stop adbd",
+									"start adbd"};
+			try {
+				RootTools.sendShell(adb_cmds,0,0);
+			} catch(Exception e) {
+				Log.e(TAG, "error trying to set ADB over TCP");
+				return;
+			}
+			Log.d(TAG,"ADB set for TCP");
+		}
+	}
 	
 	public Handler _handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
-
-			///////////////////////////////////////////////////////////////////////
-			// A set of messages referring to scans goes to the scan class
-			if(msg.what == ThreadMessages.INCREMENT_SCAN_PROGRESS.ordinal())
-				pd.incrementProgressBy(1);
-			if(msg.what == ThreadMessages.NETWORK_SCANS_COMPLETE.ordinal())
-				networkScansComplete();
-						
-			///////////////////////////////////////////////////////////////////////
-			// A set of messages that that deal with hardware connections
-			if(msg.what == ThreadMessages.WIFIDEV_CONNECTED.ordinal())
-				wifidevSettling();
-			if(msg.what == ThreadMessages.WIFIDEV_INITIALIZED.ordinal())
-				wifidevInitialized();
-			if(msg.what == ThreadMessages.WIFIDEV_FAILED.ordinal())
-				Toast.makeText(getApplicationContext(), "Failed to initialize Wifi device", Toast.LENGTH_LONG).show();	
-			if(msg.what == ThreadMessages.ZIGBEE_CONNECTED.ordinal())
-				zigbeeSettling();
-			if(msg.what == ThreadMessages.ZIGBEE_WAIT_RESET.ordinal()) 
-				zigbeeWaiting();
-			if(msg.what == ThreadMessages.ZIGBEE_INITIALIZED.ordinal()) 
-				zigbeeInitialized();
 			
-			///////////////////////////////////////////////////////////////////////
-			// A set of messages that that deal with hardware connections
-			if(msg.what == ThreadMessages.SHOW_TOAST.ordinal()) {
-				try {
-					String m = toastMessages.remove();
-					Toast.makeText(getApplicationContext(), m, Toast.LENGTH_LONG).show();	
-				} catch(Exception e) { }
+			// Based on the thread message, a difference action will take place
+			ThreadMessages tm = ThreadMessages.values()[msg.what];
+			switch(tm) {
+			
+				//////////////////////////////////////////////////////
+				case SHOW_TOAST:
+					try {
+						String m = toastMessages.remove();
+						Toast.makeText(getApplicationContext(), m, Toast.LENGTH_LONG).show();	
+					} catch(Exception e) { }
+					break;
+					
+				//////////////////////////////////////////////////////
+				case WIFIDEV_CONNECTED:
+					pd = ProgressDialog.show(CoexiSyst.this, "", "Initializing Wifi device...", true, false); 
+					usbmon.stopUSBMon();
+					ath.connected();
+					break;
+					
+				case WIFIDEV_INITIALIZED:
+					Toast.makeText(getApplicationContext(), "Successfully initialized Wifi device", Toast.LENGTH_LONG).show();	
+					pd.dismiss();
+					usbmon.startUSBMon();
+					break;
+					
+				case WIFIDEV_FAILED:
+					Toast.makeText(getApplicationContext(), "Failed to initialize Wifi device", Toast.LENGTH_LONG).show();	
+					break;
+					
+				//////////////////////////////////////////////////////
+				case ZIGBEE_CONNECTED:
+					pd = ProgressDialog.show(CoexiSyst.this, "", "Initializing ZigBee device...", true, false);  
+					usbmon.stopUSBMon();
+					zigbee.connected();
+					break;
+					
+				case ZIGBEE_WAIT_RESET:
+					pd.dismiss();
+					pd = ProgressDialog.show(CoexiSyst.this, "", "Press ZigBee reset button...", true, false); 
+					break;
+					
+				case ZIGBEE_INITIALIZED:
+					pd.dismiss();
+					Toast.makeText(getApplicationContext(), "Successfully initialized ZigBee device", Toast.LENGTH_LONG).show();	
+					usbmon.startUSBMon();
+					break;
+					
+					
+				//////////////////////////////////////////////////////
+				case INCREMENT_SCAN_PROGRESS:
+					pd.incrementProgressBy(1);
+					break;
+				
+				case NETWORK_SCANS_COMPLETE:
+					pd.dismiss();
+					try {
+						Log.d(TAG,"Trying to load add networks window");
+						Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
+						
+						// Hopefully this is not broken, using it as a WifiScanReceiver rather
+						// than BroadcastReceiver type.
+						i.putExtra("com.gnychis.coexisyst.80211", _networks_scan._wifi_scan_result);
+						i.putExtra("com.gnychis.coexisyst.ZigBee", _networks_scan._zigbee_scan_result);
+						i.putExtra("com.gnychis.coexisyst.Bluetooth", _networks_scan._bluetooth_scan_result);
+						i.putExtra("com.gnychis.coexisyst.WiSpy", _networks_scan._wispy_scan_result);
+						
+						startActivity(i);
+					} catch (Exception e) {
+						Log.e(TAG, "Exception trying to load network add window",e);
+						return;
+					}
+					break;	
 			}
 		}
 	};
@@ -250,35 +323,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		} catch (Exception e) {
 			Log.e(TAG, "Exception trying to put toast msg in queue:", e);
 		}
-	}
-	
-	public void zigbeeSettling() {
-		pd = ProgressDialog.show(this, "", "Initializing ZigBee device...", true, false);  
-		usbmon.stopUSBMon();
-		zigbee.connected();
-	}
-	
-	public void zigbeeInitialized() {
-		pd.dismiss();
-		Toast.makeText(getApplicationContext(), "Successfully initialized ZigBee device", Toast.LENGTH_LONG).show();	
-		usbmon.startUSBMon();
-	}
-	
-	public void zigbeeWaiting() {
-		pd.dismiss();
-		pd = ProgressDialog.show(this, "", "Press ZigBee reset button...", true, false); 
-	}
-	
-	public void wifidevSettling() {
-		pd = ProgressDialog.show(this, "", "Initializing Wifi device...", true, false); 
-		usbmon.stopUSBMon();
-		ath.connected();
-	}
-	
-	public void wifidevInitialized() {
-		Toast.makeText(getApplicationContext(), "Successfully initialized Wifi device", Toast.LENGTH_LONG).show();	
-		pd.dismiss();
-		usbmon.startUSBMon();
 	}
 	
 	public void showProgressUpdate(String s) {
@@ -329,11 +373,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	}
 	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
-	
-	public void scanSpectrum() {		
-		// Get the WiSpy data
-		Log.d(TAG, "This button is dead, remove it");
-	}
 
 	// This triggers a scan through the networks to return a list of
 	// networks and devices for a user to add for management.
@@ -366,100 +405,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		pd.show();
 	}
 	
-	// Invoked once we have received the results from all of the network scans.
-	public void networkScansComplete() {
-		pd.dismiss();
-		
-		try {
-			Log.d(TAG,"Trying to load add networks window");
-			Intent i = new Intent(CoexiSyst.this, AddNetwork.class);
-			
-			// Hopefully this is not broken, using it as a WifiScanReceiver rather
-			// than BroadcastReceiver type.
-			i.putExtra("com.gnychis.coexisyst.80211", _networks_scan._wifi_scan_result);
-			i.putExtra("com.gnychis.coexisyst.ZigBee", _networks_scan._zigbee_scan_result);
-			i.putExtra("com.gnychis.coexisyst.Bluetooth", _networks_scan._bluetooth_scan_result);
-			i.putExtra("com.gnychis.coexisyst.WiSpy", _networks_scan._wispy_scan_result);
-			
-			startActivity(i);
-		} catch (Exception e) {
-			Log.e(TAG, "Exception trying to load network add window",e);
-			return;
-		}	
-	}
-	
-//	public void clickViewSpectrum() {
-//		try {
-//			Intent i = null;
-//			
-//			if(wispyscan.getStatus()==Status.RUNNING) {
-//				wispyscan.cancel(true);
-//				wispy._is_polling=false;
-//				Log.d(TAG, "canceling wispy scan");
-//			}
-//			
-//			/* TODO: fix this
-//			if(usbmon.getStatus()==Status.RUNNING) {
-//				if(usbmon.cancel(true))
-//					Log.d(TAG, "canceled USB monitor");
-//				else
-//					Log.d(TAG, "error trying to cancel USB monitor");	
-//				usbmon = null;
-//			}*/
-//			
-//			i = wispyGraph.execute(this);
-//			i.putExtra("com.gnychis.coexisyst.results", wispy._maxresults);
-//			startActivity(i);
-//		} catch(Exception e) {
-//			Log.e(TAG, "error trying to load spectrum view", e);
-//		}
-//	}
-	
-	public void getUserText() {
-	
-	}
-	
-	public void clickManageNets() {
-		
-	}
-	
 	public void clickManageDevs() {
 		Log.d(TAG,"Trying to load manage networks window");
         Intent i = new Intent(CoexiSyst.this, ManageNetworks.class);
         startActivity(i);
-	}
-
-	public void onClick(View view) {
-		
-		Log.d(TAG,"Got a click");
-		
-		if (view.getId() == R.id.buttonAddNetwork) {
-			clickAddNetwork();
-		}
-		//if(view.getId() == R.id.buttonManageNets) {
-		//	clickManageNets();
-		//}
-		if(view.getId() == R.id.buttonManageDevs) {
-			clickManageDevs();
-		}
-		if(view.getId() == R.id.buttonScan) {
-			//scanSpectrum();
-		}
-		if(view.getId() == R.id.buttonViewSpectrum) {
-			//clickViewSpectrum();
-		}
-		if(view.getId() == R.id.buttonAdb) {
-			String[] adb_cmds = { 	"setprop service.adb.tcp.port 5555",
-									"stop adbd",
-									"start adbd"};
-			try {
-				RootTools.sendShell(adb_cmds,0,0);
-			} catch(Exception e) {
-				Log.e(TAG, "error trying to set ADB over TCP");
-				return;
-			}
-			Log.d(TAG,"ADB set for TCP");
-		}
 	}
 	
 	public native String  initUSB();
