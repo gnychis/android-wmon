@@ -22,7 +22,7 @@
 #include "spectool_container.h" 
 #include "spectool_net_client.h"
 #include <errno.h>
-#define LOG_TAG "CoexisystDriver" // text for log tag 
+#define LOG_TAG "AWMonDriver" // text for log tag 
 
 // For keeping track of the devices, made global to handle callbacks and still
 // have the device information
@@ -43,7 +43,7 @@ int sample = 0;
  *   apps/samples/hello-jni/project/src/com/example/HelloJni/HelloJni.java
  */
 jstring
-Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
+Java_com_gnychis_awmon_AWMon_initUSB( JNIEnv* env, jobject thiz )
 {
   int r;
   __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "entering initUSB");
@@ -53,7 +53,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_initUSB( JNIEnv* env, jobject thiz )
     return (*env)->NewStringUTF(env, "Failed to initialize libusb!");
   } else {
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "successfully initialized libusb");
-    return (*env)->NewStringUTF(env, "CoexiSyst system library and USB enabled...");
+    return (*env)->NewStringUTF(env, "AWMon system library and USB enabled...");
   }
 }
 
@@ -112,7 +112,7 @@ int print_device(struct usb_device *dev, int level)
 }
 
 jint
-Java_com_gnychis_coexisyst_Core_USBMon_USBList( JNIEnv* env, jobject thiz )
+Java_com_gnychis_awmon_Core_USBMon_USBList( JNIEnv* env, jobject thiz )
 {
   struct usb_bus *bus;
 
@@ -137,7 +137,7 @@ Java_com_gnychis_coexisyst_Core_USBMon_USBList( JNIEnv* env, jobject thiz )
 }
 
 jint
-Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thiz, jint vid, jint pid )
+Java_com_gnychis_awmon_AWMon_USBcheckForDevice( JNIEnv* env, jobject thiz, jint vid, jint pid )
 {
   ssize_t cnt;
   libusb_device **devs;
@@ -179,7 +179,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_USBcheckForDevice( JNIEnv* env, jobject thi
 }
 
 void
-Java_com_gnychis_coexisyst_CoexiSyst_libusbTest( JNIEnv* env, jobject thiz )
+Java_com_gnychis_awmon_AWMon_libusbTest( JNIEnv* env, jobject thiz )
 {
 	libusb_device **devs;
 	int r;
@@ -198,7 +198,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_libusbTest( JNIEnv* env, jobject thiz )
 }
 
 jobjectArray
-Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
+Java_com_gnychis_awmon_AWMon_getDeviceNames( JNIEnv* env, jobject thiz )
 {
 	struct usb_bus *bus;
   struct usb_bus *busses;
@@ -272,14 +272,14 @@ Java_com_gnychis_coexisyst_CoexiSyst_getDeviceNames( JNIEnv* env, jobject thiz )
 }
 
 jint
-Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_initWiSpyDevices( JNIEnv* env, jobject thiz )
+Java_com_gnychis_awmon_DeviceHandlers_WiSpy_initWiSpyDevices( JNIEnv* env, jobject thiz )
 {
 	int x;
 	sample = 0;
 	
 	ndev = wispy_device_scan(&wispy_list);
 
-	fh = fopen("/sdcard/coexisyst_raw.txt","w+");
+	fh = fopen("/sdcard/awmon_raw.txt","w+");
 	
 	// Make sure that a device is connected
 	if(ndev <= 0) {
@@ -324,7 +324,7 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_initWiSpyDevices( JNIEnv* env, j
 }
 
 jchar
-Java_com_gnychis_coexisyst_Core_USBSerial_blockRead1(JNIEnv* env, jobject thiz, int fd) {
+Java_com_gnychis_awmon_Core_USBSerial_blockRead1(JNIEnv* env, jobject thiz, int fd) {
 	int n;
 	char c;
 
@@ -369,7 +369,7 @@ jchar blockRead1(JNIEnv* env, jobject thiz, int fd) {
 }
 
 jint
-Java_com_gnychis_coexisyst_Core_USBSerial_readInt32(JNIEnv* env, jobject thiz, int fd) {
+Java_com_gnychis_awmon_Core_USBSerial_readInt32(JNIEnv* env, jobject thiz, int fd) {
 	int i;
 	uint32_t v = 0;
 
@@ -384,7 +384,7 @@ Java_com_gnychis_coexisyst_Core_USBSerial_readInt32(JNIEnv* env, jobject thiz, i
 }
 
 void
-Java_com_gnychis_coexisyst_Core_USBSerial_writeBytes(JNIEnv* env, jobject thiz, int fd, jbyteArray data, int length)
+Java_com_gnychis_awmon_Core_USBSerial_writeBytes(JNIEnv* env, jobject thiz, int fd, jbyteArray data, int length)
 {
 	int nwrote=0;
 	int n;
@@ -413,7 +413,7 @@ Java_com_gnychis_coexisyst_Core_USBSerial_writeBytes(JNIEnv* env, jobject thiz, 
 
 
 jbyteArray
-Java_com_gnychis_coexisyst_Core_USBSerial_blockReadBytes(JNIEnv* env, jobject thiz, int fd, int nbytes) {
+Java_com_gnychis_awmon_Core_USBSerial_blockReadBytes(JNIEnv* env, jobject thiz, int fd, int nbytes) {
 	int nread=0;
 	jbyteArray buf;
 	char *pBuf;
@@ -443,13 +443,13 @@ Java_com_gnychis_coexisyst_Core_USBSerial_blockReadBytes(JNIEnv* env, jobject th
 }
 
 jint
-Java_com_gnychis_coexisyst_Core_USBSerial_closeCommPort(JNIEnv* env, jobject thiz, jint fd)
+Java_com_gnychis_awmon_Core_USBSerial_closeCommPort(JNIEnv* env, jobject thiz, jint fd)
 {
 	return close(fd);
 }
 
 jint
-Java_com_gnychis_coexisyst_Core_USBSerial_openCommPort(JNIEnv* env, jobject thiz, jstring port_name)
+Java_com_gnychis_awmon_Core_USBSerial_openCommPort(JNIEnv* env, jobject thiz, jstring port_name)
 {
 	const char *nativePort = (*env)->GetStringUTFChars(env, port_name, 0);
 	int fd = open (nativePort, O_RDWR | O_NOCTTY | O_SYNC);
@@ -470,7 +470,7 @@ Java_com_gnychis_coexisyst_Core_USBSerial_openCommPort(JNIEnv* env, jobject thiz
 }
 
 jintArray
-Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_pollWiSpy( JNIEnv* env, jobject thiz)
+Java_com_gnychis_awmon_DeviceHandlers_WiSpy_pollWiSpy( JNIEnv* env, jobject thiz)
 {
 	int x,r;
 	fd_set rfds;
@@ -585,7 +585,7 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_pollWiSpy( JNIEnv* env, jobject 
 }
 
 jobjectArray
-Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
+Java_com_gnychis_awmon_AWMon_getWiSpyList( JNIEnv* env, jobject thiz)
 {
 	jobjectArray names = 0;
 	int ndev = 0;
@@ -640,7 +640,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_getWiSpyList( JNIEnv* env, jobject thiz)
 }
 
 jobjectArray
-Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_getWiSpyList( JNIEnv* env, jobject thiz)
+Java_com_gnychis_awmon_DeviceHandlers_WiSpy_getWiSpyList( JNIEnv* env, jobject thiz)
 {
 	jobjectArray names = 0;
 	int ndev = 0;
@@ -695,7 +695,7 @@ Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_getWiSpyList( JNIEnv* env, jobje
 }
 
 jint
-Java_com_gnychis_coexisyst_DeviceHandlers_WiSpy_getWiSpy( JNIEnv* env, jobject thiz)
+Java_com_gnychis_awmon_DeviceHandlers_WiSpy_getWiSpy( JNIEnv* env, jobject thiz)
 {
 	devh = libusb_open_device_with_vid_pid(NULL, 0x1781, 0x083f);
 	return devh ? 1 : -1;

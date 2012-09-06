@@ -16,7 +16,7 @@ subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk, \
     libtshark \
     libwireshark \
 		lowpan \
-    coexisyst \
+    awmon \
 		wireless-tools \
 		iw \
     ubertooth \

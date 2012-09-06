@@ -123,7 +123,7 @@ typedef struct {
 } write_field_data_t;
 
 void
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTestGetAll(JNIEnv* env, jobject thiz, jstring jsFname)
+Java_com_gnychis_awmon_AWMon_wiresharkTestGetAll(JNIEnv* env, jobject thiz, jstring jsFname)
 {
   FILE *bf;
   unsigned char *data_buffer;
@@ -195,7 +195,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTestGetAll(JNIEnv* env, jobject th
 }
 
 void
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, jstring jsFname)
+Java_com_gnychis_awmon_AWMon_wiresharkTest(JNIEnv* env, jobject thiz, jstring jsFname)
 {
   FILE *bf;
   unsigned char *data_buffer;
@@ -269,7 +269,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkTest(JNIEnv* env, jobject thiz, js
 
 
 void
-Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
+Java_com_gnychis_awmon_AWMon_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
 {
   
   _env=env;
@@ -277,7 +277,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectCleanup(JNIEnv* env, jobject thiz, j
 	dissectCleanup(ptr);
 }
 void
-Java_com_gnychis_coexisyst_Core_Packet_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
+Java_com_gnychis_awmon_Core_Packet_dissectCleanup(JNIEnv* env, jobject thiz, jint ptr)
 {
   
   _env=env;
@@ -351,7 +351,7 @@ dissectPacket(char *pHeader, char *pData, int encap)
 }
 
 jint
-Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
+Java_com_gnychis_awmon_AWMon_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
 {
 	char *pHeader;
 	char *pData;
@@ -372,7 +372,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_dissectPacket(JNIEnv* env, jobject thiz, jb
 	return ret;
 }
 jint
-Java_com_gnychis_coexisyst_Core_Packet_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
+Java_com_gnychis_awmon_Core_Packet_dissectPacket(JNIEnv* env, jobject thiz, jbyteArray header, jbyteArray data, jint encap)
 {
 	char *pHeader;
 	char *pData;
@@ -452,7 +452,7 @@ wiresharkGetAll(int wfd_ptr)
 }
 
 void
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAllTest(JNIEnv* env, jobject thiz, jint wfd_ptr)
+Java_com_gnychis_awmon_AWMon_wiresharkGetAllTest(JNIEnv* env, jobject thiz, jint wfd_ptr)
 {
   
   _env=env;
@@ -462,7 +462,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAllTest(JNIEnv* env, jobject th
 
 // Return a list of all the fields
 jobjectArray
-Java_com_gnychis_coexisyst_Core_Packet_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
+Java_com_gnychis_awmon_Core_Packet_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
 {
   jobjectArray fields = 0;
 	jstring      str;
@@ -506,7 +506,7 @@ Java_com_gnychis_coexisyst_Core_Packet_wiresharkGetAll(JNIEnv* env, jobject thiz
 
 // Return a list of all the fields
 jobjectArray
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
+Java_com_gnychis_awmon_AWMon_wiresharkGetAll(JNIEnv* env, jobject thiz, jint wfd_ptr)
 {
   jobjectArray fields = 0;
 	jstring      str;
@@ -728,7 +728,7 @@ void myoutput_fields_free(output_fields_t* fields)
 
 
 jstring
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
+Java_com_gnychis_awmon_AWMon_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
 {
 	gchar *field;
 	char *str_result;
@@ -748,7 +748,7 @@ Java_com_gnychis_coexisyst_CoexiSyst_wiresharkGet(JNIEnv* env, jobject thiz, jin
 	return result;
 }
 jstring
-Java_com_gnychis_coexisyst_Core_Packet_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
+Java_com_gnychis_awmon_Core_Packet_wiresharkGet(JNIEnv* env, jobject thiz, jint wfd_ptr, jstring param)
 {
 	gchar *field;
 	char *str_result;
@@ -774,7 +774,7 @@ Java_com_gnychis_coexisyst_Core_Packet_wiresharkGet(JNIEnv* env, jobject thiz, j
 
 // Mainly a rip-off of the main() function in tshark
 jint
-Java_com_gnychis_coexisyst_CoexiSyst_wiresharkInit( JNIEnv* env, jobject thiz )
+Java_com_gnychis_awmon_AWMon_wiresharkInit( JNIEnv* env, jobject thiz )
 {
   char                *init_progfile_dir_error;
   int                  opt;
@@ -960,7 +960,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
   if(env==NULL)
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Could not grab env");
 
-  cls = (*env)->FindClass(env, "com/gnychis/coexisyst/Core/Packet");
+  cls = (*env)->FindClass(env, "com/gnychis/awmon/Core/Packet");
 
   if(cls==NULL)
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "(JNIDEBUG) Could not find class called Packet");
