@@ -126,28 +126,17 @@ public class AWMon extends Activity implements OnClickListener {
 	    	RootTools.installBinary(this, R.raw.spectool_raw, "spectool_raw", "755");
 	    	RootTools.installBinary(this, R.raw.ubertooth_util, "ubertooth_util", "755");
 	    			
-        } catch(Exception e) {
-        	Log.e(TAG, "error running RootTools commands for init", e);
-        }
-
+        } catch(Exception e) {	Log.e(TAG, "error running RootTools commands for init", e); }
 
     	// Load the libusb related libraries
     	try {
-    		System.loadLibrary("glib-2.0");
-    		System.loadLibrary("nl");
-    		System.loadLibrary("gmodule-2.0");
-    		System.loadLibrary("usb");
-    		System.loadLibrary("usb-compat");
-    		System.loadLibrary("wispy");
-    		System.loadLibrary("pcap");
-    		System.loadLibrary("gpg-error");
-    		System.loadLibrary("gcrypt");
-    		System.loadLibrary("tshark");
-    		System.loadLibrary("wireshark_helper");
-    		System.loadLibrary("awmon");
-    	} catch (Exception e) {
-    		Log.e(TAG, "error trying to load a USB related library", e);
-    	}
+    		System.loadLibrary("glib-2.0");			System.loadLibrary("nl");
+    		System.loadLibrary("gmodule-2.0");		System.loadLibrary("usb");
+    		System.loadLibrary("usb-compat");		System.loadLibrary("wispy");
+    		System.loadLibrary("pcap");				System.loadLibrary("gpg-error");
+    		System.loadLibrary("gcrypt");			System.loadLibrary("tshark");
+    		System.loadLibrary("wireshark_helper");	System.loadLibrary("awmon");
+    	} catch (Exception e) { Log.e(TAG, "error trying to load a USB related library", e); }
            	
     	toastMessages = new ArrayBlockingQueue<String>(20);
         
@@ -192,10 +181,6 @@ public class AWMon extends Activity implements OnClickListener {
 		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
 		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		
-		// Uncomment to test wireshark parsing using /sdcard/test.pcap (must be radiotap)
-		//wiresharkTest("/sdcard/test.pcap");
-		//wiresharkTestGetAll("/sdcard/test.pcap");
-		//Log.d(TAG, "Successfully run wireshark test!");		
     }
     
     // Everything related to clicking buttons in the main interface
