@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -56,12 +57,7 @@ public class AWMon extends Activity implements OnClickListener {
 	private ProgressDialog _pd;
 	public TextView textStatus;
 	private Button buttonAddNetwork; 
-	private Button buttonManageNets; 
-	private Button buttonManageDevs;
-	private Button buttonScanSpectrum;
-	private Button buttonViewSpectrum;
-	private Button buttonADB;
-		
+	private Button buttonManageDevs;		
 	
 	public enum ThreadMessages {
 		WIFI_SCAN_START,
@@ -89,46 +85,6 @@ public class AWMon extends Activity implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        try {
-	    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system",0);
-	    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb",0);
-	    	RootTools.sendShell("mount -o remount,rw rootfs /",0);
-	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
-	    	
-	    	// Disable in releases
-	    	ArrayList<String> lib_list = runCommand("ls /data/data/" + _app_name + "/lib/ | grep \".so\"");
-	    	for(int i=0; i<lib_list.size(); i++) {
-	    		runCommand("rm /system/lib/" + lib_list.get(i));
-	    		runCommand("ln -s /data/data/" + _app_name + "/lib/" + lib_list.get(i) + " /system/lib/" + lib_list.get(i));
-	    	}
-
-	    	// WARNING: these files do NOT get overwritten if they already exist on the file
-	    	// system with RootTools.  If you are updating ANY of these, you need to do:
-	    	//   adb uninstall com.gnychis.coexisyst
-	    	// And then any updates to these files will be installed on the next build/run.
-	    	RootTools.installBinary(this, R.raw.disabled_protos, "disabled_protos");
-	    	RootTools.installBinary(this, R.raw.iwconfig, "iwconfig", "755");
-	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
-	    	RootTools.installBinary(this, R.raw.lsusb_core, "lsusb_core", "755");
-	    	RootTools.installBinary(this, R.raw.testlibusb, "testlibusb", "755");
-	    	RootTools.installBinary(this, R.raw.htc_7010, "htc_7010.fw");
-	    	RootTools.installBinary(this, R.raw.iwlist, "iwlist", "755");
-	    	RootTools.installBinary(this, R.raw.iw, "iw", "755");
-	    	RootTools.installBinary(this, R.raw.spectool_mine, "spectool_mine", "755");
-	    	RootTools.installBinary(this, R.raw.spectool_raw, "spectool_raw", "755");
-	    	RootTools.installBinary(this, R.raw.ubertooth_util, "ubertooth_util", "755");
-	    			
-        } catch(Exception e) {	Log.e(TAG, "error running RootTools commands for init", e); }
-
-    	// Load the libusb related libraries
-    	try {
-    		System.loadLibrary("glib-2.0");			System.loadLibrary("nl");
-    		System.loadLibrary("gmodule-2.0");		System.loadLibrary("usb");
-    		System.loadLibrary("usb-compat");		System.loadLibrary("wispy");
-    		System.loadLibrary("pcap");				System.loadLibrary("gpg-error");
-    		System.loadLibrary("gcrypt");			System.loadLibrary("tshark");
-    		System.loadLibrary("wireshark_helper");	System.loadLibrary("awmon");
-    	} catch (Exception e) { Log.e(TAG, "error trying to load a USB related library", e); }
            	
     	toastMessages = new ArrayBlockingQueue<String>(20);
         
@@ -140,33 +96,101 @@ public class AWMon extends Activity implements OnClickListener {
 		textStatus = (TextView) findViewById(R.id.textStatus);
 		textStatus.setText("");
 		buttonAddNetwork = (Button) findViewById(R.id.buttonAddNetwork); buttonAddNetwork.setOnClickListener(this);
-		buttonViewSpectrum = (Button) findViewById(R.id.buttonViewSpectrum); buttonViewSpectrum.setOnClickListener(this);
-		//buttonManageNets = (Button) findViewById(R.id.buttonManageNets); buttonManageNets.setOnClickListener(this);
 		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs); buttonManageDevs.setOnClickListener(this);
-		buttonADB = (Button) findViewById(R.id.buttonAdb); buttonADB.setOnClickListener(this);
-		buttonScanSpectrum = (Button) findViewById(R.id.buttonScan); buttonScanSpectrum.setOnClickListener(this);
 		
-		// Setup wireless devices
-		_wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		_bt = BluetoothAdapter.getDefaultAdapter();
-		
-		// Try to init the USB and the wireshark library.
-		if(initUSB()==-1)
-			textStatus.append("Failed to initialized USB subsystem...");				
-		if(wiresharkInit()!=1)
-			textStatus.append("Failed to initialized wireshark library...");
-		
-		// Create handles to our internal devices and mechanisms
-		_wifi = new Wifi(this);
-		_zigbee = new ZigBee(this);
-		_usbmon = new USBMon(this, _handler);
-		
-    	_networks_scan = new NetworksScan(_handler, _usbmon, _wifi, _zigbee, _bt);
-		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
-		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
-		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-		
+		// Finally, initialize and link some of the libraries (which can take a while)
+		InitLibraries init_thread = new InitLibraries();
+		init_thread.execute(this);
+    }
+    
+    protected class InitLibraries extends AsyncTask<Context, Integer, String> {
+		Context parent;
+		AWMon awmon;
+    	
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            _pd = ProgressDialog.show(AWMon.this, "", "Initializing application, please wait...", true, false); 
+        }
+        
+		@Override
+		protected String doInBackground( Context ... params ) {
+			parent = params[0];
+			awmon = (AWMon) params[0];
+			
+	        try {
+	        	Log.d(TAG, "Remounting file system...");
+		    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system",0);
+		    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb",0);
+		    	RootTools.sendShell("mount -o remount,rw rootfs /",0);
+		    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
+
+		    	// WARNING: these files do NOT get overwritten if they already exist on the file
+		    	// system with RootTools.  If you are updating ANY of these, you need to do:
+		    	//   adb uninstall com.gnychis.coexisyst
+		    	// And then any updates to these files will be installed on the next build/run.
+		    	Log.d(TAG, "Installing binaries");
+		    	RootTools.installBinary(parent, R.raw.disabled_protos, "disabled_protos");
+		    	RootTools.installBinary(parent, R.raw.iwconfig, "iwconfig", "755");
+		    	RootTools.installBinary(parent, R.raw.lsusb, "lsusb", "755");
+		    	RootTools.installBinary(parent, R.raw.lsusb_core, "lsusb_core", "755");
+		    	RootTools.installBinary(parent, R.raw.testlibusb, "testlibusb", "755");
+		    	RootTools.installBinary(parent, R.raw.htc_7010, "htc_7010.fw");
+		    	RootTools.installBinary(parent, R.raw.iwlist, "iwlist", "755");
+		    	RootTools.installBinary(parent, R.raw.iw, "iw", "755");
+		    	RootTools.installBinary(parent, R.raw.spectool_mine, "spectool_mine", "755");
+		    	RootTools.installBinary(parent, R.raw.spectool_raw, "spectool_raw", "755");
+		    	RootTools.installBinary(parent, R.raw.ubertooth_util, "ubertooth_util", "755");
+		    	RootTools.installBinary(parent, R.raw.link_libraries, "link_libraries.sh", "755");
+		    	
+		    	// Run a script that will link libraries in /system/lib so that our binaries can run
+		    	Log.d(TAG, "Creating links to libraries...");
+		    	awmon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_libraries.sh " + AWMon._app_name);
+		    			
+	        } catch(Exception e) {	Log.e(TAG, "error running RootTools commands for init", e); }
+
+	    	// Load the libusb related libraries
+	        Log.d(TAG, "Linking the libraries to the application");
+	    	try {
+	    		System.loadLibrary("glib-2.0");			System.loadLibrary("nl");
+	    		System.loadLibrary("gmodule-2.0");		System.loadLibrary("usb");
+	    		System.loadLibrary("usb-compat");		System.loadLibrary("wispy");
+	    		System.loadLibrary("pcap");				System.loadLibrary("gpg-error");
+	    		System.loadLibrary("gcrypt");			System.loadLibrary("tshark");
+	    		System.loadLibrary("wireshark_helper");	System.loadLibrary("awmon");
+	    	} catch (Exception e) { Log.e(TAG, "error trying to load a USB related library", e); }
+	    	
+			// Try to init the USB and the wireshark library.
+	    	Log.d(TAG, "Initializing USB and wireshark library");
+			if(initUSB()==-1)
+				textStatus.append("Failed to initialized USB subsystem...");				
+			if(wiresharkInit()!=1)
+				textStatus.append("Failed to initialized wireshark library...");
+			
+			return "OK";
+		}
+        
+        @Override
+        protected void onPostExecute(String resul) {
+        	
+    		// Setup internal wireless device handles
+    		_wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+    		_bt = BluetoothAdapter.getDefaultAdapter();
+    		
+    		// Create handles to our internal devices and mechanisms
+    		_wifi = new Wifi(awmon);
+    		_zigbee = new ZigBee(awmon);
+    		_usbmon = new USBMon(awmon, _handler);
+    		
+    		// Register various receivers to receive scan updates.
+        	_networks_scan = new NetworksScan(_handler, _usbmon, _wifi, _zigbee, _bt);
+    		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
+    		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
+    		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+    		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+    		
+        	_pd.dismiss();
+        }
     }
     
     // Everything related to clicking buttons in the main interface
@@ -180,19 +204,6 @@ public class AWMon extends Activity implements OnClickListener {
 			case R.id.buttonManageDevs:
 				Intent i = new Intent(AWMon.this, ManageNetworks.class);
 		        startActivity(i);
-				break;
-				
-			case R.id.buttonAdb:
-				String[] adb_cmds = { 	"setprop service.adb.tcp.port 5555",
-						"stop adbd",
-						"start adbd"};
-				try {
-					RootTools.sendShell(adb_cmds,0,0);
-				} catch(Exception e) {
-					Log.e(TAG, "error trying to set ADB over TCP");
-					return;
-				}
-				Log.d(TAG,"ADB set for TCP");
 				break;
 		}
 	}

@@ -50,7 +50,7 @@ public class Wifi {
 	public static final int MS_SLEEP_UNTIL_PCAPD = 1500;
 	
 	// A non-CM9 device likely to use wlan0
-	public static final String WLAN_IFACE_NAME = "wlan1";
+	public String _wlan_iface_name = "wlan1";
 	
 	AWMon coexisyst;
 	
@@ -274,6 +274,14 @@ public class Wifi {
 			return 0;
 	}
 	
+	public String get_iface() {
+		ArrayList<String> res = coexisyst.runCommand("find /sys/devices/platform -name \"*wlan*\" | grep hsusb | awk -F'/' '{print $NF}'");
+		if(res.size()==1)
+			return res.get(0);
+		else
+			return null;
+	}
+	
 	// Returns -1 if the interface specified doesn't exist, 1 if down, 0 if up
 	public int iface_down(String iface) {
 		if(!iface_exists(iface))
@@ -351,24 +359,27 @@ public class Wifi {
 			parent = params[0];
 			coexisyst = (AWMon) params[0];
 			
+			while((_wlan_iface_name=get_iface())==null)
+				trySleep(100);
+			
 			// Spin a little bit if it takes a second to bring the interface up
 			// after we catch the USB device being inserted.
-			while(!iface_exists(WLAN_IFACE_NAME))
+			while(!iface_exists(_wlan_iface_name))
 				trySleep(100);
 			
 			// If we already have the monitoring interface up, we are already initialized
-			if(iface_up(WLAN_IFACE_NAME)==1 && iface_up("moni0")==1) {
+			if(iface_up(_wlan_iface_name)==1 && iface_up("moni0")==1) {
 				debugOut("WiFi device is already connected and initialized...");
 				sendMainMessage(ThreadMessages.WIFIDEV_INITIALIZED);
 				return "true";				
 			}
 
 			// Otherwise, let's take wlan if it's not already
-			while(iface_down(WLAN_IFACE_NAME)==0) {
-				coexisyst.runCommand("netcfg " + WLAN_IFACE_NAME + " down");
+			while(iface_down(_wlan_iface_name)==0) {
+				coexisyst.runCommand("netcfg " + _wlan_iface_name + " down");
 				trySleep(100);
 			}
-			debugOut(WLAN_IFACE_NAME + " interface has been taken down");
+			debugOut(_wlan_iface_name + " interface has been taken down");
 			
 			// Get the phy interface name
 			List<String> r = coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
@@ -380,8 +391,8 @@ public class Wifi {
 			}
 			debugOut("interface set to monitor mode");
 			
-			while(iface_up(WLAN_IFACE_NAME)==0) {
-				coexisyst.runCommand("netcfg " + WLAN_IFACE_NAME + " up");
+			while(iface_up(_wlan_iface_name)==0) {
+				coexisyst.runCommand("netcfg " + _wlan_iface_name + " up");
 				trySleep(100);
 			}
 			
@@ -510,9 +521,9 @@ public class Wifi {
 				}, 500, SCAN_UPDATE_TIME);
 				_timer_counts = SCAN_WAIT_COUNTS;
 				if(_active_scan)
-					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + WLAN_IFACE_NAME + " scan trigger");
+					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger");
 				else
-					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + WLAN_IFACE_NAME + " scan trigger passive");
+					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger passive");
 					
 			} else {
 				_scan_timer = new Timer();
@@ -524,9 +535,9 @@ public class Wifi {
 		
 				}, Wifi.SCAN_WAIT_TIME);  // 6.5 seconds seems enough to let all of the packets trickle in from the scan
 				if(_active_scan)
-					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + WLAN_IFACE_NAME + " scan trigger");
+					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger");
 				else
-					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + WLAN_IFACE_NAME + " scan trigger passive");
+					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger passive");
 			}
 		}
 		
