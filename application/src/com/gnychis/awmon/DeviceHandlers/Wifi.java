@@ -262,46 +262,6 @@ public class Wifi {
 		return _device_connected;
 	}
 	
-	// Returns -1 if the interface specified doesn't exist, 1 if up, 0 if down
-	public int iface_up(String iface) {
-		if(!iface_exists(iface))
-			return -1;
-		
-		ArrayList<String> res = coexisyst.runCommand("netcfg | grep \"^" + iface + "\" | grep UP");
-		if(res.size()==1)
-			return 1;
-		else
-			return 0;
-	}
-	
-	public String get_iface() {
-		ArrayList<String> res = coexisyst.runCommand("find /sys/devices/platform -name \"*wlan*\" | grep hsusb | awk -F'/' '{print $NF}'");
-		if(res.size()==1)
-			return res.get(0);
-		else
-			return null;
-	}
-	
-	// Returns -1 if the interface specified doesn't exist, 1 if down, 0 if up
-	public int iface_down(String iface) {
-		if(!iface_exists(iface))
-			return -1;
-		
-		ArrayList<String> res = coexisyst.runCommand("netcfg | grep \"^" + iface + "\" | grep DOWN");
-		if(res.size()==1)
-			return 1;
-		else
-			return 0;
-	}
-	
-	public boolean iface_exists(String iface) {
-		ArrayList<String> res = coexisyst.runCommand("netcfg | grep \"^" + iface + "\"");
-		if(res.size()==1)
-			return true;
-		else
-			return false;	
-	}
-	
 	public void setChannel(int channel) {
 		coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
 	}
@@ -338,18 +298,13 @@ public class Wifi {
 	protected class WifiInit extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
-		AWMon coexisyst;
-		
-		private void debugOut(String msg) {
-			if(VERBOSE)
-				Log.d("WifiInit", msg);
-		}
-		
+		AWMon awmon;
+
 		// Used to send messages to the main Activity (UI) thread
 		protected void sendMainMessage(AWMon.ThreadMessages t) {
 			Message msg = new Message();
 			msg.what = t.ordinal();
-			coexisyst._handler.sendMessage(msg);
+			awmon._handler.sendMessage(msg);
 		}
 		
 		// Initialize the hardware
@@ -357,56 +312,9 @@ public class Wifi {
 		protected String doInBackground( Context ... params )
 		{
 			parent = params[0];
-			coexisyst = (AWMon) params[0];
+			awmon = (AWMon) params[0];
 			
-			while((_wlan_iface_name=get_iface())==null)
-				trySleep(100);
-			
-			// Spin a little bit if it takes a second to bring the interface up
-			// after we catch the USB device being inserted.
-			while(!iface_exists(_wlan_iface_name))
-				trySleep(100);
-			
-			// If we already have the monitoring interface up, we are already initialized
-			if(iface_up(_wlan_iface_name)==1 && iface_up("moni0")==1) {
-				debugOut("WiFi device is already connected and initialized...");
-				sendMainMessage(ThreadMessages.WIFIDEV_INITIALIZED);
-				return "true";				
-			}
-
-			// Otherwise, let's take wlan if it's not already
-			while(iface_down(_wlan_iface_name)==0) {
-				coexisyst.runCommand("netcfg " + _wlan_iface_name + " down");
-				trySleep(100);
-			}
-			debugOut(_wlan_iface_name + " interface has been taken down");
-			
-			// Get the phy interface name
-			List<String> r = coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
-			_iw_phy = r.get(0);
-			
-			while(!iface_exists("moni0")) {
-				coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + _iw_phy + " interface add moni0 type monitor");
-				trySleep(100);
-			}
-			debugOut("interface set to monitor mode");
-			
-			while(iface_up(_wlan_iface_name)==0) {
-				coexisyst.runCommand("netcfg " + _wlan_iface_name + " up");
-				trySleep(100);
-			}
-			
-			while(iface_up("moni0")==0) {
-				coexisyst.runCommand("netcfg moni0 up");
-				trySleep(100);
-			}			
-			debugOut("interface is now up");
-			
-			
-			// Get the location of the rx packets file
-			List<String> l = coexisyst.runCommand("busybox find /sys -name rx_packets | busybox grep moni0");
-			_rxpackets_loc = l.get(0);
-
+			awmon.runCommand("sh /data/data/" + AWMon._app_name + "/files/init_wifi.sh " + AWMon._app_name);
 			sendMainMessage(ThreadMessages.WIFIDEV_INITIALIZED);
 			return "true";
 		}		
