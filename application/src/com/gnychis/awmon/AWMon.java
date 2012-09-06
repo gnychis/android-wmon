@@ -26,7 +26,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
@@ -38,38 +37,31 @@ import com.stericson.RootTools.RootTools;
 
 public class AWMon extends Activity implements OnClickListener {
 	
-	private static final String TAG = "WiFiDemo";
-	
-	// Make instances of our helper classes
-	DBAdapter db;
-	WifiManager wifi;
-	BluetoothAdapter bt;
-	protected USBMon usbmon;
-	
+	private static final String TAG = "AWMon";
 	public static String _app_name = "com.gnychis.awmon";
 	
-	private ProgressDialog pd;
+	// Internal Android mechanisms
+	public DBAdapter _db;
+	public WifiManager _wifiManager;
 	
-	public TextView textStatus;
-	
-	Button buttonAddNetwork; 
-	Button buttonManageNets; 
-	Button buttonManageDevs;
-	Button buttonScanSpectrum;
-	Button buttonViewSpectrum;
-	Button buttonADB;
-	
-	// USB device related
-	public Wifi ath;
-	public ZigBee zigbee;
-	
-	NetworksScan _networks_scan;
-	
-	// For remembering whether to renable interfaces
-	boolean _wifi_reenable;
-	boolean _bt_reenable;
-	
+	// Instances to our devices
+	public Wifi _wifi;
+	public ZigBee _zigbee;
+	public BluetoothAdapter _bt;
+	public NetworksScan _networks_scan;
+	protected USBMon _usbmon;
+
+	// Interface related
 	public BlockingQueue<String> toastMessages;
+	private ProgressDialog _pd;
+	public TextView textStatus;
+	private Button buttonAddNetwork; 
+	private Button buttonManageNets; 
+	private Button buttonManageDevs;
+	private Button buttonScanSpectrum;
+	private Button buttonViewSpectrum;
+	private Button buttonADB;
+		
 	
 	public enum ThreadMessages {
 		WIFI_SCAN_START,
@@ -141,8 +133,8 @@ public class AWMon extends Activity implements OnClickListener {
     	toastMessages = new ArrayBlockingQueue<String>(20);
         
         // Setup the database
-    	db = new DBAdapter(this);
-    	db.open();
+    	_db = new DBAdapter(this);
+    	_db.open();
       
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
@@ -155,27 +147,21 @@ public class AWMon extends Activity implements OnClickListener {
 		buttonScanSpectrum = (Button) findViewById(R.id.buttonScan); buttonScanSpectrum.setOnClickListener(this);
 		
 		// Setup wireless devices
-		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		bt = BluetoothAdapter.getDefaultAdapter();
+		_wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		_bt = BluetoothAdapter.getDefaultAdapter();
 		
-		// Check the states of the interfaces
-		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
-		_bt_reenable = (bt.isEnabled()) ? true : false;
-
-		textStatus.append(initUSB());
+		// Try to init the USB and the wireshark library.
+		if(initUSB()==-1)
+			textStatus.append("Failed to initialized USB subsystem...");				
+		if(wiresharkInit()!=1)
+			textStatus.append("Failed to initialized wireshark library...");
 		
-		// Start the USB monitor thread, but only instantiate the wispy scan
-		ath = new Wifi(this);
-		zigbee = new ZigBee(this);
-				
-		if(wiresharkInit()==1)
-			Log.d(TAG, "success with wireshark library");
-		else
-			Log.d(TAG, "error with wireshark library");
+		// Create handles to our internal devices and mechanisms
+		_wifi = new Wifi(this);
+		_zigbee = new ZigBee(this);
+		_usbmon = new USBMon(this, _handler);
 		
-		usbmon = new USBMon(this, _handler);
-		
-    	_networks_scan = new NetworksScan(_handler, usbmon, ath, zigbee, bt);
+    	_networks_scan = new NetworksScan(_handler, _usbmon, _wifi, _zigbee, _bt);
 		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
@@ -186,34 +172,28 @@ public class AWMon extends Activity implements OnClickListener {
     // Everything related to clicking buttons in the main interface
 	public void onClick(View view) {
 		
-		Log.d(TAG,"Got a click");
-		
-		if (view.getId() == R.id.buttonAddNetwork) {
-			clickAddNetwork();
-		}
-		//if(view.getId() == R.id.buttonManageNets) {
-		//	clickManageNets();
-		//}
-		if(view.getId() == R.id.buttonManageDevs) {
-			clickManageDevs();
-		}
-		if(view.getId() == R.id.buttonScan) {
-			//scanSpectrum();
-		}
-		if(view.getId() == R.id.buttonViewSpectrum) {
-			//clickViewSpectrum();
-		}
-		if(view.getId() == R.id.buttonAdb) {
-			String[] adb_cmds = { 	"setprop service.adb.tcp.port 5555",
-									"stop adbd",
-									"start adbd"};
-			try {
-				RootTools.sendShell(adb_cmds,0,0);
-			} catch(Exception e) {
-				Log.e(TAG, "error trying to set ADB over TCP");
-				return;
-			}
-			Log.d(TAG,"ADB set for TCP");
+		switch(view.getId()) {
+			case R.id.buttonAddNetwork:
+				clickAddNetwork();
+				break;
+			
+			case R.id.buttonManageDevs:
+				Intent i = new Intent(AWMon.this, ManageNetworks.class);
+		        startActivity(i);
+				break;
+				
+			case R.id.buttonAdb:
+				String[] adb_cmds = { 	"setprop service.adb.tcp.port 5555",
+						"stop adbd",
+						"start adbd"};
+				try {
+					RootTools.sendShell(adb_cmds,0,0);
+				} catch(Exception e) {
+					Log.e(TAG, "error trying to set ADB over TCP");
+					return;
+				}
+				Log.d(TAG,"ADB set for TCP");
+				break;
 		}
 	}
 	
@@ -235,15 +215,15 @@ public class AWMon extends Activity implements OnClickListener {
 					
 				//////////////////////////////////////////////////////
 				case WIFIDEV_CONNECTED:
-					pd = ProgressDialog.show(AWMon.this, "", "Initializing Wifi device...", true, false); 
-					usbmon.stopUSBMon();
-					ath.connected();
+					_pd = ProgressDialog.show(AWMon.this, "", "Initializing Wifi device...", true, false); 
+					_usbmon.stopUSBMon();
+					_wifi.connected();
 					break;
 					
 				case WIFIDEV_INITIALIZED:
 					Toast.makeText(getApplicationContext(), "Successfully initialized Wifi device", Toast.LENGTH_LONG).show();	
-					pd.dismiss();
-					usbmon.startUSBMon();
+					_pd.dismiss();
+					_usbmon.startUSBMon();
 					break;
 					
 				case WIFIDEV_FAILED:
@@ -252,20 +232,20 @@ public class AWMon extends Activity implements OnClickListener {
 					
 				//////////////////////////////////////////////////////
 				case ZIGBEE_CONNECTED:
-					pd = ProgressDialog.show(AWMon.this, "", "Initializing ZigBee device...", true, false);  
-					usbmon.stopUSBMon();
-					zigbee.connected();
+					_pd = ProgressDialog.show(AWMon.this, "", "Initializing ZigBee device...", true, false);  
+					_usbmon.stopUSBMon();
+					_zigbee.connected();
 					break;
 					
 				case ZIGBEE_WAIT_RESET:
-					pd.dismiss();
-					pd = ProgressDialog.show(AWMon.this, "", "Press ZigBee reset button...", true, false); 
+					_pd.dismiss();
+					_pd = ProgressDialog.show(AWMon.this, "", "Press ZigBee reset button...", true, false); 
 					break;
 					
 				case ZIGBEE_INITIALIZED:
-					pd.dismiss();
+					_pd.dismiss();
 					Toast.makeText(getApplicationContext(), "Successfully initialized ZigBee device", Toast.LENGTH_LONG).show();	
-					usbmon.startUSBMon();
+					_usbmon.startUSBMon();
 					break;
 					
 				case ZIGBEE_FAILED:
@@ -275,11 +255,11 @@ public class AWMon extends Activity implements OnClickListener {
 					
 				//////////////////////////////////////////////////////
 				case INCREMENT_SCAN_PROGRESS:
-					pd.incrementProgressBy(1);
+					_pd.incrementProgressBy(1);
 					break;
 				
 				case NETWORK_SCANS_COMPLETE:
-					pd.dismiss();
+					_pd.dismiss();
 					try {
 						Log.d(TAG,"Trying to load add networks window");
 						Intent i = new Intent(AWMon.this, AddNetwork.class);
@@ -315,7 +295,7 @@ public class AWMon extends Activity implements OnClickListener {
 	}
 	
 	public void showProgressUpdate(String s) {
-		pd = ProgressDialog.show(this, "", s, true, false);  
+		_pd = ProgressDialog.show(this, "", s, true, false);  
 	}
 	
 
@@ -374,9 +354,9 @@ public class AWMon extends Activity implements OnClickListener {
 		
 		// Create a progress dialog to show progress of the scan
 		// to the user.
-		pd = new ProgressDialog(this);
-		pd.setCancelable(false);
-		pd.setMessage("Scanning for networks...");
+		_pd = new ProgressDialog(this);
+		_pd.setCancelable(false);
+		_pd.setMessage("Scanning for networks...");
 		
 		// Call the networks scan class to initiate a new scan
 		// which, based on the devices connected for scanning,
@@ -387,20 +367,14 @@ public class AWMon extends Activity implements OnClickListener {
 			return;
 		}
 		if(max_progress > 0) {
-			pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			pd.setProgress(0);
-			pd.setMax(max_progress);
+			_pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			_pd.setProgress(0);
+			_pd.setMax(max_progress);
 		}
-		pd.show();
+		_pd.show();
 	}
 	
-	public void clickManageDevs() {
-		Log.d(TAG,"Trying to load manage networks window");
-        Intent i = new Intent(AWMon.this, ManageNetworks.class);
-        startActivity(i);
-	}
-	
-	public native String  initUSB();
+	public native int  initUSB();
 	public native String[] getDeviceNames();
 	public native String[] getWiSpyList();
 	public native int USBcheckForDevice(int vid, int pid);

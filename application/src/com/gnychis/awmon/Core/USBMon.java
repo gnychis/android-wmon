@@ -84,15 +84,15 @@ public class USBMon
 		//	atheros_in_devlist = checkAR9280();  // this is a more expensive check, only do when necessary
 
 		// Wifi device check
-		if(wifidev_in_devlist==1 && _coexisyst.ath._device_connected==false)
+		if(wifidev_in_devlist==1 && _coexisyst._wifi._device_connected==false)
 			updateState(Wifi.WIFIDEV_CONNECT);
-		else if(wifidev_in_devlist==0 && _coexisyst.ath._device_connected==true)
+		else if(wifidev_in_devlist==0 && _coexisyst._wifi._device_connected==true)
 			updateState(Wifi.WIFIDEV_DISCONNECT);
 
 		// Econotag check
-		if(econotag_in_devlist==1 && _coexisyst.zigbee._device_connected==false)
+		if(econotag_in_devlist==1 && _coexisyst._zigbee._device_connected==false)
 			updateState(ZigBee.ZIGBEE_CONNECT);
-		else if(econotag_in_devlist==0 && _coexisyst.zigbee._device_connected==true)
+		else if(econotag_in_devlist==0 && _coexisyst._zigbee._device_connected==true)
 			updateState(ZigBee.ZIGBEE_DISCONNECT);
  
 	}
@@ -110,7 +110,7 @@ public class USBMon
 		else if(event == Wifi.WIFIDEV_DISCONNECT) {
 			debugOut("Wifi device now disconnected");
 			_coexisyst.sendToastMessage(_handler, "Wifi device disconnected");
-			_coexisyst.ath.disconnected();
+			_coexisyst._wifi.disconnected();
 		}
 		
 		// Handling events for ZigBee device
@@ -123,7 +123,7 @@ public class USBMon
 		else if(event == ZigBee.ZIGBEE_DISCONNECT) {
 			debugOut("ZigBee device now disconnected");
 			_coexisyst.sendToastMessage(_handler, "ZigBee device disconnected");
-			_coexisyst.zigbee.disconnected();
+			_coexisyst._zigbee.disconnected();
 		}
 	}
 	public native void USBList();

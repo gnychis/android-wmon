@@ -42,7 +42,7 @@ int sample = 0;
  *
  *   apps/samples/hello-jni/project/src/com/example/HelloJni/HelloJni.java
  */
-jstring
+jint
 Java_com_gnychis_awmon_AWMon_initUSB( JNIEnv* env, jobject thiz )
 {
   int r;
@@ -50,10 +50,10 @@ Java_com_gnychis_awmon_AWMon_initUSB( JNIEnv* env, jobject thiz )
   r = libusb_init(NULL);
   if(r < 0) {
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "failed to initialize libusb");
-    return (*env)->NewStringUTF(env, "Failed to initialize libusb!");
+    return -1;
   } else {
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "successfully initialized libusb");
-    return (*env)->NewStringUTF(env, "AWMon system library and USB enabled...");
+    return 1;
   }
 }
 
