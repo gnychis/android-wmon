@@ -4,7 +4,6 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -25,7 +24,6 @@ import com.gnychis.coexisyst.CoexiSyst;
 import com.gnychis.coexisyst.CoexiSyst.ThreadMessages;
 import com.gnychis.coexisyst.Core.Packet;
 import com.gnychis.coexisyst.ScanReceivers.WiFiScanReceiver;
-import com.stericson.RootTools.RootTools;
 
 /* 
  * record received packets
@@ -269,7 +267,7 @@ public class Wifi {
 		if(!iface_exists(iface))
 			return -1;
 		
-		ArrayList<String> res = runCommand("netcfg | grep \"^" + iface + "\" | grep UP");
+		ArrayList<String> res = coexisyst.runCommand("netcfg | grep \"^" + iface + "\" | grep UP");
 		if(res.size()==1)
 			return 1;
 		else
@@ -281,7 +279,7 @@ public class Wifi {
 		if(!iface_exists(iface))
 			return -1;
 		
-		ArrayList<String> res = runCommand("netcfg | grep \"^" + iface + "\" | grep DOWN");
+		ArrayList<String> res = coexisyst.runCommand("netcfg | grep \"^" + iface + "\" | grep DOWN");
 		if(res.size()==1)
 			return 1;
 		else
@@ -289,7 +287,7 @@ public class Wifi {
 	}
 	
 	public boolean iface_exists(String iface) {
-		ArrayList<String> res = runCommand("netcfg | grep \"^" + iface + "\"");
+		ArrayList<String> res = coexisyst.runCommand("netcfg | grep \"^" + iface + "\"");
 		if(res.size()==1)
 			return true;
 		else
@@ -297,7 +295,7 @@ public class Wifi {
 	}
 	
 	public void setChannel(int channel) {
-		runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
+		coexisyst.runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
 	}
 	
 	public void disconnected() {
@@ -324,33 +322,6 @@ public class Wifi {
 		String newMac = macAddress.replaceAll(":", "");
 		BigInteger ret = new BigInteger(newMac, 16);  // 16 specifies hex
 		return ret;
-	}
-	
-	public ArrayList<String> runCommand(String c) {
-		ArrayList<String> res = new ArrayList<String>();
-		try {
-			// First, run the command push the result to an ArrayList
-			List<String> res_list = RootTools.sendShell(c,0);
-			Iterator<String> it=res_list.iterator();
-			while(it.hasNext()) 
-				res.add((String)it.next());
-			
-			res.remove(res.size()-1);
-			
-			// Trim the ArrayList of an extra blank lines at the end
-			while(true) {
-				int index = res.size()-1;
-				if(index>=0 && res.get(index).length()==0)
-					res.remove(index);
-				else
-					break;
-			}
-			return res;
-			
-		} catch(Exception e) {
-			Log.e("WifiDev", "error writing to RootTools the command: " + c, e);
-			return null;
-		}
 	}
 
 	
@@ -394,35 +365,35 @@ public class Wifi {
 
 			// Otherwise, let's take wlan if it's not already
 			while(iface_down(WLAN_IFACE_NAME)==0) {
-				runCommand("netcfg " + WLAN_IFACE_NAME + " down");
+				coexisyst.runCommand("netcfg " + WLAN_IFACE_NAME + " down");
 				trySleep(100);
 			}
 			debugOut(WLAN_IFACE_NAME + " interface has been taken down");
 			
 			// Get the phy interface name
-			List<String> r = runCommand("/data/data/com.gnychis.coexisyst/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
+			List<String> r = coexisyst.runCommand("/data/data/com.gnychis.coexisyst/files/iw list | busybox head -n 1 | busybox awk '{print $2}'");
 			_iw_phy = r.get(0);
 			
 			while(!iface_exists("moni0")) {
-				runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " interface add moni0 type monitor");
+				coexisyst.runCommand("/data/data/com.gnychis.coexisyst/files/iw phy " + _iw_phy + " interface add moni0 type monitor");
 				trySleep(100);
 			}
 			debugOut("interface set to monitor mode");
 			
 			while(iface_up(WLAN_IFACE_NAME)==0) {
-				runCommand("netcfg " + WLAN_IFACE_NAME + " up");
+				coexisyst.runCommand("netcfg " + WLAN_IFACE_NAME + " up");
 				trySleep(100);
 			}
 			
 			while(iface_up("moni0")==0) {
-				runCommand("netcfg moni0 up");
+				coexisyst.runCommand("netcfg moni0 up");
 				trySleep(100);
 			}			
 			debugOut("interface is now up");
 			
 			
 			// Get the location of the rx packets file
-			List<String> l = runCommand("busybox find /sys -name rx_packets | busybox grep moni0");
+			List<String> l = coexisyst.runCommand("busybox find /sys -name rx_packets | busybox grep moni0");
 			_rxpackets_loc = l.get(0);
 
 			sendMainMessage(ThreadMessages.WIFIDEV_INITIALIZED);
@@ -539,9 +510,9 @@ public class Wifi {
 				}, 500, SCAN_UPDATE_TIME);
 				_timer_counts = SCAN_WAIT_COUNTS;
 				if(_active_scan)
-					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger");
+					coexisyst.runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger");
 				else
-					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger passive");
+					coexisyst.runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger passive");
 					
 			} else {
 				_scan_timer = new Timer();
@@ -553,9 +524,9 @@ public class Wifi {
 		
 				}, Wifi.SCAN_WAIT_TIME);  // 6.5 seconds seems enough to let all of the packets trickle in from the scan
 				if(_active_scan)
-					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger");
+					coexisyst.runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger");
 				else
-					runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger passive");
+					coexisyst.runCommand("/data/data/com.gnychis.coexisyst/files/iw dev " + WLAN_IFACE_NAME + " scan trigger passive");
 			}
 		}
 		

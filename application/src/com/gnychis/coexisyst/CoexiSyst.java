@@ -31,8 +31,6 @@ import com.gnychis.coexisyst.Core.USBMon;
 import com.gnychis.coexisyst.DeviceHandlers.Wifi;
 import com.gnychis.coexisyst.DeviceHandlers.ZigBee;
 import com.gnychis.coexisyst.Interfaces.AddNetwork;
-import com.gnychis.coexisyst.Interfaces.GraphWispy;
-import com.gnychis.coexisyst.Interfaces.IChart;
 import com.gnychis.coexisyst.Interfaces.ManageNetworks;
 import com.gnychis.coexisyst.ScanReceivers.NetworksScan;
 import com.stericson.RootTools.RootTools;
@@ -61,7 +59,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 	// USB device related
 	public Wifi ath;
 	public ZigBee zigbee;
-	public IChart wispyGraph;
 	
 	NetworksScan _networks_scan;
 	
@@ -163,8 +160,6 @@ public class CoexiSyst extends Activity implements OnClickListener {
 		buttonADB = (Button) findViewById(R.id.buttonAdb); buttonADB.setOnClickListener(this);
 		buttonScanSpectrum = (Button) findViewById(R.id.buttonScan); buttonScanSpectrum.setOnClickListener(this);
 		
-		wispyGraph = new GraphWispy();
-
 		// Setup wireless devices
 		wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		bt = BluetoothAdapter.getDefaultAdapter();
@@ -281,6 +276,10 @@ public class CoexiSyst extends Activity implements OnClickListener {
 					pd.dismiss();
 					Toast.makeText(getApplicationContext(), "Successfully initialized ZigBee device", Toast.LENGTH_LONG).show();	
 					usbmon.startUSBMon();
+					break;
+					
+				case ZIGBEE_FAILED:
+					Toast.makeText(getApplicationContext(), "Failed to initialize ZigBee device", Toast.LENGTH_LONG).show();	
 					break;
 					
 					

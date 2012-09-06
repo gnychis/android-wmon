@@ -77,10 +77,8 @@ public class USBMon
 	
 	public void usbPoll( )
 	{
-		int wispy_in_devlist=_coexisyst.USBcheckForDevice(0x1781, 0x083f);
 		int wifidev_in_devlist = _coexisyst.USBcheckForDevice(0x13b1,0x002f) + _coexisyst.USBcheckForDevice(0x0411,0x017f);
 		int econotag_in_devlist = _coexisyst.USBcheckForDevice(0x0403, 0x6010);
-		int ubertooth_in_devlist = _coexisyst.USBcheckForDevice(0xffff, 0x0004);
 				
 		//if(atheros_in_devlist==0)
 		//	atheros_in_devlist = checkAR9280();  // this is a more expensive check, only do when necessary
