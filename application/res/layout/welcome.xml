@@ -9,7 +9,7 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10pt"
+        android:layout_marginTop="30dp"
         android:text="My home Wifi network is ..."
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -98,8 +98,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
-        android:layout_marginTop="40dp"
-        android:text="NOTE:  Your home network needs to be correct for this to work, but it is never shared with us."
+        android:layout_marginTop="45dp"
+        android:text="NOTE:  Your home network needs to be correct!"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </LinearLayout>

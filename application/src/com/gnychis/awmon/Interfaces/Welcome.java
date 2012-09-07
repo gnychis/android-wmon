@@ -89,7 +89,15 @@ public class Welcome extends Activity {
     // When the user clicks finished, we save some information locally.  The home network name is
     // only saved locally (so that our application can work), and it is never shared back with us.
     public void clickedFinished(View v) {
-    	finish();
+    	String home_ssid = (String) netlist.getSelectedItem();
+    	
+    	// If they do not see their home network, we ask them to first associate the phone to
+    	// their home network.
+    	if(home_ssid.equalsIgnoreCase("* I don't see my home network! *")) {
+    		buildAlertMessageNoNetwork();
+    	} else {
+    		finish();
+    	}
     }
     
     // This sends us your optional "survey" like results.  It does so anonymously by accompanying them
@@ -156,6 +164,24 @@ public class Welcome extends Activity {
         alert.show();
     }
     
+    private void buildAlertMessageNoNetwork() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Your phone must first be associated to your home wireless network.  Would you like to do this now?")
+               .setCancelable(false)
+               .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                   public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                	   startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                   }
+               })
+               .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                   public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                       	dialog.cancel();
+                   }
+               });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+    
     // For converting an incoming input stream to a string
     public static String convertStreamToString(InputStream is) {
   	    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -189,4 +215,10 @@ public class Welcome extends Activity {
     			return 0;
     	}
       };
+      
+      @Override
+      public void onPause() { super.onPause(); Log.d("AWMonWelcome", "onPause()"); }
+      @Override
+      public void onResume() { super.onResume(); Log.d("AWMonWelcome", "onResume()"); }
+      
 }
