@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="hello">Hello World, CoexiSyst!</string>
-    <string name="app_name">CoexiSyst</string>
+    <string name="app_name">Android Wireless Monitor</string>
 	<string-array name="countries_array">
         <item>Bahrain</item>
         <item>Bangladesh</item>
@@ -12,4 +12,14 @@
         <item>Benin</item>
     </string-array>
         <string name="sdata">Spectrum Data</string>
+    <string-array name="age_ranges">
+    <item>…</item>
+    <item>0–17</item>
+    <item>18–24</item>
+    <item>25–34</item>
+    <item>35–44</item>
+    <item>45–54</item>
+    <item>55–64</item>
+    <item>65+</item>
+    </string-array>
 </resources>

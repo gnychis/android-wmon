@@ -297,25 +297,13 @@ public class Wifi {
 	// that will be used for monitoring.
 	protected class WifiInit extends AsyncTask<Context, Integer, String>
 	{
-		Context parent;
-		AWMon awmon;
-
-		// Used to send messages to the main Activity (UI) thread
-		protected void sendMainMessage(AWMon.ThreadMessages t) {
-			Message msg = new Message();
-			msg.what = t.ordinal();
-			awmon._handler.sendMessage(msg);
-		}
-		
 		// Initialize the hardware
 		@Override
 		protected String doInBackground( Context ... params )
 		{
-			parent = params[0];
-			awmon = (AWMon) params[0];
-			
+			AWMon awmon = (AWMon) params[0];
 			awmon.runCommand("sh /data/data/" + AWMon._app_name + "/files/init_wifi.sh " + AWMon._app_name);
-			sendMainMessage(ThreadMessages.WIFIDEV_INITIALIZED);
+			AWMon.sendMainMessage(awmon._handler, ThreadMessages.WIFIDEV_INITIALIZED);
 			return "true";
 		}		
 	}

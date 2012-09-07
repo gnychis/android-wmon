@@ -29,10 +29,12 @@ import android.widget.Toast;
 
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.USBMon;
+import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
 import com.gnychis.awmon.DeviceHandlers.ZigBee;
 import com.gnychis.awmon.Interfaces.AddNetwork;
 import com.gnychis.awmon.Interfaces.ManageNetworks;
+import com.gnychis.awmon.Interfaces.Welcome;
 import com.gnychis.awmon.ScanReceivers.NetworksScan;
 import com.stericson.RootTools.RootTools;
 
@@ -41,11 +43,12 @@ public class AWMon extends Activity implements OnClickListener {
 	private static final String TAG = "AWMon";
 	public static String _app_name = "com.gnychis.awmon";
 	
-	// Internal Android mechanisms
+	// Internal Android mechanisms for settings/storage
 	public DBAdapter _db;
-	public WifiManager _wifiManager;
+	public UserSettings _settings;
 	
 	// Instances to our devices
+	public WifiManager _wifiManager;
 	public Wifi _wifi;
 	public ZigBee _zigbee;
 	public BluetoothAdapter _bt;
@@ -57,8 +60,8 @@ public class AWMon extends Activity implements OnClickListener {
 	private ProgressDialog _pd;
 	public TextView textStatus;
 	private Button buttonAddNetwork; 
-	private Button buttonManageDevs;		
-	
+	private Button buttonManageDevs;	
+		
 	public enum ThreadMessages {
 		WIFI_SCAN_START,
 		WIFI_SCAN_COMPLETE,
@@ -91,6 +94,9 @@ public class AWMon extends Activity implements OnClickListener {
         // Setup the database
     	_db = new DBAdapter(this);
     	_db.open();
+    	
+    	// Initialize the user settings
+    	_settings = new UserSettings(this);
       
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
@@ -101,6 +107,17 @@ public class AWMon extends Activity implements OnClickListener {
 		// Finally, initialize and link some of the libraries (which can take a while)
 		InitLibraries init_thread = new InitLibraries();
 		init_thread.execute(this);
+    }
+    
+    // This runs after the initialization of the libraries, etc.
+    public void postInitialization() {
+    	
+    	if(_settings.haveUserSettings())  // Do we have user settings?
+    		return;
+    	
+    	// If we do not have the user settings, we open up an activity to query for them
+		Intent i = new Intent(AWMon.this, Welcome.class);
+        startActivity(i);
     }
     
     protected class InitLibraries extends AsyncTask<Context, Integer, String> {
@@ -115,6 +132,7 @@ public class AWMon extends Activity implements OnClickListener {
         
 		@Override
 		protected String doInBackground( Context ... params ) {
+			String r="";
 			parent = params[0];
 			awmon = (AWMon) params[0];
 			
@@ -162,17 +180,16 @@ public class AWMon extends Activity implements OnClickListener {
 	    	} catch (Exception e) { Log.e(TAG, "error trying to load a USB related library", e); }
 	    	
 			// Try to init the USB and the wireshark library.
-	    	Log.d(TAG, "Initializing USB and wireshark library");
 			if(initUSB()==-1)
-				textStatus.append("Failed to initialized USB subsystem...");				
+				r += "Failed to initialize USB subsystem...\n";			
 			if(wiresharkInit()!=1)
-				textStatus.append("Failed to initialized wireshark library...");
+				r += "Failed to initialize wireshark library...\n";
 			
-			return "OK";
+			return r;
 		}
         
         @Override
-        protected void onPostExecute(String resul) {
+        protected void onPostExecute(String result) {
         	
     		// Setup internal wireless device handles
     		_wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -190,7 +207,10 @@ public class AWMon extends Activity implements OnClickListener {
     		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
     		
-        	_pd.dismiss();
+    		textStatus.setText(result);	// Put any error messages in to the text status box
+        	_pd.dismiss();				// Get rid of the spinner
+        	
+        	postInitialization();	// Run a method to do things post initialization on main activity
         }
     }
     
@@ -384,6 +404,13 @@ public class AWMon extends Activity implements OnClickListener {
 			_pd.setMax(max_progress);
 		}
 		_pd.show();
+	}
+	
+	// Used to send messages to the main Activity (UI) thread
+	public static void sendMainMessage(Handler handler, AWMon.ThreadMessages t) {
+		Message msg = new Message();
+		msg.what = t.ordinal();
+		handler.sendMessage(msg);
 	}
 	
 	public native int  initUSB();
