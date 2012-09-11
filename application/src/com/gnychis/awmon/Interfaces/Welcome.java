@@ -44,6 +44,7 @@ public class Welcome extends Activity {
     Spinner netlist, agelist;
 	private UserSettings _settings;
 	WifiManager _wifi;
+	boolean _reverse_sort;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -54,19 +55,8 @@ public class Welcome extends Activity {
 	  
 	  ExceptionHandler.register(this, "http://moo.cmcl.cs.cmu.edu/pastudy/"); 
 	  
-	  // Create an instance to the Wifi manager and get a list of networks that the user
-	  // has associated to.  Pull this up as their list.
-	  _wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-      List<WifiConfiguration> cfgNets = _wifi.getConfiguredNetworks();
-      netlist = (Spinner) findViewById(R.id.network_list);
-      ArrayList<String> spinnerArray = new ArrayList<String>();
-      Collections.sort(cfgNets,netsort);
-      for (WifiConfiguration config: cfgNets)
-      	spinnerArray.add(config.SSID.replaceAll("^\"|\"$", ""));
-      spinnerArray.add("* I don't see my home network! *");
-      ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinnerArray);
-      spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      netlist.setAdapter(spinnerArrayAdapter);
+	  _reverse_sort=false;
+	  updateNetworkList();
       
       // Setup the age-range list and put it in a drop-down menu for them to select.
       agelist = (Spinner) findViewById(R.id.age_group);
@@ -84,6 +74,25 @@ public class Welcome extends Activity {
       String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
       if (!provider.contains("network"))
       	buildAlertMessageNoGps();  
+	}
+	
+	public void updateNetworkList() {
+		  // Create an instance to the Wifi manager and get a list of networks that the user
+		  // has associated to.  Pull this up as their list.
+		  _wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+	      List<WifiConfiguration> cfgNets = _wifi.getConfiguredNetworks();
+	      netlist = (Spinner) findViewById(R.id.network_list);
+	      ArrayList<String> spinnerArray = new ArrayList<String>();
+	      if(!_reverse_sort)
+	    	  Collections.sort(cfgNets,netsort);
+	      else
+	    	  Collections.sort(cfgNets,netsort_reverse);
+	      for (WifiConfiguration config: cfgNets)
+	      	spinnerArray.add(config.SSID.replaceAll("^\"|\"$", ""));
+	      spinnerArray.add("* I don't see my home network! *");
+	      ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinnerArray);
+	      spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+	      netlist.setAdapter(spinnerArrayAdapter);
 	}
 	
     // When the user clicks finished, we save some information locally.  The home network name is
@@ -170,6 +179,7 @@ public class Welcome extends Activity {
                .setCancelable(false)
                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                	   _reverse_sort=true;
                 	   startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                    }
                })
@@ -216,9 +226,24 @@ public class Welcome extends Activity {
     	}
       };
       
+      Comparator<Object> netsort_reverse = new Comparator<Object>() {
+      	public int compare(Object arg0, Object arg1) {
+    		if(((WifiConfiguration)arg0).priority < ((WifiConfiguration)arg1).priority)
+    			return 1;
+    		else if( ((WifiConfiguration)arg0).priority > ((WifiConfiguration)arg1).priority)
+    			return -1;
+    		else
+    			return 0;
+
+      	}
+      };
+      
       @Override
       public void onPause() { super.onPause(); Log.d("AWMonWelcome", "onPause()"); }
       @Override
-      public void onResume() { super.onResume(); Log.d("AWMonWelcome", "onResume()"); }
+      public void onResume() { super.onResume(); 
+      	Log.d("AWMonWelcome", "onResume()");
+      	updateNetworkList();
+      }
       
 }
