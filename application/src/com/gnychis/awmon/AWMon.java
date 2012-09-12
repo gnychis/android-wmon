@@ -59,8 +59,6 @@ public class AWMon extends Activity implements OnClickListener {
 	public BlockingQueue<String> toastMessages;
 	private ProgressDialog _pd;
 	public TextView textStatus;
-	private Button buttonAddNetwork; 
-	private Button buttonManageDevs;	
 		
 	public enum ThreadMessages {
 		WIFI_SCAN_START,
@@ -101,8 +99,9 @@ public class AWMon extends Activity implements OnClickListener {
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
 		textStatus.setText("");
-		buttonAddNetwork = (Button) findViewById(R.id.buttonAddNetwork); buttonAddNetwork.setOnClickListener(this);
-		buttonManageDevs = (Button) findViewById(R.id.buttonManageDevs); buttonManageDevs.setOnClickListener(this);
+		((Button) findViewById(R.id.buttonAddNetwork)).setOnClickListener(this);
+		((Button) findViewById(R.id.buttonManageDevs)).setOnClickListener(this);
+		((Button) findViewById(R.id.buttonSettings)).setOnClickListener(this);
 		
 		// Finally, initialize and link some of the libraries (which can take a while)
 		InitLibraries init_thread = new InitLibraries();
@@ -216,6 +215,7 @@ public class AWMon extends Activity implements OnClickListener {
     
     // Everything related to clicking buttons in the main interface
 	public void onClick(View view) {
+		Intent i;
 		
 		switch(view.getId()) {
 			case R.id.buttonAddNetwork:
@@ -223,8 +223,13 @@ public class AWMon extends Activity implements OnClickListener {
 				break;
 			
 			case R.id.buttonManageDevs:
-				Intent i = new Intent(AWMon.this, ManageNetworks.class);
+				i = new Intent(AWMon.this, ManageNetworks.class);
 		        startActivity(i);
+				break;
+				
+			case R.id.buttonSettings:
+				i = new Intent(AWMon.this, Welcome.class);
+				startActivity(i);
 				break;
 		}
 	}

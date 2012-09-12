@@ -20,7 +20,7 @@ public class UserSettings {
     }
     
     public boolean haveUserSettings() { return settings.getBoolean("initialized", false); }
-    public void setHaveUserSettings() { sEditor.putBoolean("initialized", true); }
+    public void setHaveUserSettings() { sEditor.putBoolean("initialized", true); sEditor.commit(); }
     
     // Higher level settings
     public int getClientID() { return settings.getInt("randClientID",-1); }

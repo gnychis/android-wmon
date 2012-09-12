@@ -80,25 +80,40 @@ public class Welcome extends Activity {
 	}
 	
 	public void updateNetworkList() {
-		  // Create an instance to the Wifi manager and get a list of networks that the user
-		  // has associated to.  Pull this up as their list.
-		  _wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-	      List<WifiConfiguration> cfgNets = _wifi.getConfiguredNetworks();
-	      netlist = (Spinner) findViewById(R.id.network_list);
-	      ArrayList<String> spinnerArray = new ArrayList<String>();
-	      if(!_reverse_sort)
-	    	  Collections.sort(cfgNets,netsort);
-	      else
-	    	  Collections.sort(cfgNets,netsort_reverse);
-	      for (WifiConfiguration config: cfgNets)
-	      	spinnerArray.add(config.SSID.replaceAll("^\"|\"$", ""));
-	      spinnerArray.add("* I don't see my home network! *");
-	      ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinnerArray);
-	      spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-	      netlist.setAdapter(spinnerArrayAdapter);
-	      String homeSSID = _settings.getHomeSSID();
-	      if(homeSSID!=null)
-	    	  netlist.setSelection(spinnerArray.indexOf(homeSSID));
+		
+		_wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		
+		// This updates the pulldown menu with the list of networks that the user has associated to in the past.
+		// The Wifi interface must be enabled to pull the list, otherwise it will come back blank.  So we briefly
+		// enable it if it is disabled.
+        boolean wifi_enabled=_wifi.isWifiEnabled();
+        if(!wifi_enabled)
+        	_wifi.setWifiEnabled(true);
+        while(!_wifi.isWifiEnabled()) {}
+		
+		// Create an instance to the Wifi manager and get a list of networks that the user
+		// has associated to.  Pull this up as their list.
+		List<WifiConfiguration> cfgNets = _wifi.getConfiguredNetworks();
+		netlist = (Spinner) findViewById(R.id.network_list);
+		ArrayList<String> spinnerArray = new ArrayList<String>();
+		if(!_reverse_sort)
+			Collections.sort(cfgNets,netsort);
+		else
+			Collections.sort(cfgNets,netsort_reverse);
+		for (WifiConfiguration config: cfgNets)
+			spinnerArray.add(config.SSID.replaceAll("^\"|\"$", ""));
+		spinnerArray.add("* I don't see my home network! *");
+		ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinnerArray);
+		spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		netlist.setAdapter(spinnerArrayAdapter);
+		String homeSSID = _settings.getHomeSSID();
+		if(homeSSID!=null)
+			netlist.setSelection(spinnerArray.indexOf(homeSSID));
+		
+		// Disable the Wifi again if it was disabled before
+		if(wifi_enabled==false)
+			while(_wifi.isWifiEnabled())
+				_wifi.setWifiEnabled(false);
 	}
 	
     // When the user clicks finished, we save some information locally.  The home network name is
@@ -120,12 +135,16 @@ public class Welcome extends Activity {
     						((CheckBox) findViewById(R.id.bedroom)).isChecked(),
     						((CheckBox) findViewById(R.id.livingRoom)).isChecked(),
     						((CheckBox) findViewById(R.id.bathroom)).isChecked());
-    	//_settings.setHaveUserSettings();
+    	_settings.setHaveUserSettings();
     	finish();
     }
     
+    // On the press of the back button, only go back if the user has provided settings.
+    // Otherwise, we block them from the main menu.
     @Override
     public void onBackPressed() {
+    	if(_settings.haveUserSettings()==true)
+    		finish();
     }
 	
     private void buildAlertMessageNoGps() {

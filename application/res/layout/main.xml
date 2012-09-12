@@ -92,7 +92,7 @@
 
     <TextView
         android:id="@+id/textStatus"
-        android:layout_width="112dp"
+        android:layout_width="fill_parent"
         android:layout_height="77dp"
         android:layout_marginTop="10dp"
         android:text="Error text box..."
@@ -108,5 +108,13 @@
         android:layout_marginTop="45dp"
         android:text="Show advanced information" />
 -->
+
+    <Button
+        android:id="@+id/buttonSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_marginTop="30dp"
+        android:text="Settings" />
 
 </LinearLayout>
