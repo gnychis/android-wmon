@@ -19,36 +19,33 @@ public class UserSettings {
         sEditor = settings.edit();
     }
     
-    public boolean haveUserSettings() {
-    	return settings.getBoolean("initialized", false);
-    }
+    public boolean haveUserSettings() { return settings.getBoolean("initialized", false); }
+    public void setHaveUserSettings() { sEditor.putBoolean("initialized", true); }
     
-    public int getClientID() {
-    	return settings.getInt("randClientID",-1);
-    }
+    // Higher level settings
+    public int getClientID() { return settings.getInt("randClientID",-1); }
+    public void setClientID(int id) { sEditor.putInt("randClientID", id); sEditor.commit(); }
+    public String getHomeSSID() { return settings.getString("homeSSID", null); }
+    public void setHomeSSID(String ssid) { sEditor.putString("homeSSID", ssid); sEditor.commit(); }
     
-    public String getHomeSSID() {
-    	return settings.getString("homeSSID", null);
-    }
-    
-    public int getAgeRange() {
-    	return settings.getInt("ageRange", -1);
-    }
-    
-    public boolean getSurveyKitchen() {
-    	return (settings.getInt("kitchen", 0)==0) ? false : true;
-    }
-    
-    public boolean getSurveyBedroom() {
-    	return (settings.getInt("bedroom", 0)==0) ? false : true;
-    }
-    
-    public boolean getSurveyLivingRoom() {
-    	return (settings.getInt("livingRoom",0)==0) ? false : true;
-    }
-    
-    public boolean getSurveyBathroom() {
-    	return (settings.getInt("bathroom",0)==0) ? false : true;
+    // Surevy related Settings
+    public int getAgeRange() { return settings.getInt("ageRange", -1); }
+    public boolean getSurveyKitchen() { return settings.getBoolean("kitchen", false); }
+    public boolean getSurveyBedroom() { return settings.getBoolean("bedroom", false); }
+    public boolean getSurveyLivingRoom() { return settings.getBoolean("livingRoom", false); }
+    public boolean getSurveyBathroom() { return settings.getBoolean("bathroom", false); }
+    public void setAgeRange(int val) { sEditor.putInt("ageRange", val); sEditor.commit(); }
+    public void setSurveyKitchen(boolean val) { sEditor.putBoolean("kitchen", val); sEditor.commit(); }
+    public void setSurveyBedroom(boolean val) { sEditor.putBoolean("bedroom", val); sEditor.commit(); }
+    public void setSurveyLivingRoom(boolean val) { sEditor.putBoolean("livingRoom", val); sEditor.commit(); }
+    public void setSurveyBathroom(boolean val) { sEditor.putBoolean("bathroom", val); sEditor.commit(); }
+    public void setSurvey(int age, boolean kitchen, boolean bedroom, boolean livingRoom, boolean bathroom) {
+    	sEditor.putInt("ageRange", age);
+    	sEditor.putBoolean("kitchen", kitchen);		
+    	sEditor.putBoolean("bedroom", bedroom);
+    	sEditor.putBoolean("livingRoom", livingRoom);
+    	sEditor.putBoolean("bathroom", bathroom);
+    	sEditor.commit();
     }
     
 }

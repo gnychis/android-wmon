@@ -65,6 +65,9 @@ public class Welcome extends Activity {
       agelist.setAdapter(ageAdapter);
       
       // Set the checkboxes back to what the user had
+      int ar = _settings.getAgeRange();
+      if(ar!=-1)
+    	  agelist.setSelection(ar);
       ((CheckBox) findViewById(R.id.kitchen)).setChecked(_settings.getSurveyKitchen());
       ((CheckBox) findViewById(R.id.bedroom)).setChecked(_settings.getSurveyBedroom());
       ((CheckBox) findViewById(R.id.livingRoom)).setChecked(_settings.getSurveyLivingRoom());
@@ -93,6 +96,9 @@ public class Welcome extends Activity {
 	      ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinnerArray);
 	      spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 	      netlist.setAdapter(spinnerArrayAdapter);
+	      String homeSSID = _settings.getHomeSSID();
+	      if(homeSSID!=null)
+	    	  netlist.setSelection(spinnerArray.indexOf(homeSSID));
 	}
 	
     // When the user clicks finished, we save some information locally.  The home network name is
@@ -104,50 +110,18 @@ public class Welcome extends Activity {
     	// their home network.
     	if(home_ssid.equalsIgnoreCase("* I don't see my home network! *")) {
     		buildAlertMessageNoNetwork();
-    	} else {
-    		finish();
+    		return;
     	}
-    }
-    
-    // This sends us your optional "survey" like results.  It does so anonymously by accompanying them
-    // with a unique but random ID.  Note that your home network name or location are NOT transmitted
-    // back to us.  
-    protected void sendUserData() {
-        Thread t = new Thread(){
-        public void run() {
-                Looper.prepare(); // For Preparing Message Pool for the child Thread
-                HttpClient client = new DefaultHttpClient();
-                HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
-                HttpResponse response;
-                JSONObject json = new JSONObject();
-                try{
-                    HttpPost post = new HttpPost("http://moo.cmcl.cs.cmu.edu/pastudy/survey.php");
-                    
-                    // We only retrieve your random user ID (for uniqueness) age range, and where your phone has been...
-                    // Note that your home network name is never sent to us.
-                    json.put("clientID", _settings.getClientID());
-                    json.put("ageRange", agelist.getSelectedItemId());
-                    json.put("kitchen", (((CheckBox) findViewById(R.id.kitchen)).isChecked()==true) ? 1 : 0);
-                    json.put("bedroom", (((CheckBox) findViewById(R.id.bedroom)).isChecked()==true) ? 1 : 0);
-                    json.put("livingRoom", (((CheckBox) findViewById(R.id.livingRoom)).isChecked()==true) ? 1 : 0);
-                    json.put("bathroom", (((CheckBox) findViewById(R.id.bathroom)).isChecked()==true) ? 1 : 0);
-                     
-                    
-                    StringEntity se = new StringEntity( json.toString());  
-                    se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-                    post.setEntity(se);
-                    response = client.execute(post);
-                    if(response!=null) {
-                        InputStream in = response.getEntity().getContent();
-                        String a = convertStreamToString(in);
-                    }
-                } catch(Exception e){
-                	Log.e("BLAH", "Exception trying to send HTTP data: " + e);
-                }
-                Looper.loop(); //Loop in the message queue
-            }
-        };
-        t.start();      
+    	
+    	// Save their settings and set it to initialized
+    	_settings.setHomeSSID(home_ssid);
+    	_settings.setSurvey((int) agelist.getSelectedItemId(),
+    						((CheckBox) findViewById(R.id.kitchen)).isChecked(),
+    						((CheckBox) findViewById(R.id.bedroom)).isChecked(),
+    						((CheckBox) findViewById(R.id.livingRoom)).isChecked(),
+    						((CheckBox) findViewById(R.id.bathroom)).isChecked());
+    	//_settings.setHaveUserSettings();
+    	finish();
     }
     
     @Override
