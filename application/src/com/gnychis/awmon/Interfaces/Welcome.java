@@ -9,25 +9,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.protocol.HTTP;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -35,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 
+import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.UserSettings;
 import com.nullwire.trace.ExceptionHandler;
@@ -45,6 +37,8 @@ public class Welcome extends Activity {
 	private UserSettings _settings;
 	WifiManager _wifi;
 	boolean _reverse_sort;
+	private ProgressDialog _pd;
+	private UpdateInterface _update_thread;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -52,69 +46,99 @@ public class Welcome extends Activity {
 	  setContentView(R.layout.welcome);
 	 
 	  _settings = new UserSettings(this);	// Get a handle to the user settings
+	  _wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 	  
 	  ExceptionHandler.register(this, "http://moo.cmcl.cs.cmu.edu/pastudy/"); 
 	  
 	  _reverse_sort=false;
-	  updateNetworkList();
-      
-      // Setup the age-range list and put it in a drop-down menu for them to select.
-      agelist = (Spinner) findViewById(R.id.age_group);
-      ArrayAdapter<CharSequence> ageAdapter = ArrayAdapter.createFromResource(this, R.array.age_ranges, android.R.layout.simple_spinner_item);
-      ageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      agelist.setAdapter(ageAdapter);
-      
-      // Set the checkboxes back to what the user had
-      int ar = _settings.getAgeRange();
-      if(ar!=-1)
-    	  agelist.setSelection(ar);
-      ((CheckBox) findViewById(R.id.kitchen)).setChecked(_settings.getSurveyKitchen());
-      ((CheckBox) findViewById(R.id.bedroom)).setChecked(_settings.getSurveyBedroom());
-      ((CheckBox) findViewById(R.id.livingRoom)).setChecked(_settings.getSurveyLivingRoom());
-      ((CheckBox) findViewById(R.id.bathroom)).setChecked(_settings.getSurveyBathroom());
       
       // Test if they have GPS enabled or disabled.  If it's disabled, we ask them to enable it to participate
       String provider = Settings.Secure.getString(getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
       if (!provider.contains("network"))
       	buildAlertMessageNoGps();  
+      
+      // Spawn a thread to update the interface of the settings
+      _update_thread = new UpdateInterface();
+      _update_thread.execute(this);
 	}
 	
-	public void updateNetworkList() {
+	// Use an AsyncTask to update the interface, because we may need to enable/disable Wifi which can
+	// take a few seconds and would lock up the interface.  This keeps it moving smoothly.  This reads
+	// the settings and fills in the checkbox and all drop down menus.
+    protected class UpdateInterface extends AsyncTask<Context, Integer, ArrayList<String>> {
+		Context parent;
+		AWMon awmon;
 		
-		_wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            _pd = ProgressDialog.show(Welcome.this, "", "Retrieving Wifi networks, please wait...", true, false); 
+    		Log.d("AWMonWelcome", "Getting the list of Wifi networks");
+        }
+
+		@Override
+		protected ArrayList<String> doInBackground( Context ... params ) {
+			ArrayList<String> spinnerArray = new ArrayList<String>();
+			
+			// This updates the pulldown menu with the list of networks that the user has associated to in the past.
+			// The Wifi interface must be enabled to pull the list, otherwise it will come back blank.  So we briefly
+			// enable it if it is disabled.
+	        boolean wifi_enabled=_wifi.isWifiEnabled();
+	        if(!wifi_enabled)
+	        	_wifi.setWifiEnabled(true);
+	        while(!_wifi.isWifiEnabled()) {}
+	        
+	        try { Thread.sleep(1000); } catch(Exception e) {}
+	        
+			// Create an instance to the Wifi manager and get a list of networks that the user
+			// has associated to.  Pull this up as their list.
+			List<WifiConfiguration> cfgNets = _wifi.getConfiguredNetworks();
+			netlist = (Spinner) findViewById(R.id.network_list);
+			if(!_reverse_sort)
+				Collections.sort(cfgNets,netsort);
+			else
+				Collections.sort(cfgNets,netsort_reverse);
+			for (WifiConfiguration config: cfgNets)
+				spinnerArray.add(config.SSID.replaceAll("^\"|\"$", ""));
+			spinnerArray.add("* I don't see my home network! *");
+			
+			// Disable the Wifi again if it was disabled before
+			if(wifi_enabled==false)
+				while(_wifi.isWifiEnabled())
+					_wifi.setWifiEnabled(false);
+			
+			return spinnerArray;
+		}
 		
-		// This updates the pulldown menu with the list of networks that the user has associated to in the past.
-		// The Wifi interface must be enabled to pull the list, otherwise it will come back blank.  So we briefly
-		// enable it if it is disabled.
-        boolean wifi_enabled=_wifi.isWifiEnabled();
-        if(!wifi_enabled)
-        	_wifi.setWifiEnabled(true);
-        while(!_wifi.isWifiEnabled()) {}
+        @Override
+        protected void onPostExecute(ArrayList<String> spinnerArray) {
+			
+  	      // Setup the age-range list and put it in a drop-down menu for them to select.
+  	      agelist = (Spinner) findViewById(R.id.age_group);
+  	      ArrayAdapter<CharSequence> ageAdapter = ArrayAdapter.createFromResource(Welcome.this, R.array.age_ranges, android.R.layout.simple_spinner_item);
+  	      ageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+  	      agelist.setAdapter(ageAdapter);
+  	      
+  	      // Set the checkboxes back to what the user had
+  	      int ar = _settings.getAgeRange();
+  	      if(ar!=-1)
+  	    	  agelist.setSelection(ar);
+  	      ((CheckBox) findViewById(R.id.kitchen)).setChecked(_settings.getSurveyKitchen());
+  	      ((CheckBox) findViewById(R.id.bedroom)).setChecked(_settings.getSurveyBedroom());
+  	      ((CheckBox) findViewById(R.id.livingRoom)).setChecked(_settings.getSurveyLivingRoom());
+  	      ((CheckBox) findViewById(R.id.bathroom)).setChecked(_settings.getSurveyBathroom());
+        	
+    		ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(Welcome.this, android.R.layout.simple_spinner_item, spinnerArray);
+    		spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    		netlist.setAdapter(spinnerArrayAdapter);
+    		String homeSSID = _settings.getHomeSSID();
+    		if(homeSSID!=null)
+    			netlist.setSelection(spinnerArray.indexOf(homeSSID));
+    		_pd.dismiss();
+    		Log.d("AWMonWelcome", "Should have dismissed progress dialogue");
+        }
 		
-		// Create an instance to the Wifi manager and get a list of networks that the user
-		// has associated to.  Pull this up as their list.
-		List<WifiConfiguration> cfgNets = _wifi.getConfiguredNetworks();
-		netlist = (Spinner) findViewById(R.id.network_list);
-		ArrayList<String> spinnerArray = new ArrayList<String>();
-		if(!_reverse_sort)
-			Collections.sort(cfgNets,netsort);
-		else
-			Collections.sort(cfgNets,netsort_reverse);
-		for (WifiConfiguration config: cfgNets)
-			spinnerArray.add(config.SSID.replaceAll("^\"|\"$", ""));
-		spinnerArray.add("* I don't see my home network! *");
-		ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinnerArray);
-		spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		netlist.setAdapter(spinnerArrayAdapter);
-		String homeSSID = _settings.getHomeSSID();
-		if(homeSSID!=null)
-			netlist.setSelection(spinnerArray.indexOf(homeSSID));
-		
-		// Disable the Wifi again if it was disabled before
-		if(wifi_enabled==false)
-			while(_wifi.isWifiEnabled())
-				_wifi.setWifiEnabled(false);
-	}
+    }
 	
     // When the user clicks finished, we save some information locally.  The home network name is
     // only saved locally (so that our application can work), and it is never shared back with us.
@@ -236,7 +260,9 @@ public class Welcome extends Activity {
       @Override
       public void onResume() { super.onResume(); 
       	Log.d("AWMonWelcome", "onResume()");
-      	updateNetworkList();
+      	if((_update_thread.getStatus() == AsyncTask.Status.RUNNING) || _update_thread.getStatus() == AsyncTask.Status.PENDING)
+      		return;
+        _update_thread = new UpdateInterface();
+        _update_thread.execute(this);
       }
-      
 }
