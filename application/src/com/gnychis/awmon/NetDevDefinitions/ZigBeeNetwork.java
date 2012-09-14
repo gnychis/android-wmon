@@ -3,7 +3,6 @@ package com.gnychis.awmon.NetDevDefinitions;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-
 import android.os.Parcel;
 import android.os.Parcelable;
 

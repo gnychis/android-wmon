@@ -3,10 +3,10 @@ package com.gnychis.awmon.NetDevDefinitions;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.gnychis.awmon.Core.Packet;
-
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.gnychis.awmon.Core.Packet;
 
 @SuppressWarnings("unchecked")
 public class WifiAP implements Parcelable {
