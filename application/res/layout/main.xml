@@ -110,12 +110,32 @@
         android:text="Show advanced information" />
 -->
 
+	    <LinearLayout
+	        android:layout_width="fill_parent"
+	        android:layout_height="45dp"
+	        android:layout_gravity="bottom"
+	        android:background="@android:drawable/bottom_bar"
+	        android:orientation="horizontal"
+	        android:layout_marginTop="45dp"
+	        android:paddingBottom="1.0dip"
+	        android:paddingLeft="4.0dip"
+	        android:paddingRight="4.0dip"
+	        android:paddingTop="5.0dip">
+
+        <Button
+            android:id="@+id/deny"
+            android:layout_width="0.0dip" android:layout_height="fill_parent"
+            android:text="Status"
+            android:layout_weight="1.0" />
+
     <Button
         android:id="@+id/buttonSettings"
-        android:layout_width="wrap_content"
+        android:layout_width="0.0dip"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
-        android:layout_marginTop="30dp"
+        android:layout_weight="1.0" 
         android:text="Settings" />
+
+    </LinearLayout>
 
 </LinearLayout>
