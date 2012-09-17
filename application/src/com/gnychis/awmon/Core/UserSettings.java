@@ -31,6 +31,7 @@ public class UserSettings {
     public void setHomeLocation(Location l) {
     	sEditor.putFloat("HomeLocLong", (float)l.getLongitude());
     	sEditor.putFloat("HomeLocLat", (float)l.getLatitude());
+    	sEditor.putFloat("HomeLocAccuracy", (float)l.getAccuracy());
     	sEditor.putBoolean("haveHomeLocation",true);
     	sEditor.commit();
     }
@@ -42,6 +43,7 @@ public class UserSettings {
     	Location loc = new Location("Home");
     	loc.setLatitude(settings.getFloat("HomeLocLat", (float)40.443181));  // Easter Egg: default value
     	loc.setLongitude(settings.getFloat("homeLocLong", (float)-79.943060));
+    	loc.setAccuracy(settings.getFloat("HomeLocAccuracy", 100000));
     	return loc;
     }
     

@@ -20,7 +20,10 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
+import android.net.wifi.SupplicantState;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -44,7 +47,6 @@ public class BackgroundService extends Service implements SensorEventListener {
 
     public final int LOCATION_TOLERANCE=100;			// in meters
     public final int LOCATION_UPDATE_INTERVAL=120000; //900000;	// in milliseconds (15 minutes)
-    public final int SEND_UPDATE_DELAY=21600;			// in seconds (6 hours)
     private final boolean DEBUG=true;
 
 	private float mLastX, mLastY, mLastZ;
@@ -132,14 +134,18 @@ public class BackgroundService extends Service implements SensorEventListener {
 		            	   while(wifi.isWifiEnabled()) { wifi.setWifiEnabled(false); }
 		            	   mDisableWifiAS=false;		// Reset the wifi disable state.
 		               }
+		               mScansLeft=0;
 	               }
 	            	   
 	               if(home_ssid==null) // If it is still null, then the user still hasn't set it
 	            	   return;
 	               
-	               for(ScanResult result : scan_result)
-	            	   if(result.SSID.replaceAll("^\"|\"$", "").equals(home_ssid))
-	            		   home();	// Their home network is in the list, so they must be home        
+	               for(ScanResult result : scan_result) {
+	            	   if(result.SSID.replaceAll("^\"|\"$", "").equals(home_ssid)) {
+	            		   home();	// Their home network is in the list, so they must be home  
+	            		   return;
+	            	   }
+	               }
             	}
             }
         }, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)); 
@@ -211,6 +217,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     
     // The user's phone is not in the home based on localization information.
     private void notHome() {
+    	Log.d(TAG, "The phone is not in the home");
     	if(mPhoneIsInTheHome) {
     		mSensorManager.unregisterListener(_this);
     	}
@@ -240,6 +247,10 @@ public class BackgroundService extends Service implements SensorEventListener {
 	// we check the distance of the current location with the home location to detect if the user's
 	// phone is in their home.
     public void onLocationChanged(Location location) {
+    	
+    	Log.d(TAG, "Got a location: (" + location.getLatitude() + "," + location.getLongitude() + ") .. Accuracy: " + Double.toString(location.getAccuracy()));
+    	if(location.getAccuracy()>100)	// Never save a bad location :(
+    		return;
     	if(location==null)
     		return;
     	if(mNextLocIsHome) {
@@ -249,6 +260,19 @@ public class BackgroundService extends Service implements SensorEventListener {
     		mNextLocIsHome=false;
     		home();
     		changeUpdateInterval(LOCATION_UPDATE_INTERVAL);  // Once we get the location, we slow down updates.
+    	}
+    	
+    	// First, if we are associated to an access point that is the same name of the user's home access
+    	// point, then we consider them home and save locations with a greater accuracy than what we have
+    	WifiInfo currWifi = wifi.getConnectionInfo();
+    	SupplicantState supState = currWifi.getSupplicantState();
+    	if(WifiInfo.getDetailedStateOf(supState) == NetworkInfo.DetailedState.CONNECTED) {
+    		if(currWifi.getSSID().equals(_settings.getHomeSSID())) {
+    			if(location.getAccuracy()<mHomeLoc.getAccuracy()) 
+    				_settings.setHomeLocation(location);   
+    			home();  // If we are connected to their AP, we are home regardless of location info
+    			return;
+    		}
     	}
     	
     	if(mHomeLoc!=null) {

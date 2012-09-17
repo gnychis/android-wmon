@@ -53,7 +53,7 @@ public class Status extends Activity implements OnClickListener {
 		switch(view.getId()) {
 			case R.id.haveHomeLocation:
 				Location homeLoc = _settings.getHomeLocation();
-				String uri = String.format("geo:%f,%f?z=18&q=%f,%f(Home)", 
+				String uri = String.format("geo:%f,%f?z=22&q=%f,%f(Home)", 
 											homeLoc.getLatitude(), 
 											homeLoc.getLongitude(),
 											homeLoc.getLatitude(),
