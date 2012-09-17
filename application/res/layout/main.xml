@@ -123,10 +123,11 @@
 	        android:paddingTop="5.0dip">
 
         <Button
-            android:id="@+id/deny"
-            android:layout_width="0.0dip" android:layout_height="fill_parent"
-            android:text="Status"
-            android:layout_weight="1.0" />
+            android:id="@+id/buttonStatus"
+            android:layout_width="0.0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:text="Status" />
 
     <Button
         android:id="@+id/buttonSettings"

@@ -107,6 +107,7 @@ public class AWMon extends Activity implements OnClickListener {
 		((Button) findViewById(R.id.buttonAddNetwork)).setOnClickListener(this);
 		((Button) findViewById(R.id.buttonManageDevs)).setOnClickListener(this);
 		((Button) findViewById(R.id.buttonSettings)).setOnClickListener(this);
+		((Button) findViewById(R.id.buttonStatus)).setOnClickListener(this);
 		
 		// Finally, initialize and link some of the libraries (which can take a while)
 		InitLibraries init_thread = new InitLibraries();
@@ -234,6 +235,11 @@ public class AWMon extends Activity implements OnClickListener {
 				
 			case R.id.buttonSettings:
 				i = new Intent(AWMon.this, Welcome.class);
+				startActivity(i);
+				break;
+				
+			case R.id.buttonStatus:
+				i = new Intent(AWMon.this, Status.class);
 				startActivity(i);
 				break;
 		}

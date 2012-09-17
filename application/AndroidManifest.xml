@@ -36,5 +36,6 @@
         <activity android:name="com.gnychis.awmon.Interfaces.ManageNetworks" class=".ManageDevices" android:label="Device Management" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.Interfaces.AddNetwork" class=".AddNetwork" android:label="Add Network" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.Interfaces.GraphWispy" class=".GraphWispy" android:label="Graph Wispy" android:screenOrientation="portrait"></activity>
+        <activity android:name="com.gnychis.awmon.Interfaces.Status" class=".Status" android:label="Application Status" android:screenOrientation="portrait"></activity>
     </application>
 </manifest>
