@@ -23,9 +23,11 @@ public class UserSettings {
     public boolean haveUserSettings() { return settings.getBoolean("initialized", false); }
     public void setHaveUserSettings() { sEditor.putBoolean("initialized", true); sEditor.commit(); }
     
+    public boolean haveHomeLocation() { return settings.getBoolean("haveHomeLocation", false); }
+    
     public void setHomeLocation(Location l) {
     	sEditor.putFloat("HomeLocLong", (float)l.getLongitude());
-    	sEditor.putFloat("HomeLocLat", (float)l.getLongitude());
+    	sEditor.putFloat("HomeLocLat", (float)l.getLatitude());
     	sEditor.putBoolean("haveHomeLocation",true);
     	sEditor.commit();
     }
@@ -37,7 +39,7 @@ public class UserSettings {
     	Location loc = new Location("Home");
     	loc.setLatitude(settings.getFloat("HomeLocLat", (float)40.443181));  // Easter Egg: default value
     	loc.setLongitude(settings.getFloat("homeLocLong", (float)-79.943060));
-    	return null;
+    	return loc;
     }
     
     // Higher level settings

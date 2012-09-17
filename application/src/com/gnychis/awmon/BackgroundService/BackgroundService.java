@@ -37,6 +37,8 @@ public class BackgroundService extends Service implements SensorEventListener {
     static BackgroundService _this;
     PowerManager mPowerManager;
     
+    public static String TAG = "AWMonBackground";
+    
     PendingIntent mPendingIntent;
     Intent mIntent;
 
@@ -81,7 +83,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     	super.onCreate();
     	_this=this;
     	
-    	Log.d("AWMonBackground", "Background service is now running");
+    	Log.d(TAG, "Background service is now running");
     	    	    	    	    
     	_settings = new UserSettings(this);
     	    	
@@ -118,11 +120,15 @@ public class BackgroundService extends Service implements SensorEventListener {
 	               
 	               home_ssid = _settings.getHomeSSID();
 	               
+	               Log.d(TAG, "Scan result received, current scan: " + Integer.toString(mScansLeft));
+	               
 	               if(--mScansLeft>0) {		// If there are more scans left....
 	            	   wifi.startScan();	// scan again.
 	               } else {								// There are no scans left.
+	            	   Log.d(TAG, "Finished with the scans...");
 		               if(mDisableWifiAS) {				// If the user had Wifi disabled, disable it again
-		            	   wifi.setWifiEnabled(false);	// Disable it.
+		            	   Log.d(TAG, "Trying to disable Wifi");
+		            	   while(wifi.isWifiEnabled()) { wifi.setWifiEnabled(false); }
 		            	   mDisableWifiAS=false;		// Reset the wifi disable state.
 		               }
 	               }
@@ -190,6 +196,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     // (which is NEVER sent back to us, it's only kept locally on the user's phone), 
     // then we save it in the application preferences.
     private void home() {
+    	Log.d(TAG, "Got an update that the phone is in the home");
     	if(!mPhoneIsInTheHome)
     		mSensorManager.registerListener(_this, mAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
     	mPhoneIsInTheHome=true;
@@ -216,8 +223,10 @@ public class BackgroundService extends Service implements SensorEventListener {
     public void triggerScan(boolean disable_after_scan) {
     	mDisableWifiAS=disable_after_scan;
         boolean wifi_enabled=wifi.isWifiEnabled();
-        if(!wifi_enabled)
+        if(!wifi_enabled) {
         	wifi.setWifiEnabled(true);
+        	Log.d(TAG, "Enabling Wifi, disable after scan: " + Boolean.toString(mDisableWifiAS));
+        }
         while(!wifi.isWifiEnabled()) {}
         mScansLeft=NUM_SCANS;
         wifi.startScan();
@@ -231,6 +240,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     	if(location==null)
     		return;
     	if(mNextLocIsHome) {
+    		Log.d(TAG, "Saving the location of the home");
     		_settings.setHomeLocation(location);
     		mHomeLoc=location;
     		mNextLocIsHome=false;
