@@ -25,11 +25,11 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.R.id;
 
 public class BackgroundService extends Service implements SensorEventListener {
 
@@ -43,7 +43,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     public final int LOCATION_TOLERANCE=100;			// in meters
     public final int LOCATION_UPDATE_INTERVAL=900000;	// in milliseconds (15 minutes)
     public final int SEND_UPDATE_DELAY=21600;			// in seconds (6 hours)
-    private final boolean DEBUG=false;
+    private final boolean DEBUG=true;
 
 	private float mLastX, mLastY, mLastZ;
 	private boolean mInitialized;
@@ -80,6 +80,8 @@ public class BackgroundService extends Service implements SensorEventListener {
     public void onCreate() {
     	super.onCreate();
     	_this=this;
+    	
+    	Log.d("AWMonBackground", "Background service is now running");
     	    	    	    	    
     	_settings = new UserSettings(this);
     	    	

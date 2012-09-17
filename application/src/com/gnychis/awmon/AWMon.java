@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
@@ -95,6 +96,10 @@ public class AWMon extends Activity implements OnClickListener {
     	
     	// Initialize the user settings
     	_settings = new UserSettings(this);
+    	
+    	// Start the background service
+        BackgroundService.setMainActivity(this);
+        startService(new Intent(this, BackgroundService.class));
       
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
