@@ -45,7 +45,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     PendingIntent mPendingIntent;
     Intent mIntent;
 
-    public final int LOCATION_TOLERANCE=100;			// in meters
+    public final int LOCATION_TOLERANCE=150;			// in meters
     public final int LOCATION_UPDATE_INTERVAL=120000; //900000;	// in milliseconds (15 minutes)
     private final boolean DEBUG=true;
 
@@ -249,6 +249,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     public void onLocationChanged(Location location) {
     	
     	Log.d(TAG, "Got a location: (" + location.getLatitude() + "," + location.getLongitude() + ") .. Accuracy: " + Double.toString(location.getAccuracy()));
+    	_settings.setLastLocation(location);
     	if(location.getAccuracy()>100)	// Never save a bad location :(
     		return;
     	if(location==null)

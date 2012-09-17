@@ -32,13 +32,28 @@ public class Status extends Activity implements OnClickListener {
 	  if(homeLoc==null)
 		  ((TextView) findViewById(R.id.haveHomeLocation)).append("No");
 	  else
-		  ((TextView) findViewById(R.id.haveHomeLocation)).append("Yes (" + Double.toString(homeLoc.getLatitude())
-				  														  + ","
-				  														  + Double.toString(homeLoc.getLongitude())
-				  														  + ")");
+		  ((TextView) findViewById(R.id.haveHomeLocation)).append("Yes\n(" 	+ Double.toString(homeLoc.getLatitude())
+				  														  	+ ","
+				  														  	+ Double.toString(homeLoc.getLongitude())
+				  														  	+ ")\nAccuracy: " 
+				  														  	+ Double.toString(homeLoc.getAccuracy()));
 	  
 	  // Make the location clickable to bring up a map
 	  ((TextView) findViewById(R.id.haveHomeLocation)).setClickable(true);
+	  ((TextView) findViewById(R.id.Status_txt_LastLocation)).setClickable(true);
+	  
+	  // Display information about the last location
+	  Location lastLoc = _settings.getLastLocation();
+	  ((TextView) findViewById(R.id.Status_txt_LastLocation)).append("\n(" 	+ Double.toString(lastLoc.getLatitude())
+			  																+ ","
+			  																+ Double.toString(lastLoc.getLongitude())
+			  																+ ")\n    Accuracy: "
+			  																+ Double.toString(_settings.getLastLocation().getAccuracy()));
+	  if(_settings.haveHomeLocation()) {
+		  ((TextView) findViewById(R.id.Status_txt_LastLocation)).append("\n    Distance: " 
+				  																+ Double.toString(homeLoc.distanceTo(_settings.getLastLocation()))
+				  																);
+	  }
 	  
 	  // Set whether or not the phone is in the home
 	  if(_settings.phoneIsInHome())
@@ -49,19 +64,29 @@ public class Status extends Activity implements OnClickListener {
 
 	// Check for clicks on various things on the status view
 	public void onClick(View view) {
-		
+		String uri;
+		Intent intent;
 		switch(view.getId()) {
 			case R.id.haveHomeLocation:
 				Location homeLoc = _settings.getHomeLocation();
-				String uri = String.format("geo:%f,%f?z=22&q=%f,%f(Home)", 
+				uri = String.format("geo:%f,%f?z=22&q=%f,%f(Home)", 
 											homeLoc.getLatitude(), 
 											homeLoc.getLongitude(),
 											homeLoc.getLatitude(),
 											homeLoc.getLongitude());
-				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-				this.startActivity(intent);
+				intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+				this.startActivity(intent);				
+				break;
 				
-				Log.d("AWMonStatus", "Got a click on the location");
+			case R.id.Status_txt_LastLocation:
+				Location lastLoc = _settings.getLastLocation();
+				uri = String.format("geo:%f,%f?z=22&q=%f,%f(LastLocation)", 
+						lastLoc.getLatitude(), 
+						lastLoc.getLongitude(),
+						lastLoc.getLatitude(),
+						lastLoc.getLongitude());
+				intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+				this.startActivity(intent);
 				break;
 		}
 	}
