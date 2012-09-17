@@ -1,7 +1,9 @@
 package com.gnychis.awmon.Interfaces;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -38,6 +40,11 @@ public class Status extends Activity implements OnClickListener {
 	  // Make the location clickable to bring up a map
 	  ((TextView) findViewById(R.id.haveHomeLocation)).setClickable(true);
 	  
+	  // Set whether or not the phone is in the home
+	  if(_settings.phoneIsInHome())
+		  ((TextView) findViewById(R.id.Status_txt_phoneIsInHome)).append("Yes");
+	  else
+		  ((TextView) findViewById(R.id.Status_txt_phoneIsInHome)).append("No");
 	}
 
 	// Check for clicks on various things on the status view
@@ -45,6 +52,15 @@ public class Status extends Activity implements OnClickListener {
 		
 		switch(view.getId()) {
 			case R.id.haveHomeLocation:
+				Location homeLoc = _settings.getHomeLocation();
+				String uri = String.format("geo:%f,%f?z=18&q=%f,%f(Home)", 
+											homeLoc.getLatitude(), 
+											homeLoc.getLongitude(),
+											homeLoc.getLatitude(),
+											homeLoc.getLongitude());
+				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+				this.startActivity(intent);
+				
 				Log.d("AWMonStatus", "Got a click on the location");
 				break;
 		}

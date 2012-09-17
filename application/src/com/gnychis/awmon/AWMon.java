@@ -213,7 +213,7 @@ public class AWMon extends Activity implements OnClickListener {
     		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
     		
-    		textStatus.setText(result);	// Put any error messages in to the text status box
+    		textStatus.setText(result.replaceAll("\n", ""));	// Put any error messages in to the text status box
         	_pd.dismiss();				// Get rid of the spinner
         	
         	postInitialization();	// Run a method to do things post initialization on main activity

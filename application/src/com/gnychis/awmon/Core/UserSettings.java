@@ -25,6 +25,9 @@ public class UserSettings {
     
     public boolean haveHomeLocation() { return settings.getBoolean("haveHomeLocation", false); }
     
+    public void setPhoneIsInHome(boolean val) { sEditor.putBoolean("phoneIsInHome", val); sEditor.commit(); }
+    public boolean phoneIsInHome() { return settings.getBoolean("phoneIsInHome", false); }
+    
     public void setHomeLocation(Location l) {
     	sEditor.putFloat("HomeLocLong", (float)l.getLongitude());
     	sEditor.putFloat("HomeLocLat", (float)l.getLatitude());

@@ -43,7 +43,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     Intent mIntent;
 
     public final int LOCATION_TOLERANCE=100;			// in meters
-    public final int LOCATION_UPDATE_INTERVAL=900000;	// in milliseconds (15 minutes)
+    public final int LOCATION_UPDATE_INTERVAL=120000; //900000;	// in milliseconds (15 minutes)
     public final int SEND_UPDATE_DELAY=21600;			// in seconds (6 hours)
     private final boolean DEBUG=true;
 
@@ -123,6 +123,7 @@ public class BackgroundService extends Service implements SensorEventListener {
 	               Log.d(TAG, "Scan result received, current scan: " + Integer.toString(mScansLeft));
 	               
 	               if(--mScansLeft>0) {		// If there are more scans left....
+	            	   Log.d(TAG, "Triggering another scan...");
 	            	   wifi.startScan();	// scan again.
 	               } else {								// There are no scans left.
 	            	   Log.d(TAG, "Finished with the scans...");
@@ -200,6 +201,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     	if(!mPhoneIsInTheHome)
     		mSensorManager.registerListener(_this, mAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
     	mPhoneIsInTheHome=true;
+    	_settings.setPhoneIsInHome(true);
     	
     	if(mHomeLoc==null) {
  		   mNextLocIsHome=true;
@@ -214,6 +216,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     	}
     	if(mMainActivity!=null && DEBUG) mMainActivity.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
     	mPhoneIsInTheHome=false;
+    	_settings.setPhoneIsInHome(false);
     }
 
     // This triggers a wifi scan.  If the wifi is disabled, it enables it for the duration of
