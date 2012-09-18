@@ -3,6 +3,7 @@ package com.gnychis.awmon.Core;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.util.Log;
 
 public class UserSettings {
 	
@@ -29,6 +30,8 @@ public class UserSettings {
     public boolean phoneIsInHome() { return settings.getBoolean("phoneIsInHome", false); }
     
     public void setHomeLocation(Location l) {
+    	Log.d("AWMonSettings", "Setting Location: (" + l.getLongitude() + "," + l.getLatitude() + ")");
+    	Log.d("AWMonSettings", "Setting float locations: " + (float)l.getLongitude() + "," + (float)l.getLatitude() +")");
     	sEditor.putFloat("HomeLocLong", (float)l.getLongitude());
     	sEditor.putFloat("HomeLocLat", (float)l.getLatitude());
     	sEditor.putFloat("HomeLocAccuracy", (float)l.getAccuracy());

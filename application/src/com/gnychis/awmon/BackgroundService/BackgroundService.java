@@ -20,6 +20,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
@@ -258,10 +259,10 @@ public class BackgroundService extends Service implements SensorEventListener {
     	// First, if we are associated to an access point that is the same name of the user's home access
     	// point, then we consider them home and save locations with a greater accuracy than what we have
     	WifiInfo currWifi = wifi.getConnectionInfo();
-    	SupplicantState supState = currWifi.getSupplicantState();
-    	if(WifiInfo.getDetailedStateOf(supState) == NetworkInfo.DetailedState.CONNECTED)
-    		if(currWifi.getSSID().equals(_settings.getHomeSSID()))
-    			associatedToHomeAP=true;
+    	ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+    	NetworkInfo wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+    	if(wifiInfo.isConnected() && currWifi.getSSID().equals(_settings.getHomeSSID()))
+    		associatedToHomeAP=true;
     	
     	_settings.setLastLocation(location);
     	
@@ -279,7 +280,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     		changeUpdateInterval(LOCATION_UPDATE_INTERVAL);  // Once we get the location, we slow down updates.
     	}
     	
-		if(associatedToHomeAP && location.getAccuracy()<mHomeLoc.getAccuracy()) 
+		if(associatedToHomeAP && location.getAccuracy()<=mHomeLoc.getAccuracy()) 
 			_settings.setHomeLocation(location);   
 		
 		if(associatedToHomeAP)
