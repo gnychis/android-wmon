@@ -248,13 +248,29 @@ public class BackgroundService extends Service implements SensorEventListener {
 	// phone is in their home.
     public void onLocationChanged(Location location) {
     	
+    	boolean associatedToHomeAP=false;
+
+    	if(location==null)	// The location must not be null
+    		return;
+    	
     	Log.d(TAG, "Got a location: (" + location.getLatitude() + "," + location.getLongitude() + ") .. Accuracy: " + Double.toString(location.getAccuracy()));
+    	
+    	// First, if we are associated to an access point that is the same name of the user's home access
+    	// point, then we consider them home and save locations with a greater accuracy than what we have
+    	WifiInfo currWifi = wifi.getConnectionInfo();
+    	SupplicantState supState = currWifi.getSupplicantState();
+    	if(WifiInfo.getDetailedStateOf(supState) == NetworkInfo.DetailedState.CONNECTED)
+    		if(currWifi.getSSID().equals(_settings.getHomeSSID()))
+    			associatedToHomeAP=true;
+    	
     	_settings.setLastLocation(location);
-    	if(location.getAccuracy()>100)	// Never save a bad location :(
+    	
+    	if(location.getAccuracy()>100)	// Do nothing with bad accuracy
     		return;
-    	if(location==null)
-    		return;
-    	if(mNextLocIsHome) {
+
+    	// If we have marked the next location as home, we will save it only if we are associated to the access point.
+    	// This tries to help in scenarios with SSIDs that are too general, and to improve location accuracy.
+    	if(mNextLocIsHome && associatedToHomeAP) {
     		Log.d(TAG, "Saving the location of the home");
     		_settings.setHomeLocation(location);
     		mHomeLoc=location;
@@ -263,18 +279,11 @@ public class BackgroundService extends Service implements SensorEventListener {
     		changeUpdateInterval(LOCATION_UPDATE_INTERVAL);  // Once we get the location, we slow down updates.
     	}
     	
-    	// First, if we are associated to an access point that is the same name of the user's home access
-    	// point, then we consider them home and save locations with a greater accuracy than what we have
-    	WifiInfo currWifi = wifi.getConnectionInfo();
-    	SupplicantState supState = currWifi.getSupplicantState();
-    	if(WifiInfo.getDetailedStateOf(supState) == NetworkInfo.DetailedState.CONNECTED) {
-    		if(currWifi.getSSID().equals(_settings.getHomeSSID())) {
-    			if(location.getAccuracy()<mHomeLoc.getAccuracy()) 
-    				_settings.setHomeLocation(location);   
-    			home();  // If we are connected to their AP, we are home regardless of location info
-    			return;
-    		}
-    	}
+		if(associatedToHomeAP && location.getAccuracy()<mHomeLoc.getAccuracy()) 
+			_settings.setHomeLocation(location);   
+		
+		if(associatedToHomeAP)
+			home();  // If we are connected to their AP, we are home regardless of location info
     	
     	if(mHomeLoc!=null) {
     		if(mHomeLoc.distanceTo(location)<=LOCATION_TOLERANCE)
