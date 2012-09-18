@@ -30,8 +30,8 @@ public class UserSettings {
     public boolean phoneIsInHome() { return settings.getBoolean("phoneIsInHome", false); }
     
     public void setHomeLocation(Location l) {
-    	Log.d("AWMonSettings", "Setting Location: (" + l.getLongitude() + "," + l.getLatitude() + ")");
-    	Log.d("AWMonSettings", "Setting float locations: " + (float)l.getLongitude() + "," + (float)l.getLatitude() +")");
+    	Log.d("AWMonSettings", "Setting Location: (" + l.getLatitude() + "," + l.getLongitude() + ")");
+    	Log.d("AWMonSettings", "Setting float locations: " + (float)l.getLatitude() + "," + (float)l.getLongitude() +")");
     	sEditor.putFloat("HomeLocLong", (float)l.getLongitude());
     	sEditor.putFloat("HomeLocLat", (float)l.getLatitude());
     	sEditor.putFloat("HomeLocAccuracy", (float)l.getAccuracy());
@@ -60,7 +60,7 @@ public class UserSettings {
     	
     	Location loc = new Location("Home");
     	loc.setLatitude(settings.getFloat("HomeLocLat", (float)40.443181));  // Easter Egg: default value
-    	loc.setLongitude(settings.getFloat("homeLocLong", (float)-79.943060));
+    	loc.setLongitude(settings.getFloat("HomeLocLong", (float)-79.943060));
     	loc.setAccuracy(settings.getFloat("HomeLocAccuracy", 100000));
     	return loc;
     }
