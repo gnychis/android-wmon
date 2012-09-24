@@ -1,26 +1,36 @@
 package com.gnychis.awmon.Interfaces;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.gnychis.awmon.R;
+import com.gnychis.awmon.BackgroundService.BackgroundService;
+import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.UserSettings;
 
 public class Status extends Activity implements OnClickListener {
 	
 	UserSettings _settings;
+	WifiManager _wifi;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	  super.onCreate(savedInstanceState);
 	  setContentView(R.layout.status);
+	  
+	  _wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 	  
 	  _settings = new UserSettings(this);
 	  
@@ -56,10 +66,47 @@ public class Status extends Activity implements OnClickListener {
 	  }
 	  
 	  // Set whether or not the phone is in the home
-	  if(_settings.phoneIsInHome())
+	  if(_settings.phoneIsInHome()) {
 		  ((TextView) findViewById(R.id.Status_txt_phoneIsInHome)).append("Yes");
-	  else
+		  ((TextView) findViewById(R.id.Status_txt_lastRSSI)).setText("Last RSSI:   " + Integer.toString(_wifi.getConnectionInfo().getRssi()));
+	  } else {
 		  ((TextView) findViewById(R.id.Status_txt_phoneIsInHome)).append("No");
+	  }
+	  
+	  
+	}
+	
+    private BroadcastReceiver sensorUpdate = new BroadcastReceiver() {
+        @Override @SuppressWarnings("unchecked")
+        public void onReceive(Context context, Intent intent) {
+        	ArrayList<Double> sensor_vals = (ArrayList<Double>) intent.getExtras().get("sensor_vals");
+        	((TextView) findViewById(R.id.Status_txt_X)).setText("X:  " + Double.toString(sensor_vals.get(0)));
+        	((TextView) findViewById(R.id.Status_txt_Y)).setText("Y:  " + Double.toString(sensor_vals.get(1)));
+        	((TextView) findViewById(R.id.Status_txt_Z)).setText("Z:  " + Double.toString(sensor_vals.get(2)));
+        	((TextView) findViewById(R.id.Status_txt_lastRSSI)).setText("Last RSSI:   " + Integer.toString(_wifi.getConnectionInfo().getRssi()));
+        }
+    };   
+    
+    private BroadcastReceiver rssiUpdate = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+        	int newRssi = intent.getIntExtra(WifiManager.EXTRA_NEW_RSSI, 0);
+        	((TextView) findViewById(R.id.Status_txt_lastRSSI)).setText("Last RSSI:   " + Integer.toString(newRssi));
+        }
+    }; 
+    
+	@Override
+	public void onPause() {
+		super.onPause();
+		unregisterReceiver(sensorUpdate);
+		unregisterReceiver(rssiUpdate);
+	}	
+
+	@Override
+	public void onResume() {
+		super.onResume();		
+		registerReceiver(sensorUpdate, new IntentFilter(BackgroundService.SENSOR_UPDATE));
+		registerReceiver(rssiUpdate, new IntentFilter(WifiManager.RSSI_CHANGED_ACTION));
 	}
 
 	// Check for clicks on various things on the status view

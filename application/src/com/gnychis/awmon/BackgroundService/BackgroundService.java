@@ -1,5 +1,6 @@
 package com.gnychis.awmon.BackgroundService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -23,7 +24,6 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
-import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -31,8 +31,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.R;
+import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.Core.UserSettings;
 
 public class BackgroundService extends Service implements SensorEventListener {
@@ -41,6 +41,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     static BackgroundService _this;
     PowerManager mPowerManager;
     
+    public static final String SENSOR_UPDATE = "awmon.sensor.update";
     public static String TAG = "AWMonBackground";
     
     PendingIntent mPendingIntent;
@@ -54,6 +55,7 @@ public class BackgroundService extends Service implements SensorEventListener {
 	private boolean mInitialized;
 	private SensorManager mSensorManager;
     private Sensor mAccelerometer;
+    private Sensor mOrientation;
     private final float NOISE = (float) 0.25;
     
     private UserSettings _settings;
@@ -61,6 +63,9 @@ public class BackgroundService extends Service implements SensorEventListener {
     public boolean mDisableWifiAS;
     public int mScansLeft;
     public final int NUM_SCANS=4;
+    
+    public float[] mAValues;
+    public float[] mMValues;
     
     // Used to keep the location of the home so that we know when the user is home.
     // However, we NEVER retrieve this information from the phone.  Your home location
@@ -96,11 +101,16 @@ public class BackgroundService extends Service implements SensorEventListener {
     	mScansLeft=0;					// Do not initialize with any scans
     	mPhoneIsInTheHome=false;		// To detect when the user is home
     	
+    	// Initialize some of the sensor data variables
+    	mAValues = new float[3];
+    	mMValues = new float[3];
+    	
     	_data_lock = new Semaphore(1,true);
     	
     	// Set up listeners to detect movement of the phone
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         
         // If we have already determined the location of the user's home (NEVER shared with us, and only
         // stored locally on your phone), then we read it from the application settings.
@@ -299,10 +309,33 @@ public class BackgroundService extends Service implements SensorEventListener {
     // we consider it to be stable (not moving).
 	@Override
 	public void onSensorChanged(SensorEvent event) {
+		
+		// Save the respective values
+        switch (event.sensor.getType ()){
+	        case Sensor.TYPE_ACCELEROMETER:
+	            mAValues = event.values.clone ();
+	            break;
+	        case Sensor.TYPE_MAGNETIC_FIELD:
+	            mMValues = event.values.clone ();
+	            break;
+        }
+		
 		boolean movement=false;
-		float x = event.values[0];
-		float y = event.values[1];
-		float z = event.values[2];
+		
+		// For calculation of the accelerometer
+		float x = mAValues[0];
+		float y = mAValues[1];
+		float z = mAValues[2];
+		
+		// Calculate the orientation
+		float[] R = new float[16];
+        float[] orientationValues = new float[3];
+        SensorManager.getRotationMatrix (R, null, mAValues, mMValues);
+        SensorManager.getOrientation (R, orientationValues);
+        orientationValues[0] = (float)Math.toDegrees (orientationValues[0]);
+        orientationValues[1] = (float)Math.toDegrees (orientationValues[1]);
+        orientationValues[2] = (float)Math.toDegrees (orientationValues[2]);
+
 		if (!mInitialized) {
 			mLastX = x;
 			mLastY = y;
@@ -318,6 +351,14 @@ public class BackgroundService extends Service implements SensorEventListener {
 			mLastX = x;
 			mLastY = y;
 			mLastZ = z;
+			
+			// Send out a broadcast with the change
+			ArrayList<Double> values = new ArrayList<Double>(3);
+			values.add((double)x); values.add((double)y); values.add((double)z);
+			Intent i = new Intent();
+			i.setAction(SENSOR_UPDATE);
+			i.putExtra("sensor_vals", values);
+			this.sendBroadcast(i);
 			
 			if (deltaX > deltaY) {  // We moved horizontally
 				if(mMainActivity!=null && DEBUG) mMainActivity.findViewById(R.id.main_id).setBackgroundColor(Color.RED);

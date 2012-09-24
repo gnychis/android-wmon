@@ -21,20 +21,60 @@
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
-        android:id="@+id/Status_txt_phoneIsInHome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Phone is in Home:    "
-        android:layout_marginTop="10dp"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <TextView
         android:id="@+id/Status_txt_LastLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:text="Last Location:    "
         android:onClick="onClick"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/Status_txt_phoneIsInHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Phone is in Home:    "
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/Status_txt_lastRSSI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Last RSSI:   "
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Phone Orientation"
+        android:layout_marginTop="10dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+	    <TextView
+        android:id="@+id/Status_txt_X"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="X:  "
+        android:layout_marginLeft="20dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+	        
+	    <TextView
+        android:id="@+id/Status_txt_Y"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Y:   "
+        android:layout_marginLeft="20dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+	    
+	    <TextView
+        android:id="@+id/Status_txt_Z"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:text="Z:   "
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </LinearLayout>
