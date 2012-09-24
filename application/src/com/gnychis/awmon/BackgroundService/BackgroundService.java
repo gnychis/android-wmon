@@ -31,8 +31,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.gnychis.awmon.R;
 import com.gnychis.awmon.AWMon;
+import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.UserSettings;
 
 public class BackgroundService extends Service implements SensorEventListener {
@@ -328,10 +328,10 @@ public class BackgroundService extends Service implements SensorEventListener {
 		float z = mAValues[2];
 		
 		// Calculate the orientation
-		float[] R = new float[16];
+		float[] rot = new float[16];
         float[] orientationValues = new float[3];
-        SensorManager.getRotationMatrix (R, null, mAValues, mMValues);
-        SensorManager.getOrientation (R, orientationValues);
+        SensorManager.getRotationMatrix (rot, null, mAValues, mMValues);
+        SensorManager.getOrientation (rot, orientationValues);
         orientationValues[0] = (float)Math.toDegrees (orientationValues[0]);
         orientationValues[1] = (float)Math.toDegrees (orientationValues[1]);
         orientationValues[2] = (float)Math.toDegrees (orientationValues[2]);
@@ -353,8 +353,9 @@ public class BackgroundService extends Service implements SensorEventListener {
 			mLastZ = z;
 			
 			// Send out a broadcast with the change
-			ArrayList<Double> values = new ArrayList<Double>(3);
+			ArrayList<Double> values = new ArrayList<Double>(6);
 			values.add((double)x); values.add((double)y); values.add((double)z);
+			values.add((double)orientationValues[0]); values.add((double)orientationValues[1]);  values.add((double)orientationValues[2]); 
 			Intent i = new Intent();
 			i.setAction(SENSOR_UPDATE);
 			i.putExtra("sensor_vals", values);

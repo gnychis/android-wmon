@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
-import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.UserSettings;
 
 public class Status extends Activity implements OnClickListener {
@@ -83,6 +82,9 @@ public class Status extends Activity implements OnClickListener {
         	((TextView) findViewById(R.id.Status_txt_X)).setText("X:  " + Double.toString(sensor_vals.get(0)));
         	((TextView) findViewById(R.id.Status_txt_Y)).setText("Y:  " + Double.toString(sensor_vals.get(1)));
         	((TextView) findViewById(R.id.Status_txt_Z)).setText("Z:  " + Double.toString(sensor_vals.get(2)));
+        	((TextView) findViewById(R.id.Status_txt_OX)).setText("X:  " + Double.toString(sensor_vals.get(3)));
+        	((TextView) findViewById(R.id.Status_txt_OY)).setText("Y:  " + Double.toString(sensor_vals.get(4)));
+        	((TextView) findViewById(R.id.Status_txt_OZ)).setText("Z:  " + Double.toString(sensor_vals.get(5)));
         	((TextView) findViewById(R.id.Status_txt_lastRSSI)).setText("Last RSSI:   " + Integer.toString(_wifi.getConnectionInfo().getRssi()));
         }
     };   

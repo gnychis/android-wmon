@@ -49,8 +49,8 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Phone Orientation"
         android:layout_marginTop="10dp"
+        android:text="Phone Acceleration"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
 	    <TextView
@@ -71,6 +71,38 @@
 	    
 	    <TextView
         android:id="@+id/Status_txt_Z"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:text="Z:   "
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+	    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Phone Orientation"
+        android:layout_marginTop="10dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+	    
+	    <TextView
+        android:id="@+id/Status_txt_OX"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="X:  "
+        android:layout_marginLeft="20dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+	        
+	    <TextView
+        android:id="@+id/Status_txt_OY"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Y:   "
+        android:layout_marginLeft="20dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+	    
+	    <TextView
+        android:id="@+id/Status_txt_OZ"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
