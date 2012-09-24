@@ -109,7 +109,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     	
     	// Set up listeners to detect movement of the phone
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ALL);
         mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         
         // If we have already determined the location of the user's home (NEVER shared with us, and only
@@ -215,8 +215,10 @@ public class BackgroundService extends Service implements SensorEventListener {
     // then we save it in the application preferences.
     private void home() {
     	Log.d(TAG, "Got an update that the phone is in the home");
-    	if(!mPhoneIsInTheHome)
+    	if(!mPhoneIsInTheHome) {
     		mSensorManager.registerListener(_this, mAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+    		mSensorManager.registerListener(_this, mOrientation, SensorManager.SENSOR_DELAY_NORMAL);
+    	}
     	mPhoneIsInTheHome=true;
     	_settings.setPhoneIsInHome(true);
     	
