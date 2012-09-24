@@ -110,6 +110,12 @@ public class Status extends Activity implements OnClickListener {
 		registerReceiver(sensorUpdate, new IntentFilter(BackgroundService.SENSOR_UPDATE));
 		registerReceiver(rssiUpdate, new IntentFilter(WifiManager.RSSI_CHANGED_ACTION));
 	}
+	
+	public void clickedMeasurements(View v) {
+		Intent i;
+		i = new Intent(Status.this, Measurements.class);
+        startActivity(i);
+	}
 
 	// Check for clicks on various things on the status view
 	public void onClick(View view) {
