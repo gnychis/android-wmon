@@ -89,26 +89,16 @@ public class Status extends Activity implements OnClickListener {
         }
     };   
     
-    private BroadcastReceiver rssiUpdate = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-        	int newRssi = intent.getIntExtra(WifiManager.EXTRA_NEW_RSSI, 0);
-        	((TextView) findViewById(R.id.Status_txt_lastRSSI)).setText("Last RSSI:   " + Integer.toString(newRssi));
-        }
-    }; 
-    
 	@Override
 	public void onPause() {
 		super.onPause();
 		unregisterReceiver(sensorUpdate);
-		unregisterReceiver(rssiUpdate);
 	}	
 
 	@Override
 	public void onResume() {
 		super.onResume();		
 		registerReceiver(sensorUpdate, new IntentFilter(BackgroundService.SENSOR_UPDATE));
-		registerReceiver(rssiUpdate, new IntentFilter(WifiManager.RSSI_CHANGED_ACTION));
 	}
 	
 	public void clickedMeasurements(View v) {
