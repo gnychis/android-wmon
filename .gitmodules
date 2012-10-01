@@ -1,3 +1,6 @@
 [submodule "core"]
 	path = core
 	url = git@github.com:gnychis/android-wmon-core.git
+[submodule "android-root-helper"]
+	path = android-root-helper
+	url = git@github.com:gnychis/android-root-helper.git

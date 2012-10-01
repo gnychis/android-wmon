@@ -109,7 +109,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     	
     	// Set up listeners to detect movement of the phone
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ALL);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         
         // If we have already determined the location of the user's home (NEVER shared with us, and only
@@ -355,7 +355,7 @@ public class BackgroundService extends Service implements SensorEventListener {
 			mLastZ = z;
 			
 			// Send out a broadcast with the change
-			ArrayList<Double> values = new ArrayList<Double>(6);
+			ArrayList<Double> values = new ArrayList<Double>(9);
 			values.add((double)x); values.add((double)y); values.add((double)z);
 			values.add((double)orientationValues[0]); values.add((double)orientationValues[1]);  values.add((double)orientationValues[2]); 
 			Intent i = new Intent();
