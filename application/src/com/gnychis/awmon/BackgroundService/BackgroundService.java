@@ -232,8 +232,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     private void notHome() {
     	Log.d(TAG, "The phone is not in the home");
     	if(mPhoneIsInTheHome) {
-    		mSensorManager.
-Listener(_this);
+    		mSensorManager.unregisterListener(_this);
     	}
     	if(mMainActivity!=null && DEBUG) mMainActivity.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
     	mPhoneIsInTheHome=false;
