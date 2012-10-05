@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.USBMon;
