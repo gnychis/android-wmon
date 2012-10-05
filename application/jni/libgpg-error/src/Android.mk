@@ -7,7 +7,6 @@ LOCAL_SRC_FILES:= \
 	gpg-error.c \
 	strerror.c \
 	code-to-errno.c \
-	versioninfo.rc \
 	strerror-sym.c \
 	init.c \
 	strsource.c
