@@ -2,7 +2,7 @@
 app_name="$1"
 iface_name=""
 while [ "$iface_name" == "" ]; do 
-  iface_name=$(find /sys/devices/platform -name "*wlan*" | grep hsusb | awk -F'/' '{print $NF}')
+  iface_name=$(find /sys/devices/platform -name "*wlan*" | grep usb | awk -F'/' '{print $NF}')
   sleep 1
 done
 echo $iface_name
