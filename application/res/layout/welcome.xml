@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/welcome_id"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical">
+    android:orientation="vertical" >
 
     <TextView
         android:id="@+id/textView1"
@@ -15,6 +15,7 @@
 
     <Spinner
         android:id="@+id/network_list"
+        android:layout_below="@+id/textView1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -22,12 +23,14 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10pt"
+        android:layout_marginTop="15pt"
+        android:layout_below="@+id/network_list"
         android:text="(Optional) My age range is ..."
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Spinner
         android:id="@+id/age_group"
+        android:layout_below="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -35,11 +38,14 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10pt"
+        android:layout_marginTop="20pt"
+        android:layout_below="@+id/age_group"
         android:text="(Optional) My phone has been in the ..."
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TableLayout
+        android:id="@+id/tableLayout1"
+        android:layout_below="@+id/textView3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
@@ -84,22 +90,25 @@
         </TableRow>
     </TableLayout>
 
+    
     <Button
         android:id="@+id/continue_button"
         android:layout_width="105dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:layout_marginTop="25dp"
+        android:layout_above="@+id/textView4"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
         android:onClick="clickedFinished"
         android:text="Done" />
-
+    
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="45dp"
+		android:layout_alignParentBottom="true"
         android:text="NOTE:  Your home network needs to be correct!"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
-</LinearLayout>
+
+</RelativeLayout>
