@@ -9,7 +9,7 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:text="Add Networks and Devices:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     
@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/buttonAddNetwork"
-        android:layout_marginTop="42dp"
+        android:layout_marginTop="32dp"
         android:text="Manage Your Networks and Devices:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     
@@ -51,7 +51,7 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="42dp"
+        android:layout_marginTop="32dp"
         android:layout_below="@+id/buttonManageDevs"
         android:layout_alignParentLeft="true"
         android:text="Resolve Problems With Your Devices:"
