@@ -1,37 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!-- <?xml version="1.0" encoding="utf-8"?> -->
-<!-- <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" -->
-<!--   android:orientation="vertical" android:layout_width="fill_parent" -->
-<!--   android:layout_height="fill_parent"> -->
-
-<!--   <Button android:layout_height="wrap_content" android:id="@+id/buttonAddNetwork" -->
-<!--     android:text="Add a Network" android:layout_width="match_parent"></Button> -->
-<!--   <Button android:layout_height="wrap_content" android:id="@+id/buttonAddDevice" -->
-<!--     android:text="Add a Device" android:layout_width="match_parent"></Button> -->
-<!--   <Button android:layout_height="wrap_content" android:id="@+id/buttonManageDevs" -->
-<!--     android:text="Manage Networks and Devices" android:layout_width="match_parent"></Button> -->
-<!--   <Button android:layout_height="wrap_content" android:id="@+id/buttonNetworkDiag" -->
-<!--     android:text="Diagnose Network Problem" android:layout_width="match_parent"></Button> -->
-<!--   <Button android:layout_height="wrap_content" android:id="@+id/buttonScan" -->
-<!--     android:text="Scan Spectrum" android:layout_width="match_parent"></Button> -->
-<!--   <Button android:layout_height="wrap_content" android:id="@+id/buttonViewSpectrum" -->
-<!--     android:text="View Spectrum" android:layout_width="match_parent"></Button> -->
-<!--   <Button android:layout_height="wrap_content" android:id="@+id/buttonAdb" -->
-<!--     android:text="ADB over TCP" android:layout_width="match_parent"></Button> -->
-<!--   <ScrollView android:id="@+id/ScrollView01" -->
-<!--     android:layout_width="wrap_content" android:layout_height="wrap_content"> -->
-<!--     <TextView android:layout_width="fill_parent" -->
-<!--       android:layout_height="wrap_content" android:id="@+id/textStatus" -->
-<!--       android:text="Results:" /> -->
-<!--   </ScrollView> -->
-
-<!-- </LinearLayout> -->
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_id"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:id="@+id/main_id"
     android:orientation="vertical" >
 
     <TextView
@@ -41,102 +12,106 @@
         android:layout_marginTop="10dp"
         android:text="Add Networks and Devices:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
-
+    
+    
     <Button
         android:id="@+id/buttonAddNetwork"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView1"
         android:text="By A List of Nearby Networks and Devices" />
-
-    <Button
-        android:id="@+id/buttonAddProximity"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="By Holding Your Phone Up to a Device" />
-
+    
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_below="@+id/buttonAddNetwork"
+        android:layout_marginTop="42dp"
         android:text="Manage Your Networks and Devices:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
-
+    
+    <Button
+        android:id="@+id/buttonAddProximity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView2"
+        android:text="By Holding Your Phone Up to a Device" />
+    
     <Button
         android:id="@+id/buttonManageDevs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/buttonAddProximity"
         android:text="Show My Networks and Devices" />
-
+    
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="42dp"
+        android:layout_below="@+id/buttonManageDevs"
+        android:layout_alignParentLeft="true"
         android:text="Resolve Problems With Your Devices:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
-
+    
     <Button
         android:id="@+id/buttonSuggestChanges"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/textView3"
+        android:layout_alignParentLeft="true"
         android:text="Show Me Suggested Changes" />
 
     <Button
         android:id="@+id/buttonNotWorking"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonSuggestChanges"
+        android:layout_alignParentLeft="true"
         android:text="My Device is Not Working..." />
     
-    <ScrollView android:id="@+id/ScrollView01"
-    android:layout_width="wrap_content" android:layout_height="wrap_content">
-
+    
     <TextView
         android:id="@+id/textStatus"
         android:layout_width="fill_parent"
-        android:layout_height="77dp"
-        android:layout_marginTop="10dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/buttonNotWorking"
+        android:layout_alignParentLeft="true"
         android:text="Error text box..."
+        android:layout_marginTop="5dp"
         android:textColor="#ff0000" />
-
-  	</ScrollView>
-
-<!--    <CheckBox
-        android:id="@+id/checkBox1"
+    
+    <ScrollView
+        android:id="@+id/ScrollView01"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="160dp"
-        android:layout_marginTop="45dp"
-        android:text="Show advanced information" />
--->
+        android:layout_height="wrap_content" >
+    </ScrollView>
 
-	    <LinearLayout
-	        android:layout_width="fill_parent"
-	        android:layout_height="45dp"
-	        android:layout_gravity="bottom"
-	        android:background="@android:drawable/bottom_bar"
-	        android:orientation="horizontal"
-	        android:layout_marginTop="45dp"
-	        android:paddingBottom="1.0dip"
-	        android:paddingLeft="4.0dip"
-	        android:paddingRight="4.0dip"
-	        android:paddingTop="5.0dip">
+    <LinearLayout
+        android:id="@+id/bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="54dip"
+        android:layout_alignParentBottom="true"
+        android:background="@android:drawable/bottom_bar" >
 
         <Button
             android:id="@+id/buttonStatus"
-            android:layout_width="0.0dip"
-            android:layout_height="fill_parent"
-            android:layout_weight="1.0"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_weight="1"
             android:text="Status" />
 
-    <Button
-        android:id="@+id/buttonSettings"
-        android:layout_width="0.0dip"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:layout_weight="1.0" 
-        android:text="Settings" />
-
+        <Button
+            android:id="@+id/buttonSettings"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_weight="1"
+            android:text="Settings" />
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>
