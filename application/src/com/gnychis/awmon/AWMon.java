@@ -169,7 +169,7 @@ public class AWMon extends Activity implements OnClickListener {
 		    	RootTools.installBinary(parent, R.raw.link_libraries, "link_libraries.sh", "755");
 		    	RootTools.installBinary(parent, R.raw.init_wifi, "init_wifi.sh", "755");
 		    	RootTools.installBinary(parent, R.raw.tcpdump, "tcpdump", "755");
-		    	RootTools.installBinary(parent, R.raw.tshark_exec, "tshark_exec", "755");
+		    	RootTools.installBinary(parent, R.raw.tshark, "tshark", "755");
 		    	
 		    	// Run a script that will link libraries in /system/lib so that our binaries can run
 		    	Log.d(TAG, "Creating links to libraries...");
@@ -193,6 +193,8 @@ public class AWMon extends Activity implements OnClickListener {
 				r += "Failed to initialize USB subsystem...\n";			
 			if(wiresharkInit()!=1)
 				r += "Failed to initialize wireshark library...\n";
+			
+			wiresharkTest("/sdcard/test.pcap");
 			
 			return r;
 		}

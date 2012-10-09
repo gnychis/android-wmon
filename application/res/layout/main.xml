@@ -22,29 +22,31 @@
         android:layout_below="@+id/textView1"
         android:text="By A List of Nearby Networks and Devices" />
     
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/buttonAddNetwork"
-        android:layout_marginTop="32dp"
-        android:text="Manage Your Networks and Devices:"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-    
+        
     <Button
         android:id="@+id/buttonAddProximity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/textView2"
+        android:layout_below="@+id/buttonAddNetwork"
         android:text="By Holding Your Phone Up to a Device" />
+    
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonAddProximity"
+        android:layout_marginTop="32dp"
+        android:text="Manage Your Networks and Devices:"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
     
     <Button
         android:id="@+id/buttonManageDevs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/buttonAddProximity"
+        android:layout_below="@+id/textView2"
         android:text="Show My Networks and Devices" />
     
     <TextView

@@ -58,6 +58,28 @@
 #include "capture-pcap-util.h"
 #include "print.h"
 
+/** Return values from functions that only can succeed or fail. */
+typedef enum {
+	CF_OK,			    /**< operation succeeded */
+	CF_ERROR	/**< operation got an error (function may provide err with details) */
+} cf_status_t;
+
+/** Return values from functions that read capture files. */
+typedef enum {
+	CF_READ_OK,		/**< operation succeeded */
+	CF_READ_ERROR,		/**< operation got an error (function may provide err with details) */
+	CF_READ_ABORTED		/**< operation aborted by user */
+} cf_read_status_t;
+
+/** Return values from functions that print sets of packets. */
+typedef enum {
+	CF_PRINT_OK,		    /**< print operation succeeded */
+	CF_PRINT_OPEN_ERROR,    /**< print operation failed while opening printer */
+	CF_PRINT_WRITE_ERROR    /**< print operation failed while writing to the printer */
+} cf_print_status_t;
+
+
+
 unsigned long _pkt_count;
 
 void dissectCleanup(int ptr);
@@ -94,7 +116,9 @@ typedef enum {
 static JNIEnv *_env;
 static jobject _obj;
 
+output_fields_t* output_fields  = NULL;
 static output_action_e output_action;
+static print_stream_t *print_stream;
 
 extern void proto_tree_get_node_field_values(proto_node *node, gpointer data);
 extern void tshark_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
@@ -105,7 +129,7 @@ extern void write_failure_message(const char *filename, int err);
 
 #define LOG_TAG "WiresharkDriver"
 //#define VERBOSE
-
+  
 struct _output_fields {
     gboolean print_header;
     gchar separator;
@@ -160,7 +184,9 @@ Java_com_gnychis_awmon_AWMon_wiresharkTestGetAll(JNIEnv* env, jobject thiz, jstr
 	
 		// Read in the first packet header
 		if((z = fread(&pheader, sizeof(pheader), 1, bf)) != 1) {
+#ifdef VERBOSE
 			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet header\n");
+#endif
 			break;
 		}
 #ifdef VERBOSE
@@ -170,7 +196,9 @@ Java_com_gnychis_awmon_AWMon_wiresharkTestGetAll(JNIEnv* env, jobject thiz, jstr
 		// Read in the packet now
 		data_buffer = malloc(pheader.caplen);
 		if((z = fread(data_buffer, pheader.caplen, 1, bf)) != 1) {
+#ifdef VERBOSE
 			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet after %d packets\n", parsed);
+#endif
 			break;
 		}
 #ifdef VERBOSE
@@ -232,7 +260,9 @@ Java_com_gnychis_awmon_AWMon_wiresharkTest(JNIEnv* env, jobject thiz, jstring js
 	
 		// Read in the first packet header
 		if((z = fread(&pheader, sizeof(pheader), 1, bf)) != 1) {
+#ifdef VERBOSE
 			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet header\n");
+#endif
 			break;
 		}
 #ifdef VERBOSE
@@ -242,7 +272,9 @@ Java_com_gnychis_awmon_AWMon_wiresharkTest(JNIEnv* env, jobject thiz, jstring js
 		// Read in the packet now
 		data_buffer = malloc(pheader.caplen);
 		if((z = fread(data_buffer, pheader.caplen, 1, bf)) != 1) {
+#ifdef VERBOSE
 			__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Could not read packet after %d packets\n", parsed);
+#endif
 			break;
 		}
 #ifdef VERBOSE
@@ -298,56 +330,6 @@ dissectCleanup(int ptr)
 
   if(dissection!=NULL)
     free(dissection);
-}
-
-int
-dissectPacket(char *pHeader, char *pData, int encap)
-{
-	// From the Java environment
-	struct wtap_pkthdr whdr;
-	int i;
-	gsize z;
-	
-	// Wireshark related
-	frame_data fdata;
-	gboolean create_proto_tree = 1;
-	gint64 offset = 0;
-	union wtap_pseudo_header psh;
-
-	// This structure is *critical*, it holds two points which we hold and pass back to
-	// the Java code.  This way we don't have to dissect multiple times for a packet.
-	write_field_data_t *dissection = malloc(sizeof(write_field_data_t));
-	dissection->edt = malloc(sizeof(epan_dissect_t));
-	memset(dissection->edt, '\0', sizeof(epan_dissect_t));
-
-	// We are going to copy, not cast, in to the whdr because we need to set an additional value
-	memcpy(&whdr, pHeader, sizeof(struct wtap_pkthdr));
-	whdr.pkt_encap = encap;
-
-	// Set up the frame data
-	frame_data_init(&fdata, 0, &whdr, offset, cum_bytes);  // count is hardcoded 0, doesn't matter
-
-	// Set up the dissection
-	epan_dissect_init(dissection->edt, create_proto_tree, 1);
-	tap_queue_init(dissection->edt);
-
-	// Set some of the frame data
-	memset(&cfile.elapsed_time, '\0', sizeof(nstime_t));
-	memset(&first_ts, '\0', sizeof(nstime_t));
-	memset(&prev_dis_ts, '\0', sizeof(nstime_t));
-	memset(&prev_cap_ts, '\0', sizeof(nstime_t));
-	frame_data_set_before_dissect(&fdata, &cfile.elapsed_time,
-									&first_ts, &prev_dis_ts, &prev_cap_ts);
-	fdata.file_off=0;
-
-	// Run the actual dissection
-	memset(&psh, '\0', sizeof(union wtap_pseudo_header));
-	epan_dissect_run(dissection->edt, &psh, pData, &fdata, NULL);
-
-	// Do some cleanup
-	frame_data_cleanup(&fdata);
-
-	return (int)dissection;
 }
 
 jint
@@ -568,7 +550,6 @@ wireshark_get_fields(proto_node *node, gpointer data)
 	/* Uninterpreted data, i.e., the "Data" protocol, is
 	 * printed as a field instead of a protocol. */
 	else if (fi->hfinfo->id == proto_data) {
-
 	}
 	/* Normal protocols and fields */
 	else {
@@ -616,7 +597,7 @@ wireshark_get_fields(proto_node *node, gpointer data)
 				//print_escaped_xml(pdata->fh, &dfilter_string[chop_len]);
         snprintf(item->str, 256, "%s %s", fi->hfinfo->abbrev, &dfilter_string[chop_len]); 
 #ifdef VERBOSE
-//				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "field: %s - %s", fi->hfinfo->abbrev, &dfilter_string[chop_len]);
+				__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "field: %s - %s", fi->hfinfo->abbrev, &dfilter_string[chop_len]);
 #endif
         pdata->num_fields++;
 			}
@@ -635,7 +616,6 @@ wireshark_get_fields(proto_node *node, gpointer data)
 char *
 wiresharkGet(int wfd_ptr, gchar *field)
 {
-	output_fields_t* output_fields  = NULL;
 	int z = 1;
 	jstring result;
 	char *str_res = malloc(1024);	// assuming string result will be no more than 1024
@@ -923,7 +903,7 @@ Java_com_gnychis_awmon_AWMon_wiresharkInit( JNIEnv* env, jobject thiz )
   
   cfile.rfcode = rfcode;
   
-  do_dissection = 1;
+  do_dissection = TRUE;
 
   timestamp_set_precision(TS_PREC_AUTO_USEC);
   /* disabled protocols as per configuration file */
