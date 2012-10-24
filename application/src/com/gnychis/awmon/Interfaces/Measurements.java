@@ -19,7 +19,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.gnychis.awmon.R;
-import com.gnychis.awmon.BackgroundService.BackgroundService;
+import com.gnychis.awmon.BackgroundService.MotionDetector;
 
 public class Measurements extends Activity {
 
@@ -45,7 +45,7 @@ public class Measurements extends Activity {
 		if(!_active_orientationRSSI) {
 			_active_orientationRSSI=true;
 			_measuring=true;
-			registerReceiver(sensorUpdate, new IntentFilter(BackgroundService.SENSOR_UPDATE));
+			registerReceiver(sensorUpdate, new IntentFilter(MotionDetector.SENSOR_UPDATE));
 			((Button) findViewById(R.id.Measurements_btn_OrientationRSSI)).setBackgroundColor(Color.RED);
 			
 			// Open a JSON file for logging

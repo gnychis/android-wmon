@@ -16,7 +16,7 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.gnychis.awmon.R;
-import com.gnychis.awmon.BackgroundService.BackgroundService;
+import com.gnychis.awmon.BackgroundService.MotionDetector;
 import com.gnychis.awmon.Core.UserSettings;
 
 public class Status extends Activity implements OnClickListener {
@@ -34,7 +34,7 @@ public class Status extends Activity implements OnClickListener {
 	  _settings = new UserSettings(this);
 	  
 	  // Show the home SSID
-	  ((TextView) findViewById(R.id.homeSSID)).append(_settings.getHomeSSID());
+	  ((TextView) findViewById(R.id.homeSSID)).append(_settings.getHomeSSID() + "  (" + String.valueOf(_settings.getHomeWifiFreq()) + "MHz)");
 	  
 	  // State whether or not we have a record of the home's location
 	  Location homeLoc = _settings.getHomeLocation();
@@ -98,7 +98,7 @@ public class Status extends Activity implements OnClickListener {
 	@Override
 	public void onResume() {
 		super.onResume();		
-		registerReceiver(sensorUpdate, new IntentFilter(BackgroundService.SENSOR_UPDATE));
+		registerReceiver(sensorUpdate, new IntentFilter(MotionDetector.SENSOR_UPDATE));
 	}
 	
 	public void clickedMeasurements(View v) {

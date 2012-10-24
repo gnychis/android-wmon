@@ -160,20 +160,22 @@ public class AWMon extends Activity implements OnClickListener {
 		    	RootTools.installBinary(parent, R.raw.lsusb, "lsusb", "755");
 		    	RootTools.installBinary(parent, R.raw.lsusb_core, "lsusb_core", "755");
 		    	RootTools.installBinary(parent, R.raw.testlibusb, "testlibusb", "755");
-		    	RootTools.installBinary(parent, R.raw.htc_7010, "htc_7010.fw");
 		    	RootTools.installBinary(parent, R.raw.iwlist, "iwlist", "755");
 		    	RootTools.installBinary(parent, R.raw.iw, "iw", "755");
 		    	RootTools.installBinary(parent, R.raw.spectool_mine, "spectool_mine", "755");
 		    	RootTools.installBinary(parent, R.raw.spectool_raw, "spectool_raw", "755");
 		    	RootTools.installBinary(parent, R.raw.ubertooth_util, "ubertooth_util", "755");
 		    	RootTools.installBinary(parent, R.raw.link_libraries, "link_libraries.sh", "755");
+		    	RootTools.installBinary(parent, R.raw.link_binaries, "link_binaries.sh", "755");
 		    	RootTools.installBinary(parent, R.raw.init_wifi, "init_wifi.sh", "755");
 		    	RootTools.installBinary(parent, R.raw.tcpdump, "tcpdump", "755");
 		    	RootTools.installBinary(parent, R.raw.tshark, "tshark", "755");
+		    	RootTools.installBinary(parent, R.raw.dumpcap, "dumpcap", "755");
 		    	
 		    	// Run a script that will link libraries in /system/lib so that our binaries can run
 		    	Log.d(TAG, "Creating links to libraries...");
 		    	awmon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_libraries.sh " + AWMon._app_name);
+		    	awmon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_binaries.sh " + AWMon._app_name);
 		    			
 	        } catch(Exception e) {	Log.e(TAG, "error running RootTools commands for init", e); }
 
@@ -353,7 +355,7 @@ public class AWMon extends Activity implements OnClickListener {
 	}
 	
 
-	public ArrayList<String> runCommand(String c) {
+	static public ArrayList<String> runCommand(String c) {
 		ArrayList<String> res = new ArrayList<String>();
 		try {
 			// First, run the command push the result to an ArrayList
@@ -400,6 +402,7 @@ public class AWMon extends Activity implements OnClickListener {
 	// This triggers a scan through the networks to return a list of
 	// networks and devices for a user to add for management.
 	public void clickAddNetwork() {
+		
 		int max_progress;
 		
 		// Do not start another scan, if we already are
@@ -426,6 +429,7 @@ public class AWMon extends Activity implements OnClickListener {
 			_pd.setMax(max_progress);
 		}
 		_pd.show();
+		
 	}
 	
 	// Used to send messages to the main Activity (UI) thread

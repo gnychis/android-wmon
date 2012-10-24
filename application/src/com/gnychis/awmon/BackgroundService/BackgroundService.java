@@ -34,14 +34,15 @@ import android.util.Log;
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.UserSettings;
+import com.gnychis.awmon.DeviceHandlers.Wifi;
 
-public class BackgroundService extends Service implements SensorEventListener {
+public class BackgroundService extends Service {
 
     public static AWMon mMainActivity;
     static BackgroundService _this;
+    private MotionDetector _motionDetector;
     PowerManager mPowerManager;
     
-    public static final String SENSOR_UPDATE = "awmon.sensor.update";
     public static String TAG = "AWMonBackground";
     
     PendingIntent mPendingIntent;
@@ -49,23 +50,13 @@ public class BackgroundService extends Service implements SensorEventListener {
 
     public final int LOCATION_TOLERANCE=150;			// in meters
     public final int LOCATION_UPDATE_INTERVAL=120000; //900000;	// in milliseconds (15 minutes)
-    private final boolean DEBUG=true;
-
-	private float mLastX, mLastY, mLastZ;
-	private boolean mInitialized;
-	private SensorManager mSensorManager;
-    private Sensor mAccelerometer;
-    private Sensor mOrientation;
-    private final float NOISE = (float) 0.25;
+    public static final boolean DEBUG=true;
     
     private UserSettings _settings;
 
     public boolean mDisableWifiAS;
     public int mScansLeft;
     public final int NUM_SCANS=4;
-    
-    public float[] mAValues;
-    public float[] mMValues;
     
     // Used to keep the location of the home so that we know when the user is home.
     // However, we NEVER retrieve this information from the phone.  Your home location
@@ -94,23 +85,14 @@ public class BackgroundService extends Service implements SensorEventListener {
     	Log.d(TAG, "Background service is now running");
     	    	    	    	    
     	_settings = new UserSettings(this);
+    	_motionDetector = new MotionDetector(this);
     	    	
-        mInitialized = false;			// Related to initializing the sensors
     	mNextLocIsHome=false;			// The next "location" update would be the user's home location
     	mDisableWifiAS=false;			// Initialize "disable wifi after scan"
     	mScansLeft=0;					// Do not initialize with any scans
     	mPhoneIsInTheHome=false;		// To detect when the user is home
     	
-    	// Initialize some of the sensor data variables
-    	mAValues = new float[3];
-    	mMValues = new float[3];
-    	
     	_data_lock = new Semaphore(1,true);
-    	
-    	// Set up listeners to detect movement of the phone
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         
         // If we have already determined the location of the user's home (NEVER shared with us, and only
         // stored locally on your phone), then we read it from the application settings.
@@ -216,8 +198,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     private void home() {
     	Log.d(TAG, "Got an update that the phone is in the home");
     	if(!mPhoneIsInTheHome) {
-    		mSensorManager.registerListener(_this, mAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
-    		mSensorManager.registerListener(_this, mOrientation, SensorManager.SENSOR_DELAY_NORMAL);
+    		_motionDetector.registerSensors();
     	}
     	mPhoneIsInTheHome=true;
     	_settings.setPhoneIsInHome(true);
@@ -232,7 +213,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     private void notHome() {
     	Log.d(TAG, "The phone is not in the home");
     	if(mPhoneIsInTheHome) {
-    		mSensorManager.unregisterListener(_this);
+    		_motionDetector.unregisterSensors();
     	}
     	if(mMainActivity!=null && DEBUG) mMainActivity.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
     	mPhoneIsInTheHome=false;
@@ -273,8 +254,10 @@ public class BackgroundService extends Service implements SensorEventListener {
     	WifiInfo currWifi = wifi.getConnectionInfo();
     	ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
     	NetworkInfo wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-    	if(wifiInfo.isConnected() && currWifi.getSSID().equals(_settings.getHomeSSID()))
+    	if(wifiInfo.isConnected() && currWifi.getSSID().equals(_settings.getHomeSSID())) {
     		associatedToHomeAP=true;
+    		_settings.setHomeWifiFreq(Wifi.getOperationalFreq("wlan0"));
+    	}
     	
     	_settings.setLastLocation(location);
     	
@@ -306,76 +289,6 @@ public class BackgroundService extends Service implements SensorEventListener {
     	}
     }    
 
-    // We have an update on the sensor data.  We check that the movement of the phone
-    // exceeds a threshold, and if so we consider the phone as actively moving, otherwise
-    // we consider it to be stable (not moving).
-	@Override
-	public void onSensorChanged(SensorEvent event) {
-		
-		// Save the respective values
-        switch (event.sensor.getType ()){
-	        case Sensor.TYPE_ACCELEROMETER:
-	            mAValues = event.values.clone ();
-	            break;
-	        case Sensor.TYPE_MAGNETIC_FIELD:
-	            mMValues = event.values.clone ();
-	            break;
-        }
-		
-		boolean movement=false;
-		
-		// For calculation of the accelerometer
-		float x = mAValues[0];
-		float y = mAValues[1];
-		float z = mAValues[2];
-		
-		// Calculate the orientation
-		float[] rot = new float[16];
-        float[] orientationValues = new float[3];
-        SensorManager.getRotationMatrix (rot, null, mAValues, mMValues);
-        SensorManager.getOrientation (rot, orientationValues);
-        orientationValues[0] = (float)Math.toDegrees (orientationValues[0]);
-        orientationValues[1] = (float)Math.toDegrees (orientationValues[1]);
-        orientationValues[2] = (float)Math.toDegrees (orientationValues[2]);
-
-		if (!mInitialized) {
-			mLastX = x;
-			mLastY = y;
-			mLastZ = z;
-			mInitialized = true;
-		} else {
-			float deltaX = Math.abs(mLastX - x);
-			float deltaY = Math.abs(mLastY - y);
-			float deltaZ = Math.abs(mLastZ - z);
-			if (deltaX < NOISE) deltaX = (float)0.0;
-			if (deltaY < NOISE) deltaY = (float)0.0;
-			if (deltaZ < NOISE) deltaZ = (float)0.0;
-			mLastX = x;
-			mLastY = y;
-			mLastZ = z;
-			
-			// Send out a broadcast with the change
-			ArrayList<Double> values = new ArrayList<Double>(9);
-			values.add((double)x); values.add((double)y); values.add((double)z);
-			values.add((double)orientationValues[0]); values.add((double)orientationValues[1]);  values.add((double)orientationValues[2]); 
-			Intent i = new Intent();
-			i.setAction(SENSOR_UPDATE);
-			i.putExtra("sensor_vals", values);
-			this.sendBroadcast(i);
-			
-			if (deltaX > deltaY) {  // We moved horizontally
-				if(mMainActivity!=null && DEBUG) mMainActivity.findViewById(R.id.main_id).setBackgroundColor(Color.RED);
-				movement=true;
-			} else if (deltaY > deltaX) {  // We moved vertically
-				if(mMainActivity!=null && DEBUG) mMainActivity.findViewById(R.id.main_id).setBackgroundColor(Color.RED);
-				movement=true;
-			} else {
-				if(mMainActivity!=null && DEBUG) mMainActivity.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
-				movement=false;
-			}
-		}
-	}
-
     @Override
     public void onDestroy() {
     	super.onDestroy();
@@ -385,13 +298,11 @@ public class BackgroundService extends Service implements SensorEventListener {
     // When the phone is being shut down or the application is being destroyed, we perform a cleanup
     // action and note the change in state of the phone.
     private void cleanup() {
-    	mSensorManager.unregisterListener(this);
+    	_motionDetector.unregisterSensors();
     }
     
     @Override
     public IBinder onBind(Intent intent) { return null; }
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 	public static void setMainActivity(AWMon activity) { mMainActivity = activity; }
 	
 }

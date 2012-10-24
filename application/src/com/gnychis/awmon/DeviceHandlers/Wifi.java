@@ -84,7 +84,7 @@ public class Wifi {
 	public static int SCAN_WAIT_COUNTS=SCAN_WAIT_TIME/SCAN_UPDATE_TIME;
 	public static boolean _native_scan=false;
 	public static boolean _one_shot_scan=false;
-	public static boolean _active_scan=false;
+	public static boolean _active_scan=true;
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	ArrayList<Packet> _scan_results;
 
@@ -109,6 +109,14 @@ public class Wifi {
 			return -1;
 		
 		return frequencies[index];
+	}
+	
+	static public int getOperationalFreq(String ifname) {
+		ArrayList<String> res = AWMon.runCommand("iwconfig " + ifname + " | grep Freq | awk '{print $2}' | awk -F':' '{print $2}'");
+		if(res.size()==0)
+			return -1;
+		else
+			return Integer.parseInt(res.get(0).replace(".", ""));
 	}
 	
 	// Take a frequency in KHz, get a channel!
@@ -266,6 +274,14 @@ public class Wifi {
 		coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
 	}
 	
+	static public void setChannel(String ifname, int channel) {
+		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + ifname + " set channel " + Integer.toString(channel));
+	}
+	
+	static public void setFrequency(String ifname, int frequency) {
+		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + ifname + " set freq " + Integer.toString(frequency));
+	}
+	
 	public void disconnected() {
 		_device_connected=false;
 	}
@@ -304,6 +320,7 @@ public class Wifi {
 			AWMon awmon = (AWMon) params[0];
 			awmon.runCommand("sh /data/data/" + AWMon._app_name + "/files/init_wifi.sh " + AWMon._app_name);
 			AWMon.sendMainMessage(awmon._handler, ThreadMessages.WIFIDEV_INITIALIZED);
+			//setFrequency(_wlan_iface_name, );
 			return "true";
 		}		
 	}
@@ -510,11 +527,10 @@ public class Wifi {
 					} catch(Exception e) { Log.e("WifiScan", "Error writing pcap packet", e); }
 				}
 				
-				// To identify beacon: wlan_mgt.fixed.beacon is set.  If it is a beacon, add it
-				// to our scan result.  This does not guarantee one beacon frame per network, but
-				// pruning can be done at the next level.
+				// Take any packet where there is an SSID in it and the BSSID equals the wlan.sa, which
+				// means the packet was transmit by the AP.
 				rpkt.dissect();
-				if(rpkt.getField("wlan_mgt.fixed.beacon")!=null) {
+				if( rpkt.getField("wlan_mgt.ssid")!=null && rpkt.getField("wlan.bssid").equals(rpkt.getField("wlan.sa"))) {
 					debugOut("[" + Integer.toString(_received_pkts) + "] Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
 					_scan_results.add(rpkt);
 				}
