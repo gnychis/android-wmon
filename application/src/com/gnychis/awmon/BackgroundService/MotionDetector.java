@@ -2,8 +2,10 @@ package com.gnychis.awmon.BackgroundService;
 
 import java.util.ArrayList;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -42,7 +44,26 @@ public class MotionDetector implements SensorEventListener {
         mSensorManager = (SensorManager) bs.getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        
+        _backgroundService.registerReceiver(locationUpdate, new IntentFilter(LocationMonitor.LOCATION_UPDATE));
     }
+    
+    // This receives updates when the phone either enters the home or leaves the home
+    private BroadcastReceiver locationUpdate = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+        	LocationMonitor.StateChange state = (LocationMonitor.StateChange) intent.getExtras().get("state");
+        	
+        	switch(state) {
+	        	case ENTERING_HOME:
+	        		registerSensors();		// The phone is now in the home, let's start tracking movement
+	        		break;
+	        		
+	        	case LEAVING_HOME:
+	        		unregisterSensors();	// Don't track movement when the phone is not in the home (power savings)
+	        		break;
+        	}     	
+        }
+    };   
     
     public void registerSensors() {
 		mSensorManager.registerListener(this, mAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);

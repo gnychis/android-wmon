@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -21,12 +22,25 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
 
+import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
 
 public class LocationMonitor {
 	
     public static String TAG = "AWMonLocationMonitor";
+    public static final String LOCATION_UPDATE = "awmon.location.update";
+
+	HomeState _homeState;
+	public static enum HomeState {
+		NOT_HOME,
+		HOME,
+	}
+	
+	public enum StateChange {
+		LEAVING_HOME,
+		ENTERING_HOME,
+	}
 	
     public final int LOCATION_TOLERANCE=150;			// in meters
     public final int LOCATION_UPDATE_INTERVAL=120000; //900000;	// in milliseconds (15 minutes)
@@ -60,6 +74,8 @@ public class LocationMonitor {
     public LocationMonitor(BackgroundService bs) {	
     	_backgroundService=bs;
     	_settings = new UserSettings(_backgroundService);
+    	
+    	_homeState = HomeState.NOT_HOME;
     	
 		mNextLocIsHome=false;			// The next "location" update would be the user's home location
 		mDisableWifiAS=false;			// Initialize "disable wifi after scan"
@@ -112,7 +128,7 @@ public class LocationMonitor {
 		            		   changeUpdateInterval(60000);
 	            		   }
 	            		   if(_settings.getHomeWifiMAC()==result.BSSID)  // Their home network is in the list, must be home
-	            			   _backgroundService.home();	// Their home network is in the list, so they must be home 
+	            			   home();	// Their home network is in the list, so they must be home 
 	            		   return;
 	            	   }
 	               }
@@ -145,7 +161,6 @@ public class LocationMonitor {
         {
         	// We still do not have the home location, so we keep periodically scanning
         	if(mHomeLoc==null) {
-        		_backgroundService.mPhoneIsInTheHome=false;	// Phone can't be in the home if we don't have the location
         		triggerScan(!wifi.isWifiEnabled());	// Trigger a scan
         	}	
         	// We have the home location, so we can cancel this thread
@@ -208,7 +223,7 @@ public class LocationMonitor {
     		_settings.setHomeLocation(location);
     		mHomeLoc=location;
     		mNextLocIsHome=false;
-    		_backgroundService.home();
+    		home();
     		changeUpdateInterval(LOCATION_UPDATE_INTERVAL);  // Once we get the location, we slow down updates.
     	}
     	
@@ -218,15 +233,49 @@ public class LocationMonitor {
 		
 		// We are always home when we are associated to the access point.
 		if(associatedToHomeAP())
-			_backgroundService.home();  // If we are connected to their AP, we are home regardless of location info
+			home();  // If we are connected to their AP, we are home regardless of location info
     	
     	if(mHomeLoc!=null) {
     		if(mHomeLoc.distanceTo(location)<=LOCATION_TOLERANCE)
-    			_backgroundService.home();
+    			home();
     		else
-    			_backgroundService.notHome();
+    			notHome();
     	}
     }    
+    
+    // The user's phone is in the home, either based on localization information or the fact that their
+    // Wifi access point is within range. If we don't have the location of the home saved yet 
+    // (which is NEVER sent back to us, it's only kept locally on the user's phone), 
+    // then we save it in the application preferences.
+    public void home() {
+    	Log.d(TAG, "Got an update that the phone is in the home");
+    	
+    	// We are switching from the not home to home, let's go ahead and announce that.
+    	if(_homeState==HomeState.NOT_HOME) {
+    		Intent i = new Intent();
+			i.setAction(LOCATION_UPDATE);
+			i.putExtra("state", StateChange.ENTERING_HOME);
+			_backgroundService.sendBroadcast(i);
+    	}
+    	_homeState=HomeState.HOME;
+    	_settings.setPhoneIsInHome(true);
+    }
+    
+    // The user's phone is not in the home based on localization information.
+    public void notHome() {
+    	Log.d(TAG, "The phone is not in the home");
+    	
+    	// We are switching from the home to the not home state, announce!
+    	if(_homeState==HomeState.HOME) {
+    		Intent i = new Intent();
+			i.setAction(LOCATION_UPDATE);
+			i.putExtra("state", StateChange.LEAVING_HOME);
+			_backgroundService.sendBroadcast(i);
+    	}
+    	if(BackgroundService._awmon!=null && BackgroundService.DEBUG) BackgroundService._awmon.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
+    	_homeState=HomeState.NOT_HOME;
+    	_settings.setPhoneIsInHome(false);
+    }
     
 	
 	public boolean associatedToHomeAP() {
