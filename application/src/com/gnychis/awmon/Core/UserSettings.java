@@ -71,9 +71,11 @@ public class UserSettings {
     public String getHomeSSID() { return settings.getString("homeSSID", null); }
     public void setHomeSSID(String ssid) { sEditor.putString("homeSSID", ssid); sEditor.commit(); }
     
-    // For some wireless settings
+    // For some 802.11 wireless settings
     public int getHomeWifiFreq() { return settings.getInt("homeWifiFreq", -1); }
     public void setHomeWifiFreq(int freq) { sEditor.putInt("homeWifiFreq", freq); sEditor.commit(); }
+    public String getHomeWifiMAC() { return settings.getString("homeWifiMAC", null); }
+    public void setHomeWifiMAC(String mac) { sEditor.putString("homeWifiMAC", mac); sEditor.commit(); }
     
     // Survey related Settings
     public int getAgeRange() { return settings.getInt("ageRange", -1); }

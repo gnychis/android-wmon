@@ -18,7 +18,7 @@ import com.gnychis.awmon.Core.UserSettings;
 
 public class BackgroundService extends Service {
 
-    public static AWMon mMainActivity;
+    public static AWMon _awmon;
     static BackgroundService _this;
     private MotionDetector _motionDetector;
     private LocationMonitor _locationMonitor;
@@ -71,11 +71,6 @@ public class BackgroundService extends Service {
     	}
     	mPhoneIsInTheHome=true;
     	_settings.setPhoneIsInHome(true);
-    	
-    	if(_locationMonitor.mHomeLoc==null) {
- 		   _locationMonitor.mNextLocIsHome=true;
- 		   _locationMonitor.changeUpdateInterval(60000);
-    	}
     }
     
     // The user's phone is not in the home based on localization information.
@@ -84,7 +79,7 @@ public class BackgroundService extends Service {
     	if(mPhoneIsInTheHome) {
     		_motionDetector.unregisterSensors();
     	}
-    	if(mMainActivity!=null && DEBUG) mMainActivity.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
+    	if(_awmon!=null && DEBUG) _awmon.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
     	mPhoneIsInTheHome=false;
     	_settings.setPhoneIsInHome(false);
     }
@@ -103,6 +98,6 @@ public class BackgroundService extends Service {
     
     @Override
     public IBinder onBind(Intent intent) { return null; }
-	public static void setMainActivity(AWMon activity) { mMainActivity = activity; }
+	public static void setMainActivity(AWMon activity) { _awmon = activity; }
 	
 }

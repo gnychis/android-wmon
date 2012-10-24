@@ -23,6 +23,7 @@ import android.util.Log;
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.AWMon.ThreadMessages;
 import com.gnychis.awmon.Core.Packet;
+import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.ScanReceivers.WiFiScanReceiver;
 
 /* 
@@ -53,6 +54,7 @@ public class Wifi {
 	public String _wlan_iface_name = "wlan1";
 	
 	AWMon coexisyst;
+	UserSettings _settings;
 	
 	public boolean _device_connected;
 	
@@ -95,6 +97,34 @@ public class Wifi {
 	public static int[] channels = {1,2,3,4,5,6,7,8,9,10,11,36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
 	public static int[] frequencies = {2412, 2417, 2422, 2427, 2432, 2437, 2442, 2447, 2452, 2457, 2462,5180, 5200, 5220, 5240, 5260, 5280, 5300, 5320, 
 		5500, 5520, 5540, 5560, 5580, 5680, 5700, 5745, 5765, 5785, 5805, 5825};
+	
+	
+	public Wifi(AWMon c) {
+		_state_lock = new Semaphore(1,true);
+		_scan_results = new ArrayList<Packet>();
+		coexisyst = c;
+		_settings = new UserSettings(coexisyst);
+		_state = WifiState.IDLE;
+		
+		Log.d("WifiDev", "Inserted kernel modules");
+		
+		// If we are dumping all of our packets for debugging...
+		if(PCAP_DUMP) {
+			try {
+				_pcap_dump = new DataOutputStream(new FileOutputStream("/sdcard/coexisyst_wifi.pcap"));
+				byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
+				byte pcap_header[] = {(byte)0xd4, (byte)0xc3, (byte)0xb2, (byte)0xa1, 		// magic number
+						(byte)0x02, (byte)0x00, (byte)0x04,(byte) 0x00, 	// version numbers
+						(byte)0x00, (byte)0x00, (byte)0x00,(byte) 0x00, 	// thiszone
+						(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 	// sigfigs
+						(byte)0xff, (byte)0xff, (byte)0x00, (byte)0x00, 	// snaplen
+						(byte)0x7f, (byte)0x00, (byte)0x00, (byte)0x00};  	// wifi
+				
+				_pcap_dump.write(pcap_header);
+			} catch(Exception e) { Log.e("WifiDev", "Error trying to write output stream", e); }
+		}
+
+	}
 	
 	// Take an 802.11 channel number, get a frequency in KHz
 	public static int channelToFreq(int chan) {
@@ -231,33 +261,7 @@ public class Wifi {
 		
 		return res;
 	}
-	
-	public Wifi(AWMon c) {
-		_state_lock = new Semaphore(1,true);
-		_scan_results = new ArrayList<Packet>();
-		coexisyst = c;
-		_state = WifiState.IDLE;
-		
-		Log.d("WifiDev", "Inserted kernel modules");
-		
-		// If we are dumping all of our packets for debugging...
-		if(PCAP_DUMP) {
-			try {
-				_pcap_dump = new DataOutputStream(new FileOutputStream("/sdcard/coexisyst_wifi.pcap"));
-				byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
-				byte pcap_header[] = {(byte)0xd4, (byte)0xc3, (byte)0xb2, (byte)0xa1, 		// magic number
-						(byte)0x02, (byte)0x00, (byte)0x04,(byte) 0x00, 	// version numbers
-						(byte)0x00, (byte)0x00, (byte)0x00,(byte) 0x00, 	// thiszone
-						(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 	// sigfigs
-						(byte)0xff, (byte)0xff, (byte)0x00, (byte)0x00, 	// snaplen
-						(byte)0x7f, (byte)0x00, (byte)0x00, (byte)0x00};  	// wifi
-				
-				_pcap_dump.write(pcap_header);
-			} catch(Exception e) { Log.e("WifiDev", "Error trying to write output stream", e); }
-		}
 
-	}
-	
 	// When a wifi device is connected, spawn a thread which
 	// initializes the hardware
 	public void connected() {

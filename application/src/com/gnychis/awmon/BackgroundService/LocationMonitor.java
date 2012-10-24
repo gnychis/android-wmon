@@ -39,8 +39,8 @@ public class LocationMonitor {
     // Used to keep the location of the home so that we know when the user is home.
     // However, we NEVER retrieve this information from the phone.  Your home location
     // is only kept privately on your phone.
-    public boolean mNextLocIsHome;
-    public Location mHomeLoc;
+    boolean mNextLocIsHome;
+    Location mHomeLoc;
     String home_ssid;
     
     WifiManager wifi;
@@ -107,7 +107,12 @@ public class LocationMonitor {
 	               
 	               for(ScanResult result : scan_result) {
 	            	   if(result.SSID.replaceAll("^\"|\"$", "").equals(home_ssid)) {
-	            		   _backgroundService.home();	// Their home network is in the list, so they must be home  
+	            		   if(mHomeLoc==null) {
+		            		   mNextLocIsHome=true;
+		            		   changeUpdateInterval(60000);
+	            		   }
+	            		   if(_settings.getHomeWifiMAC()==result.BSSID)  // Their home network is in the list, must be home
+	            			   _backgroundService.home();	// Their home network is in the list, so they must be home 
 	            		   return;
 	            	   }
 	               }
@@ -150,7 +155,7 @@ public class LocationMonitor {
         }
     }   
     
-    public void changeUpdateInterval(long interval) {
+    private void changeUpdateInterval(long interval) {
     	locationManager.removeUpdates(mPendingIntent);
     	locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, interval, 0, mPendingIntent);
     }
@@ -178,8 +183,6 @@ public class LocationMonitor {
 	// we check the distance of the current location with the home location to detect if the user's
 	// phone is in their home.
     public void onLocationChanged(Location location) {
-    	
-    	boolean associatedToHomeAP=false;
 
     	if(location==null)	// The location must not be null
     		return;
@@ -188,12 +191,9 @@ public class LocationMonitor {
     	
     	// First, if we are associated to an access point that is the same name of the user's home access
     	// point, then we consider them home and save locations with a greater accuracy than what we have
-    	WifiInfo currWifi = wifi.getConnectionInfo();
-    	ConnectivityManager connManager = (ConnectivityManager) _backgroundService.getSystemService(Context.CONNECTIVITY_SERVICE);
-    	NetworkInfo wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-    	if(wifiInfo.isConnected() && currWifi.getSSID().equals(_settings.getHomeSSID())) {
-    		associatedToHomeAP=true;
+    	if(associatedToHomeAP()) {
     		_settings.setHomeWifiFreq(Wifi.getOperationalFreq("wlan0"));
+    		_settings.setHomeWifiMAC(getAssociatedMAC());
     	}
     	
     	_settings.setLastLocation(location);
@@ -203,7 +203,7 @@ public class LocationMonitor {
 
     	// If we have marked the next location as home, we will save it only if we are associated to the access point.
     	// This tries to help in scenarios with SSIDs that are too general, and to improve location accuracy.
-    	if(mNextLocIsHome && associatedToHomeAP) {
+    	if(mNextLocIsHome && associatedToHomeAP()) {
     		Log.d(TAG, "Saving the location of the home");
     		_settings.setHomeLocation(location);
     		mHomeLoc=location;
@@ -213,11 +213,11 @@ public class LocationMonitor {
     	}
     	
     	// If we are in the home and we got a location update that is more accurate than our previously stored one.
-		if(associatedToHomeAP && location.getAccuracy()<=mHomeLoc.getAccuracy()) 
+		if(associatedToHomeAP() && location.getAccuracy()<=mHomeLoc.getAccuracy()) 
 			_settings.setHomeLocation(location);   
 		
 		// We are always home when we are associated to the access point.
-		if(associatedToHomeAP)
+		if(associatedToHomeAP())
 			_backgroundService.home();  // If we are connected to their AP, we are home regardless of location info
     	
     	if(mHomeLoc!=null) {
@@ -227,4 +227,20 @@ public class LocationMonitor {
     			_backgroundService.notHome();
     	}
     }    
+    
+	
+	public boolean associatedToHomeAP() {
+    	WifiInfo currWifi = wifi.getConnectionInfo();
+    	ConnectivityManager connManager = (ConnectivityManager) _backgroundService.getSystemService(Context.CONNECTIVITY_SERVICE);
+    	NetworkInfo wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+    	if(wifiInfo.isConnected() && currWifi.getSSID().equals(_settings.getHomeSSID())) {
+    		return true;
+    	}
+		return false;
+	}
+	
+	public String getAssociatedMAC() {
+		WifiInfo currWifi = wifi.getConnectionInfo();
+    	return currWifi.getBSSID();
+	}
 }
