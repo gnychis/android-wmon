@@ -43,7 +43,7 @@ int sample = 0;
  *   apps/samples/hello-jni/project/src/com/example/HelloJni/HelloJni.java
  */
 jint
-Java_com_gnychis_awmon_AWMon_initUSB( JNIEnv* env, jobject thiz )
+Java_com_gnychis_awmon_Core_USBMon_initUSB( JNIEnv* env, jobject thiz )
 {
   int r;
   __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "entering initUSB");
@@ -137,7 +137,7 @@ Java_com_gnychis_awmon_Core_USBMon_USBList( JNIEnv* env, jobject thiz )
 }
 
 jobjectArray
-Java_com_gnychis_awmon_AWMon_Core_GetUSBList( JNIEnv* env, jobject thiz )
+Java_com_gnychis_awmon_Core_USBMon_GetUSBList( JNIEnv* env, jobject thiz )
 {
   ssize_t cnt;
   libusb_device **devs;
@@ -146,6 +146,7 @@ Java_com_gnychis_awmon_AWMon_Core_GetUSBList( JNIEnv* env, jobject thiz )
   jobjectArray devList = 0;
 	jstring      str;
   jsize        len = 0;
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "entering GetUSBList...");
   
   // First, just count the number of devices
   cnt = libusb_get_device_list(NULL, &devs);
@@ -159,27 +160,35 @@ Java_com_gnychis_awmon_AWMon_Core_GetUSBList( JNIEnv* env, jobject thiz )
     len++;
 	}
   libusb_free_device_list(devs, 1);
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got a count of: %d (and %d)", len, cnt);
 	
   // Create an array for the elements
   devList = (*env)->NewObjectArray(env, len, (*env)->FindClass(env, "java/lang/String"), 0);
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Created the array list");
   
   // Now start to populate
   cnt = libusb_get_device_list(NULL, &devs);
   if(cnt < 0)
     return NULL;
   ret=0;
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Going through the list again...");
 	while ((dev = devs[i++]) != NULL) {
 		struct libusb_device_descriptor desc;
 		int r = libusb_get_device_descriptor(dev, &desc);
 		if (r < 0) { return NULL; }
     char str_buf[512];
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Got one: %d:%d", desc.idVendor, desc.idProduct);
     snprintf(str_buf, 512, "%d:%d", desc.idVendor, desc.idProduct);
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Made our string: %s", str_buf);
     str = (*env)->NewStringUTF( env, str_buf );
-    (*env)->SetObjectArrayElement(env, devList, i, str);	
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Created str");
+    (*env)->SetObjectArrayElement(env, devList, len, str);	
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Set the element");
     len++;
 	}
   libusb_free_device_list(devs, 1);
 
+  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "Returning...");
   return devList;
 }
 

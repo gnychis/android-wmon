@@ -31,6 +31,7 @@ public class USBMon
 		_parent = c;
 		_handler = h;
 		_scan_timer=null;
+		initUSB();
 		startUSBMon();
 	}
 	
@@ -129,6 +130,7 @@ public class USBMon
 		_parent.sendBroadcast(i);
 	}
 	
+	public native int  initUSB();
 	public native void USBList();
 	public native int USBcheckForDevice(int vid, int pid);
 	public native String[] GetUSBList();

@@ -754,7 +754,7 @@ Java_com_gnychis_awmon_Core_Packet_wiresharkGet(JNIEnv* env, jobject thiz, jint 
 
 // Mainly a rip-off of the main() function in tshark
 jint
-Java_com_gnychis_awmon_AWMon_wiresharkInit( JNIEnv* env, jobject thiz )
+Java_com_gnychis_awmon_BackgroundService_BackgroundService_wiresharkInit( JNIEnv* env, jobject thiz )
 {
   char                *init_progfile_dir_error;
   int                  opt;

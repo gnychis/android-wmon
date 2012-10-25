@@ -89,10 +89,6 @@ public class AWMon extends Activity implements OnClickListener {
     	
     	// Initialize the user settings
     	_settings = new UserSettings(this);
-    	
-    	// Start the background service
-        BackgroundService.setMainActivity(this);
-        startService(new Intent(this, BackgroundService.class));
       
 		// Setup UI
 		textStatus = (TextView) findViewById(R.id.textStatus);
@@ -142,6 +138,10 @@ public class AWMon extends Activity implements OnClickListener {
     // This runs after the initialization of the libraries, etc.
     public void postInitialization() {
     	
+    	// Start the background service.  This MUST go after the linking of the libraries.
+        BackgroundService.setMainActivity(this);
+        startService(new Intent(this, BackgroundService.class));
+    	
     	if(_settings.haveUserSettings())  // Do we have user settings?
     		return;
     	
@@ -165,7 +165,7 @@ public class AWMon extends Activity implements OnClickListener {
 			String r="";
 			parent = params[0];
 			awmon = (AWMon) params[0];
-			
+			/*
 	        try {
 	        	Log.d(TAG, "Remounting file system...");
 		    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system",0);
@@ -219,8 +219,8 @@ public class AWMon extends Activity implements OnClickListener {
 			if(wiresharkInit()!=1)
 				r += "Failed to initialize wireshark library...\n";
 			
-			wiresharkTest("/sdcard/test.pcap");
-			
+			//wiresharkTest("/sdcard/test.pcap");
+			*/
 			return r;
 		}
         
@@ -377,13 +377,11 @@ public class AWMon extends Activity implements OnClickListener {
 		handler.sendMessage(msg);
 	}
 	
-	public native int  initUSB();
 	public native String[] getDeviceNames();
 	public native String[] getWiSpyList();
 	public native int USBcheckForDevice(int vid, int pid);
 	public native void libusbTest();
 	public native int pcapGetInterfaces();
-	public native int wiresharkInit();
 	public native int dissectPacket(byte[] header, byte[] data, int encap);
 	public native void dissectCleanup(int dissect_ptr);
 	public native String wiresharkGet(int dissect_ptr, String param);
