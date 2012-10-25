@@ -10,15 +10,16 @@ import java.util.concurrent.BlockingQueue;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.WifiManager;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -27,39 +28,31 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
+import com.gnychis.awmon.BackgroundService.LocationMonitor;
+import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
 import com.gnychis.awmon.Core.DBAdapter;
-import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceHandlers.Wifi;
-import com.gnychis.awmon.DeviceHandlers.ZigBee;
-import com.gnychis.awmon.Interfaces.AddNetwork;
 import com.gnychis.awmon.Interfaces.ManageNetworks;
 import com.gnychis.awmon.Interfaces.Status;
 import com.gnychis.awmon.Interfaces.Welcome;
-import com.gnychis.awmon.ScanReceivers.NetworksScan;
 import com.stericson.RootTools.RootTools;
 
 public class AWMon extends Activity implements OnClickListener {
 	
 	private static final String TAG = "AWMon";
 	public static String _app_name = "com.gnychis.awmon";
+	public static final String THREAD_MESSAGE = "awmon.thread.message";
 	
 	// Internal Android mechanisms for settings/storage
 	public DBAdapter _db;
 	public UserSettings _settings;
 	
-	// Instances to our devices
-	public WifiManager _wifiManager;
-	public Wifi _wifi;
-	public ZigBee _zigbee;
-	public BluetoothAdapter _bt;
-	public NetworksScan _networks_scan;
-	protected USBMon _usbmon;
-
+	// Related to communication and tracking of the background service
+	public BackgroundService _backgroundService;
+	private boolean mBound=false;
+	
 	// Interface related
-	public BlockingQueue<String> toastMessages;
 	private ProgressDialog _pd;
 	public TextView textStatus;
 		
@@ -90,8 +83,6 @@ public class AWMon extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
            	
-    	toastMessages = new ArrayBlockingQueue<String>(20);
-        
         // Setup the database
     	_db = new DBAdapter(this);
     	_db.open();
@@ -115,6 +106,38 @@ public class AWMon extends Activity implements OnClickListener {
 		InitLibraries init_thread = new InitLibraries();
 		init_thread.execute(this);
     }
+    
+    // A broadcast receiver to get messages from background service and threads
+    private BroadcastReceiver _messageReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+        	ThreadMessages tm = (ThreadMessages) intent.getExtras().get("type");
+        	
+        	switch(tm) {
+        		case SHOW_TOAST:
+        			String msg = (String) intent.getExtras().get("msg");
+        			Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+        		break;
+        	}     	
+        }
+    }; 
+    
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            BackgroundServiceBinder binder = (BackgroundServiceBinder) service;
+            _backgroundService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
     
     // This runs after the initialization of the libraries, etc.
     public void postInitialization() {
@@ -174,8 +197,8 @@ public class AWMon extends Activity implements OnClickListener {
 		    	
 		    	// Run a script that will link libraries in /system/lib so that our binaries can run
 		    	Log.d(TAG, "Creating links to libraries...");
-		    	awmon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_libraries.sh " + AWMon._app_name);
-		    	awmon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_binaries.sh " + AWMon._app_name);
+		    	AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_libraries.sh " + AWMon._app_name);
+		    	AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_binaries.sh " + AWMon._app_name);
 		    			
 	        } catch(Exception e) {	Log.e(TAG, "error running RootTools commands for init", e); }
 
@@ -203,22 +226,6 @@ public class AWMon extends Activity implements OnClickListener {
         
         @Override
         protected void onPostExecute(String result) {
-        	
-    		// Setup internal wireless device handles
-    		_wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-    		_bt = BluetoothAdapter.getDefaultAdapter();
-    		
-    		// Create handles to our internal devices and mechanisms
-    		_wifi = new Wifi(awmon);
-    		_zigbee = new ZigBee(awmon);
-    		_usbmon = new USBMon(awmon, _handler);
-    		
-    		// Register various receivers to receive scan updates.
-        	_networks_scan = new NetworksScan(_handler, _usbmon, _wifi, _zigbee, _bt);
-    		registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
-    		registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
-    		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-    		registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
     		
     		textStatus.setText(result.replaceAll("\n", ""));	// Put any error messages in to the text status box
         	_pd.dismiss();				// Get rid of the spinner
@@ -253,101 +260,8 @@ public class AWMon extends Activity implements OnClickListener {
 		}
 	}
 	
-	public Handler _handler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			
-			// Based on the thread message, a difference action will take place
-			ThreadMessages tm = ThreadMessages.values()[msg.what];
-			switch(tm) {
-			
-				//////////////////////////////////////////////////////
-				case SHOW_TOAST:
-					try {
-						String m = toastMessages.remove();
-						Toast.makeText(getApplicationContext(), m, Toast.LENGTH_LONG).show();	
-					} catch(Exception e) { }
-					break;
-					
-				//////////////////////////////////////////////////////
-				case WIFIDEV_CONNECTED:
-					_pd = ProgressDialog.show(AWMon.this, "", "Initializing Wifi device...", true, false); 
-					_usbmon.stopUSBMon();
-					_wifi.connected();
-					break;
-					
-				case WIFIDEV_INITIALIZED:
-					Toast.makeText(getApplicationContext(), "Successfully initialized Wifi device", Toast.LENGTH_LONG).show();	
-					_pd.dismiss();
-					_usbmon.startUSBMon();
-					break;
-					
-				case WIFIDEV_FAILED:
-					Toast.makeText(getApplicationContext(), "Failed to initialize Wifi device", Toast.LENGTH_LONG).show();	
-					break;
-					
-				//////////////////////////////////////////////////////
-				case ZIGBEE_CONNECTED:
-					_pd = ProgressDialog.show(AWMon.this, "", "Initializing ZigBee device...", true, false);  
-					_usbmon.stopUSBMon();
-					_zigbee.connected();
-					break;
-					
-				case ZIGBEE_WAIT_RESET:
-					_pd.dismiss();
-					_pd = ProgressDialog.show(AWMon.this, "", "Press ZigBee reset button...", true, false); 
-					break;
-					
-				case ZIGBEE_INITIALIZED:
-					_pd.dismiss();
-					Toast.makeText(getApplicationContext(), "Successfully initialized ZigBee device", Toast.LENGTH_LONG).show();	
-					_usbmon.startUSBMon();
-					break;
-					
-				case ZIGBEE_FAILED:
-					Toast.makeText(getApplicationContext(), "Failed to initialize ZigBee device", Toast.LENGTH_LONG).show();	
-					break;
-					
-					
-				//////////////////////////////////////////////////////
-				case INCREMENT_SCAN_PROGRESS:
-					_pd.incrementProgressBy(1);
-					break;
-				
-				case NETWORK_SCANS_COMPLETE:
-					_pd.dismiss();
-					try {
-						Log.d(TAG,"Trying to load add networks window");
-						Intent i = new Intent(AWMon.this, AddNetwork.class);
-						
-						// Hopefully this is not broken, using it as a WifiScanReceiver rather
-						// than BroadcastReceiver type.
-						i.putExtra(_app_name + ".80211", _networks_scan._wifi_scan_result);
-						i.putExtra(_app_name + ".ZigBee", _networks_scan._zigbee_scan_result);
-						i.putExtra(_app_name + ".Bluetooth", _networks_scan._bluetooth_scan_result);
-						i.putExtra(_app_name + ".WiSpy", _networks_scan._wispy_scan_result);
-						
-						startActivity(i);
-					} catch (Exception e) {
-						Log.e(TAG, "Exception trying to load network add window",e);
-						return;
-					}
-					break;	
-			}
-		}
-	};
-	
-	// This works by putting a bunch of Toast messages in a queue
-	// for the main thread to take out and show.
-	public void sendToastMessage(Handler h, String msg) {
-		try {
-			toastMessages.put(msg);
-			Message m = new Message();
-			m.what = ThreadMessages.SHOW_TOAST.ordinal();
-			h.sendMessage(m);
-		} catch (Exception e) {
-			Log.e(TAG, "Exception trying to put toast msg in queue:", e);
-		}
+	public void scanResultsAvailable() {
+		
 	}
 	
 	public void showProgressUpdate(String s) {
@@ -377,7 +291,7 @@ public class AWMon extends Activity implements OnClickListener {
 			return res;
 			
 		} catch(Exception e) {
-			Log.e("WifiDev", "error writing to RootTools the command: " + c, e);
+			Log.e("AWMon", "error writing to RootTools the command: " + c, e);
 			return null;
 		}
 	}
@@ -391,12 +305,35 @@ public class AWMon extends Activity implements OnClickListener {
     	}
     }
     
-	@Override
- 	public void onStop() { super.onStop(); Log.d(TAG, "onStop()");}
-	public void onResume() { super.onResume(); Log.d(TAG, "onResume()");
+    
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(this, BackgroundService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+    }
+    
+	@Override
+	public void onResume() { 
+		super.onResume(); 
+		registerReceiver(_messageReceiver, new IntentFilter(AWMon.THREAD_MESSAGE));
 	}
-	public void onPause() { super.onPause(); Log.d(TAG, "onPause()"); }
+	public void onPause() { 
+		super.onPause(); 
+		Log.d(TAG, "onPause()"); 
+		unregisterReceiver(_messageReceiver);
+	}
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 
 	// This triggers a scan through the networks to return a list of
@@ -406,7 +343,7 @@ public class AWMon extends Activity implements OnClickListener {
 		int max_progress;
 		
 		// Do not start another scan, if we already are
-		if(_networks_scan.isScanning())
+		if(_backgroundService._deviceHandler._networks_scan.isScanning())
 			return;
 		
 		// Create a progress dialog to show progress of the scan
@@ -418,7 +355,7 @@ public class AWMon extends Activity implements OnClickListener {
 		// Call the networks scan class to initiate a new scan
 		// which, based on the devices connected for scanning,
 		// will return a maximum value for the progress bar
-		max_progress = _networks_scan.initiateScan();
+		max_progress = _backgroundService._deviceHandler._networks_scan.initiateScan();
 		if(max_progress==-1) {
 			Toast.makeText(getApplicationContext(), "No networks available to scan!", Toast.LENGTH_LONG).show();
 			return;

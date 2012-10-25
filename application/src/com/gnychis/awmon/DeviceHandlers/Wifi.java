@@ -53,7 +53,7 @@ public class Wifi {
 	// A non-CM9 device likely to use wlan0
 	public String _wlan_iface_name = "wlan1";
 	
-	AWMon coexisyst;
+	Context _parent;
 	UserSettings _settings;
 	
 	public boolean _device_connected;
@@ -99,11 +99,11 @@ public class Wifi {
 		5500, 5520, 5540, 5560, 5580, 5680, 5700, 5745, 5765, 5785, 5805, 5825};
 	
 	
-	public Wifi(AWMon c) {
+	public Wifi(Context c) {
 		_state_lock = new Semaphore(1,true);
 		_scan_results = new ArrayList<Packet>();
-		coexisyst = c;
-		_settings = new UserSettings(coexisyst);
+		_parent = c;
+		_settings = new UserSettings(_parent);
 		_state = WifiState.IDLE;
 		
 		Log.d("WifiDev", "Inserted kernel modules");
@@ -185,7 +185,7 @@ public class Wifi {
 		// channel hopping for us.  It's not clear which is better, so I opted for
 		// tighter control as the default.
 		_scan_thread = new WifiScan();
-		_scan_thread.execute(coexisyst);
+		_scan_thread.execute(_parent);
 		
 		debugOut("Waiting for scan thread to start");
 		while(_scan_thread.getStatus()!=AsyncTask.Status.RUNNING)
@@ -215,7 +215,7 @@ public class Wifi {
 		Intent i = new Intent();
 		i.setAction(WIFI_SCAN_RESULT);
 		i.putExtra("packets", _scan_results);
-		coexisyst.sendBroadcast(i);
+		_parent.sendBroadcast(i);
 		
 		return true;
 	}
@@ -267,7 +267,7 @@ public class Wifi {
 	public void connected() {
 		_device_connected=true;
 		WifiInit init_thread = new WifiInit();
-		init_thread.execute(coexisyst);
+		init_thread.execute(_parent);
 	}
 	
 	public boolean isConnected() {
@@ -275,7 +275,7 @@ public class Wifi {
 	}
 	
 	public void setChannel(int channel) {
-		coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
+		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
 	}
 	
 	static public void setChannel(String ifname, int channel) {
@@ -322,8 +322,8 @@ public class Wifi {
 		protected String doInBackground( Context ... params )
 		{
 			AWMon awmon = (AWMon) params[0];
-			awmon.runCommand("sh /data/data/" + AWMon._app_name + "/files/init_wifi.sh " + AWMon._app_name);
-			AWMon.sendMainMessage(awmon._handler, ThreadMessages.WIFIDEV_INITIALIZED);
+			AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/init_wifi.sh " + AWMon._app_name);
+			// AWMon.sendMainMessage(awmon._handler, ThreadMessages.WIFIDEV_INITIALIZED);  // FIXME
 			//setFrequency(_wlan_iface_name, );
 			return "true";
 		}		
@@ -354,7 +354,7 @@ public class Wifi {
 		protected void sendMainMessage(AWMon.ThreadMessages t) {
 			Message msg = new Message();
 			msg.what = t.ordinal();
-			coexisyst._handler.sendMessage(msg);
+			//coexisyst._handler.sendMessage(msg);  // FIXME
 		}
 		
 		// Opens a the moni0 device as a pcap interface for packet capture
@@ -438,9 +438,9 @@ public class Wifi {
 				}, 500, SCAN_UPDATE_TIME);
 				_timer_counts = SCAN_WAIT_COUNTS;
 				if(_active_scan)
-					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger");
+					AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger");
 				else
-					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger passive");
+					AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger passive");
 					
 			} else {
 				_scan_timer = new Timer();
@@ -452,9 +452,9 @@ public class Wifi {
 		
 				}, Wifi.SCAN_WAIT_TIME);  // 6.5 seconds seems enough to let all of the packets trickle in from the scan
 				if(_active_scan)
-					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger");
+					AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger");
 				else
-					coexisyst.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger passive");
+					AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + _wlan_iface_name + " scan trigger passive");
 			}
 		}
 		

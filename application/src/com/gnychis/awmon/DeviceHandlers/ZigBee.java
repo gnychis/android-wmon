@@ -29,7 +29,7 @@ public class ZigBee {
 	public static final String ZIGBEE_SCAN_RESULT = AWMon._app_name + ".ZIGBEE_SCAN_RESULT";
 	public static final int MS_SLEEP_UNTIL_PCAPD = 5000;
 	
-	AWMon coexisyst;
+	Context _parent;
 	
 	public boolean _device_connected;
 	ZigBeeScan _monitor_thread;
@@ -81,7 +81,7 @@ public class ZigBee {
 		_scan_results.clear();
 		
 		_monitor_thread = new ZigBeeScan();
-		_monitor_thread.execute(coexisyst);
+		_monitor_thread.execute(_parent);
 		
 		return true;  // in scanning state, and channel hopping
 	}
@@ -97,7 +97,7 @@ public class ZigBee {
 		Intent i = new Intent();
 		i.setAction(ZIGBEE_SCAN_RESULT);
 		i.putExtra("packets", _scan_results);
-		coexisyst.sendBroadcast(i);
+		_parent.sendBroadcast(i);
 		
 		return true;
 	}
@@ -144,10 +144,10 @@ public class ZigBee {
 		return res;
 	}
 	
-	public ZigBee(AWMon c) {
+	public ZigBee(Context c) {
 		_state_lock = new Semaphore(1,true);
 		_scan_results = new ArrayList<Packet>();
-		coexisyst = c;
+		_parent = c;
 		_state = ZigBeeState.IDLE;
 		Log.d(TAG, "Initializing ZigBee class...");
 
@@ -156,7 +156,7 @@ public class ZigBee {
 	public void connected() {
 		_device_connected=true;
 		ZigBeeInit zbi = new ZigBeeInit();
-		zbi.execute(coexisyst);
+		zbi.execute(_parent);
 	}
 	
 	public void disconnected() {
@@ -202,7 +202,7 @@ public class ZigBee {
 		protected void sendMainMessage(AWMon.ThreadMessages t) {
 			Message msg = new Message();
 			msg.what = t.ordinal();
-			coexisyst._handler.sendMessage(msg);
+			//coexisyst._handler.sendMessage(msg);  //FIXME
 		}
 		
 		public boolean checkInitSeq(byte buf[]) {
@@ -281,7 +281,7 @@ public class ZigBee {
 		protected void sendMainMessage(AWMon.ThreadMessages t) {
 			Message msg = new Message();
 			msg.what = t.ordinal();
-			coexisyst._handler.sendMessage(msg);
+			//coexisyst._handler.sendMessage(msg);  // FIXME
 		}
 		
 		@Override

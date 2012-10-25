@@ -176,12 +176,12 @@ public class Welcome extends Activity {
         builder.setMessage("Your location services must be enabled for our study to work, do you want to enable them?\n\nIf you choose YES, you only need to enable 'Use wireless networks' and then click your back button.")
                .setCancelable(false)
                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                   public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                   public void onClick(final DialogInterface dialog, final int id) {
                 	   startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                    }
                })
                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                   public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                   public void onClick(final DialogInterface dialog, final int id) {
                        	dialog.cancel();
                        	finish();
                    }
@@ -195,13 +195,13 @@ public class Welcome extends Activity {
         builder.setMessage("Your phone must first be associated to your home wireless network.  Would you like to do this now?")
                .setCancelable(false)
                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                   public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                   public void onClick(final DialogInterface dialog, final int id) {
                 	   _reverse_sort=true;
                 	   startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                    }
                })
                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                   public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                   public void onClick(final DialogInterface dialog, final int id) {
                        	dialog.cancel();
                    }
                });

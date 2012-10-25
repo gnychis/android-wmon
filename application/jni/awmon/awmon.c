@@ -136,6 +136,95 @@ Java_com_gnychis_awmon_Core_USBMon_USBList( JNIEnv* env, jobject thiz )
   }
 }
 
+jobjectArray
+Java_com_gnychis_awmon_AWMon_Core_GetUSBList( JNIEnv* env, jobject thiz )
+{
+  ssize_t cnt;
+  libusb_device **devs;
+	libusb_device *dev;
+  int i=0,ret;
+  jobjectArray devList = 0;
+	jstring      str;
+  jsize        len = 0;
+  
+  // First, just count the number of devices
+  cnt = libusb_get_device_list(NULL, &devs);
+  if(cnt < 0)
+    return NULL;
+  ret=0;
+	while ((dev = devs[i++]) != NULL) {
+		struct libusb_device_descriptor desc;
+		int r = libusb_get_device_descriptor(dev, &desc);
+		if (r < 0) { return NULL; }
+    len++;
+	}
+  libusb_free_device_list(devs, 1);
+	
+  // Create an array for the elements
+  devList = (*env)->NewObjectArray(env, len, (*env)->FindClass(env, "java/lang/String"), 0);
+  
+  // Now start to populate
+  cnt = libusb_get_device_list(NULL, &devs);
+  if(cnt < 0)
+    return NULL;
+  ret=0;
+	while ((dev = devs[i++]) != NULL) {
+		struct libusb_device_descriptor desc;
+		int r = libusb_get_device_descriptor(dev, &desc);
+		if (r < 0) { return NULL; }
+    char str_buf[512];
+    snprintf(str_buf, 512, "%d:%d", desc.idVendor, desc.idProduct);
+    str = (*env)->NewStringUTF( env, str_buf );
+    (*env)->SetObjectArrayElement(env, devList, i, str);	
+    len++;
+	}
+  libusb_free_device_list(devs, 1);
+
+  return devList;
+}
+
+jint
+Java_com_gnychis_awmon_AWMon_Core_USBMon( JNIEnv* env, jobject thiz, jint vid, jint pid )
+{
+  ssize_t cnt;
+  libusb_device **devs;
+	libusb_device *dev;
+  int i=0,ret;
+  
+  //__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "entering USBcheckForDevice");
+
+  // Get the usb device list
+  cnt = libusb_get_device_list(NULL, &devs);
+  //__android_log_print(ANDROID_LOG_INFO, LOG_TAG, "device count: %d\n", cnt);
+  if(cnt < 0)
+    return -1;
+
+  // Go through the devices and see if the one we are looking for exists
+  ret=0;
+	while ((dev = devs[i++]) != NULL) {
+		struct libusb_device_descriptor desc;
+		int r = libusb_get_device_descriptor(dev, &desc);
+		if (r < 0) {
+			return -1;
+		}
+
+    if(desc.idVendor==vid && desc.idProduct==pid) {
+      ret=1;
+      break;
+    }
+	}
+
+  libusb_free_device_list(devs, 1);
+  
+  /*if(ret==1)
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "..device found!");
+  else
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "..device not found");
+  */
+
+  return ret;
+}
+
 jint
 Java_com_gnychis_awmon_AWMon_USBcheckForDevice( JNIEnv* env, jobject thiz, jint vid, jint pid )
 {
