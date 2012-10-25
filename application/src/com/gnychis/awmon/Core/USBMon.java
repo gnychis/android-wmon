@@ -61,22 +61,7 @@ public class USBMon
 		_scan_timer=null;
 		return true;
 	}
-	
-	// This function makes a major assumption that only the AR9280 has a file in /sys called loading
-	// when it is expecting firmware.  But, it's held true so far to bypass USB detection issues
-	// and workaround needed a udev daemon.
-	protected int checkAR9280()
-	{
-		try {
-			List<String> res = RootTools.sendShell("busybox find /sys -name loading",0);
-			if(res.size()!=0)
-				return 1;
-		} catch(Exception e) {
-			Log.e("USBMon", "exception trying to check for AR9280", e);
-		}
-		return 0;
-	}
-	
+
 	// FIXME: Check 1, see if this gets the proper list.
 	public void usbPoll( )
 	{
@@ -84,15 +69,12 @@ public class USBMon
 		ArrayList<String> list = new ArrayList(Arrays.asList(usbList));
 		Intent i = new Intent();
 		i.setAction(USBMON_DEVICELIST);
-		i.putExtra("type", StateChange.ENTERING_HOME);
+		i.putExtra("devices", list);
 		_parent.sendBroadcast(i);
 		
 		/*
 		//int wifidev_in_devlist = USBcheckForDevice(0x13b1,0x002f) + USBcheckForDevice(0x0411,0x017f);
 		//int econotag_in_devlist = USBcheckForDevice(0x0403, 0x6010);
-				
-		//if(atheros_in_devlist==0)
-		//	atheros_in_devlist = checkAR9280();  // this is a more expensive check, only do when necessary
 
 		// Wifi device check
 		if(wifidev_in_devlist==1 && _parent._wifi._device_connected==false)

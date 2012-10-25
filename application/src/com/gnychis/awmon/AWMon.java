@@ -338,6 +338,7 @@ public class AWMon extends Activity implements OnClickListener {
 
 	// This triggers a scan through the networks to return a list of
 	// networks and devices for a user to add for management.
+	// FIXME: this should pop up the progress dialogue and just wait for the broadcast results
 	public void clickAddNetwork() {
 		
 		int max_progress;
