@@ -19,14 +19,12 @@ public class USBMon
 	public static final String USBMON_DEVICELIST = "awmon.usbmon.devicelist";
 	
 	Context _parent;
-	private Handler _handler;
 	private static int USB_POLL_TIME=7000;  // in milliseconds, poll time
 	
 	private Timer _scan_timer;
 	
 	public USBMon(Context c, Handler h) {
 		_parent = c;
-		_handler = h;
 		_scan_timer=null;
 		initUSB();
 		startUSBMon();
