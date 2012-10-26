@@ -5,8 +5,6 @@ package com.gnychis.awmon;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -16,7 +14,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -29,7 +26,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gnychis.awmon.BackgroundService.BackgroundService;
-import com.gnychis.awmon.BackgroundService.LocationMonitor;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.UserSettings;
@@ -101,12 +97,6 @@ public class AWMon extends Activity implements OnClickListener {
     	// Start the background service.  This MUST go after the linking of the libraries.
         BackgroundService.setMainActivity(this);
         startService(new Intent(this, BackgroundService.class));
-		
-    	// Register a receiver which will be notified when the phone is getting shut down
-        registerReceiver(new BroadcastReceiver()
-        { @Override public void onReceive(Context context, Intent intent) { systemInitialized(); }
-        }, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
-
     }
     
     // This is called when we are bound to the background service, which allows us to check
@@ -127,7 +117,8 @@ public class AWMon extends Activity implements OnClickListener {
     // This runs after the initialization of the libraries, etc.
     public void systemInitialized() {
     	
-    	_pd.dismiss();
+    	if(_pd!=null)
+    		_pd.dismiss();
 
     	if(_settings.haveUserSettings())  // Do we have user settings?
     		return;
@@ -136,6 +127,13 @@ public class AWMon extends Activity implements OnClickListener {
 		Intent i = new Intent(AWMon.this, Welcome.class);
         startActivity(i);
     }
+    
+    // A broadcast receiver to get messages from background service and threads
+    private BroadcastReceiver _initializedReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+        	systemInitialized(); 	
+        }
+    }; 
     
     // A broadcast receiver to get messages from background service and threads
     private BroadcastReceiver _messageReceiver = new BroadcastReceiver() {
@@ -264,11 +262,13 @@ public class AWMon extends Activity implements OnClickListener {
 	public void onResume() { 
 		super.onResume(); 
 		registerReceiver(_messageReceiver, new IntentFilter(AWMon.THREAD_MESSAGE));
+		registerReceiver(_initializedReceiver, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
 	}
 	public void onPause() { 
 		super.onPause(); 
 		Log.d(TAG, "onPause()"); 
 		unregisterReceiver(_messageReceiver);
+		unregisterReceiver(_initializedReceiver);
 	}
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 
