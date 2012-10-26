@@ -14,15 +14,19 @@ import org.jnetpcap.PcapHeader;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.nio.JBuffer;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.AWMon.ThreadMessages;
+import com.gnychis.awmon.BackgroundService.LocationMonitor;
 import com.gnychis.awmon.Core.Packet;
+import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.ScanReceivers.WiFiScanReceiver;
 
@@ -40,6 +44,13 @@ once num_pkts != -1, and read>num_pkts, then leave scanning thread
 bingo.
  */
 public class Wifi {
+	
+	// This defines the device USB ID we are looking for
+	class USBWifiDev {
+		public static final int vendorID=0x13b1;
+		public static final int productID=0x002f;
+	}
+	
 	private static final boolean VERBOSE = false;
 	
 	public static final boolean PCAP_DUMP = false;
@@ -123,7 +134,40 @@ public class Wifi {
 				_pcap_dump.write(pcap_header);
 			} catch(Exception e) { Log.e("WifiDev", "Error trying to write output stream", e); }
 		}
+		
+		_parent.registerReceiver(usbUpdate, new IntentFilter(USBMon.USBMON_DEVICELIST));
+	}
+	
+    // Receives messages about USB devices
+    private BroadcastReceiver usbUpdate = new BroadcastReceiver() {
+    	@Override @SuppressWarnings("unchecked")
+        public void onReceive(Context context, Intent intent) {
+        	ArrayList<String> devices = (ArrayList<String>) intent.getExtras().get("devices");
+        	if(USBMon.isDeviceInList(devices, USBWifiDev.vendorID, USBWifiDev.productID)) {
+        		if(!_device_connected)
+        			connected();
+        	} else {
+        		if(_device_connected)
+        			disconnected();
+        	}
+        }
+    };  
+    
 
+	// When a wifi device is connected, spawn a thread which
+	// initializes the hardware
+	public void connected() {
+		_device_connected=true;
+		WifiInit init_thread = new WifiInit();
+		init_thread.execute(_parent);
+	}
+	
+	public void disconnected() {
+		_device_connected=false;
+	}
+	
+	public boolean isConnected() {
+		return _device_connected;
 	}
 	
 	// Take an 802.11 channel number, get a frequency in KHz
@@ -261,18 +305,6 @@ public class Wifi {
 		
 		return res;
 	}
-
-	// When a wifi device is connected, spawn a thread which
-	// initializes the hardware
-	public void connected() {
-		_device_connected=true;
-		WifiInit init_thread = new WifiInit();
-		init_thread.execute(_parent);
-	}
-	
-	public boolean isConnected() {
-		return _device_connected;
-	}
 	
 	public void setChannel(int channel) {
 		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
@@ -285,11 +317,6 @@ public class Wifi {
 	static public void setFrequency(String ifname, int frequency) {
 		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + ifname + " set freq " + Integer.toString(frequency));
 	}
-	
-	public void disconnected() {
-		_device_connected=false;
-	}
-	
 	
 	public static byte[] parseMacAddress(String macAddress)
     {

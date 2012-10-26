@@ -162,7 +162,7 @@ Java_com_gnychis_awmon_Core_USBMon_GetUSBList( JNIEnv* env, jobject thiz )
 		if (r < 0) { return NULL; }
 
     char str_buf[512];
-    snprintf(str_buf, 512, "%d %d", desc.idVendor, desc.idProduct);
+    snprintf(str_buf, 512, "%d:%d", desc.idVendor, desc.idProduct);
     str = (*env)->NewStringUTF( env, str_buf );
     (*env)->SetObjectArrayElement(env, devList, i-1, str);
   }

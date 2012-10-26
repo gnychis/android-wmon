@@ -74,6 +74,15 @@ public class USBMon
 		//int econotag_in_devlist = USBcheckForDevice(0x0403, 0x6010);
 	}
 	
+	// This allows external classes to use this helper function to give it the list of devices and
+	// check if the device is in there based on the vendor and product IDs.
+	public static boolean isDeviceInList(ArrayList<String> devices, int vendorID, int productID) {
+		for(String dev : devices)
+    		if(Integer.getInteger(dev.split(":")[0])==vendorID && Integer.getInteger(dev.split(":")[1])==productID)
+    			return true;
+    	return false;
+	}
+	
 	public native int  initUSB();
 	public native void USBList();
 	public native int USBcheckForDevice(int vid, int pid);
