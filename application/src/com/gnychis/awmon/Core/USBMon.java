@@ -7,7 +7,6 @@ import java.util.TimerTask;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.util.Log;
 
 // A class to handle USB worker like things
@@ -21,7 +20,7 @@ public class USBMon
 	
 	private Timer _scan_timer;
 	
-	public USBMon(Context c, Handler h) {
+	public USBMon(Context c) {
 		_parent = c;
 		_scan_timer=null;
 		initUSB();
@@ -70,7 +69,6 @@ public class USBMon
 		i.putExtra("devices", list);
 		_parent.sendBroadcast(i); 
 		
-		//int wifidev_in_devlist = USBcheckForDevice(0x13b1,0x002f) + USBcheckForDevice(0x0411,0x017f);
 		//int econotag_in_devlist = USBcheckForDevice(0x0403, 0x6010);
 	}
 	

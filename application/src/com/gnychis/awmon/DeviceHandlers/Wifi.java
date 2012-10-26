@@ -19,13 +19,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
-import android.os.Message;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.AWMon.ThreadMessages;
-import com.gnychis.awmon.BackgroundService.BackgroundService;
-import com.gnychis.awmon.BackgroundService.LocationMonitor;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;

@@ -47,7 +47,7 @@ public class DeviceHandler {
 		
 		// Create handles to our internal devices and mechanisms
 		_zigbee = new ZigBee(parent);
-		_usbmon = new USBMon(parent, _handler);
+		_usbmon = new USBMon(parent);
 		
 		// Register various receivers to receive scan updates.
     	_networks_scan = new NetworksScan(_handler, _usbmon, _wifi, _zigbee, _bt);
