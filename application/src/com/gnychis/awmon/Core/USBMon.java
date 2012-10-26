@@ -10,8 +10,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 
-import com.gnychis.awmon.AWMon;
-
 // A class to handle USB worker like things
 public class USBMon
 {
