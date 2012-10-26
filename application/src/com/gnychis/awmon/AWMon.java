@@ -98,9 +98,43 @@ public class AWMon extends Activity implements OnClickListener {
 		((Button) findViewById(R.id.buttonSettings)).setOnClickListener(this);
 		((Button) findViewById(R.id.buttonStatus)).setOnClickListener(this);
 		
-		// Finally, initialize and link some of the libraries (which can take a while)
-		InitLibraries init_thread = new InitLibraries();
-		init_thread.execute(this);
+    	// Start the background service.  This MUST go after the linking of the libraries.
+        BackgroundService.setMainActivity(this);
+        startService(new Intent(this, BackgroundService.class));
+		
+    	// Register a receiver which will be notified when the phone is getting shut down
+        registerReceiver(new BroadcastReceiver()
+        { @Override public void onReceive(Context context, Intent intent) { systemInitialized(); }
+        }, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
+
+    }
+    
+    // This is called when we are bound to the background service, which allows us to check
+    // its state and know what to do with the main activity.
+    public void serviceBound() {
+    	if(!mBound)
+    		return;
+    	
+    	// If the background service is initializing, pop up a spinner which we will cancel after initialized
+    	if(_backgroundService.getSystemState()==BackgroundService.ServiceState.INITIALIZING)
+    		_pd = ProgressDialog.show(AWMon.this, "", "Initializing application, please wait...", true, false); 
+    	
+    	// If the background service is already initialized, then we can go ahead call the post-init
+    	if(_backgroundService.getSystemState()==BackgroundService.ServiceState.IDLE)
+    		systemInitialized();
+    }
+    
+    // This runs after the initialization of the libraries, etc.
+    public void systemInitialized() {
+    	
+    	_pd.dismiss();
+
+    	if(_settings.haveUserSettings())  // Do we have user settings?
+    		return;
+    	
+    	// If we do not have the user settings, we open up an activity to query for them
+		Intent i = new Intent(AWMon.this, Welcome.class);
+        startActivity(i);
     }
     
     // A broadcast receiver to get messages from background service and threads
@@ -127,6 +161,7 @@ public class AWMon extends Activity implements OnClickListener {
             BackgroundServiceBinder binder = (BackgroundServiceBinder) service;
             _backgroundService = binder.getService();
             mBound = true;
+            serviceBound();
         }
 
         @Override
@@ -134,105 +169,6 @@ public class AWMon extends Activity implements OnClickListener {
             mBound = false;
         }
     };
-    
-    // This runs after the initialization of the libraries, etc.
-    public void postInitialization() {
-    	
-    	// Start the background service.  This MUST go after the linking of the libraries.
-        BackgroundService.setMainActivity(this);
-        startService(new Intent(this, BackgroundService.class));
-    	
-    	if(_settings.haveUserSettings())  // Do we have user settings?
-    		return;
-    	
-    	// If we do not have the user settings, we open up an activity to query for them
-		Intent i = new Intent(AWMon.this, Welcome.class);
-        startActivity(i);
-    }
-    
-    protected class InitLibraries extends AsyncTask<Context, Integer, String> {
-		Context parent;
-		AWMon awmon;
-    	
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            _pd = ProgressDialog.show(AWMon.this, "", "Initializing application, please wait...", true, false); 
-        }
-        
-		@Override
-		protected String doInBackground( Context ... params ) {
-			String r="";
-			parent = params[0];
-			awmon = (AWMon) params[0];
-			/*
-	        try {
-	        	Log.d(TAG, "Remounting file system...");
-		    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system",0);
-		    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb",0);
-		    	RootTools.sendShell("mount -o remount,rw rootfs /",0);
-		    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
-
-		    	// WARNING: these files do NOT get overwritten if they already exist on the file
-		    	// system with RootTools.  If you are updating ANY of these, you need to do:
-		    	//   adb uninstall com.gnychis.coexisyst
-		    	// And then any updates to these files will be installed on the next build/run.
-		    	Log.d(TAG, "Installing binaries");
-		    	RootTools.installBinary(parent, R.raw.disabled_protos, "disabled_protos");
-		    	RootTools.installBinary(parent, R.raw.iwconfig, "iwconfig", "755");
-		    	RootTools.installBinary(parent, R.raw.lsusb, "lsusb", "755");
-		    	RootTools.installBinary(parent, R.raw.lsusb_core, "lsusb_core", "755");
-		    	RootTools.installBinary(parent, R.raw.testlibusb, "testlibusb", "755");
-		    	RootTools.installBinary(parent, R.raw.iwlist, "iwlist", "755");
-		    	RootTools.installBinary(parent, R.raw.iw, "iw", "755");
-		    	RootTools.installBinary(parent, R.raw.spectool_mine, "spectool_mine", "755");
-		    	RootTools.installBinary(parent, R.raw.spectool_raw, "spectool_raw", "755");
-		    	RootTools.installBinary(parent, R.raw.ubertooth_util, "ubertooth_util", "755");
-		    	RootTools.installBinary(parent, R.raw.link_libraries, "link_libraries.sh", "755");
-		    	RootTools.installBinary(parent, R.raw.link_binaries, "link_binaries.sh", "755");
-		    	RootTools.installBinary(parent, R.raw.init_wifi, "init_wifi.sh", "755");
-		    	RootTools.installBinary(parent, R.raw.tcpdump, "tcpdump", "755");
-		    	RootTools.installBinary(parent, R.raw.tshark, "tshark", "755");
-		    	RootTools.installBinary(parent, R.raw.dumpcap, "dumpcap", "755");
-		    	
-		    	// Run a script that will link libraries in /system/lib so that our binaries can run
-		    	Log.d(TAG, "Creating links to libraries...");
-		    	AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_libraries.sh " + AWMon._app_name);
-		    	AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_binaries.sh " + AWMon._app_name);
-		    			
-	        } catch(Exception e) {	Log.e(TAG, "error running RootTools commands for init", e); }
-
-	    	// Load the libusb related libraries
-	        Log.d(TAG, "Linking the libraries to the application");
-	    	try {
-	    		System.loadLibrary("glib-2.0");			System.loadLibrary("nl");
-	    		System.loadLibrary("gmodule-2.0");		System.loadLibrary("usb");
-	    		System.loadLibrary("usb-compat");		System.loadLibrary("wispy");
-	    		System.loadLibrary("pcap");				System.loadLibrary("gpg-error");
-	    		System.loadLibrary("gcrypt");			System.loadLibrary("tshark");
-	    		System.loadLibrary("wireshark_helper");	System.loadLibrary("awmon");
-	    	} catch (Exception e) { Log.e(TAG, "error trying to load a USB related library", e); }
-	    	
-			// Try to init the USB and the wireshark library.
-			if(initUSB()==-1)
-				r += "Failed to initialize USB subsystem...\n";			
-			if(wiresharkInit()!=1)
-				r += "Failed to initialize wireshark library...\n";
-			
-			//wiresharkTest("/sdcard/test.pcap");
-			*/
-			return r;
-		}
-        
-        @Override
-        protected void onPostExecute(String result) {
-    		
-    		textStatus.setText(result.replaceAll("\n", ""));	// Put any error messages in to the text status box
-        	_pd.dismiss();				// Get rid of the spinner
-        	
-        	postInitialization();	// Run a method to do things post initialization on main activity
-        }
-    }
     
     // Everything related to clicking buttons in the main interface
 	public void onClick(View view) {

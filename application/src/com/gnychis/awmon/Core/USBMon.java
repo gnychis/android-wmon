@@ -78,7 +78,7 @@ public class USBMon
 	// check if the device is in there based on the vendor and product IDs.
 	public static boolean isDeviceInList(ArrayList<String> devices, int vendorID, int productID) {
 		for(String dev : devices)
-    		if(Integer.getInteger(dev.split(":")[0])==vendorID && Integer.getInteger(dev.split(":")[1])==productID)
+    		if(Integer.parseInt(dev.split(":")[0])==vendorID && Integer.parseInt(dev.split(":")[1])==productID)
     			return true;
     	return false;
 	}

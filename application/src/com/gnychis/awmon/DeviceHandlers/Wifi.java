@@ -104,12 +104,6 @@ public class Wifi {
 	String _iw_phy;
 	String _rxpackets_loc;
 	
-	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
-	public static int[] channels = {1,2,3,4,5,6,7,8,9,10,11,36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
-	public static int[] frequencies = {2412, 2417, 2422, 2427, 2432, 2437, 2442, 2447, 2452, 2457, 2462,5180, 5200, 5220, 5240, 5260, 5280, 5300, 5320, 
-		5500, 5520, 5540, 5560, 5580, 5680, 5700, 5745, 5765, 5785, 5805, 5825};
-	
-	
 	public Wifi(Context c) {
 		_state_lock = new Semaphore(1,true);
 		_scan_results = new ArrayList<Packet>();
@@ -137,6 +131,9 @@ public class Wifi {
 		
 		_parent.registerReceiver(usbUpdate, new IntentFilter(USBMon.USBMON_DEVICELIST));
 	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	// Related to the connection and disconnection of the USB device
 	
     // Receives messages about USB devices
     private BroadcastReceiver usbUpdate = new BroadcastReceiver() {
@@ -166,9 +163,30 @@ public class Wifi {
 		_device_connected=false;
 	}
 	
-	public boolean isConnected() {
-		return _device_connected;
+	public boolean isConnected() { return _device_connected; }
+	
+	
+	// The purpose of this thread is solely to initialize the Wifi hardware
+	// that will be used for monitoring.
+	protected class WifiInit extends AsyncTask<Context, Integer, String>
+	{
+		// Initialize the hardware
+		@Override
+		protected String doInBackground( Context ... params )
+		{
+			AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/init_wifi.sh " + AWMon._app_name);
+			// AWMon.sendMainMessage(awmon._handler, ThreadMessages.WIFIDEV_INITIALIZED);  // FIXME
+			setFrequency(_wlan_iface_name, _settings.getHomeWifiFreq());
+			return "true";
+		}		
 	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	// Functions for helping convert channels to frequencies
+	// http://en.wikipedia.org/wiki/List_of_WLAN_channels
+	public static int[] channels = {1,2,3,4,5,6,7,8,9,10,11,36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165};
+	public static int[] frequencies = {2412, 2417, 2422, 2427, 2432, 2437, 2442, 2447, 2452, 2457, 2462,
+		5180, 5200, 5220, 5240, 5260, 5280, 5300, 5320,  5500, 5520, 5540, 5560, 5580, 5680, 5700, 5745, 5765, 5785, 5805, 5825};
 	
 	// Take an 802.11 channel number, get a frequency in KHz
 	public static int channelToFreq(int chan) {
@@ -337,23 +355,6 @@ public class Wifi {
 		String newMac = macAddress.replaceAll(":", "");
 		BigInteger ret = new BigInteger(newMac, 16);  // 16 specifies hex
 		return ret;
-	}
-
-	
-	// The purpose of this thread is solely to initialize the Wifi hardware
-	// that will be used for monitoring.
-	protected class WifiInit extends AsyncTask<Context, Integer, String>
-	{
-		// Initialize the hardware
-		@Override
-		protected String doInBackground( Context ... params )
-		{
-			AWMon awmon = (AWMon) params[0];
-			AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/init_wifi.sh " + AWMon._app_name);
-			// AWMon.sendMainMessage(awmon._handler, ThreadMessages.WIFIDEV_INITIALIZED);  // FIXME
-			//setFrequency(_wlan_iface_name, );
-			return "true";
-		}		
 	}
 	
 	// WARNING: Do not cancel(true) this task!  It is unsafe for it to be interrupted in

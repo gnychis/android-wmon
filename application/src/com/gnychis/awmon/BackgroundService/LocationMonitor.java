@@ -226,14 +226,14 @@ public class LocationMonitor {
     		home();
     		changeUpdateInterval(LOCATION_UPDATE_INTERVAL);  // Once we get the location, we slow down updates.
     	}
-    	
-    	// If we are in the home and we got a location update that is more accurate than our previously stored one.
-		if(associatedToHomeAP() && location.getAccuracy()<=mHomeLoc.getAccuracy()) 
-			_settings.setHomeLocation(location);   
 		
 		// We are always home when we are associated to the access point.
 		if(associatedToHomeAP())
 			home();  // If we are connected to their AP, we are home regardless of location info
+		
+    	// If we are in the home and we got a location update that is more accurate than our previously stored one.
+		if(mHomeLoc!=null && associatedToHomeAP() && location.getAccuracy()<=mHomeLoc.getAccuracy()) 
+			_settings.setHomeLocation(location);   
     	
     	if(mHomeLoc!=null) {
     		if(mHomeLoc.distanceTo(location)<=LOCATION_TOLERANCE)

@@ -10,9 +10,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
-import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.UserSettings;
-import com.stericson.RootTools.RootTools;
 
 public class BackgroundService extends Service {
 	
@@ -26,6 +24,7 @@ public class BackgroundService extends Service {
     public DeviceHandler _deviceHandler;
     
     public static String TAG = "AWMonBackground";
+	public static final String SYSTEM_INITIALIZED = "awmon.system.initialized";
 
     public static final boolean DEBUG=true;
     
@@ -33,6 +32,7 @@ public class BackgroundService extends Service {
     
     ServiceState _serviceState;
 	public enum ServiceState {
+		INITIALIZING,
 		IDLE,
 		PROXIMITY_DETECTION,
 		TAKING_SNAPSHOT,
@@ -44,79 +44,38 @@ public class BackgroundService extends Service {
     	_this=this;
     	
     	Log.d(TAG, "Background service is now running");
-    	
-		String r="";
-		
-        try {
-        	Log.d(TAG, "Remounting file system...");
-	    	RootTools.sendShell("mount -o remount,rw -t yaffs2 /dev/block/mtdblock4 /system",0);
-	    	RootTools.sendShell("mount -t usbfs -o devmode=0666 none /proc/bus/usb",0);
-	    	RootTools.sendShell("mount -o remount,rw rootfs /",0);
-	    	RootTools.sendShell("ln -s /mnt/sdcard /tmp",0);
-
-	    	// WARNING: these files do NOT get overwritten if they already exist on the file
-	    	// system with RootTools.  If you are updating ANY of these, you need to do:
-	    	//   adb uninstall com.gnychis.coexisyst
-	    	// And then any updates to these files will be installed on the next build/run.
-	    	Log.d(TAG, "Installing binaries");
-	    	RootTools.installBinary(this, R.raw.disabled_protos, "disabled_protos");
-	    	RootTools.installBinary(this, R.raw.iwconfig, "iwconfig", "755");
-	    	RootTools.installBinary(this, R.raw.lsusb, "lsusb", "755");
-	    	RootTools.installBinary(this, R.raw.lsusb_core, "lsusb_core", "755");
-	    	RootTools.installBinary(this, R.raw.testlibusb, "testlibusb", "755");
-	    	RootTools.installBinary(this, R.raw.iwlist, "iwlist", "755");
-	    	RootTools.installBinary(this, R.raw.iw, "iw", "755");
-	    	RootTools.installBinary(this, R.raw.spectool_mine, "spectool_mine", "755");
-	    	RootTools.installBinary(this, R.raw.spectool_raw, "spectool_raw", "755");
-	    	RootTools.installBinary(this, R.raw.ubertooth_util, "ubertooth_util", "755");
-	    	RootTools.installBinary(this, R.raw.link_libraries, "link_libraries.sh", "755");
-	    	RootTools.installBinary(this, R.raw.link_binaries, "link_binaries.sh", "755");
-	    	RootTools.installBinary(this, R.raw.init_wifi, "init_wifi.sh", "755");
-	    	RootTools.installBinary(this, R.raw.tcpdump, "tcpdump", "755");
-	    	RootTools.installBinary(this, R.raw.tshark, "tshark", "755");
-	    	RootTools.installBinary(this, R.raw.dumpcap, "dumpcap", "755");
-	    	
-	    	// Run a script that will link libraries in /system/lib so that our binaries can run
-	    	Log.d(TAG, "Creating links to libraries...");
-	    	AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_libraries.sh " + AWMon._app_name);
-	    	AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_binaries.sh " + AWMon._app_name);
-	    			
-        } catch(Exception e) {	Log.e(TAG, "error running RootTools commands for init", e); }
-
-    	// Load the libusb related libraries
-        Log.d(TAG, "Linking the libraries to the application");
-    	try {
-    		System.loadLibrary("glib-2.0");			System.loadLibrary("nl");
-    		System.loadLibrary("gmodule-2.0");		System.loadLibrary("usb");
-    		System.loadLibrary("usb-compat");		System.loadLibrary("wispy");
-    		System.loadLibrary("pcap");				System.loadLibrary("gpg-error");
-    		System.loadLibrary("gcrypt");			System.loadLibrary("tshark");
-    		System.loadLibrary("wireshark_helper");	System.loadLibrary("awmon");
-    	} catch (Exception e) { Log.e(TAG, "error trying to load a USB related library", e); }
-    	
-//		if(wiresharkInit()!=1)
-//			r += "Failed to initialize wireshark library...\n";
-    	
+     	
     	// Initialize the states
-    	_serviceState=ServiceState.IDLE;
-    	    	    	    	    
-    	// Make a few instances to our helper classes
-    	_settings = new UserSettings(this);
-    	_motionDetector = new MotionDetector(this);
-    	_locationMonitor = new LocationMonitor(this);
-    	_deviceHandler = new DeviceHandler(this);
+    	_serviceState=ServiceState.INITIALIZING;
+    	
+    	// Finally, initialize and link some of the libraries (which can take a while)
+    	InitLibraries init_thread = new InitLibraries();
+    	init_thread.execute(this);
     	        
+    	// Register a receiver which will be notified when the phone is getting shut down
         registerReceiver(new BroadcastReceiver()
-        {
-        	@Override
-        	public void onReceive(Context context, Intent intent)
-        	{
-        		cleanup();
-        	}
+        { @Override public void onReceive(Context context, Intent intent) { cleanup(); }
         }, new IntentFilter(Intent.ACTION_SHUTDOWN));
         
+    	// Register a receiver which will be notified when the phone is getting shut down
+        registerReceiver(new BroadcastReceiver()
+        { @Override public void onReceive(Context context, Intent intent) { systemInitialized(); }
+        }, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
+        
+        // Register a receiver to get updates on the location
         registerReceiver(locationUpdate, new IntentFilter(LocationMonitor.LOCATION_UPDATE));
     }
+    
+    // Only initialize the classes after the entire system is initialized (libraries are linked)
+    private void systemInitialized() {	    
+		_settings = new UserSettings(this);
+		_motionDetector = new MotionDetector(this);
+		_locationMonitor = new LocationMonitor(this);
+		_deviceHandler = new DeviceHandler(this);
+		_serviceState=ServiceState.IDLE;
+    }
+    
+    public ServiceState getSystemState() { return _serviceState; }
     
     // This receives updates when the phone either enters the home or leaves the home
     private BroadcastReceiver locationUpdate = new BroadcastReceiver() {
@@ -159,5 +118,4 @@ public class BackgroundService extends Service {
     
 	public static void setMainActivity(AWMon activity) { _awmon = activity; }
 	
-	public native int wiresharkInit();
 }
