@@ -159,6 +159,7 @@ public class Wifi {
 	
 	public void disconnected() {
 		_device_connected=false;
+		AWMon.sendToastRequest(_parent, "Wifi device disconnected");
 	}
 	
 	public boolean isConnected() { return _device_connected; }
