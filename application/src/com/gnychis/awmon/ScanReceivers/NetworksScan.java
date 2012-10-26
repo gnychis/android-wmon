@@ -74,13 +74,14 @@ public class NetworksScan extends Activity {
 		@Override @SuppressWarnings("unchecked")
 		public void handleMessage(Message msg) {
 			
-			// An incoming message that a wifi scan was complete
+			// FIXME
+			/*// An incoming message that a wifi scan was complete
 			if(msg.what == ThreadMessages.WIFI_SCAN_COMPLETE.ordinal()) {
 				Log.d("NetworksScan", "Wifi scan is now complete");			// Log out
 				_finished_scans.add(Scans.Wifi);
 				_wifi_scan_result = (ArrayList<WifiAP>)msg.obj;				// Save the scan result
 				startNextScan();											// Start next scan if there is one
-			}
+			}*/
 			if(msg.what == ThreadMessages.ZIGBEE_SCAN_COMPLETE.ordinal()) {
 				Log.d("NetworksScan", "ZigBee scan is now complete");		// Log out
 				_finished_scans.add(Scans.ZigBee);

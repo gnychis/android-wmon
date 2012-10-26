@@ -24,6 +24,7 @@ import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.AWMon.ThreadMessages;
+import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.LocationMonitor;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBMon;
@@ -170,15 +171,27 @@ public class Wifi {
 	// that will be used for monitoring.
 	protected class WifiInit extends AsyncTask<Context, Integer, String>
 	{
+	    @Override
+	    protected void onPreExecute() {
+	        super.onPreExecute();
+	        AWMon.sendProgressDialogRequest(_parent, "Initializing Wifi device..");
+	    }
+	    
 		// Initialize the hardware
 		@Override
 		protected String doInBackground( Context ... params )
 		{
 			AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/init_wifi.sh " + AWMon._app_name);
-			// AWMon.sendMainMessage(awmon._handler, ThreadMessages.WIFIDEV_INITIALIZED);  // FIXME
+			AWMon.sendToastRequest(_parent, "Wifi device initialized");
 			setFrequency(_wlan_iface_name, _settings.getHomeWifiFreq());
 			return "true";
-		}		
+		}	
+		
+	    @Override
+	    protected void onPostExecute(String result) {
+	    	AWMon.sendThreadMessage(_parent, AWMon.ThreadMessages.CANCEL_PROGRESS_DIALOG);
+	    	AWMon.sendToastRequest(_parent, "Wifi device initialized");
+	    }
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,6 +237,19 @@ public class Wifi {
 			return -1;
 		return channels[index];
 	}
+	
+	public void setChannel(int channel) {
+		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
+	}
+	
+	static public void setChannel(String ifname, int channel) {
+		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + ifname + " set channel " + Integer.toString(channel));
+	}
+	
+	static public void setFrequency(String ifname, int frequency) {
+		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + ifname + " set freq " + Integer.toString(frequency));
+	}
+	
 	
 	public void trySleep(int length) {
 		try {
@@ -323,19 +349,7 @@ public class Wifi {
 		
 		return res;
 	}
-	
-	public void setChannel(int channel) {
-		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
-	}
-	
-	static public void setChannel(String ifname, int channel) {
-		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + ifname + " set channel " + Integer.toString(channel));
-	}
-	
-	static public void setFrequency(String ifname, int frequency) {
-		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + ifname + " set freq " + Integer.toString(frequency));
-	}
-	
+
 	public static byte[] parseMacAddress(String macAddress)
     {
         String[] bytes = macAddress.split(":");
@@ -378,13 +392,6 @@ public class Wifi {
 			}
 		}
 		
-		// Used to send messages to the main Activity (UI) thread
-		protected void sendMainMessage(AWMon.ThreadMessages t) {
-			Message msg = new Message();
-			msg.what = t.ordinal();
-			//coexisyst._handler.sendMessage(msg);  // FIXME
-		}
-		
 		// Opens a the moni0 device as a pcap interface for packet capture
 		public boolean openDev() {
 			
@@ -394,7 +401,7 @@ public class Wifi {
 			int r = Pcap.findAllDevs(alldevs, errbuf);  
 			if (r == Pcap.NOT_OK || alldevs.isEmpty()) {  
 	            debugOut("Can't read list of devices, error is " + errbuf.toString());  
-	            sendMainMessage(ThreadMessages.WIFIDEV_FAILED);
+	            AWMon.sendToastRequest(_parent, "Failed to initialize Wifi device");
 	            return false;  
 	        } 
 			
@@ -412,7 +419,7 @@ public class Wifi {
 	        }  
 	        
 	        if(i>=alldevs.size()) {
-	        	sendMainMessage(ThreadMessages.WIFIDEV_FAILED);
+	        	AWMon.sendToastRequest(_parent, "Failed to initialize Wifi device");
 	        	return false;
 	        }
 	        
@@ -428,7 +435,7 @@ public class Wifi {
 	        if (_moni0_pcap == null) {  
 	            debugOut("Error while opening device for capture: "  
 	                + errbuf.toString());  
-	            sendMainMessage(ThreadMessages.WIFIDEV_FAILED);
+	            AWMon.sendToastRequest(_parent, "failed to open wifi device for capture");
 	            return false;  
 	        }  
 	        
@@ -494,13 +501,13 @@ public class Wifi {
 					debugOut("Incrementing channel to:" + Integer.toString(channels[_scan_channel]));
 					setChannel(channels[_scan_channel]);
 					debugOut("... increment complete!");
-					sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);
+					AWMon.sendThreadMessage(_parent, ThreadMessages.INCREMENT_SCAN_PROGRESS);
 				} else {
 					APScanStop();
 					_scan_timer.cancel();
 				}
 			} else if(!_one_shot_scan) {	
-				sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);
+				AWMon.sendThreadMessage(_parent, ThreadMessages.INCREMENT_SCAN_PROGRESS);
 				_timer_counts--;
 				debugOut("Wifi scan timer tick");
 				if(_timer_counts==0) {

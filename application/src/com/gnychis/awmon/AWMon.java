@@ -15,9 +15,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -53,13 +51,7 @@ public class AWMon extends Activity implements OnClickListener {
 	public TextView textStatus;
 		
 	public enum ThreadMessages {
-		WIFI_SCAN_START,
-		WIFI_SCAN_COMPLETE,
-		
-		WIFIDEV_CONNECTED,
-		WIFIDEV_INITIALIZED,
-		WIFIDEV_FAILED,
-		
+
 		ZIGBEE_CONNECTED,
 		ZIGBEE_INITIALIZED,
 		ZIGBEE_FAILED,
@@ -69,6 +61,8 @@ public class AWMon extends Activity implements OnClickListener {
 		BLUETOOTH_SCAN_COMPLETE,
 		
 		SHOW_TOAST,
+		SHOW_PROGRESS_DIALOG,
+		CANCEL_PROGRESS_DIALOG,
 		INCREMENT_SCAN_PROGRESS,
 		NETWORK_SCANS_COMPLETE,
 	}
@@ -107,7 +101,7 @@ public class AWMon extends Activity implements OnClickListener {
     	
     	// If the background service is initializing, pop up a spinner which we will cancel after initialized
     	if(_backgroundService.getSystemState()==BackgroundService.ServiceState.INITIALIZING)
-    		_pd = ProgressDialog.show(AWMon.this, "", "Initializing application, please wait...", true, false); 
+    		showProgressDialog("Initializing application, please wait...");
     	
     	// If the background service is already initialized, then we can go ahead call the post-init
     	if(_backgroundService.getSystemState()==BackgroundService.ServiceState.IDLE)
@@ -138,13 +132,27 @@ public class AWMon extends Activity implements OnClickListener {
     // A broadcast receiver to get messages from background service and threads
     private BroadcastReceiver _messageReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
+        	String msg;
         	ThreadMessages tm = (ThreadMessages) intent.getExtras().get("type");
         	
         	switch(tm) {
         		case SHOW_TOAST:
-        			String msg = (String) intent.getExtras().get("msg");
+        			msg = (String) intent.getExtras().get("msg");
         			Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
-        		break;
+        			break;
+        		
+        		case SHOW_PROGRESS_DIALOG:
+        			msg = (String) intent.getExtras().get("msg");
+        			showProgressUpdate(msg);
+        			break;
+        		
+        		case CANCEL_PROGRESS_DIALOG:
+        			if(_pd!=null) _pd.dismiss();
+        			break;
+        			
+				case INCREMENT_SCAN_PROGRESS:
+					if(_pd!=null) _pd.incrementProgressBy(1);
+					break;
         	}     	
         }
     }; 
@@ -306,11 +314,29 @@ public class AWMon extends Activity implements OnClickListener {
 		
 	}
 	
-	// Used to send messages to the main Activity (UI) thread
-	public static void sendMainMessage(Handler handler, AWMon.ThreadMessages t) {
-		Message msg = new Message();
-		msg.what = t.ordinal();
-		handler.sendMessage(msg);
+	private void showProgressDialog(String message) { _pd = ProgressDialog.show(AWMon.this, "", message, true, false); }
+	
+	public static void sendToastRequest(Context c, String message) {
+		Intent i = new Intent();
+		i.setAction(AWMon.THREAD_MESSAGE);
+		i.putExtra("type", AWMon.ThreadMessages.SHOW_TOAST);
+		i.putExtra("msg", message);
+		c.sendBroadcast(i);
+	}
+	
+	public static void sendProgressDialogRequest(Context c, String message) {
+		Intent i = new Intent();
+		i.setAction(AWMon.THREAD_MESSAGE);
+		i.putExtra("type", AWMon.ThreadMessages.SHOW_PROGRESS_DIALOG);
+		i.putExtra("msg", message);
+		c.sendBroadcast(i);
+	}
+	
+	public static void sendThreadMessage(Context c, ThreadMessages type) {
+		Intent i = new Intent();
+		i.setAction(THREAD_MESSAGE);
+		i.putExtra("type", type);
+		c.sendBroadcast(i);
 	}
 	
 	public native String[] getDeviceNames();

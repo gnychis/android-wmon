@@ -58,6 +58,7 @@ public class DeviceHandler {
 
 	}
 	
+	// FIXME: Get rid of this
 	public Handler _handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -65,54 +66,6 @@ public class DeviceHandler {
 			// Based on the thread message, a difference action will take place
 			ThreadMessages tm = ThreadMessages.values()[msg.what];
 			switch(tm) {
-			
-				//////////////////////////////////////////////////////
-				case SHOW_TOAST:
-					try {
-						//String m = toastMessages.remove();  // FIXME
-						//Toast.makeText(getApplicationContext(), m, Toast.LENGTH_LONG).show();	 // FIXME
-					} catch(Exception e) { }
-					break;
-					
-				//////////////////////////////////////////////////////
-				case WIFIDEV_CONNECTED:
-					//_pd = ProgressDialog.show(AWMon.this, "", "Initializing Wifi device...", true, false);  // FIXME
-					_usbmon.stopUSBMon();
-					_wifi.connected();
-					break;
-					
-				case WIFIDEV_INITIALIZED:
-					//Toast.makeText(getApplicationContext(), "Successfully initialized Wifi device", Toast.LENGTH_LONG).show();	// FIXME
-					//_pd.dismiss();
-					_usbmon.startUSBMon();
-					break;
-					
-				case WIFIDEV_FAILED:
-					//Toast.makeText(getApplicationContext(), "Failed to initialize Wifi device", Toast.LENGTH_LONG).show();  // FIXME
-					break;
-					
-				//////////////////////////////////////////////////////
-				case ZIGBEE_CONNECTED:
-					//_pd = ProgressDialog.show(AWMon.this, "", "Initializing ZigBee device...", true, false);  // FIXME
-					_usbmon.stopUSBMon();
-					_zigbee.connected();
-					break;
-					
-				case ZIGBEE_WAIT_RESET:
-					//_pd.dismiss();  // FIXME
-					//_pd = ProgressDialog.show(AWMon.this, "", "Press ZigBee reset button...", true, false);  // FIXME
-					break;
-					
-				case ZIGBEE_INITIALIZED:
-					//_pd.dismiss();  // FIXME
-					//Toast.makeText(getApplicationContext(), "Successfully initialized ZigBee device", Toast.LENGTH_LONG).show();	// FIXME
-					_usbmon.startUSBMon();
-					break;
-					
-				case ZIGBEE_FAILED:
-					//Toast.makeText(getApplicationContext(), "Failed to initialize ZigBee device", Toast.LENGTH_LONG).show();	// FIXME
-					break;
-					
 					
 				//////////////////////////////////////////////////////
 				case INCREMENT_SCAN_PROGRESS:
