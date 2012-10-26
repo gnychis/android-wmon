@@ -2,7 +2,6 @@ package com.gnychis.awmon.Core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -12,8 +11,6 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
-import com.gnychis.awmon.BackgroundService.LocationMonitor.StateChange;
-import com.stericson.RootTools.RootTools;
 
 // A class to handle USB worker like things
 public class USBMon
@@ -67,67 +64,18 @@ public class USBMon
 	public void usbPoll( )
 	{
 		String usbList[] = GetUSBList();
-		ArrayList<String> list = new ArrayList(Arrays.asList(usbList));
+		ArrayList<String> list = new ArrayList<String>(Arrays.asList(usbList));
+		
+		// Store the entire device list in a broadcast message and send it out.
+		// This allows each of the device handlers to be able to detect if their
+		// device has been connected or disconnected.
 		Intent i = new Intent();
 		i.setAction(USBMON_DEVICELIST);
 		i.putExtra("devices", list);
-		_parent.sendBroadcast(i);
+		_parent.sendBroadcast(i); 
 		
-		/*
 		//int wifidev_in_devlist = USBcheckForDevice(0x13b1,0x002f) + USBcheckForDevice(0x0411,0x017f);
 		//int econotag_in_devlist = USBcheckForDevice(0x0403, 0x6010);
-
-		// Wifi device check
-		if(wifidev_in_devlist==1 && _parent._wifi._device_connected==false)
-			updateState(Wifi.WIFIDEV_CONNECT);
-		else if(wifidev_in_devlist==0 && _parent._wifi._device_connected==true)
-			updateState(Wifi.WIFIDEV_DISCONNECT);
-
-		// Econotag check
-		if(econotag_in_devlist==1 && _parent._zigbee._device_connected==false)
-			updateState(ZigBee.ZIGBEE_CONNECT);
-		else if(econotag_in_devlist==0 && _parent._zigbee._device_connected==true)
-			updateState(ZigBee.ZIGBEE_DISCONNECT);
-			*/
- 
-	}
-	
-	// FIXME:  This seems redundant with the function above it (usbPoll())
-	/*protected void updateState(int event)
-	{
-		// Handling events of Wifi device
-		if(event == Wifi.WIFIDEV_CONNECT) {
-			Message msg = new Message();
-			msg.what = ThreadMessages.WIFIDEV_CONNECTED.ordinal();
-			_parent._handler.sendMessage(msg);
-			debugOut("got update that Wifi card was connected");
-		}
-		else if(event == Wifi.WIFIDEV_DISCONNECT) {
-			debugOut("Wifi device now disconnected");
-			sendToast("Wifi device disconnected");
-			_parent._wifi.disconnected();
-		}
-		
-		// Handling events for ZigBee device
-		if(event == ZigBee.ZIGBEE_CONNECT) {
-			Message msg = new Message();
-			msg.what = ThreadMessages.ZIGBEE_CONNECTED.ordinal();
-			_parent._handler.sendMessage(msg);
-			debugOut("got update that ZigBee device was connected");
-		}
-		else if(event == ZigBee.ZIGBEE_DISCONNECT) {
-			debugOut("ZigBee device now disconnected");
-			sendToast("ZigBee device disconnected");
-			_parent._zigbee.disconnected();
-		}
-	}
-	*/
-	
-	private void sendToast(String msg) {
-		Intent i = new Intent();
-		i.setAction(AWMon.THREAD_MESSAGE);
-		i.putExtra("type", AWMon.ThreadMessages.SHOW_TOAST);
-		_parent.sendBroadcast(i);
 	}
 	
 	public native int  initUSB();
