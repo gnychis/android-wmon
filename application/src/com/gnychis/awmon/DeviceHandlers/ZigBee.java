@@ -86,22 +86,6 @@ public class ZigBee {
 		return true;  // in scanning state, and channel hopping
 	}
 	
-	public boolean scanStop() {
-		// Need to return the state back to IDLE from scanning
-		if(!ZigBeeStateChange(ZigBeeState.IDLE)) {
-			Log.d(TAG, "Failed to change from scanning to IDLE");
-			return false;
-		}
-		
-		// Now, send out a broadcast with the results
-		Intent i = new Intent();
-		i.setAction(ZIGBEE_SCAN_RESULT);
-		i.putExtra("packets", _scan_results);
-		_parent.sendBroadcast(i);
-		
-		return true;
-	}
-	
 	// Attempts to change the current state, will return
 	// the state after the change if successful/failure
 	public boolean ZigBeeStateChange(ZigBeeState s) {
@@ -187,38 +171,21 @@ public class ZigBee {
 	protected class ZigBeeInit extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
-		AWMon coexisyst;
 		USBSerial _dev;
 		
 		// The initialized sequence (hardware sends it when it is initialized)
 		byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
-		
-		private void debugOut(String msg) {
-			if(VERBOSE)
-				Log.d("ZigBeeInit", msg);
-		}
-		
-		// Used to send messages to the main Activity (UI) thread
-		protected void sendMainMessage(AWMon.ThreadMessages t) {
-			Message msg = new Message();
-			msg.what = t.ordinal();
-			//coexisyst._handler.sendMessage(msg);  //FIXME
-		}
-		
-		public boolean checkInitSeq(byte buf[]) {
-			
-			for(int i=0; i<initialized_sequence.length; i++)
-				if(initialized_sequence[i]!=buf[i])
-					return false;
-						
-			return true;
-		}
+
+	    @Override
+	    protected void onPreExecute() {
+	        super.onPreExecute();
+	        AWMon.sendProgressDialogRequest(_parent, "Initializing ZigBee device..");
+	    }
 		
 		@Override
 		protected String doInBackground( Context ... params )
 		{
 			parent = params[0];
-			coexisyst = (AWMon) params[0];
 			
 			// Create a serial device
 			_dev = new USBSerial();
@@ -238,7 +205,8 @@ public class ZigBee {
 			
 			// Wait for the initialized sequence...
 			byte[] readSeq = new byte[initialized_sequence.length];
-			sendMainMessage(ThreadMessages.ZIGBEE_WAIT_RESET);
+			AWMon.sendThreadMessage(_parent, AWMon.ThreadMessages.CANCEL_PROGRESS_DIALOG);
+			AWMon.sendProgressDialogRequest(_parent, "Please press ZigBee reset button..");
 			while(!checkInitSeq(readSeq)) {
 				for(int i=0; i<initialized_sequence.length-1; i++)
 					readSeq[i] = readSeq[i+1];
@@ -249,19 +217,40 @@ public class ZigBee {
 			
 			// Close the port
 			if(!_dev.closePort())
-				sendMainMessage(ThreadMessages.ZIGBEE_FAILED);
-
-			sendMainMessage(ThreadMessages.ZIGBEE_INITIALIZED);
+				AWMon.sendToastRequest(_parent, "Failed to initialize ZigBee device");
 
 			return "OK";
 		}
 		
+	    @Override
+	    protected void onPostExecute(String result) {
+	    	AWMon.sendThreadMessage(_parent, AWMon.ThreadMessages.CANCEL_PROGRESS_DIALOG);
+	    	AWMon.sendToastRequest(_parent, "ZigBee device initialized");
+	    }
+		
+		private void debugOut(String msg) {
+			if(VERBOSE)
+				Log.d("ZigBeeInit", msg);
+		}
+		
+		public boolean checkInitSeq(byte buf[]) {
+			
+			for(int i=0; i<initialized_sequence.length; i++)
+				if(initialized_sequence[i]!=buf[i])
+					return false;
+						
+			return true;
+		}
+		
+		
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// This is a class which spawns a background thread and executes the scanning for ZigBee
+	// networks and devices in the area.  It
 	protected class ZigBeeScan extends AsyncTask<Context, Integer, String>
 	{
 		Context parent;
-		AWMon coexisyst;
 		private int PCAP_HDR_SIZE = 16;
 		int _channel;
 		private Semaphore _comm_lock;
@@ -277,17 +266,34 @@ public class ZigBee {
 		byte SCAN_DONE=0x0006;
 		byte CHAN_IS=0x0007;
 		
-		// Used to send messages to the main Activity (UI) thread
-		protected void sendMainMessage(AWMon.ThreadMessages t) {
-			Message msg = new Message();
-			msg.what = t.ordinal();
-			//coexisyst._handler.sendMessage(msg);  // FIXME
-		}
-		
 		@Override
 		protected void onCancelled()
 		{
 			Log.d(TAG, "ZigBee monitor thread is canceled...");
+		}
+		
+		// Transmit a command to start a scan on the hardware (channel hop)
+		public boolean initializeScan() {					
+			try {
+				// First, we need to get the name of the USB device from dmesg
+				List<String> res = RootTools.sendShell("dmesg | grep ttyUSB | tail -n 1 | awk '{print $NF}'",0);
+				String ttyUSB_name = res.get(0);	
+				
+				// We also setup the serial port and acquire a communication lock on it
+				_dev = new USBSerial();
+				_comm_lock.acquire();	
+				if(!_dev.openPort("/dev/" + ttyUSB_name))
+					return false;
+				
+				// Finally we trigger the scan
+				_dev.writeByte(START_SCAN);
+			} catch (Exception e) {  
+				_comm_lock.release();
+				return false;
+			}	
+			
+			_comm_lock.release();	// Release the lock.
+			return true;
 		}
 		
 		// The entire meat of the thread, pulls packets off the interface and dissects them
@@ -295,24 +301,9 @@ public class ZigBee {
 		protected String doInBackground( Context ... params )
 		{
 			parent = params[0];
-			coexisyst = (AWMon) params[0];
 			_comm_lock = new Semaphore(1,true);
 			
-			// Create a serial device
-			_dev = new USBSerial();
-			
-			// Get the name of the USB device, which will be the last thing in dmesg
-			String ttyUSB_name;
-			try {
-				List<String> res = RootTools.sendShell("dmesg | grep ttyUSB | tail -n 1 | awk '{print $NF}'",0);
-				ttyUSB_name = res.get(0);
-			} catch (Exception e) { return ""; }	
-			
-			// Attempt to open the COM port which calls the native libraries
-			if(!_dev.openPort("/dev/" + ttyUSB_name))
-				return "FAIL";
-			
-			startScan(); 	// Initialize the scan
+			initializeScan(); 	// Initialize the scan
 						
 			// Loop and read headers and packets
 			while(true) {
@@ -322,7 +313,7 @@ public class ZigBee {
 					_channel = (int)_dev.getByte() & 0xff;
 					
 					// Our way of tracking progress with the main UI
-					sendMainMessage(ThreadMessages.INCREMENT_SCAN_PROGRESS);
+					AWMon.sendThreadMessage(parent, AWMon.ThreadMessages.INCREMENT_SCAN_PROGRESS);
 				}
 				
 				if(cmd==SCAN_DONE)
@@ -367,11 +358,24 @@ public class ZigBee {
 			}
 			
 			if(!_dev.closePort())
-				sendMainMessage(ThreadMessages.ZIGBEE_FAILED);
+				AWMon.sendToastRequest(_parent, "ZigBee device failed while scanning");
 			
-			scanStop();
 			return "PASS";
 		}
+		
+	    @Override
+	    protected void onPostExecute(String result) {
+	    	
+    		// Need to return the state back to IDLE from scanning
+    		if(!ZigBeeStateChange(ZigBeeState.IDLE))
+    			Log.d(TAG, "Failed to change from scanning to IDLE");
+	    		
+    		// Now, send out a broadcast with the results
+    		Intent i = new Intent();
+    		i.setAction(ZIGBEE_SCAN_RESULT);
+    		i.putExtra("packets", _scan_results);
+    		_parent.sendBroadcast(i);
+	    }
 		
 		// First, acquire the lock to communicate with the ZigBee device,
 		// then send the command to change the channel and the channel number.
@@ -395,19 +399,6 @@ public class ZigBee {
 			try {
 				_comm_lock.acquire();
 				_dev.writeByte(TRANSMIT_BEACON);
-			} catch(Exception e) {
-				_comm_lock.release();
-				return false;
-			}
-			_comm_lock.release();
-			return true;
-		}
-		
-		// Transmit a command to start a scan on the hardware (channel hop)
-		public boolean startScan() {
-			try {
-				_comm_lock.acquire();
-				_dev.writeByte(START_SCAN);
 			} catch(Exception e) {
 				_comm_lock.release();
 				return false;

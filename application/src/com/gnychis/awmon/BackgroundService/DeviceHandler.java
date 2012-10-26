@@ -66,11 +66,6 @@ public class DeviceHandler {
 			// Based on the thread message, a difference action will take place
 			ThreadMessages tm = ThreadMessages.values()[msg.what];
 			switch(tm) {
-					
-				//////////////////////////////////////////////////////
-				case INCREMENT_SCAN_PROGRESS:
-					//_pd.incrementProgressBy(1);  // FIXME
-					break;
 				
 				case NETWORK_SCANS_COMPLETE:
 					//_pd.dismiss();  // FIXME
