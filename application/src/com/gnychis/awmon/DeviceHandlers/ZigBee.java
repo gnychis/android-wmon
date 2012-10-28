@@ -35,9 +35,7 @@ public class ZigBee extends HardwareDevice {
 	ZigBeeScanner _monitor_thread;
 	
 	public ZigBee(Context c) {
-		_state_lock = new Semaphore(1,true);
 		_parent = c;
-		_state = State.IDLE;
 		Log.d(TAG, "Initializing ZigBee class...");
 		_parent.registerReceiver(usbUpdate, new IntentFilter(USBMon.USBMON_DEVICELIST));
 	}

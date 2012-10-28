@@ -26,6 +26,15 @@ abstract public class HardwareDevice {
 	abstract public boolean startScan();
 	abstract public void scanComplete();
 	
+	public HardwareDevice() {
+		_state_lock = new Semaphore(1,true);
+		_state = State.IDLE;
+	}
+	
+	public HardwareDevice.State getState() {
+		return _state;
+	}
+	
 	// Attempts to change the current state, will return
 	// the state after the change if successful/failure
 	public boolean stateChange(State s) {
