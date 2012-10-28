@@ -49,11 +49,9 @@ public class ScanManager extends Activity {
 	
 	// Scan receivers for incoming broadcasts (which include results)
 	public WiFiScanReceiver _rcvr_80211;
-	public ZigBeeScanReceiver _rcvr_ZigBee;
 	public BluetoothScanReceiver _rcvr_BTooth;
 	
 	// To store the most recent scan results
-	public ArrayList<ZigBeeNetwork> _zigbee_scan_result;
 	public ArrayList<WifiAP> _wifi_scan_result;
 	public ArrayList<BluetoothDev> _bluetooth_scan_result;
 	public ArrayList<Integer> _wispy_scan_result;
