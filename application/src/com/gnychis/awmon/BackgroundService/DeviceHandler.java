@@ -16,7 +16,7 @@ import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
 import com.gnychis.awmon.DeviceHandlers.ZigBee;
 import com.gnychis.awmon.Interfaces.AddNetwork;
-import com.gnychis.awmon.ScanReceivers.NetworksScan;
+import com.gnychis.awmon.ScanReceivers.ScanManager;
 
 // The handlers to the devices must reside in the background service, because there is
 // not guarantee the main activity (AWMon) is actually active or in use.  But, it is
@@ -32,7 +32,7 @@ public class DeviceHandler {
 	public Wifi _wifi;
 	public ZigBee _zigbee;
 	public BluetoothAdapter _bt;
-	public NetworksScan _networks_scan;
+	public ScanManager _networks_scan;
 	protected USBMon _usbmon;
 	
 	public DeviceHandler(Context parent) {
@@ -50,7 +50,7 @@ public class DeviceHandler {
 		_usbmon = new USBMon(parent);
 		
 		// Register various receivers to receive scan updates.
-    	_networks_scan = new NetworksScan(_handler, _usbmon, _wifi, _zigbee, _bt);
+    	_networks_scan = new ScanManager(_handler, _usbmon, _wifi, _zigbee, _bt);
 		_parent.registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		_parent.registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 		_parent.registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));

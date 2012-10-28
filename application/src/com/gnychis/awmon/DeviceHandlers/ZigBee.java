@@ -24,7 +24,7 @@ import com.gnychis.awmon.Core.USBSerial;
 import com.gnychis.awmon.DeviceHandlers.Wifi.USBWifiDev;
 import com.stericson.RootTools.RootTools;
 
-public class ZigBee {
+public class ZigBee extends HardwareDevice {
 	private static final String TAG = "ZigbeeDev";
 	private static final boolean VERBOSE = true;
 	
@@ -34,8 +34,6 @@ public class ZigBee {
 		public static final int productID=0x6010;
 	}
 
-	public static final int ZIGBEE_CONNECT = 200;
-	public static final int ZIGBEE_DISCONNECT = 201;
 	public static final String ZIGBEE_SCAN_RESULT = AWMon._app_name + ".ZIGBEE_SCAN_RESULT";
 	public static final int MS_SLEEP_UNTIL_PCAPD = 5000;
 	
@@ -198,7 +196,10 @@ public class ZigBee {
 			return -1;
 		return frequencies[chan];
 	}	
-
+	
+	public void startScan() {
+		
+	}
 	
 	// Set the state to scan and start to switch channels
 	public boolean scanStart() {

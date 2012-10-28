@@ -41,7 +41,7 @@ once num_pkts != -1, and read>num_pkts, then leave scanning thread
 
 bingo.
  */
-public class Wifi {
+public class Wifi extends HardwareDevice {
 	
 	// This defines the device USB ID we are looking for
 	class USBWifiDev {
@@ -54,8 +54,6 @@ public class Wifi {
 	public static final boolean PCAP_DUMP = false;
 	DataOutputStream _pcap_dump; 
 
-	public static final int WIFIDEV_CONNECT = 100;
-	public static final int WIFIDEV_DISCONNECT = 101;
 	public static final String WIFI_SCAN_RESULT = AWMon._app_name + ".WIFI_SCAN_RESULT";
 	public static final int MS_SLEEP_UNTIL_PCAPD = 1500;
 	
@@ -255,6 +253,10 @@ public class Wifi {
 		} catch(Exception e) {
 			Log.e("WiFiMonitor", "Error running commands for connecting wifi device", e);
 		}
+	}
+	
+	public void startScan() {
+		
 	}
 	
 	// Set the state to scan and start to switch channels
