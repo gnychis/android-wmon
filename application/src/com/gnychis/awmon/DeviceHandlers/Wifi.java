@@ -259,6 +259,8 @@ public class Wifi extends HardwareDevice {
 		
 	}
 	
+	public DeviceType deviceType() { return DeviceType.Wifi;}
+	
 	// Set the state to scan and start to switch channels
 	public boolean APScan() {
 		
