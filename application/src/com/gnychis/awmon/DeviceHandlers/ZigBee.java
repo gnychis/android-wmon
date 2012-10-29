@@ -14,7 +14,6 @@ import android.util.Log;
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.USBSerial;
-import com.gnychis.awmon.DeviceScanners.ZigBeeScanner;
 import com.stericson.RootTools.RootTools;
 
 public class ZigBee extends HardwareDevice {
@@ -30,7 +29,6 @@ public class ZigBee extends HardwareDevice {
 	public static final int MS_SLEEP_UNTIL_PCAPD = 5000;
 		
 	public boolean _device_connected;
-	ZigBeeScanner _monitor_thread;
 	
 	public ZigBee(Context c) {
 		super(HardwareDevice.Type.ZigBee);

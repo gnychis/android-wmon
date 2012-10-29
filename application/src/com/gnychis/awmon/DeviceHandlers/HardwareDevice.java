@@ -6,7 +6,7 @@ import android.content.Context;
 
 import com.gnychis.awmon.DeviceScanners.DeviceScanner;
 import com.gnychis.awmon.DeviceScanners.WifiDeviceScanner;
-import com.gnychis.awmon.DeviceScanners.ZigBeeScanner;
+import com.gnychis.awmon.DeviceScanners.ZigBeeDeviceScanner;
 
 abstract public class HardwareDevice {
 	
@@ -35,7 +35,7 @@ abstract public class HardwareDevice {
 		
 		switch(deviceType()) {
 			case ZigBee:
-				_device_scanner = new ZigBeeScanner();
+				_device_scanner = new ZigBeeDeviceScanner();
 				break;
 			case Wifi:
 				_device_scanner = new WifiDeviceScanner();

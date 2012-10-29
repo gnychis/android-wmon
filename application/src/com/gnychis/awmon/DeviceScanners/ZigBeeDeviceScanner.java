@@ -17,7 +17,7 @@ import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;
 
-public class ZigBeeScanner extends DeviceScanner {
+public class ZigBeeDeviceScanner extends DeviceScanner {
 	final String TAG = "ZigBeeScanner";
 	public static final String ZIGBEE_SCAN_RESULT = AWMon._app_name + ".ZIGBEE_SCAN_RESULT";
 	static int WTAP_ENCAP_802_15 = 127;
@@ -36,7 +36,7 @@ public class ZigBeeScanner extends DeviceScanner {
 	byte SCAN_DONE=0x0006;
 	byte CHAN_IS=0x0007;
 	
-	public ZigBeeScanner() {
+	public ZigBeeDeviceScanner() {
 		super(HardwareDevice.Type.ZigBee);
 	}
 	
