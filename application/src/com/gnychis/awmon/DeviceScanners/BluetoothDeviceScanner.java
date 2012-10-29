@@ -7,13 +7,15 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 
 import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 
 public class BluetoothDeviceScanner extends DeviceScanner {
 	
-	//_bluetooth.startDiscovery();
+	public BluetoothAdapter _bluetooth;
+	
 	boolean _bt_scan_complete;
 	ArrayList<Device> _scanResult;
 	
@@ -27,8 +29,18 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 		_hw_device = params[0];
 		_bt_scan_complete=false;
 		
+		// Register the receivers and then start the discovery
+		_hw_device._parent.registerReceiver(bluetoothReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+		_hw_device._parent.registerReceiver(bluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+		_bluetooth.startDiscovery();
+		
 		_scanResult = new ArrayList<Device>();
-	
+		
+		while(!_bt_scan_complete)
+			try { Thread.sleep(100); } catch(Exception e) {}
+		
+		_hw_device._parent.unregisterReceiver(bluetoothReceiver);
+			
 		return _result_parser.returnDevices(_scanResult);
 	}
 	
