@@ -50,7 +50,7 @@ public class DeviceHandler {
 		_usbmon = new USBMon(parent);
 		
 		// Register various receivers to receive scan updates.
-    	_networks_scan = new ScanManager(_handler, _usbmon, _wifi, _zigbee, _bt);
+    	//_networks_scan = new ScanManager(_handler, _usbmon, _wifi, _zigbee, _bt);
 		/*_parent.registerReceiver(_networks_scan._rcvr_80211, new IntentFilter(Wifi.WIFI_SCAN_RESULT));
 		_parent.registerReceiver(_networks_scan._rcvr_ZigBee, new IntentFilter(ZigBee.ZIGBEE_SCAN_RESULT));
 		_parent.registerReceiver(_networks_scan._rcvr_BTooth, new IntentFilter(BluetoothDevice.ACTION_FOUND));
