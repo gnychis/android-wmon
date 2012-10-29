@@ -6,6 +6,6 @@ import com.gnychis.awmon.NetDevDefinitions.Device;
 
 abstract public class ScanResultParser {
 
-	abstract ArrayList<Device> returnDevices(ArrayList<Object> scanResult);
+	abstract public ArrayList<Device> returnDevices(ArrayList<Object> scanResult);
 	
 }

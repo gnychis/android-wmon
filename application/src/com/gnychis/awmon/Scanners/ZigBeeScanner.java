@@ -8,7 +8,6 @@ import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
@@ -18,11 +17,10 @@ import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;
 
-public class ZigBeeScanner extends AsyncTask<HardwareDevice, Integer, String> {
+public class ZigBeeScanner extends DeviceScanner {
 	final String TAG = "ZigBeeScanner";
 	public static final String ZIGBEE_SCAN_RESULT = AWMon._app_name + ".ZIGBEE_SCAN_RESULT";
 	static int WTAP_ENCAP_802_15 = 127;
-	HardwareDevice _hw_device;
 	private int PCAP_HDR_SIZE = 16;
 	int _channel;
 	private Semaphore _comm_lock;
@@ -39,18 +37,9 @@ public class ZigBeeScanner extends AsyncTask<HardwareDevice, Integer, String> {
 	byte CHAN_IS=0x0007;
 	
 	
-	ArrayList<Packet> _scan_results;
-	
-	@Override
-	protected void onCancelled()
-	{
-		Log.d(TAG, "ZigBee monitor thread is canceled...");
-	}
-	
 	// Transmit a command to start a scan on the hardware (channel hop)
 	public boolean initializeScan() {					
 		try {
-			_scan_results = new ArrayList<Packet>();
 			
 			// First, we need to get the name of the USB device from dmesg
 			List<String> res = RootTools.sendShell("dmesg | grep ttyUSB | tail -n 1 | awk '{print $NF}'",0);
@@ -79,6 +68,7 @@ public class ZigBeeScanner extends AsyncTask<HardwareDevice, Integer, String> {
 	{
 		_hw_device = params[0];
 		_comm_lock = new Semaphore(1,true);
+		ArrayList<Packet> scanResult = new ArrayList<Packet>();
 		
 		initializeScan(); 	// Initialize the scan
 					
@@ -130,26 +120,15 @@ public class ZigBeeScanner extends AsyncTask<HardwareDevice, Integer, String> {
 				// To identify a beacon from ZigBee, check for the field zbee.beacon.protocol.
 				// If it exists, save the packet as part of our scan.
 				if(rpkt.getField("zbee.beacon.protocol")!=null)
-					_scan_results.add(rpkt);
+					scanResult.add(rpkt);
 			}
 		}
 		
 		if(!_dev.closePort())
 			AWMon.sendToastRequest(_hw_device._parent, "ZigBee device failed while scanning");
 		
-		return "PASS";
+		return _result_parser.returnDevices(scanResult);
 	}
-	
-    @Override
-    protected void onPostExecute(String result) {    		
-		// Now, send out a broadcast with the results
-		Intent i = new Intent();
-		i.setAction(ZIGBEE_SCAN_RESULT);
-		i.putExtra("packets", _scan_results);
-		_hw_device._parent.sendBroadcast(i);
-		
-    	_hw_device.scanComplete();
-    }
 	
 	// First, acquire the lock to communicate with the ZigBee device,
 	// then send the command to change the channel and the channel number.

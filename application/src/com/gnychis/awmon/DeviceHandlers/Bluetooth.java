@@ -7,24 +7,36 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.widget.Toast;
 
-import com.gnychis.awmon.AWMon.ThreadMessages;
+import com.gnychis.awmon.DeviceHandlers.HardwareDevice.State;
 import com.gnychis.awmon.NetDevDefinitions.BluetoothDev;
+import com.gnychis.awmon.Scanners.BluetoothScanner;
 
 public class Bluetooth extends HardwareDevice {
 	
 	BluetoothAdapter _bluetooth;
 	Context _parent;
+	BluetoothScanner _monitor_thread;
 	
 	public Bluetooth(Context c) {
+		super(HardwareDevice.Type.Bluetooth);
 		_parent = c;
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 		_parent.registerReceiver(_messageReceiver, new IntentFilter());
 	}
 
-	public void startScan() {
-		_bluetooth.startDiscovery();
+	public boolean startScan() {
+		if(!stateChange(State.SCANNING))
+			return false;
+		
+		_monitor_thread = new BluetoothScanner();
+		_monitor_thread.execute(this);
+		
+		return true;
+	}
+	
+	public void scanComplete() {
+		stateChange(State.IDLE);
 	}
 	
     // A broadcast receiver to get messages from background service and threads
@@ -46,5 +58,4 @@ public class Bluetooth extends HardwareDevice {
   	};
 	
 	public boolean 		isConnected() { return _bluetooth.isEnabled(); }
-	public DeviceType 	deviceType() { return DeviceType.Bluetooth; }
 }

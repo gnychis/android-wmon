@@ -8,7 +8,8 @@ abstract public class HardwareDevice {
 	
 	public Context _parent;
 	
-	public enum DeviceType {		// A List of possible scans to handle
+	HardwareDevice.Type _type;
+	public enum Type {		// A List of possible scans to handle
 		Wifi,
 		ZigBee,
 		Bluetooth,
@@ -22,15 +23,15 @@ abstract public class HardwareDevice {
 	}
 
 	abstract public boolean isConnected();
-	abstract public DeviceType deviceType();
 	abstract public boolean startScan();
-	abstract public void scanComplete();
 	
-	public HardwareDevice() {
+	public HardwareDevice(HardwareDevice.Type type) {
+		_type = type;
 		_state_lock = new Semaphore(1,true);
 		_state = State.IDLE;
 	}
 	
+	public HardwareDevice.Type deviceType() { return _type; }
 	public HardwareDevice.State getState() {
 		return _state;
 	}

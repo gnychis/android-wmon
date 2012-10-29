@@ -48,7 +48,6 @@ public class ScanManager extends Activity {
 	BluetoothAdapter _bluetooth;
 	
 	// Scan receivers for incoming broadcasts (which include results)
-	public WiFiScanReceiver _rcvr_80211;
 	public BluetoothScanReceiver _rcvr_BTooth;
 	
 	// To store the most recent scan results

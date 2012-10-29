@@ -58,6 +58,7 @@ public class Wifi extends HardwareDevice {
 	String _rxpackets_loc;
 	
 	public Wifi(Context c) {
+		super(HardwareDevice.Type.Wifi);
 		_parent = c;
 		_settings = new UserSettings(_parent);
 		
@@ -192,9 +193,7 @@ public class Wifi extends HardwareDevice {
 			Log.e("WiFiMonitor", "Error running commands for connecting wifi device", e);
 		}
 	}
-	
-	public DeviceType deviceType() { return DeviceType.Wifi;}
-	
+		
 	public boolean startScan() {
 		// Only allow to enter scanning state IF idle
 		if(!stateChange(State.SCANNING))
@@ -204,14 +203,6 @@ public class Wifi extends HardwareDevice {
 		_scan_thread.execute(this);
 		
 		return true;
-	}
-	
-	public void scanComplete() {
-		stateChange(State.IDLE);	// Must set the state to idle for the Wifi scan thread
-									// before it will stop executing.
-
-		while(_scan_thread.getStatus()!=AsyncTask.Status.FINISHED)
-			trySleep(100);		
 	}
 
 	public static byte[] parseMacAddress(String macAddress)

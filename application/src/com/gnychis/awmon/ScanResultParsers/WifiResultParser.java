@@ -6,13 +6,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import com.gnychis.awmon.Core.Packet;
-import com.gnychis.awmon.DeviceHandlers.ZigBee;
 import com.gnychis.awmon.NetDevDefinitions.Device;
 
-public class ZigBeeResultParser extends ScanResultParser {
-	
+public class WifiResultParser extends ScanResultParser {
+
 	public ArrayList<Device> returnDevices(ArrayList<Object> scanResult) {
-				
+		
 	    // For keeping track of the APs that we have already parsed, by MAC
 	    Hashtable<String,Device> devs_in_list = new Hashtable<String,Device>();	    
 	    ArrayList<Device> devices = new ArrayList<Device>();
@@ -21,16 +20,17 @@ public class ZigBeeResultParser extends ScanResultParser {
 	    Iterator<Object> results = scanResult.iterator();
 	    while(results.hasNext()) {
 	    	Packet pkt = (Packet) results.next();
-	    	Device dev = new Device(Device.Type.ZigBee);
+	    	Device dev = new Device(Device.Type.Wifi);
+	    	int rssi = Integer.parseInt(pkt.getField("radiotap.dbm_antsignal"));
 	    	
 	    	// If it's a bad packet, ignore
-	    	if(pkt.getField("wpan.fcs_ok").equals("0"))
+	    	if(pkt.getField("radiotap.flags.fcs").equals("0"))
 	    		continue;    	
 	    	
-	    	dev._MAC = pkt.getField("wpan.src16");
-	    	dev._RSSI.add(pkt._lqi);
-	    	dev._frequency = ZigBee.chanToFreq(pkt._band);
-	    	dev._SSID = pkt.getField("wpan.src_pan");	
+	    	dev._MAC = pkt.getField("wlan.sa");
+	    	dev._RSSI.add(rssi);
+	    	dev._frequency = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
+	    	dev._BSSID = pkt.getField("wlan.bssid");
 	    	
 	    	// Keep the device if we don't already have a record for it
 	    	if(!devs_in_list.containsKey(dev._MAC)) {
@@ -38,7 +38,7 @@ public class ZigBeeResultParser extends ScanResultParser {
 	    		devices.add(dev);
 	    	} else {  // we already have it, but we can add multiple RSSI readings
 	    		Device tdev = devs_in_list.get(dev._MAC);
-	    		tdev._RSSI.add(pkt._lqi);
+	    		tdev._RSSI.add(rssi);
 	    	}
 	    }
 
@@ -47,4 +47,5 @@ public class ZigBeeResultParser extends ScanResultParser {
 		
 		return devices;
 	}
+	
 }

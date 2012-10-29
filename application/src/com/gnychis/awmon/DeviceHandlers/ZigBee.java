@@ -3,7 +3,8 @@ package com.gnychis.awmon.DeviceHandlers;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
+
+import org.jnetpcap.protocol.network.Arp.HardwareType;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,7 +14,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
-import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.USBSerial;
 import com.gnychis.awmon.Scanners.ZigBeeScanner;
@@ -35,6 +35,7 @@ public class ZigBee extends HardwareDevice {
 	ZigBeeScanner _monitor_thread;
 	
 	public ZigBee(Context c) {
+		super(HardwareDevice.Type.ZigBee);
 		_parent = c;
 		Log.d(TAG, "Initializing ZigBee class...");
 		_parent.registerReceiver(usbUpdate, new IntentFilter(USBMon.USBMON_DEVICELIST));
@@ -185,13 +186,7 @@ public class ZigBee extends HardwareDevice {
 		
 		return true;
 	}
-	
-	public void scanComplete() {
-		stateChange(State.IDLE);
-	}
-	
-	public DeviceType deviceType() { return DeviceType.ZigBee; } 
-	
+
 	public static byte[] parseMacAddress(String macAddress)
     {
         String[] bytes = macAddress.split(":");
