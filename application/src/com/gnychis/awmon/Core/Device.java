@@ -4,8 +4,16 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import org.jnetpcap.protocol.network.Arp.HardwareType;
+
+import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.Parcelable.Creator;
+
 // This is the baseline device class from which other devices can be derived.
-public class Device {
+public class Device implements Parcelable {
 	
 	public enum Type {		// A List of possible scans to handle
 		Wifi,
@@ -54,4 +62,41 @@ public class Device {
 		}
 	  };
 	
+	  // ********************************************************************* //
+	  // This code is to make this class parcelable and needs to be updated if
+	  // any new members are added to the Device class
+	  // ********************************************************************* //
+	    public int describeContents() {
+	        return this.hashCode();
+	    }
+
+	    public void writeToParcel(Parcel dest, int parcelableFlags) {
+	    	dest.writeSerializable(_RSSI);
+	    	dest.writeString(_MAC);
+	    	dest.writeInt(_frequency);
+	    	dest.writeString(_name);
+	    	dest.writeInt(_type.ordinal());
+	    	dest.writeString(_SSID);
+	    	dest.writeString(_BSSID);
+	    }
+
+	    public static final Creator<Device> CREATOR = new Creator<Device>() {
+	        public Device createFromParcel(Parcel source) {
+	            return new Device(source);
+	        }
+	        public Device[] newArray(int size) {
+	            return new Device[size];
+	        }
+	    };
+
+	    @SuppressWarnings("unchecked")
+	    private Device(Parcel source) {
+	    	_RSSI = (ArrayList<Integer>) source.readSerializable();
+	    	_MAC = source.readString();
+	    	_frequency = source.readInt();
+	    	_name = source.readString();
+	        _type = Device.Type.values()[source.readInt()];
+	        _SSID = source.readString();
+	        _BSSID = source.readString();
+	    }
 }

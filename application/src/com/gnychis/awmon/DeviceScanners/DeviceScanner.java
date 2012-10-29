@@ -1,14 +1,17 @@
 package com.gnychis.awmon.DeviceScanners;
 
 import java.util.ArrayList;
+import java.util.Map;
+
+import org.jnetpcap.protocol.network.Arp.HardwareType;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.util.Pair;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
-import com.gnychis.awmon.DeviceHandlers.HardwareDevice.Type;
 import com.gnychis.awmon.ScanResultParsers.BluetoothResultParser;
 import com.gnychis.awmon.ScanResultParsers.ScanResultParser;
 import com.gnychis.awmon.ScanResultParsers.WifiResultParser;
