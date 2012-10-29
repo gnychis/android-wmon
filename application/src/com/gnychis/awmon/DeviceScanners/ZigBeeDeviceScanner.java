@@ -19,7 +19,6 @@ import com.stericson.RootTools.RootTools;
 
 public class ZigBeeDeviceScanner extends DeviceScanner {
 	final String TAG = "ZigBeeScanner";
-	public static final String ZIGBEE_SCAN_RESULT = AWMon._app_name + ".ZIGBEE_SCAN_RESULT";
 	static int WTAP_ENCAP_802_15 = 127;
 	private int PCAP_HDR_SIZE = 16;
 	int _channel;
