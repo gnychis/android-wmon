@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
+import com.gnychis.awmon.BackgroundService.DeviceScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.Interfaces.ManageNetworks;
@@ -50,16 +51,7 @@ public class AWMon extends Activity implements OnClickListener {
 	private ProgressDialog _pd;
 	public TextView textStatus;
 		
-	public enum ThreadMessages {
-
-		ZIGBEE_CONNECTED,
-		ZIGBEE_INITIALIZED,
-		ZIGBEE_FAILED,
-		ZIGBEE_WAIT_RESET,
-		ZIGBEE_SCAN_COMPLETE,
-		
-		BLUETOOTH_SCAN_COMPLETE,
-		
+	public enum ThreadMessages {	
 		SHOW_TOAST,
 		SHOW_PROGRESS_DIALOG,
 		CANCEL_PROGRESS_DIALOG,
@@ -287,31 +279,14 @@ public class AWMon extends Activity implements OnClickListener {
 		
 		int max_progress;
 		
-		// Do not start another scan, if we already are
-		if(_backgroundService._deviceHandler._dev_scan_manager.isScanning())
-			return;
+		// Send a request to start a device scan.  If one is not currently being done, it will start.
+		// Otherwise, if one is already running we just await the result.
+		Intent i = new Intent();
+		i.setAction(DeviceScanManager.DEVICE_SCAN_REQUEST);
+		this.sendBroadcast(i);
 		
-		// Create a progress dialog to show progress of the scan
-		// to the user.
-		_pd = new ProgressDialog(this);
-		_pd.setCancelable(false);
-		_pd.setMessage("Scanning for networks...");
-		
-		// Call the networks scan class to initiate a new scan
-		// which, based on the devices connected for scanning,
-		// will return a maximum value for the progress bar
-		max_progress = _backgroundService._deviceHandler._dev_scan_manager.initiateScan();
-		if(max_progress==-1) {
-			Toast.makeText(getApplicationContext(), "No networks available to scan!", Toast.LENGTH_LONG).show();
-			return;
-		}
-		if(max_progress > 0) {
-			_pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			_pd.setProgress(0);
-			_pd.setMax(max_progress);
-		}
-		_pd.show();
-		
+		// Start a progress dialogue which will be canceled when the scan result returns.
+		showProgressDialog("Scanning for devices, please wait");
 	}
 	
 	private void showProgressDialog(String message) { _pd = ProgressDialog.show(AWMon.this, "", message, true, false); }

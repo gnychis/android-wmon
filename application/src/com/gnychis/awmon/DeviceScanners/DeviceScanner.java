@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Pair;
 
 import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
+import com.gnychis.awmon.DeviceHandlers.HardwareDevice.Type;
 import com.gnychis.awmon.ScanResultParsers.BluetoothResultParser;
 import com.gnychis.awmon.ScanResultParsers.ScanResultParser;
 import com.gnychis.awmon.ScanResultParsers.WifiResultParser;
