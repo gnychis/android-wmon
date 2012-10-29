@@ -1,4 +1,4 @@
-package com.gnychis.awmon.Scanners;
+package com.gnychis.awmon.DeviceScanners;
 
 import java.util.ArrayList;
 

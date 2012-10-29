@@ -1,14 +1,12 @@
 package com.gnychis.awmon.DeviceHandlers;
 
-import java.util.Comparator;
-
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import com.gnychis.awmon.Scanners.BluetoothScanner;
+import com.gnychis.awmon.DeviceScanners.BluetoothScanner;
 
 public class Bluetooth extends HardwareDevice {
 	

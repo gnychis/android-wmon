@@ -4,9 +4,9 @@ import java.util.concurrent.Semaphore;
 
 import android.content.Context;
 
-import com.gnychis.awmon.Scanners.DeviceScanner;
-import com.gnychis.awmon.Scanners.WifiScanner;
-import com.gnychis.awmon.Scanners.ZigBeeScanner;
+import com.gnychis.awmon.DeviceScanners.DeviceScanner;
+import com.gnychis.awmon.DeviceScanners.WifiScanner;
+import com.gnychis.awmon.DeviceScanners.ZigBeeScanner;
 
 abstract public class HardwareDevice {
 	

@@ -20,9 +20,6 @@ import android.widget.Toast;
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.DBAdapter;
-import com.gnychis.awmon.NetDevDefinitions.BluetoothDev;
-import com.gnychis.awmon.NetDevDefinitions.WifiAP;
-import com.gnychis.awmon.NetDevDefinitions.ZigBeeNetwork;
 
 
 public class AddNetwork extends ExpandableListActivity {
