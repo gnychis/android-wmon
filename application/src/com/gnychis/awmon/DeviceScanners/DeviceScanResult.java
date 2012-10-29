@@ -2,20 +2,19 @@ package com.gnychis.awmon.DeviceScanners;
 
 import java.util.ArrayList;
 
-import org.jnetpcap.protocol.network.Arp.HardwareType;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.gnychis.awmon.Core.Device;
+import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 
 // The purpose of this class is to make a type/class that is easily passable through
 // intents around the threads.
 public class DeviceScanResult implements Parcelable {
-	HardwareType hwType;
+	HardwareDevice.Type hwType;
 	ArrayList<Device> devices;
 	
-    public DeviceScanResult(HardwareType hwt, ArrayList<Device> devs) {
+    public DeviceScanResult(HardwareDevice.Type hwt, ArrayList<Device> devs) {
     	hwType = hwt;
     	devices = devs;
     }
@@ -43,7 +42,7 @@ public class DeviceScanResult implements Parcelable {
     };
 
     private DeviceScanResult(Parcel source) {
-        hwType = HardwareType.values()[source.readInt()];
+        hwType = HardwareDevice.Type.values()[source.readInt()];
         source.readTypedList(devices, Device.CREATOR);
     }
 }

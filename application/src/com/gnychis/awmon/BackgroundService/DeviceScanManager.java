@@ -1,9 +1,7 @@
 package com.gnychis.awmon.BackgroundService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 
 import android.app.Activity;
@@ -12,8 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
+import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
 import com.gnychis.awmon.DeviceScanners.DeviceScanner;
 
 // The purpose of this class is to keep track of a scan taking place across
@@ -25,7 +23,7 @@ public class DeviceScanManager extends Activity {
 	public static final String DEVICE_SCAN_RESULT = "awmon.scanmanager.scan_result";
 
 	DeviceHandler _device_handler;
-	Map< HardwareDevice.Type, ArrayList<Device> > _scanResult;
+	ArrayList< DeviceScanResult > _deviceScanResults;
 	Queue< HardwareDevice > _scanQueue;
 	
 	State _state;
@@ -54,7 +52,7 @@ public class DeviceScanManager extends Activity {
 		
 		// Set the state to scanning, then clear the scan results.
 		_state = State.SCANNING;
-		_scanResult = new HashMap < HardwareDevice.Type, ArrayList<Device> >();
+		_deviceScanResults = new ArrayList<DeviceScanResult>();
 		
 		// Put all of the devices in a queue that we will scan devices on
 		_scanQueue = new LinkedList < HardwareDevice >();
@@ -79,16 +77,14 @@ public class DeviceScanManager extends Activity {
 	public void deviceScanComplete() {
 		Intent i = new Intent();
 		i.setAction(DEVICE_SCAN_RESULT);
-		i.putExtra("result", _scanResult);
+		i.putExtra("result", _deviceScanResults);
 		_device_handler._parent.sendBroadcast(i);
 	}
 	
     // A broadcast receiver to get messages from background service and threads
     private BroadcastReceiver incomingDeviceScan = new BroadcastReceiver() {
-    	@SuppressWarnings("unchecked")
         public void onReceive(Context context, Intent intent) {
-        	_scanResult.put(	(HardwareDevice.Type) intent.getExtras().get("hardwareDevice"),
-        						(ArrayList<Device>) intent.getExtras().get("devices")	);
+        	_deviceScanResults.add((DeviceScanResult) intent.getExtras().get("result"));
         	triggerNextDeviceScan();	// Now, trigger the next scan (if one is left)
         }
     }; 

@@ -4,13 +4,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import org.jnetpcap.protocol.network.Arp.HardwareType;
-
-import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
-
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.Parcelable.Creator;
 
 // This is the baseline device class from which other devices can be derived.
 public class Device implements Parcelable {

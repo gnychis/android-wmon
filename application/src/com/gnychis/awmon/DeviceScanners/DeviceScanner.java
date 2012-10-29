@@ -1,14 +1,9 @@
 package com.gnychis.awmon.DeviceScanners;
 
 import java.util.ArrayList;
-import java.util.Map;
-
-import org.jnetpcap.protocol.network.Arp.HardwareType;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Parcel;
-import android.os.Parcelable;
 
 import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
@@ -51,8 +46,7 @@ abstract public class DeviceScanner extends AsyncTask<HardwareDevice, Integer, A
 		// the ArrayList of all the devices!
 		Intent i = new Intent();
 		i.setAction(DEVICE_SCAN_RESULT);
-		i.putExtra("hardwareDevice", _hw_device.deviceType());
-		i.putExtra("devices", devices);
+		i.putExtra("result", new DeviceScanResult(_hw_device.deviceType(), devices));
 		_hw_device._parent.sendBroadcast(i);
     }
 }
