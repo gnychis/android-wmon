@@ -18,12 +18,12 @@ public class DeviceHandler {
 	
 	private static final String TAG = "AWMonDeviceHandler";
 	
-	Context _parent;
+	public Context _parent;
 	
 	// Our devices that are accessible
 	ArrayList<HardwareDevice> _hardwareDevices;
 	
-	public DeviceScanManager _networks_scan;
+	public DeviceScanManager _dev_scan_manager;
 	protected USBMon _usbmon;
 	
 	public DeviceHandler(Context parent) {
@@ -31,6 +31,7 @@ public class DeviceHandler {
 		
 		// Setup the USB monitor thread
 		_usbmon = new USBMon(parent);
+		_dev_scan_manager = new DeviceScanManager(this);
 		
 		// Initialize the device handles and add them all to an ArrayList.  This makes
 		// scanning easy by iterating through this list.

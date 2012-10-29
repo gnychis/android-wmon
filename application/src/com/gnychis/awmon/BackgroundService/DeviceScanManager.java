@@ -1,6 +1,14 @@
 package com.gnychis.awmon.BackgroundService;
 
+import java.util.Iterator;
+
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+
+import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when
@@ -10,7 +18,27 @@ public class DeviceScanManager extends Activity {
 	public static final String REQUEST_SCAN = "awmon.scanmanager.request_scan";
 	public static final String SCAN_RESULT = "awmon.scanmanager.scan_result";
 
+	DeviceHandler _device_handler;
+
+	public DeviceScanManager(DeviceHandler dh) {
+		_device_handler=dh;
+		
+		// Register a receiver to handle the incoming scan requests
+        registerReceiver(new BroadcastReceiver()
+        { @Override public void onReceive(Context context, Intent intent) { scanRequest(); }
+        }, new IntentFilter(REQUEST_SCAN));
+	}
 	
+	public void scanRequest() {
+		
+		// FIXME: put a check if we are already scanning here
+		for (HardwareDevice hwDev : _device_handler._hardwareDevices) {
+			// Go through each one and try to start the scan which will work if it can properly change the state.
+			hwDev.startDeviceScan();
+			// Should put some sort of pending result thing on a stack and look for it
+		}
+		
+	}
 }
 
 //	

@@ -288,7 +288,7 @@ public class AWMon extends Activity implements OnClickListener {
 		int max_progress;
 		
 		// Do not start another scan, if we already are
-		if(_backgroundService._deviceHandler._networks_scan.isScanning())
+		if(_backgroundService._deviceHandler._dev_scan_manager.isScanning())
 			return;
 		
 		// Create a progress dialog to show progress of the scan
@@ -300,7 +300,7 @@ public class AWMon extends Activity implements OnClickListener {
 		// Call the networks scan class to initiate a new scan
 		// which, based on the devices connected for scanning,
 		// will return a maximum value for the progress bar
-		max_progress = _backgroundService._deviceHandler._networks_scan.initiateScan();
+		max_progress = _backgroundService._deviceHandler._dev_scan_manager.initiateScan();
 		if(max_progress==-1) {
 			Toast.makeText(getApplicationContext(), "No networks available to scan!", Toast.LENGTH_LONG).show();
 			return;
