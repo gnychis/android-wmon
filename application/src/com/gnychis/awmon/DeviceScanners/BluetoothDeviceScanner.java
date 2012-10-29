@@ -21,6 +21,7 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 	
 	public BluetoothDeviceScanner() {
 		super(HardwareDevice.Type.Bluetooth);
+		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}
 	
 	@Override

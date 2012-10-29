@@ -2,44 +2,17 @@ package com.gnychis.awmon.BackgroundService;
 
 import android.app.Activity;
 
-/*
- * Ditch thread messages, use the broadcast as the message of the
- * scan complete, otherwise it's redundant functionality.  Setup
- * the broadcast receivers in this class.
- * 
- * bt.enable();
- * unregisterReceiver(rcvr_BTooth);
- * wifi.setWifiEnabled(true);
- * 		_wifi_reenable = (wifi.isWifiEnabled()) ? true : false;
-		_bt_reenable = (bt.isEnabled()) ? true : false;
-		
-registerReceiver(rcvr_BTooth, new IntentFilter(
-		BluetoothDevice.ACTION_FOUND));
-
-bt.startDiscovery();
-*/
-
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when
 // each of the protocols has been scanned for.
 public class DeviceScanManager extends Activity { 
 	
-//	public static final String REQUEST_SCAN = "awmon.scanmanager.request_scan";
-//	public static final String SCAN_RESULT = "awmon.scanmanager.scan_result";
-//
-//	// Keep track of classes which we will interface to scan with
-//	Wifi _wifi;
-//	ZigBee _zigbee;
-//	USBMon _usbmon;
-//	BluetoothAdapter _bluetooth;
-//	
-//	// Scan receivers for incoming broadcasts (which include results)
-//	public BluetoothScanReceiver _rcvr_BTooth;
-//	
-//	// To store the most recent scan results
-//	public ArrayList<WifiAP> _wifi_scan_result;
-//	public ArrayList<BluetoothDev> _bluetooth_scan_result;
-//	public ArrayList<Integer> _wispy_scan_result;
+	public static final String REQUEST_SCAN = "awmon.scanmanager.request_scan";
+	public static final String SCAN_RESULT = "awmon.scanmanager.scan_result";
+
+	
+}
+
 //	
 //	public enum Scans {		// A List of possible scans to handle
 //		ALL,
@@ -226,4 +199,4 @@ public class DeviceScanManager extends Activity {
 //		_wispy_scan_result=null;
 //		_bluetooth_scan_result=null;
 //	}
-}
+
