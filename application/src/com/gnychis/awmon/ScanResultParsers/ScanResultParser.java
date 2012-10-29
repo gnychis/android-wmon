@@ -2,7 +2,7 @@ package com.gnychis.awmon.ScanResultParsers;
 
 import java.util.ArrayList;
 
-import com.gnychis.awmon.NetDevDefinitions.Device;
+import com.gnychis.awmon.Core.Device;
 
 abstract public class ScanResultParser {
 

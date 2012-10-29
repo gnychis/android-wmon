@@ -18,10 +18,10 @@ import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.AWMon.ThreadMessages;
+import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
-import com.gnychis.awmon.NetDevDefinitions.Device;
 
 public class WifiScanner extends DeviceScanner {
 

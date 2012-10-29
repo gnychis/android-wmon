@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 import android.os.AsyncTask;
 
+import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
-import com.gnychis.awmon.NetDevDefinitions.Device;
 import com.gnychis.awmon.ScanResultParsers.ScanResultParser;
 import com.gnychis.awmon.ScanResultParsers.WifiResultParser;
 import com.gnychis.awmon.ScanResultParsers.ZigBeeResultParser;

@@ -1,4 +1,4 @@
-package com.gnychis.awmon.NetDevDefinitions;
+package com.gnychis.awmon.Core;
 
 import java.util.ArrayList;
 import java.util.Comparator;

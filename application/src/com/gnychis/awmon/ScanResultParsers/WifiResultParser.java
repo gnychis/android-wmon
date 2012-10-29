@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.Core.Packet;
-import com.gnychis.awmon.NetDevDefinitions.Device;
 
 public class WifiResultParser extends ScanResultParser {
 
