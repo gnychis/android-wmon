@@ -27,10 +27,9 @@ abstract public class DeviceScanner extends AsyncTask<HardwareDevice, Integer, A
 		}
 	}
 	
-	// When the scan is complete, change the scan state to idle.
     @Override
     protected void onPostExecute(ArrayList<Device> Devices) {    		
-		_hw_device.stateChange(HardwareDevice.State.IDLE);
+		_hw_device.stateChange(HardwareDevice.State.IDLE);		// change the state to IDLE
 		
 		/* while(_scan_thread.getStatus()!=AsyncTask.Status.FINISHED)
 			trySleep(100); */

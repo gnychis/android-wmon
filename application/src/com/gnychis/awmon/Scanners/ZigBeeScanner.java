@@ -7,7 +7,6 @@ import java.util.concurrent.Semaphore;
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
 
-import android.content.Intent;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
@@ -15,6 +14,7 @@ import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBSerial;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceHandlers.ZigBee;
+import com.gnychis.awmon.NetDevDefinitions.Device;
 import com.stericson.RootTools.RootTools;
 
 public class ZigBeeScanner extends DeviceScanner {
@@ -36,6 +36,9 @@ public class ZigBeeScanner extends DeviceScanner {
 	byte SCAN_DONE=0x0006;
 	byte CHAN_IS=0x0007;
 	
+	public ZigBeeScanner() {
+		super(HardwareDevice.Type.ZigBee);
+	}
 	
 	// Transmit a command to start a scan on the hardware (channel hop)
 	public boolean initializeScan() {					
@@ -64,7 +67,7 @@ public class ZigBeeScanner extends DeviceScanner {
 	
 	// The entire meat of the thread, pulls packets off the interface and dissects them
 	@Override
-	protected String doInBackground( HardwareDevice ... params )
+	protected ArrayList<Device> doInBackground( HardwareDevice ... params )
 	{
 		_hw_device = params[0];
 		_comm_lock = new Semaphore(1,true);
@@ -113,7 +116,7 @@ public class ZigBeeScanner extends DeviceScanner {
 								
 				// Get the raw data now from the wirelen in the pcap header
 				if((rpkt._rawData = getPcapPacket(rpkt._rawHeader))==null) {
-					return "FAIL";
+					return null;
 				}
 				rpkt._dataLen = rpkt._rawData.length;
 

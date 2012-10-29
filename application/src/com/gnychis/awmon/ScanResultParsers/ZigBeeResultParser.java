@@ -11,14 +11,14 @@ import com.gnychis.awmon.NetDevDefinitions.Device;
 
 public class ZigBeeResultParser extends ScanResultParser {
 	
-	public ArrayList<Device> returnDevices(ArrayList<Object> scanResult) {
+	public <T extends Object> ArrayList<Device> returnDevices(ArrayList<T> scanResult) {
 				
 	    // For keeping track of the APs that we have already parsed, by MAC
 	    Hashtable<String,Device> devs_in_list = new Hashtable<String,Device>();	    
 	    ArrayList<Device> devices = new ArrayList<Device>();
 	    
 	    // Go through each scan result, and get the access point information
-	    Iterator<Object> results = scanResult.iterator();
+	    Iterator<T> results = scanResult.iterator();
 	    while(results.hasNext()) {
 	    	Packet pkt = (Packet) results.next();
 	    	Device dev = new Device(Device.Type.ZigBee);
