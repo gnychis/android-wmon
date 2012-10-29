@@ -30,11 +30,14 @@ public class MotionDetector implements SensorEventListener {
     public float[] mAValues;
     public float[] mMValues;
     
+    public boolean _movement;
+    
     public MotionDetector(BackgroundService bs) {
     	
     	_backgroundService=bs;
     	
         mInitialized = false;			// Related to initializing the sensors
+        _movement = false;				// Start out with no movement
 
     	// Initialize some of the sensor data variables
     	mAValues = new float[3];
@@ -89,9 +92,7 @@ public class MotionDetector implements SensorEventListener {
 	            mMValues = event.values.clone ();
 	            break;
         }
-		
-		boolean movement=false;
-		
+				
 		// For calculation of the accelerometer
 		float x = mAValues[0];
 		float y = mAValues[1];
@@ -133,13 +134,13 @@ public class MotionDetector implements SensorEventListener {
 			
 			if (deltaX > deltaY) {  // We moved horizontally
 				if(BackgroundService._awmon!=null && BackgroundService.DEBUG) BackgroundService._awmon.findViewById(R.id.main_id).setBackgroundColor(Color.RED);
-				movement=true;
+				_movement=true;
 			} else if (deltaY > deltaX) {  // We moved vertically
 				if(BackgroundService._awmon!=null && BackgroundService.DEBUG) BackgroundService._awmon.findViewById(R.id.main_id).setBackgroundColor(Color.RED);
-				movement=true;
+				_movement=true;
 			} else {
 				if(BackgroundService._awmon!=null && BackgroundService.DEBUG) BackgroundService._awmon.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
-				movement=false;
+				_movement=false;
 			}
 		}
 	}

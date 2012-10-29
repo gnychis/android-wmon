@@ -15,9 +15,7 @@ import com.gnychis.awmon.DeviceHandlers.ZigBee;
 // guaranteed that the background service is always running.  Therefore, this class
 // should be instantiated in the BackgroundService.
 public class DeviceHandler {
-	
-	private static final String TAG = "AWMonDeviceHandler";
-	
+		
 	public Context _parent;
 	
 	// Our devices that are accessible
