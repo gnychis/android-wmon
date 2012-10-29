@@ -4,8 +4,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jnetpcap.protocol.network.Arp.HardwareType;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -175,17 +173,6 @@ public class ZigBee extends HardwareDevice {
 			return -1;
 		return frequencies[chan];
 	}	
-	
-	public boolean startScan() {
-		// Only allow to enter scanning state IF idle
-		if(!stateChange(State.SCANNING))
-			return false;
-				
-		_monitor_thread = new ZigBeeScanner();
-		_monitor_thread.execute(this);
-		
-		return true;
-	}
 
 	public static byte[] parseMacAddress(String macAddress)
     {

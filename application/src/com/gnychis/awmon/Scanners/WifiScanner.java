@@ -13,7 +13,7 @@ import org.jnetpcap.PcapIf;
 import org.jnetpcap.nio.JBuffer;
 
 import android.content.Context;
-import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
@@ -21,8 +21,9 @@ import com.gnychis.awmon.AWMon.ThreadMessages;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
+import com.gnychis.awmon.NetDevDefinitions.Device;
 
-public class WifiScanner extends AsyncTask<HardwareDevice, Integer, String> {
+public class WifiScanner extends DeviceScanner {
 
 	final String TAG = "WifiScanner";
 	private static final boolean VERBOSE = false;
@@ -54,14 +55,15 @@ public class WifiScanner extends AsyncTask<HardwareDevice, Integer, String> {
 	public static boolean _native_scan=false;
 	public static boolean _one_shot_scan=false;
 	public static boolean _active_scan=true;
+	private boolean _scan_timer_expired;
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
-	ArrayList<Packet> _scan_results;
 	
 	public WifiScanner() {
+		super(HardwareDevice.Type.Wifi);
 		// If we are dumping all of our packets for debugging...
 		if(PCAP_DUMP) {
 			try {
-				_pcap_dump = new DataOutputStream(new FileOutputStream("/sdcard/coexisyst_wifi.pcap"));
+				_pcap_dump = new DataOutputStream(new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/coexisyst_wifi.pcap"));
 				byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
 				byte pcap_header[] = {(byte)0xd4, (byte)0xc3, (byte)0xb2, (byte)0xa1, 		// magic number
 						(byte)0x02, (byte)0x00, (byte)0x04,(byte) 0x00, 	// version numbers
@@ -141,6 +143,7 @@ public class WifiScanner extends AsyncTask<HardwareDevice, Integer, String> {
 	// The way that the timer works is setup according to the type of scan
 	// specified (read the comment near the top of the Wifi class).
 	public void setupChannelTimer() {
+		_scan_timer_expired=false;
 		if(_native_scan) {
 			_scan_channel=0;
 			Wifi.setChannel(Wifi._wlan_iface_name, Wifi.channels[_scan_channel]);
@@ -194,7 +197,7 @@ public class WifiScanner extends AsyncTask<HardwareDevice, Integer, String> {
 				debugOut("... increment complete!");
 				AWMon.sendThreadMessage(_hw_device._parent, ThreadMessages.INCREMENT_SCAN_PROGRESS);
 			} else {
-				_hw_device.scanComplete();
+				_scan_timer_expired=true;
 				_scan_timer.cancel();
 			}
 		} else if(!_one_shot_scan) {	
@@ -202,21 +205,22 @@ public class WifiScanner extends AsyncTask<HardwareDevice, Integer, String> {
 			_timer_counts--;
 			debugOut("Wifi scan timer tick");
 			if(_timer_counts==0) {
-				_hw_device.scanComplete();
+				_scan_timer_expired=true;
 				_scan_timer.cancel();
 			}
 		} else {
 			debugOut("One shot expire");
-			_hw_device.scanComplete();
+			_scan_timer_expired=true;
 			_scan_timer.cancel();
 		}
 	}
 	
 	// The entire meat of the thread, pulls packets off the interface and dissects them
 	@Override
-	protected String doInBackground( HardwareDevice ... params )
+	protected ArrayList<Device> doInBackground( HardwareDevice ... params )
 	{
 		_hw_device = params[0];
+		ArrayList<Packet> scanResult = new ArrayList<Packet>();
 
 		openDev();
 		setupChannelTimer();
@@ -224,7 +228,7 @@ public class WifiScanner extends AsyncTask<HardwareDevice, Integer, String> {
 		debugOut("Waiting for packets in scan thread...");
 					
 		// Loop and read headers and packets
-		while(_hw_device.getState()==HardwareDevice.State.SCANNING) {
+		while(!_scan_timer_expired) {
 				
 			Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
 		    PcapHeader ph = new PcapHeader();
@@ -261,13 +265,13 @@ public class WifiScanner extends AsyncTask<HardwareDevice, Integer, String> {
 			rpkt.dissect();
 			if( rpkt.getField("wlan_mgt.ssid")!=null && rpkt.getField("wlan.bssid").equals(rpkt.getField("wlan.sa"))) {
 				debugOut("[" + Integer.toString(_received_pkts) + "] Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
-				_scan_results.add(rpkt);
+				scanResult.add(rpkt);
 			}
 			rpkt.cleanDissection();
 		}
 		debugOut("Finished with scan thread, exiting now");
 		closeDev();
-		return "DONE";
+		return _result_parser.returnDevices(scanResult);
 	}
 	
 	private void debugOut(String msg) {

@@ -4,9 +4,13 @@ import java.util.concurrent.Semaphore;
 
 import android.content.Context;
 
+import com.gnychis.awmon.Scanners.DeviceScanner;
+import com.gnychis.awmon.Scanners.ZigBeeScanner;
+
 abstract public class HardwareDevice {
 	
 	public Context _parent;
+	public DeviceScanner _device_scanner;
 	
 	HardwareDevice.Type _type;
 	public enum Type {		// A List of possible scans to handle
@@ -23,7 +27,20 @@ abstract public class HardwareDevice {
 	}
 
 	abstract public boolean isConnected();
-	abstract public boolean startScan();
+	
+	public boolean startDeviceScan() {
+		if(!stateChange(State.SCANNING))
+			return false;
+		
+		switch(deviceType()) {
+			case ZigBee:
+				_device_scanner = new ZigBeeScanner();
+				break;
+		}
+		
+		_device_scanner.execute(this);
+		return true;
+	}
 	
 	public HardwareDevice(HardwareDevice.Type type) {
 		_type = type;

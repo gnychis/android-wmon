@@ -35,9 +35,7 @@ public class Wifi extends HardwareDevice {
 		public static final int vendorID=0x13b1;
 		public static final int productID=0x002f;
 	}
-	
-	private static final boolean VERBOSE = false;
-	
+		
 	public static final int MS_SLEEP_UNTIL_PCAPD = 1500;
 	
 	// A non-CM9 device likely to use wlan0
@@ -48,11 +46,6 @@ public class Wifi extends HardwareDevice {
 	WifiScanner _scan_thread;
 	
 	public boolean _device_connected;
-		
-	private void debugOut(String msg) {
-		if(VERBOSE)
-			Log.d("WifiDev", msg);
-	}
 
 	String _iw_phy;
 	String _rxpackets_loc;
@@ -192,17 +185,6 @@ public class Wifi extends HardwareDevice {
 		} catch(Exception e) {
 			Log.e("WiFiMonitor", "Error running commands for connecting wifi device", e);
 		}
-	}
-		
-	public boolean startScan() {
-		// Only allow to enter scanning state IF idle
-		if(!stateChange(State.SCANNING))
-			return false;
-				
-		_scan_thread = new WifiScanner();
-		_scan_thread.execute(this);
-		
-		return true;
 	}
 
 	public static byte[] parseMacAddress(String macAddress)
