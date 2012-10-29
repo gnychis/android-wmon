@@ -1,5 +1,8 @@
 package com.gnychis.awmon.DeviceScanners;
 
+import java.util.ArrayList;
+
+import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 
 public class BluetoothDeviceScanner extends DeviceScanner {
@@ -14,8 +17,10 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 	protected ArrayList<Device> doInBackground( HardwareDevice ... params )
 	{
 		_hw_device = params[0];
+		
+		ArrayList<Device> scanResult = new ArrayList<Device>();
 	
-		return "OK";
+		return _result_parser.returnDevices(scanResult);
 	}
 
 }
