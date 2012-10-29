@@ -1,4 +1,4 @@
-package com.gnychis.awmon.ScanReceivers;
+package com.gnychis.awmon.BackgroundService;
 
 import android.app.Activity;
 
@@ -22,7 +22,7 @@ bt.startDiscovery();
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when
 // each of the protocols has been scanned for.
-public class ScanManager extends Activity { 
+public class DeviceScanManager extends Activity { 
 	
 //	public static final String REQUEST_SCAN = "awmon.scanmanager.request_scan";
 //	public static final String SCAN_RESULT = "awmon.scanmanager.scan_result";

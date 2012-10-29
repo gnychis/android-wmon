@@ -16,7 +16,6 @@ import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
 import com.gnychis.awmon.DeviceHandlers.ZigBee;
 import com.gnychis.awmon.Interfaces.AddNetwork;
-import com.gnychis.awmon.ScanReceivers.ScanManager;
 
 // The handlers to the devices must reside in the background service, because there is
 // not guarantee the main activity (AWMon) is actually active or in use.  But, it is
@@ -32,7 +31,7 @@ public class DeviceHandler {
 	public Wifi _wifi;
 	public ZigBee _zigbee;
 	public BluetoothAdapter _bt;
-	public ScanManager _networks_scan;
+	public DeviceScanManager _networks_scan;
 	protected USBMon _usbmon;
 	
 	public DeviceHandler(Context parent) {
