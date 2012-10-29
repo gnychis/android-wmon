@@ -23,7 +23,7 @@ import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
 
-public class WifiScanner extends DeviceScanner {
+public class WifiDeviceScanner extends DeviceScanner {
 
 	final String TAG = "WifiScanner";
 	private static final boolean VERBOSE = false;
@@ -58,7 +58,7 @@ public class WifiScanner extends DeviceScanner {
 	private boolean _scan_timer_expired;
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	
-	public WifiScanner() {
+	public WifiDeviceScanner() {
 		super(HardwareDevice.Type.Wifi);
 		// If we are dumping all of our packets for debugging...
 		if(PCAP_DUMP) {

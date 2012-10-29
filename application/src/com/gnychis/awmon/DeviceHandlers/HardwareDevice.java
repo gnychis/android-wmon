@@ -5,7 +5,7 @@ import java.util.concurrent.Semaphore;
 import android.content.Context;
 
 import com.gnychis.awmon.DeviceScanners.DeviceScanner;
-import com.gnychis.awmon.DeviceScanners.WifiScanner;
+import com.gnychis.awmon.DeviceScanners.WifiDeviceScanner;
 import com.gnychis.awmon.DeviceScanners.ZigBeeScanner;
 
 abstract public class HardwareDevice {
@@ -38,7 +38,7 @@ abstract public class HardwareDevice {
 				_device_scanner = new ZigBeeScanner();
 				break;
 			case Wifi:
-				_device_scanner = new WifiScanner();
+				_device_scanner = new WifiDeviceScanner();
 				break;
 		}
 		

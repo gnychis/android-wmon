@@ -13,7 +13,7 @@ import android.util.Log;
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceScanners.WifiScanner;
+import com.gnychis.awmon.DeviceScanners.WifiDeviceScanner;
 
 /* 
  * record received packets
@@ -43,7 +43,7 @@ public class Wifi extends HardwareDevice {
 	
 	Context _parent;
 	UserSettings _settings;
-	WifiScanner _scan_thread;
+	WifiDeviceScanner _scan_thread;
 	
 	public boolean _device_connected;
 
