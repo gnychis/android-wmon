@@ -34,7 +34,8 @@ public class DeviceScanManager extends Activity {
 		// FIXME: put a check if we are already scanning here
 		for (HardwareDevice hwDev : _device_handler._hardwareDevices) {
 			// Go through each one and try to start the scan which will work if it can properly change the state.
-			hwDev.startDeviceScan();
+			if(hwDev.isConnected())
+				hwDev.startDeviceScan();
 			// Should put some sort of pending result thing on a stack and look for it
 		}
 		
