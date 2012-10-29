@@ -41,7 +41,6 @@ public class Wifi extends HardwareDevice {
 	// A non-CM9 device likely to use wlan0
 	public static String _wlan_iface_name = "wlan1";
 	
-	Context _parent;
 	UserSettings _settings;
 	WifiDeviceScanner _scan_thread;
 	

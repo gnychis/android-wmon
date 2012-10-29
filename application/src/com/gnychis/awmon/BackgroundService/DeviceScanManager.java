@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
@@ -18,6 +19,8 @@ import com.gnychis.awmon.DeviceScanners.DeviceScanner;
 // all of the protocols.  That way, we can cache results and determine when
 // each of the protocols has been scanned for.
 public class DeviceScanManager extends Activity { 
+	
+	private static final String TAG = "DeviceScanManager";
 	
 	public static final String DEVICE_SCAN_REQUEST = "awmon.scanmanager.request_scan";
 	public static final String DEVICE_SCAN_RESULT = "awmon.scanmanager.scan_result";
@@ -37,7 +40,7 @@ public class DeviceScanManager extends Activity {
 		_state = State.IDLE;
 		
 		// Register a receiver to handle the incoming scan requests
-        registerReceiver(new BroadcastReceiver()
+        _device_handler._parent.registerReceiver(new BroadcastReceiver()
         { @Override public void onReceive(Context context, Intent intent) { scanRequest(); }
         }, new IntentFilter(DEVICE_SCAN_REQUEST));
         
@@ -47,6 +50,7 @@ public class DeviceScanManager extends Activity {
 	// On a scan request, we check for the hardware devices connected and then
 	// put them in a queue which we will trigger scans on.
 	public void scanRequest() {
+		Log.d(TAG, "Receiving an incoming scanRequest()");
 		if(_state==State.SCANNING)
 			return;
 		
@@ -56,9 +60,15 @@ public class DeviceScanManager extends Activity {
 		
 		// Put all of the devices in a queue that we will scan devices on
 		_scanQueue = new LinkedList < HardwareDevice >();
-		for (HardwareDevice hwDev : _device_handler._hardwareDevices)
-			if(hwDev.isConnected())
+		for (HardwareDevice hwDev : _device_handler._hardwareDevices) {
+			if(hwDev.isConnected()) { 
 				_scanQueue.add(hwDev);
+				Log.d(TAG, "... adding hardware device type: " + hwDev.deviceType());
+			}
+		}
+		
+		// Start the chain of device scans by triggering one of them
+		triggerNextDeviceScan();
 	}
 	
 	// To trigger the next scan, we pull the next device from the queue.  If there are no

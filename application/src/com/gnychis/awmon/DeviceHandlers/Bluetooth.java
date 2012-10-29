@@ -6,7 +6,6 @@ import android.content.Context;
 public class Bluetooth extends HardwareDevice {
 	
 	BluetoothAdapter _bluetooth;
-	Context _parent;
 	
 	public Bluetooth(Context c) {
 		super(HardwareDevice.Type.Bluetooth);

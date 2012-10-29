@@ -6,6 +6,7 @@ import java.util.Iterator;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 // This is the baseline device class from which other devices can be derived.
 public class Device implements Parcelable {
@@ -75,13 +76,14 @@ public class Device implements Parcelable {
 	    	dest.writeString(_BSSID);
 	    }
 
-	    public static final Creator<Device> CREATOR = new Creator<Device>() {
-	        public Device createFromParcel(Parcel source) {
-	            return new Device(source);
-	        }
-	        public Device[] newArray(int size) {
-	            return new Device[size];
-	        }
+	    public static final Parcelable.Creator<Device> CREATOR = new Parcelable.Creator<Device>() {
+	    	public Device createFromParcel(Parcel in) {
+	    		return new Device(in);
+	    	}
+
+			public Device[] newArray(int size) {
+				return new Device[size];
+			}
 	    };
 
 	    @SuppressWarnings("unchecked")

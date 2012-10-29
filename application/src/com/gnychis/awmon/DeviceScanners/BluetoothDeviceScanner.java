@@ -8,11 +8,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 
 import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 
 public class BluetoothDeviceScanner extends DeviceScanner {
+	
+	private static final String TAG = "BluetoothDeviceScanner";
 	
 	public BluetoothAdapter _bluetooth;
 	
@@ -27,6 +30,7 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 	@Override
 	protected ArrayList<Device> doInBackground( HardwareDevice ... params )
 	{
+		Log.d(TAG, "Running a Bluetooth device scan");
 		_hw_device = params[0];
 		_bt_scan_complete=false;
 		
@@ -37,11 +41,12 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 		
 		_scanResult = new ArrayList<Device>();
 		
-		while(!_bt_scan_complete)
+		while(!_bt_scan_complete) 
 			try { Thread.sleep(100); } catch(Exception e) {}
 		
 		_hw_device._parent.unregisterReceiver(bluetoothReceiver);
 			
+		Log.d(TAG, "Bluetooth device scan complete");
 		return _result_parser.returnDevices(_scanResult);
 	}
 	
@@ -60,10 +65,13 @@ public class BluetoothDeviceScanner extends DeviceScanner {
     			dev._MAC=bt_dev.getAddress();
     			dev._name=bt_dev.getName();
     			_scanResult.add(dev);
+    			Log.d(TAG, "... got a Bluetooth device named: " + dev._name);
     		}
     		
-    		if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction()))
+    		if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
     			_bt_scan_complete=true;
+    			Log.d(TAG, "setting _bt_scan_complete to true!");
+    		}
     	}
     };  
 

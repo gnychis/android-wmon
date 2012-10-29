@@ -28,6 +28,7 @@ import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBi
 import com.gnychis.awmon.BackgroundService.DeviceScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.UserSettings;
+import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
 import com.gnychis.awmon.Interfaces.ManageNetworks;
 import com.gnychis.awmon.Interfaces.Status;
 import com.gnychis.awmon.Interfaces.Welcome;
@@ -263,13 +264,29 @@ public class AWMon extends Activity implements OnClickListener {
 		super.onResume(); 
 		registerReceiver(_messageReceiver, new IntentFilter(AWMon.THREAD_MESSAGE));
 		registerReceiver(_initializedReceiver, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
+		registerReceiver(_deviceScanReceiver, new IntentFilter(DeviceScanManager.DEVICE_SCAN_RESULT));
+		
 	}
 	public void onPause() { 
 		super.onPause(); 
 		Log.d(TAG, "onPause()"); 
 		unregisterReceiver(_messageReceiver);
 		unregisterReceiver(_initializedReceiver);
+		unregisterReceiver(_deviceScanReceiver);
 	}
+	
+    // A broadcast receiver to get messages from background service and threads
+    private BroadcastReceiver _deviceScanReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+        	ArrayList< DeviceScanResult > deviceScanResults = (ArrayList<DeviceScanResult>) intent.getExtras().get("result");
+        	for(DeviceScanResult result : deviceScanResults) {
+        		
+        	}
+        	if(_pd!=null)
+        		_pd.dismiss();
+        }
+    }; 
+	
 	public void onDestroy() { super.onDestroy(); Log.d(TAG, "onDestroy()"); }
 
 	// This triggers a scan through the networks to return a list of

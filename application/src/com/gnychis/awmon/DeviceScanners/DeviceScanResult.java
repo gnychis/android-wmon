@@ -15,6 +15,7 @@ public class DeviceScanResult implements Parcelable {
 	ArrayList<Device> devices;
 	
     public DeviceScanResult(HardwareDevice.Type hwt, ArrayList<Device> devs) {
+    	devices = new ArrayList<Device>();
     	hwType = hwt;
     	devices = devs;
     }
@@ -28,7 +29,7 @@ public class DeviceScanResult implements Parcelable {
     }
 
     public void writeToParcel(Parcel dest, int parcelableFlags) {
-    	dest.writeValue(hwType.ordinal());
+    	dest.writeInt(hwType.ordinal());
     	dest.writeTypedList(devices);
     }
 
@@ -43,6 +44,7 @@ public class DeviceScanResult implements Parcelable {
 
     private DeviceScanResult(Parcel source) {
         hwType = HardwareDevice.Type.values()[source.readInt()];
+        devices = new ArrayList<Device>();
         source.readTypedList(devices, Device.CREATOR);
     }
 }
