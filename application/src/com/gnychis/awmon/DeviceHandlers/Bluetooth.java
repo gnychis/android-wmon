@@ -8,8 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import com.gnychis.awmon.DeviceHandlers.HardwareDevice.State;
-import com.gnychis.awmon.NetDevDefinitions.BluetoothDev;
 import com.gnychis.awmon.Scanners.BluetoothScanner;
 
 public class Bluetooth extends HardwareDevice {
@@ -45,17 +43,6 @@ public class Bluetooth extends HardwareDevice {
         	 	
         }
     }; 
-	
-	Comparator<Object> comp = new Comparator<Object>() {
-		public int compare(Object arg0, Object arg1) {
-			if(((BluetoothDev)arg0).rssi() < ((BluetoothDev)arg1).rssi())
-				return 1;
-			else if( ((BluetoothDev)arg0).rssi() > ((BluetoothDev)arg1).rssi())
-				return -1;
-			else
-				return 0;
-		}
-  	};
 	
 	public boolean 		isConnected() { return _bluetooth.isEnabled(); }
 }
