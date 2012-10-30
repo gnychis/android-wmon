@@ -5,10 +5,15 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import android.util.Log;
+
 import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.Core.Packet;
 
 public class WifiResultParser extends ScanResultParser {
+	
+	final String TAG = "WifiResultParser";
+	public final boolean VERBOSE = true;
 
 	public <T extends Object> ArrayList<Device> returnDevices(ArrayList<T> scanResult) {
 		
@@ -21,16 +26,29 @@ public class WifiResultParser extends ScanResultParser {
 	    while(results.hasNext()) {
 	    	Packet pkt = (Packet) results.next();
 	    	Device dev = new Device(Device.Type.Wifi);
-	    	int rssi = Integer.parseInt(pkt.getField("radiotap.dbm_antsignal"));
 	    	
 	    	// If it's a bad packet, ignore
-	    	if(pkt.getField("radiotap.flags.fcs").equals("0"))
-	    		continue;    	
+	    	if(pkt.getField("radiotap.flags.badfcs")==null || pkt.getField("radiotap.flags.badfcs").equals("1"))
+	    		continue;
 	    	
-	    	dev._MAC = pkt.getField("wlan.sa");
-	    	dev._RSSI.add(rssi);
+	    	// Pull some information from the packet
+	    	String transmitter_addr = pkt.getField("wlan.ta");
+	    	String source_addr = pkt.getField("wlan.sa");
+	    	String bssid_addr = pkt.getField("wlan.bssid");
+	    	String rssi_val = pkt.getField("radiotap.dbm_antsignal");
+	    	
+	    	// The transmitter address will either be the wlan.sa or wlan.ta.  If
+	    	// both are null, let's just skip this packet
+	    	if(transmitter_addr==null && source_addr==null)
+	    		continue;
+	    		
+	    	// If the transmitter address is null, then use the source address.
+	    	dev._MAC = (transmitter_addr==null) ? source_addr : transmitter_addr;
+	    	if(rssi_val!=null)
+	    		dev._RSSI.add(Integer.parseInt(rssi_val));
 	    	dev._frequency = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
-	    	dev._BSSID = pkt.getField("wlan.bssid");
+	    	if(bssid_addr!=null)
+	    		dev._BSSID = bssid_addr;
 	    	
 	    	// Keep the device if we don't already have a record for it
 	    	if(!devs_in_list.containsKey(dev._MAC)) {
@@ -38,7 +56,10 @@ public class WifiResultParser extends ScanResultParser {
 	    		devices.add(dev);
 	    	} else {  // we already have it, but we can add multiple RSSI readings
 	    		Device tdev = devs_in_list.get(dev._MAC);
-	    		tdev._RSSI.add(rssi);
+	    		if(rssi_val!=null)
+	    			tdev._RSSI.add(Integer.parseInt(rssi_val));
+	    		if(tdev._BSSID==null && bssid_addr!=null)	// if we have a BSSID
+	    			tdev._BSSID=bssid_addr;
 	    	}
 	    }
 
@@ -46,6 +67,11 @@ public class WifiResultParser extends ScanResultParser {
 	    Collections.sort(devices, Device.compareRSSI);
 		
 		return devices;
+	}
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
 	}
 	
 }

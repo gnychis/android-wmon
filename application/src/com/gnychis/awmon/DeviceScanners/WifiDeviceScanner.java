@@ -37,7 +37,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 	private int _timer_counts;		// to know how many timer ticks are left before scan over
 	private int _scan_channel;		// to keep track of the channel when scanning natively
 	
-	public static final boolean PCAP_DUMP = false;
+	public static final boolean PCAP_DUMP = true;
 	DataOutputStream _pcap_dump; 
 	
 	// All scan related variables.  There are 3 kinds of scans that I've come up.
@@ -259,7 +259,6 @@ public class WifiDeviceScanner extends DeviceScanner {
 				} catch(Exception e) { Log.e("WifiScan", "Error writing pcap packet", e); }
 			}
 			
-			debugOut("... got a Wifi packet: SA(" + rpkt.getField("wlan.sa") + ") - BSSID(" + rpkt.getField("wlan.bssid") + ")");
 			scanResult.add(rpkt);
 		}
 		debugOut("Finished with scan thread, exiting now");
