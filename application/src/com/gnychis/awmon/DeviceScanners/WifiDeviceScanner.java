@@ -13,7 +13,6 @@ import org.jnetpcap.PcapIf;
 import org.jnetpcap.nio.JBuffer;
 
 import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
@@ -33,7 +32,6 @@ public class WifiDeviceScanner extends DeviceScanner {
 	Context parent;
 	AWMon coexisyst;
 	private int PCAP_HDR_SIZE = 16;
-	private int _received_pkts;
 	private PcapIf _moni0_dev;
 	private Pcap _moni0_pcap;
 	private int _timer_counts;		// to know how many timer ticks are left before scan over
@@ -240,7 +238,6 @@ public class WifiDeviceScanner extends DeviceScanner {
 	        // Pull in a packet
 	        if((data = _moni0_pcap.next(ph, jb))==null) // returns null if fails
 	        	continue;
-	        _received_pkts++;
 	        
 	        // Get the raw bytes of the header
 	        byte[] hdr = new byte[PCAP_HDR_SIZE];
