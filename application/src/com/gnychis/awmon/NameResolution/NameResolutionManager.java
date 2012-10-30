@@ -1,6 +1,7 @@
 package com.gnychis.awmon.NameResolution;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.content.Context;
 
@@ -9,11 +10,14 @@ import com.gnychis.awmon.Core.Device;
 public class NameResolutionManager {
 
 	Context _parent;
-	ArrayList<NameResolver> _nameResolversOrdered;	// These should be kept in a heirarchy such that
-													// it would be OK if the next resolver overwrote previous.
+	List<NameResolver> _nameResolversOrdered;	// These should be kept in a heirarchy such that
+												// it would be OK if the next resolver overwrote previous.
 	
 	public NameResolutionManager(Context parent) {
 		_parent = parent;
+		
+		_nameResolversOrdered = new ArrayList<NameResolver>();
+		_nameResolversOrdered.add(new OUI(this));
 	}
 	
 	// Takes a list of devices as a set of scan results, then goes through

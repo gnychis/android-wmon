@@ -15,6 +15,7 @@ import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
 import com.gnychis.awmon.DeviceScanners.DeviceScanner;
+import com.gnychis.awmon.NameResolution.NameResolutionManager;
 
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when
@@ -29,6 +30,7 @@ public class DeviceScanManager extends Activity {
 	public static final String DEVICE_SCAN_RESULT = "awmon.scanmanager.scan_result";
 
 	DeviceHandler _device_handler;
+	NameResolutionManager _nameResolutionManager;
 	ArrayList<Device> _deviceScanResults;
 	Queue<HardwareDevice> _scanQueue;
 	Queue<HardwareDevice.Type> _pendingResults;
@@ -41,6 +43,7 @@ public class DeviceScanManager extends Activity {
 
 	public DeviceScanManager(DeviceHandler dh) {
 		_device_handler=dh;
+		_nameResolutionManager = new NameResolutionManager(_device_handler._parent);
 		_state = State.IDLE;
 		
 		// Register a receiver to handle the incoming scan requests
