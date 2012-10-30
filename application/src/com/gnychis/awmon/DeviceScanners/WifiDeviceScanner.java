@@ -25,7 +25,7 @@ import com.gnychis.awmon.DeviceHandlers.Wifi;
 public class WifiDeviceScanner extends DeviceScanner {
 
 	final String TAG = "WifiScanner";
-	private static final boolean VERBOSE = true;
+	private static final boolean VERBOSE = false;
 	public static final String WIFI_SCAN_RESULT = AWMon._app_name + ".WIFI_SCAN_RESULT";
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	static int WTAP_ENCAP_ETHERNET = 1;
@@ -36,7 +36,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 	private Pcap _moni0_pcap;
 	private int _timer_counts;		// to know how many timer ticks are left before scan over
 	
-	public static final boolean PCAP_DUMP = true;
+	public static final boolean PCAP_DUMP = false;
 	DataOutputStream _pcap_dump; 
 	
 	// All scan related variables.  There are 3 kinds of scans that I've come up.
@@ -45,7 +45,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 	// it can be "one shot" which is a single timer triggers when done, or periodic updates
 	// which are useful for updating the main thread on progress.  Also, active scans
 	// are currently only implemented in non-native scanning methods.
-	private static int SCAN_WAIT_TIME= 3000;  // in milliseconds
+	private static int SCAN_WAIT_TIME= 3500;  // in milliseconds
 	private static int NUMBER_OF_SCANS=3;
 	public static boolean _active_scan=true;
 	private boolean _scan_timer_expired;
