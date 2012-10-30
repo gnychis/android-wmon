@@ -27,8 +27,8 @@ import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
 import com.gnychis.awmon.BackgroundService.DeviceScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
+import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
 import com.gnychis.awmon.Interfaces.ManageNetworks;
 import com.gnychis.awmon.Interfaces.Status;
 import com.gnychis.awmon.Interfaces.Welcome;
@@ -277,9 +277,10 @@ public class AWMon extends Activity implements OnClickListener {
 	
     // A broadcast receiver to get messages from background service and threads
     private BroadcastReceiver _deviceScanReceiver = new BroadcastReceiver() {
+    	@SuppressWarnings("unchecked")
         public void onReceive(Context context, Intent intent) {
-        	ArrayList< DeviceScanResult > deviceScanResults = (ArrayList<DeviceScanResult>) intent.getExtras().get("result");
-        	for(DeviceScanResult result : deviceScanResults) {
+        	ArrayList<Device> deviceScanResult = (ArrayList<Device>) intent.getExtras().get("result");
+        	for(Device dev : deviceScanResult) {
         		
         	}
         	if(_pd!=null)

@@ -11,8 +11,8 @@ import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 // The purpose of this class is to make a type/class that is easily passable through
 // intents around the threads.
 public class DeviceScanResult implements Parcelable {
-	HardwareDevice.Type hwType;
-	ArrayList<Device> devices;
+	public HardwareDevice.Type hwType;
+	public ArrayList<Device> devices;
 	
     public DeviceScanResult(HardwareDevice.Type hwt, ArrayList<Device> devs) {
     	devices = new ArrayList<Device>();

@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
+import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
 import com.gnychis.awmon.DeviceScanners.DeviceScanner;
@@ -26,8 +27,8 @@ public class DeviceScanManager extends Activity {
 	public static final String DEVICE_SCAN_RESULT = "awmon.scanmanager.scan_result";
 
 	DeviceHandler _device_handler;
-	ArrayList< DeviceScanResult > _deviceScanResults;
-	Queue< HardwareDevice > _scanQueue;
+	ArrayList<Device> _deviceScanResults;
+	Queue<HardwareDevice> _scanQueue;
 	
 	State _state;
 	public enum State {
@@ -56,7 +57,7 @@ public class DeviceScanManager extends Activity {
 		
 		// Set the state to scanning, then clear the scan results.
 		_state = State.SCANNING;
-		_deviceScanResults = new ArrayList<DeviceScanResult>();
+		_deviceScanResults = new ArrayList<Device>();
 		
 		// Put all of the devices in a queue that we will scan devices on
 		_scanQueue = new LinkedList < HardwareDevice >();
@@ -94,7 +95,9 @@ public class DeviceScanManager extends Activity {
     // A broadcast receiver to get messages from background service and threads
     private BroadcastReceiver incomingDeviceScan = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-        	_deviceScanResults.add((DeviceScanResult) intent.getExtras().get("result"));
+        	DeviceScanResult scanResult = (DeviceScanResult) intent.getExtras().get("result");
+        	for(Device dev : scanResult.devices)
+        		_deviceScanResults.add(dev);
         	triggerNextDeviceScan();	// Now, trigger the next scan (if one is left)
         }
     }; 
