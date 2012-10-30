@@ -5,9 +5,9 @@ import java.util.Arrays;
 
 import com.gnychis.awmon.Core.Device;
 
-public class ResolverOUI extends NameResolver {
+public class OUI extends NameResolver {
 
-	public ResolverOUI(NameResolutionManager nrm) {
+	public OUI(NameResolutionManager nrm) {
 		super(nrm, Arrays.asList(Device.Type.Bluetooth, Device.Type.Wifi));
 	}
 	
