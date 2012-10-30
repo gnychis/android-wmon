@@ -46,6 +46,7 @@ abstract public class DeviceScanner extends AsyncTask<HardwareDevice, Integer, A
 		// the ArrayList of all the devices!
 		Intent i = new Intent();
 		i.setAction(DEVICE_SCAN_RESULT);
+		i.putExtra("hwType", _hw_device.deviceType());
 		i.putExtra("result", new DeviceScanResult(_hw_device.deviceType(), devices));
 		_hw_device._parent.sendBroadcast(i);
     }

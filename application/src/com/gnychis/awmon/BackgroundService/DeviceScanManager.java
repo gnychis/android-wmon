@@ -23,12 +23,15 @@ public class DeviceScanManager extends Activity {
 	
 	private static final String TAG = "DeviceScanManager";
 	
+	private static final boolean OVERLAP_SCANS = true;
+	
 	public static final String DEVICE_SCAN_REQUEST = "awmon.scanmanager.request_scan";
 	public static final String DEVICE_SCAN_RESULT = "awmon.scanmanager.scan_result";
 
 	DeviceHandler _device_handler;
 	ArrayList<Device> _deviceScanResults;
 	Queue<HardwareDevice> _scanQueue;
+	Queue<HardwareDevice.Type> _pendingResults;
 	
 	State _state;
 	public enum State {
@@ -61,9 +64,11 @@ public class DeviceScanManager extends Activity {
 		
 		// Put all of the devices in a queue that we will scan devices on
 		_scanQueue = new LinkedList < HardwareDevice >();
+		_pendingResults = new LinkedList < HardwareDevice.Type >();
 		for (HardwareDevice hwDev : _device_handler._hardwareDevices) {
 			if(hwDev.isConnected()) { 
 				_scanQueue.add(hwDev);
+				_pendingResults.add(hwDev.deviceType());
 				Log.d(TAG, "... adding hardware device type: " + hwDev.deviceType());
 			}
 		}
@@ -75,13 +80,14 @@ public class DeviceScanManager extends Activity {
 	// To trigger the next scan, we pull the next device from the queue.  If there are no
 	// devices left, the scan is complete.
 	public void triggerNextDeviceScan() {
-		if(_scanQueue.isEmpty()) {
-			deviceScanComplete();
+		if(_scanQueue.isEmpty())
 			return;
-		}
 		
 		HardwareDevice dev = _scanQueue.remove();
 		dev.startDeviceScan();
+		
+		if(OVERLAP_SCANS)				// If we are overlapping scans, just go ahead and
+			triggerNextDeviceScan();	// trigger the next one.
 	}
 	
 	// When the scan is complete, we send out a broadcast with the results.
@@ -97,9 +103,17 @@ public class DeviceScanManager extends Activity {
     private BroadcastReceiver incomingDeviceScan = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
         	DeviceScanResult scanResult = (DeviceScanResult) intent.getExtras().get("result");
+        	HardwareDevice.Type hwType = (HardwareDevice.Type) intent.getExtras().get("hwType"); 
         	for(Device dev : scanResult.devices)
         		_deviceScanResults.add(dev);
-        	triggerNextDeviceScan();	// Now, trigger the next scan (if one is left)
+        	
+        	if(!OVERLAP_SCANS)				// If we are not overlapping scans, we do it when we get
+        		triggerNextDeviceScan();	// results of the previous scan
+        	
+        	// If we have all of the results we need, we can set it to complete
+        	_pendingResults.remove(hwType);
+        	if(_pendingResults.size()==0)
+        		deviceScanComplete();
         }
     }; 
 }
