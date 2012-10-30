@@ -25,7 +25,7 @@ import com.gnychis.awmon.DeviceHandlers.Wifi;
 public class WifiDeviceScanner extends DeviceScanner {
 
 	final String TAG = "WifiScanner";
-	private static final boolean VERBOSE = false;
+	private static final boolean VERBOSE = true;
 	public static final String WIFI_SCAN_RESULT = AWMon._app_name + ".WIFI_SCAN_RESULT";
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	static int WTAP_ENCAP_ETHERNET = 1;
@@ -35,7 +35,6 @@ public class WifiDeviceScanner extends DeviceScanner {
 	private PcapIf _moni0_dev;
 	private Pcap _moni0_pcap;
 	private int _timer_counts;		// to know how many timer ticks are left before scan over
-	private int _scan_channel;		// to keep track of the channel when scanning natively
 	
 	public static final boolean PCAP_DUMP = true;
 	DataOutputStream _pcap_dump; 
@@ -46,11 +45,8 @@ public class WifiDeviceScanner extends DeviceScanner {
 	// it can be "one shot" which is a single timer triggers when done, or periodic updates
 	// which are useful for updating the main thread on progress.  Also, active scans
 	// are currently only implemented in non-native scanning methods.
-	private static int SCAN_WAIT_TIME= 6000;  // in milliseconds
-	private static int SCAN_UPDATE_TIME=250; // update every 250ms to the main thread
-	public static int SCAN_WAIT_COUNTS=SCAN_WAIT_TIME/SCAN_UPDATE_TIME;
-	public static boolean _native_scan=false;
-	public static boolean _one_shot_scan=false;
+	private static int SCAN_WAIT_TIME= 3000;  // in milliseconds
+	private static int NUMBER_OF_SCANS=3;
 	public static boolean _active_scan=true;
 	private boolean _scan_timer_expired;
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
@@ -143,72 +139,27 @@ public class WifiDeviceScanner extends DeviceScanner {
 	// specified (read the comment near the top of the Wifi class).
 	public void setupChannelTimer() {
 		_scan_timer_expired=false;
-		if(_native_scan) {
-			_scan_channel=0;
-			Wifi.setChannel(Wifi._wlan_iface_name, Wifi.channels[_scan_channel]);
-			_scan_timer = new Timer();
-			_scan_timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					scanIncrement();
-				}
+		_scan_timer = new Timer();
+		_scan_timer.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				triggerScan();
+			}
 
-			}, 0, 210);			
-		} else if(!_one_shot_scan) {
-			// 5 seconds (250ms*20), that's the rough time it takes to scan both bands
-			_scan_timer = new Timer();
-			_scan_timer.scheduleAtFixedRate(new TimerTask() {
-				@Override
-				public void run() {
-					scanIncrement();
-				}
-	
-			}, 500, SCAN_UPDATE_TIME);
-			_timer_counts = SCAN_WAIT_COUNTS;
-			if(_active_scan)
-				AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger");
-			else
-				AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger passive");
-				
-		} else {
-			_scan_timer = new Timer();
-			_scan_timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					scanIncrement();
-				}
-	
-			}, SCAN_WAIT_TIME);  // 6.5 seconds seems enough to let all of the packets trickle in from the scan
-			if(_active_scan)
-				AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger");
-			else
-				AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger passive");
-		}
+		}, 0, SCAN_WAIT_TIME);
+		_timer_counts = NUMBER_OF_SCANS;			
 	}
 	
-	// Notify to increment progress to the main thread
-	private void scanIncrement() {
-		if(_native_scan) {
-			_scan_channel++;
-			if(_scan_channel<Wifi.channels.length) {
-				debugOut("Incrementing channel to:" + Integer.toString(Wifi.channels[_scan_channel]));
-				Wifi.setChannel(Wifi._wlan_iface_name, Wifi.channels[_scan_channel]);
-				debugOut("... increment complete!");
-				AWMon.sendThreadMessage(_hw_device._parent, ThreadMessages.INCREMENT_SCAN_PROGRESS);
-			} else {
-				_scan_timer_expired=true;
-				_scan_timer.cancel();
-			}
-		} else if(!_one_shot_scan) {	
-			AWMon.sendThreadMessage(_hw_device._parent, ThreadMessages.INCREMENT_SCAN_PROGRESS);
-			_timer_counts--;
-			debugOut("Wifi scan timer tick");
-			if(_timer_counts==0) {
-				_scan_timer_expired=true;
-				_scan_timer.cancel();
-			}
-		} else {
-			debugOut("One shot expire");
+	// This triggers a scan which should happen every
+	private void triggerScan() {
+		AWMon.sendThreadMessage(_hw_device._parent, ThreadMessages.INCREMENT_SCAN_PROGRESS);
+		if(_active_scan)
+			AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger");
+		else
+			AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger passive");
+		_timer_counts--;
+		debugOut("Wifi scan timer tick");
+		if(_timer_counts==-1) {
 			_scan_timer_expired=true;
 			_scan_timer.cancel();
 		}

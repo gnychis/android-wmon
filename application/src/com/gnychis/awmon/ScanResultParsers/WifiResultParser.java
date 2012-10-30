@@ -47,6 +47,10 @@ public class WifiResultParser extends ScanResultParser {
 	    	dev._frequency = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
 	    	dev._MAC = (transmitter_addr==null) ? source_addr : transmitter_addr;
 	    	
+	    	// Probe requests use a BSSID of ff:ff:ff:ff:ff:ff, ignore it
+	    	if(bssid_addr!=null && bssid_addr.equals("ff:ff:ff:ff:ff:ff"))
+	    			bssid_addr=null;
+	    	
 	    	if(rssi_val!=null)
 	    		dev._RSSI.add(Integer.parseInt(rssi_val));
 	    	if(bssid_addr!=null)
