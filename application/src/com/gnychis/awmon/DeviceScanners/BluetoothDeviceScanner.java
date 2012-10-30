@@ -46,7 +46,6 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 		
 		_hw_device._parent.unregisterReceiver(bluetoothReceiver);
 			
-		Log.d(TAG, "Bluetooth device scan complete");
 		return _result_parser.returnDevices(_scanResult);
 	}
 	
@@ -65,12 +64,10 @@ public class BluetoothDeviceScanner extends DeviceScanner {
     			dev._MAC=bt_dev.getAddress();
     			dev._name=bt_dev.getName();
     			_scanResult.add(dev);
-    			Log.d(TAG, "... got a Bluetooth device named: " + dev._name);
     		}
     		
     		if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
     			_bt_scan_complete=true;
-    			Log.d(TAG, "setting _bt_scan_complete to true!");
     		}
     	}
     };  

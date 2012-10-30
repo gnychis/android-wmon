@@ -86,6 +86,7 @@ public class DeviceScanManager extends Activity {
 	
 	// When the scan is complete, we send out a broadcast with the results.
 	public void deviceScanComplete() {
+		_state=State.IDLE;
 		Intent i = new Intent();
 		i.setAction(DEVICE_SCAN_RESULT);
 		i.putExtra("result", _deviceScanResults);

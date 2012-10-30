@@ -30,7 +30,6 @@ public class WifiDeviceScanner extends DeviceScanner {
 	public static final String WIFI_SCAN_RESULT = AWMon._app_name + ".WIFI_SCAN_RESULT";
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	static int WTAP_ENCAP_ETHERNET = 1;
-	HardwareDevice _hw_device;
 	Context parent;
 	AWMon coexisyst;
 	private int PCAP_HDR_SIZE = 16;
@@ -62,8 +61,9 @@ public class WifiDeviceScanner extends DeviceScanner {
 		super(HardwareDevice.Type.Wifi);
 		// If we are dumping all of our packets for debugging...
 		if(PCAP_DUMP) {
+			Log.d(TAG, "Trying to open pcap dump file");
 			try {
-				_pcap_dump = new DataOutputStream(new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/coexisyst_wifi.pcap"));
+				_pcap_dump = new DataOutputStream(new FileOutputStream("/sdcard/coexisyst_wifi.pcap"));
 				byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
 				byte pcap_header[] = {(byte)0xd4, (byte)0xc3, (byte)0xb2, (byte)0xa1, 		// magic number
 						(byte)0x02, (byte)0x00, (byte)0x04,(byte) 0x00, 	// version numbers
@@ -73,6 +73,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 						(byte)0x7f, (byte)0x00, (byte)0x00, (byte)0x00};  	// wifi
 				
 				_pcap_dump.write(pcap_header);
+				Log.d(TAG, "Wrote pcap header");
 			} catch(Exception e) { Log.e("WifiDev", "Error trying to write output stream", e); }
 		}
 	}
@@ -219,6 +220,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 	@Override
 	protected ArrayList<Device> doInBackground( HardwareDevice ... params )
 	{
+		debugOut("Starting the Wifi scan thread");
 		_hw_device = params[0];
 		ArrayList<Packet> scanResult = new ArrayList<Packet>();
 
@@ -260,14 +262,8 @@ public class WifiDeviceScanner extends DeviceScanner {
 				} catch(Exception e) { Log.e("WifiScan", "Error writing pcap packet", e); }
 			}
 			
-			// Take any packet where there is an SSID in it and the BSSID equals the wlan.sa, which
-			// means the packet was transmit by the AP.
-			rpkt.dissect();
-			if( rpkt.getField("wlan_mgt.ssid")!=null && rpkt.getField("wlan.bssid").equals(rpkt.getField("wlan.sa"))) {
-				debugOut("[" + Integer.toString(_received_pkts) + "] Found 802.11 network: " + rpkt.getField("wlan_mgt.ssid") + " on channel " + rpkt.getField("wlan_mgt.ds.current_channel"));
-				scanResult.add(rpkt);
-			}
-			rpkt.cleanDissection();
+			debugOut("... got a Wifi packet: SA(" + rpkt.getField("wlan.sa") + ") - BSSID(" + rpkt.getField("wlan.bssid") + ")");
+			scanResult.add(rpkt);
 		}
 		debugOut("Finished with scan thread, exiting now");
 		closeDev();
