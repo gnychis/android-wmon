@@ -281,7 +281,13 @@ public class AWMon extends Activity implements OnClickListener {
         public void onReceive(Context context, Intent intent) {
         	ArrayList<Device> deviceScanResult = (ArrayList<Device>) intent.getExtras().get("result");
         	for(Device dev : deviceScanResult) {
-        		Log.d(TAG, "Got a device: " + dev._MAC + " (type: " + dev._type.toString() + ")");
+        		Log.d(TAG, "Got a device: " + dev._MAC 
+        				   + " (type: " + dev._type.toString() + ") " 
+        				   + " - Freq: " + dev._frequency
+        				   + " - Name: " + dev._name
+        				   + " - BSSID: " + dev._BSSID
+        				   + " - SSID: " + dev._SSID
+        				   + " - RSSI: " + dev.averageRSSI());
         	}
         	if(_pd!=null)
         		_pd.dismiss();

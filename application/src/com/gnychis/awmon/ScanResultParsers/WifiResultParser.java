@@ -36,6 +36,7 @@ public class WifiResultParser extends ScanResultParser {
 	    	String source_addr = pkt.getField("wlan.sa");
 	    	String bssid_addr = pkt.getField("wlan.bssid");
 	    	String rssi_val = pkt.getField("radiotap.dbm_antsignal");
+	    	String ssid_val = pkt.getField("wlan_mgt.ssid");
 	    	
 	    	// The transmitter address will either be the wlan.sa or wlan.ta.  If
 	    	// both are null, let's just skip this packet
@@ -43,12 +44,15 @@ public class WifiResultParser extends ScanResultParser {
 	    		continue;
 	    		
 	    	// If the transmitter address is null, then use the source address.
+	    	dev._frequency = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
 	    	dev._MAC = (transmitter_addr==null) ? source_addr : transmitter_addr;
+	    	
 	    	if(rssi_val!=null)
 	    		dev._RSSI.add(Integer.parseInt(rssi_val));
-	    	dev._frequency = Integer.parseInt(pkt.getField("radiotap.channel.freq"));
 	    	if(bssid_addr!=null)
 	    		dev._BSSID = bssid_addr;
+	    	if(ssid_val!=null)
+	    		dev._SSID = ssid_val;
 	    	
 	    	// Keep the device if we don't already have a record for it
 	    	if(!devs_in_list.containsKey(dev._MAC)) {
@@ -60,6 +64,8 @@ public class WifiResultParser extends ScanResultParser {
 	    			tdev._RSSI.add(Integer.parseInt(rssi_val));
 	    		if(tdev._BSSID==null && bssid_addr!=null)	// if we have a BSSID
 	    			tdev._BSSID=bssid_addr;
+	    		if(tdev._SSID==null && ssid_val!=null) 
+	    			tdev._SSID=ssid_val;
 	    	}
 	    }
 
