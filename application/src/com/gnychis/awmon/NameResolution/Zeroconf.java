@@ -3,6 +3,8 @@ package com.gnychis.awmon.NameResolution;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
@@ -21,8 +23,8 @@ public class Zeroconf extends NameResolver {
 	static final boolean VERBOSE = true;
 	
 	android.net.wifi.WifiManager.MulticastLock lock;
-    android.os.Handler handler = new android.os.Handler();
     private boolean _waitingOnResults;
+    private boolean _waitingOnThread;
     
     private String _listenType = "_workstation._tcp.local.";
     private JmDNS _jmdns = null;
@@ -35,6 +37,12 @@ public class Zeroconf extends NameResolver {
 	public ArrayList<Device> resolveSupportedDevices(ArrayList<Device> supportedDevices) {
 		debugOut("Started Zeroconf resolution");
 		
+		_waitingOnThread=true;
+		zeroConfThread monitorThread = new zeroConfThread();
+		monitorThread.execute(_nr_manager._parent);
+		
+		while(_waitingOnThread)
+			try { Thread.sleep(1000); } catch(Exception e) {}
 		
 		debugOut("Finished Zeroconf resolution");
 		return supportedDevices;
@@ -56,6 +64,7 @@ public class Zeroconf extends NameResolver {
 			}
 
 			tearDown();	// tear down the search for services
+			_waitingOnThread=false;
 
 			return "true";
 		}	
@@ -88,6 +97,7 @@ public class Zeroconf extends NameResolver {
 	                @Override
 	                public void serviceAdded(ServiceEvent event) {
 	                    // Required to force serviceResolved to be called again (after the first search)
+	                	debugOut("Service added: " + event.getName());
 	                    _jmdns.requestServiceInfo(event.getType(), event.getName(), 1);
 	                }
 	            });
@@ -99,11 +109,14 @@ public class Zeroconf extends NameResolver {
 			// Setup a handler to change the value of _waitingOnResults which blocks progress
 			// until we have waited from results of a scan to trickle in.
 			_waitingOnResults=true;
-			handler.postDelayed(new Runnable() {
-	            public void run() {
-	                _waitingOnResults=false;
-	            }
-	            }, 6000);
+			Timer oneShotTimer = new Timer();
+			oneShotTimer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					_waitingOnResults=false;
+				}
+
+			}, 10000);
 	    }
 	    
 	    
