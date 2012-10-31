@@ -18,6 +18,7 @@ public class NameResolutionManager {
 		
 		_nameResolversOrdered = new ArrayList<NameResolver>();
 		_nameResolversOrdered.add(new OUI(this));
+		_nameResolversOrdered.add(new Zeroconf(this));
 	}
 	
 	// Takes a list of devices as a set of scan results, then goes through

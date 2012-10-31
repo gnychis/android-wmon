@@ -6,9 +6,10 @@ import java.util.Arrays;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
-import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
+import android.content.Context;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Device;
@@ -31,81 +32,99 @@ public class Zeroconf extends NameResolver {
 		super(nrm, Arrays.asList(Device.Type.Wifi));
 	}
 
-	// The application needs to request the multicast lock.  Without it the application will not
-	// receive packets that are not addressed to it.  This should be disabled when the scan is complete.
-	// Otherwise, you will get battery drain.
-    private void setUp() {
-        android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) _nr_manager._parent.getSystemService(android.content.Context.WIFI_SERVICE);
-        lock = wifi.createMulticastLock("mylockthereturn");
-        lock.setReferenceCounted(true);
-        lock.acquire();
-        try {
-            _jmdns = JmDNS.create();
-            _jmdns.addServiceListener(_listenType, _jmdnsListener = new ServiceListener() {
-
-                @Override
-                public void serviceResolved(ServiceEvent ev) {
-                    debugOut("Service resolved: " + ev.getInfo().getQualifiedName() + " port:" + ev.getInfo().getPort());
-                }
-
-                @Override
-                public void serviceRemoved(ServiceEvent ev) {
-                    debugOut("Service removed: " + ev.getName());
-                }
-
-                @Override
-                public void serviceAdded(ServiceEvent event) {
-                    // Required to force serviceResolved to be called again (after the first search)
-                    _jmdns.requestServiceInfo(event.getType(), event.getName(), 1);
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        
-        // Could create a 2 second timer or something to timeout on service discovery.
-    }
-    
-    // Give up the multicast lock and teardown, this saves us battery usage.
-    private void tearDown() {
-    	if (_jmdns != null) {
-            if (_jmdnsListener != null) {
-                _jmdns.removeServiceListener(_listenType, _jmdnsListener);
-                _jmdnsListener = null;
-            }
-            try {
-                _jmdns.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            _jmdns = null;
-    	}
-    	//repo.stop();
-        //s.stop();
-        lock.release();
-    }
-	
 	public ArrayList<Device> resolveSupportedDevices(ArrayList<Device> supportedDevices) {
-		setUp();
+		debugOut("Started Zeroconf resolution");
 		
-		// Setup a handler to change the value of _waitingOnResults which blocks progress
-		// until we have waited from results of a scan to trickle in.
-		_waitingOnResults=true;
-		handler.postDelayed(new Runnable() {
-            public void run() {
-                _waitingOnResults=false;
-            }
-            }, 3000);
 		
-		// We need to wait a bit for some results
-		while(_waitingOnResults) { 
-			try{ Thread.sleep(100); } catch(Exception e) {} 
-		}
-		
-		tearDown();	// tear down the search for services
-		
+		debugOut("Finished Zeroconf resolution");
 		return supportedDevices;
+	}
+	
+	// The purpose of this thread is solely to initialize the Wifi hardware
+	// that will be used for monitoring.
+	protected class zeroConfThread extends AsyncTask<Context, Integer, String>
+	{
+		// Initialize the hardware
+		@Override
+		protected String doInBackground( Context ... params )
+		{
+			setUp();
+			
+			// We need to wait a bit for some results
+			while(_waitingOnResults) { 
+				try{ Thread.sleep(100); } catch(Exception e) {} 
+			}
+
+			tearDown();	// tear down the search for services
+
+			return "true";
+		}	
+		
+	    @Override
+	    protected void onPostExecute(String result) { }
+	    
+		// The application needs to request the multicast lock.  Without it the application will not
+		// receive packets that are not addressed to it.  This should be disabled when the scan is complete.
+		// Otherwise, you will get battery drain.
+	    private void setUp() {
+	        android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) _nr_manager._parent.getSystemService(android.content.Context.WIFI_SERVICE);
+	        lock = wifi.createMulticastLock("mylockthereturn");
+	        lock.setReferenceCounted(true);
+	        lock.acquire();
+	        try {
+	            _jmdns = JmDNS.create();
+	            _jmdns.addServiceListener(_listenType, _jmdnsListener = new ServiceListener() {
+
+	                @Override
+	                public void serviceResolved(ServiceEvent ev) {
+	                    debugOut("Service resolved: " + ev.getInfo().getQualifiedName() + " port:" + ev.getInfo().getPort());
+	                }
+
+	                @Override
+	                public void serviceRemoved(ServiceEvent ev) {
+	                    debugOut("Service removed: " + ev.getName());
+	                }
+
+	                @Override
+	                public void serviceAdded(ServiceEvent event) {
+	                    // Required to force serviceResolved to be called again (after the first search)
+	                    _jmdns.requestServiceInfo(event.getType(), event.getName(), 1);
+	                }
+	            });
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            return;
+	        }
+	        
+			// Setup a handler to change the value of _waitingOnResults which blocks progress
+			// until we have waited from results of a scan to trickle in.
+			_waitingOnResults=true;
+			handler.postDelayed(new Runnable() {
+	            public void run() {
+	                _waitingOnResults=false;
+	            }
+	            }, 6000);
+	    }
+	    
+	    
+	    // Give up the multicast lock and teardown, this saves us battery usage.
+	    private void tearDown() {
+	    	if (_jmdns != null) {
+	            if (_jmdnsListener != null) {
+	                _jmdns.removeServiceListener(_listenType, _jmdnsListener);
+	                _jmdnsListener = null;
+	            }
+	            try {
+	                _jmdns.close();
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	            }
+	            _jmdns = null;
+	    	}
+	    	//repo.stop();
+	        //s.stop();
+	        lock.release();
+	    }
 	}
 	
 	private void debugOut(String msg) {
