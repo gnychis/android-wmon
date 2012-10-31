@@ -25,6 +25,7 @@ public class DeviceScanManager extends Activity {
 	private static final String TAG = "DeviceScanManager";
 	
 	private static final boolean OVERLAP_SCANS = true;
+	private static final boolean NAME_RESOLUTION_ENABLED = true;
 	
 	public static final String DEVICE_SCAN_REQUEST = "awmon.scanmanager.request_scan";
 	public static final String DEVICE_SCAN_RESULT = "awmon.scanmanager.scan_result";
@@ -95,6 +96,10 @@ public class DeviceScanManager extends Activity {
 	
 	// When the scan is complete, we send out a broadcast with the results.
 	public void deviceScanComplete() {
+		
+		if(NAME_RESOLUTION_ENABLED)		// Try to get user recognizable identifiers
+			_nameResolutionManager.resolveDeviceNames(_deviceScanResults);
+		
 		_state=State.IDLE;
 		Intent i = new Intent();
 		i.setAction(DEVICE_SCAN_RESULT);
