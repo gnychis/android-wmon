@@ -52,6 +52,7 @@ public class InitLibraries extends AsyncTask<Context, Integer, String> {
 	    	RootTools.installBinary(_parent, R.raw.tshark, "tshark", "755");
 	    	RootTools.installBinary(_parent, R.raw.dumpcap, "dumpcap", "755");
 	    	RootTools.installBinary(_parent, R.raw.oui, "oui.txt", "755");
+	    	RootTools.installBinary(_parent, R.raw.arp_scan, "arp_scan", "755");
 	    	
 	    	// Run a script that will link libraries in /system/lib so that our binaries can run
 	    	Log.d(TAG, "Creating links to libraries...");

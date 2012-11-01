@@ -215,10 +215,6 @@ main(int argc, char *argv[]) {
    if (pcap_handle) {
       if ((datalink=pcap_datalink(pcap_handle)) < 0)
          err_msg("pcap_datalink: %s", pcap_geterr(pcap_handle));
-      printf("Interface: %s, datalink type: %s (%s)\n",
-             pkt_read_file_flag ? "savefile" : if_name,
-             pcap_datalink_val_to_name(datalink),
-             pcap_datalink_val_to_description(datalink));
       if (datalink != DLT_EN10MB) {
          warn_msg("WARNING: Unsupported datalink type");
       }
@@ -494,8 +490,6 @@ main(int argc, char *argv[]) {
 /*
  *      Display initial message.
  */
-   printf("Starting %s with %u hosts (http://www.nta-monitor.com/tools/arp-scan/)\n",
-          PACKAGE_STRING, num_hosts);
 /*
  *      Display the lists if verbose setting is 3 or more.
  */
@@ -605,8 +599,6 @@ main(int argc, char *argv[]) {
       recvfrom_wto(pcap_fd, select_timeout);
    } /* End While */
 
-   printf("\n");        /* Ensure we have a blank line */
-
    if (link_handle)
       link_close(link_handle);
    clean_up();
@@ -618,9 +610,6 @@ main(int argc, char *argv[]) {
    elapsed_seconds = (elapsed_time.tv_sec*1000 +
                       elapsed_time.tv_usec/1000) / 1000.0;
 
-   printf("Ending %s: %u hosts scanned in %.3f seconds (%.2f hosts/sec). %u responded\n",
-          PACKAGE_STRING, num_hosts, elapsed_seconds,
-          num_hosts/elapsed_seconds, responders);
    if (debug) {print_times(); printf("main: End\n");}
    return 0;
 }
@@ -891,9 +880,6 @@ clean_up(void) {
    if (pcap_handle && !pkt_read_file_flag) {
       if ((pcap_stats(pcap_handle, &stats)) < 0)
          err_msg("pcap_stats: %s", pcap_geterr(pcap_handle));
-
-      printf("%u packets received by filter, %u packets dropped by kernel\n",
-             stats.ps_recv, stats.ps_drop);
    }
    if (pcap_dump_handle) {
       pcap_dump_close(pcap_dump_handle);
