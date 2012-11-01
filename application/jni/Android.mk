@@ -20,5 +20,6 @@ subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk, \
 		wireless-tools \
 		iw \
     ubertooth \
+    arp-scan-1.8 \
 ))
 include $(subdirs)
