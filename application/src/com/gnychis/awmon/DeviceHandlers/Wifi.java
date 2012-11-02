@@ -110,6 +110,7 @@ public class Wifi extends HardwareDevice {
 		{
 			AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/init_wifi.sh " + AWMon._app_name);
 			AWMon.sendToastRequest(_parent, "Wifi device initialized");
+			try { Thread.sleep(100); } catch(Exception e) {}
 			setFrequency(_wlan_iface_name, _settings.getHomeWifiFreq());
 			return "true";
 		}	
@@ -170,14 +171,13 @@ public class Wifi extends HardwareDevice {
 	}
 	
 	static public void setChannel(String ifname, int channel) {
-		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + ifname + " set channel " + Integer.toString(channel));
+		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + ifname + " set channel " + Integer.toString(channel));
 	}
 	
 	static public void setFrequency(String ifname, int frequency) {
-		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw phy " + ifname + " set freq " + Integer.toString(frequency));
+		AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + ifname + " set freq " + Integer.toString(frequency));
 	}
-	
-	
+
 	public void trySleep(int length) {
 		try {
 			Thread.sleep(length);

@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 // This is the baseline device class from which other devices can be derived.
 public class Device implements Parcelable {
@@ -24,6 +23,7 @@ public class Device implements Parcelable {
 	public Device.Type _type;				// The type of device
 	public String _SSID;					// If the device belongs to a SSID (e.g., "The Smith's Wifi")
 	public String _BSSID;					// The BSSID (MAC) of the coordinator
+	public String _IP;						// The IP address of the device
 	
 	public Device(Device.Type type) {
 		_RSSI = new ArrayList<Integer>();
@@ -31,6 +31,7 @@ public class Device implements Parcelable {
 		_SSID = null;
 		_BSSID = null;
 		_MAC=null;
+		_IP=null;
 		_frequency = -1;
 	}
 	
@@ -74,6 +75,7 @@ public class Device implements Parcelable {
 	    	dest.writeInt(_type.ordinal());
 	    	dest.writeString(_SSID);
 	    	dest.writeString(_BSSID);
+	    	dest.writeString(_IP);
 	    }
 
 	    public static final Parcelable.Creator<Device> CREATOR = new Parcelable.Creator<Device>() {
@@ -95,5 +97,6 @@ public class Device implements Parcelable {
 	        _type = Device.Type.values()[source.readInt()];
 	        _SSID = source.readString();
 	        _BSSID = source.readString();
+	        _IP = source.readString();
 	    }
 }

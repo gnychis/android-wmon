@@ -17,6 +17,7 @@ public class NameResolutionManager {
 		_parent = parent;
 		
 		_nameResolversOrdered = new ArrayList<NameResolver>();
+		_nameResolversOrdered.add(new ARP(this));
 		_nameResolversOrdered.add(new OUI(this));
 		_nameResolversOrdered.add(new Zeroconf(this));
 	}

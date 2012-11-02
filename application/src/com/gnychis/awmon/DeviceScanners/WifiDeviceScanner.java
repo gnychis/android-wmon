@@ -36,7 +36,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 	private Pcap _moni0_pcap;
 	private int _timer_counts;		// to know how many timer ticks are left before scan over
 	
-	public static final boolean PCAP_DUMP = false;
+	public static final boolean PCAP_DUMP = true;
 	DataOutputStream _pcap_dump; 
 	
 	// All scan related variables.  There are 3 kinds of scans that I've come up.
@@ -140,13 +140,14 @@ public class WifiDeviceScanner extends DeviceScanner {
 	public void setupChannelTimer() {
 		_scan_timer_expired=false;
 		_scan_timer = new Timer();
+		Wifi.setFrequency(Wifi._wlan_iface_name, _settings.getHomeWifiFreq()); // Start on home AP channel
 		_scan_timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
 				triggerScan();
 			}
 
-		}, 0, SCAN_WAIT_TIME);
+		}, SCAN_WAIT_TIME, SCAN_WAIT_TIME);		// Wait one scan time on the home AP's channel
 		_timer_counts = NUMBER_OF_SCANS;			
 	}
 	
