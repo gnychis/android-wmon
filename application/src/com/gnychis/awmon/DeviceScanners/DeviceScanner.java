@@ -20,7 +20,6 @@ abstract public class DeviceScanner extends AsyncTask<HardwareDevice, Integer, A
 
 	HardwareDevice _hw_device;
 	ScanResultParser _result_parser;
-	UserSettings _settings;
 	public static final String DEVICE_SCAN_RESULT = "awmon.devicescanner.device_scan_result";
 	
 	public DeviceScanner(HardwareDevice.Type hw_type) {
@@ -35,7 +34,6 @@ abstract public class DeviceScanner extends AsyncTask<HardwareDevice, Integer, A
 				_result_parser = new BluetoothResultParser();
 				break;
 		}
-		_settings = new UserSettings(_hw_device._parent);
 	}
 	
     @Override

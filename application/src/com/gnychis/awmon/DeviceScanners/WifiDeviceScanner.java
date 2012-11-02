@@ -19,6 +19,7 @@ import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.AWMon.ThreadMessages;
 import com.gnychis.awmon.Core.Device;
 import com.gnychis.awmon.Core.Packet;
+import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
 
@@ -38,6 +39,8 @@ public class WifiDeviceScanner extends DeviceScanner {
 	
 	public static final boolean PCAP_DUMP = true;
 	DataOutputStream _pcap_dump; 
+	
+	UserSettings _settings;
 	
 	// All scan related variables.  There are 3 kinds of scans that I've come up.
 	// There is native, which is when CoexiSyst modifies the channels and passively scans.
@@ -172,6 +175,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 	{
 		debugOut("Starting the Wifi scan thread");
 		_hw_device = params[0];
+		_settings = new UserSettings(_hw_device._parent);
 		ArrayList<Packet> scanResult = new ArrayList<Packet>();
 
 		openDev();
