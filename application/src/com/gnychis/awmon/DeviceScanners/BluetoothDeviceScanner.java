@@ -23,7 +23,7 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 	ArrayList<Radio> _scanResult;
 	
 	public BluetoothDeviceScanner() {
-		super(InternalRadio.Type.Bluetooth);
+		super(Radio.Type.Bluetooth);
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}
 	

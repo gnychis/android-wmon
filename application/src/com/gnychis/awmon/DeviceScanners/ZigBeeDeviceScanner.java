@@ -10,8 +10,8 @@ import org.jnetpcap.nio.JBuffer;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
-import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.Packet;
+import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBSerial;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.DeviceHandlers.ZigBee;
@@ -36,7 +36,7 @@ public class ZigBeeDeviceScanner extends DeviceScanner {
 	byte CHAN_IS=0x0007;
 	
 	public ZigBeeDeviceScanner() {
-		super(InternalRadio.Type.ZigBee);
+		super(Radio.Type.ZigBee);
 	}
 	
 	// Transmit a command to start a scan on the hardware (channel hop)

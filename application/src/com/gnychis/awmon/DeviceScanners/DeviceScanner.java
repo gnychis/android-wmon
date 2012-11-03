@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 
 import com.gnychis.awmon.Core.Radio;
-import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.ScanResultParsers.BluetoothResultParser;
 import com.gnychis.awmon.ScanResultParsers.ScanResultParser;
@@ -22,7 +21,7 @@ abstract public class DeviceScanner extends AsyncTask<InternalRadio, Integer, Ar
 	ScanResultParser _result_parser;
 	public static final String DEVICE_SCAN_RESULT = "awmon.devicescanner.device_scan_result";
 	
-	public DeviceScanner(InternalRadio.Type hw_type) {
+	public DeviceScanner(Radio.Type hw_type) {
 		switch(hw_type) {
 			case ZigBee:
 				_result_parser = new ZigBeeResultParser();

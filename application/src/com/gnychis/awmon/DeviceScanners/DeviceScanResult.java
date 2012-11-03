@@ -6,15 +6,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.gnychis.awmon.Core.Radio;
-import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 
 // The purpose of this class is to make a type/class that is easily passable through
 // intents around the threads.
 public class DeviceScanResult implements Parcelable {
-	public InternalRadio.Type hwType;
+	public Radio.Type hwType;
 	public ArrayList<Radio> devices;
 	
-    public DeviceScanResult(InternalRadio.Type hwt, ArrayList<Radio> devs) {
+    public DeviceScanResult(Radio.Type hwt, ArrayList<Radio> devs) {
     	devices = new ArrayList<Radio>();
     	hwType = hwt;
     	devices = devs;
@@ -43,7 +42,7 @@ public class DeviceScanResult implements Parcelable {
     };
 
     private DeviceScanResult(Parcel source) {
-        hwType = InternalRadio.Type.values()[source.readInt()];
+        hwType = Radio.Type.values()[source.readInt()];
         devices = new ArrayList<Radio>();
         source.readTypedList(devices, Radio.CREATOR);
     }

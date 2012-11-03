@@ -17,8 +17,8 @@ import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.AWMon.ThreadMessages;
-import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.Packet;
+import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
@@ -55,7 +55,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	
 	public WifiDeviceScanner() {
-		super(InternalRadio.Type.Wifi);
+		super(Radio.Type.Wifi);
 		// If we are dumping all of our packets for debugging...
 		if(PCAP_DUMP) {
 			Log.d(TAG, "Trying to open pcap dump file");
