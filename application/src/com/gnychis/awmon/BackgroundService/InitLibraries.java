@@ -6,7 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.R;
-import com.gnychis.awmon.Interfaces.AWMon;
+import com.gnychis.awmon.Interfaces.MainMenu;
 import com.stericson.RootTools.RootTools;
 
 public class InitLibraries extends AsyncTask<Context, Integer, String> {
@@ -56,8 +56,8 @@ public class InitLibraries extends AsyncTask<Context, Integer, String> {
 	    	
 	    	// Run a script that will link libraries in /system/lib so that our binaries can run
 	    	Log.d(TAG, "Creating links to libraries...");
-	    	AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_libraries.sh " + AWMon._app_name);
-	    	AWMon.runCommand("sh /data/data/" + AWMon._app_name + "/files/link_binaries.sh " + AWMon._app_name);
+	    	MainMenu.runCommand("sh /data/data/" + MainMenu._app_name + "/files/link_libraries.sh " + MainMenu._app_name);
+	    	MainMenu.runCommand("sh /data/data/" + MainMenu._app_name + "/files/link_binaries.sh " + MainMenu._app_name);
 	    			
         } catch(Exception e) {	Log.e(TAG, "error running RootTools commands for init", e); }
 

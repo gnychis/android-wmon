@@ -32,7 +32,7 @@ import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.UserSettings;
 import com.stericson.RootTools.RootTools;
 
-public class AWMon extends Activity implements OnClickListener {
+public class MainMenu extends Activity implements OnClickListener {
 	
 	private static final String TAG = "AWMon";
 	public static String _app_name = "com.gnychis.awmon";
@@ -108,7 +108,7 @@ public class AWMon extends Activity implements OnClickListener {
     		return;
     	
     	// If we do not have the user settings, we open up an activity to query for them
-		Intent i = new Intent(AWMon.this, Welcome.class);
+		Intent i = new Intent(MainMenu.this, Welcome.class);
         startActivity(i);
     }
     
@@ -176,17 +176,17 @@ public class AWMon extends Activity implements OnClickListener {
 				break;
 			
 			case R.id.buttonManageDevs:
-				i = new Intent(AWMon.this, ManageNetworks.class);
+				i = new Intent(MainMenu.this, ManageNetworks.class);
 		        startActivity(i);
 				break;
 				
 			case R.id.buttonSettings:
-				i = new Intent(AWMon.this, Welcome.class);
+				i = new Intent(MainMenu.this, Welcome.class);
 				startActivity(i);
 				break;
 				
 			case R.id.buttonStatus:
-				i = new Intent(AWMon.this, Status.class);
+				i = new Intent(MainMenu.this, Status.class);
 				startActivity(i);
 				break;
 		}
@@ -259,7 +259,7 @@ public class AWMon extends Activity implements OnClickListener {
 	@Override
 	public void onResume() { 
 		super.onResume(); 
-		registerReceiver(_messageReceiver, new IntentFilter(AWMon.THREAD_MESSAGE));
+		registerReceiver(_messageReceiver, new IntentFilter(MainMenu.THREAD_MESSAGE));
 		registerReceiver(_initializedReceiver, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
 		registerReceiver(_deviceScanReceiver, new IntentFilter(DeviceScanManager.DEVICE_SCAN_RESULT));
 		
@@ -308,20 +308,20 @@ public class AWMon extends Activity implements OnClickListener {
 		showProgressDialog("Scanning for devices, please wait");
 	}
 	
-	private void showProgressDialog(String message) { _pd = ProgressDialog.show(AWMon.this, "", message, true, false); }
+	private void showProgressDialog(String message) { _pd = ProgressDialog.show(MainMenu.this, "", message, true, false); }
 	
 	public static void sendToastRequest(Context c, String message) {
 		Intent i = new Intent();
-		i.setAction(AWMon.THREAD_MESSAGE);
-		i.putExtra("type", AWMon.ThreadMessages.SHOW_TOAST);
+		i.setAction(MainMenu.THREAD_MESSAGE);
+		i.putExtra("type", MainMenu.ThreadMessages.SHOW_TOAST);
 		i.putExtra("msg", message);
 		c.sendBroadcast(i);
 	}
 	
 	public static void sendProgressDialogRequest(Context c, String message) {
 		Intent i = new Intent();
-		i.setAction(AWMon.THREAD_MESSAGE);
-		i.putExtra("type", AWMon.ThreadMessages.SHOW_PROGRESS_DIALOG);
+		i.setAction(MainMenu.THREAD_MESSAGE);
+		i.putExtra("type", MainMenu.ThreadMessages.SHOW_PROGRESS_DIALOG);
 		i.putExtra("msg", message);
 		c.sendBroadcast(i);
 	}

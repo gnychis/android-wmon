@@ -10,14 +10,14 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.Interfaces.AWMon;
+import com.gnychis.awmon.Interfaces.MainMenu;
 
 public class BackgroundService extends Service {
 	
 	// Need a binder so that the main activity can communicate with the server
 	private final IBinder _binder = new BackgroundServiceBinder();
 
-    public static AWMon _awmon;
+    public static MainMenu _awmon;
     static BackgroundService _this;
     private MotionDetector _motionDetector;
     private LocationMonitor _locationMonitor;
@@ -116,6 +116,6 @@ public class BackgroundService extends Service {
         return _binder;
     }
     
-	public static void setMainActivity(AWMon activity) { _awmon = activity; }
+	public static void setMainActivity(MainMenu activity) { _awmon = activity; }
 	
 }

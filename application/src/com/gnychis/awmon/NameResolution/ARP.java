@@ -8,7 +8,7 @@ import java.util.Map;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Radio;
-import com.gnychis.awmon.Interfaces.AWMon;
+import com.gnychis.awmon.Interfaces.MainMenu;
 
 public class ARP extends NameResolver {
 
@@ -21,7 +21,7 @@ public class ARP extends NameResolver {
 	
 	public ArrayList<Radio> resolveSupportedDevices(ArrayList<Radio> supportedDevices) {
 		
-		ArrayList<String> arpRaw = AWMon.runCommand("arp_scan --interface=wlan0 -l -q");
+		ArrayList<String> arpRaw = MainMenu.runCommand("arp_scan --interface=wlan0 -l -q");
 		Map<String,String> arpResults = new HashMap<String,String>();
 		
 		for(String arpResponse : arpRaw) {  // Maps this as Map<MAC,IP>

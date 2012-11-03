@@ -12,7 +12,7 @@ import java.util.Map;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Radio;
-import com.gnychis.awmon.Interfaces.AWMon;
+import com.gnychis.awmon.Interfaces.MainMenu;
 
 public class OUI extends NameResolver {
 	
@@ -28,7 +28,7 @@ public class OUI extends NameResolver {
 		// Read in the OUI list
 		try {
 			// Open the file first
-			FileInputStream fstream = new FileInputStream("/data/data/" + AWMon._app_name + "/files/oui.txt");
+			FileInputStream fstream = new FileInputStream("/data/data/" + MainMenu._app_name + "/files/oui.txt");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			

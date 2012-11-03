@@ -20,18 +20,18 @@ import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
-import com.gnychis.awmon.Interfaces.AWMon;
-import com.gnychis.awmon.Interfaces.AWMon.ThreadMessages;
+import com.gnychis.awmon.Interfaces.MainMenu;
+import com.gnychis.awmon.Interfaces.MainMenu.ThreadMessages;
 
 public class WifiDeviceScanner extends DeviceScanner {
 
 	final String TAG = "WifiScanner";
 	private static final boolean VERBOSE = false;
-	public static final String WIFI_SCAN_RESULT = AWMon._app_name + ".WIFI_SCAN_RESULT";
+	public static final String WIFI_SCAN_RESULT = MainMenu._app_name + ".WIFI_SCAN_RESULT";
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	static int WTAP_ENCAP_ETHERNET = 1;
 	Context parent;
-	AWMon coexisyst;
+	MainMenu coexisyst;
 	private int PCAP_HDR_SIZE = 16;
 	private PcapIf _moni0_dev;
 	private Pcap _moni0_pcap;
@@ -92,7 +92,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 		int r = Pcap.findAllDevs(alldevs, errbuf);  
 		if (r == Pcap.NOT_OK || alldevs.isEmpty()) {  
             debugOut("Can't read list of devices, error is " + errbuf.toString());  
-            AWMon.sendToastRequest(_hw_device._parent, "Failed to initialize Wifi device");
+            MainMenu.sendToastRequest(_hw_device._parent, "Failed to initialize Wifi device");
             return false;  
         } 
 		
@@ -110,7 +110,7 @@ public class WifiDeviceScanner extends DeviceScanner {
         }  
         
         if(i>=alldevs.size()) {
-        	AWMon.sendToastRequest(_hw_device._parent, "Failed to initialize Wifi device");
+        	MainMenu.sendToastRequest(_hw_device._parent, "Failed to initialize Wifi device");
         	return false;
         }
         
@@ -126,7 +126,7 @@ public class WifiDeviceScanner extends DeviceScanner {
         if (_moni0_pcap == null) {  
             debugOut("Error while opening device for capture: "  
                 + errbuf.toString());  
-            AWMon.sendToastRequest(_hw_device._parent, "failed to open wifi device for capture");
+            MainMenu.sendToastRequest(_hw_device._parent, "failed to open wifi device for capture");
             return false;  
         }  
         
@@ -156,11 +156,11 @@ public class WifiDeviceScanner extends DeviceScanner {
 	
 	// This triggers a scan which should happen every
 	private void triggerScan() {
-		AWMon.sendThreadMessage(_hw_device._parent, ThreadMessages.INCREMENT_SCAN_PROGRESS);
+		MainMenu.sendThreadMessage(_hw_device._parent, ThreadMessages.INCREMENT_SCAN_PROGRESS);
 		if(_active_scan)
-			AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger");
+			MainMenu.runCommand("/data/data/" + MainMenu._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger");
 		else
-			AWMon.runCommand("/data/data/" + AWMon._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger passive");
+			MainMenu.runCommand("/data/data/" + MainMenu._app_name + "/files/iw dev " + Wifi._wlan_iface_name + " scan trigger passive");
 		_timer_counts--;
 		debugOut("Wifi scan timer tick");
 		if(_timer_counts==-1) {

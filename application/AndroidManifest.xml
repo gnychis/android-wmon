@@ -21,7 +21,7 @@
     <uses-sdk android:targetSdkVersion="10" android:minSdkVersion="10"/>
 
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
-        <activity android:name=".Interfaces.AWMon"
+        <activity android:name=".Interfaces.MainMenu"
             	  android:screenOrientation="portrait"
                   android:label="Android Wireless Monitor: Main Menu">
             <intent-filter>
