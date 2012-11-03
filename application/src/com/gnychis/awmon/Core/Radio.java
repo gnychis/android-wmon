@@ -23,15 +23,17 @@ public class Radio implements Parcelable {
 	public String _SSID;					// If the device belongs to a SSID (e.g., "The Smith's Wifi")
 	public String _BSSID;					// The BSSID (MAC) of the coordinator
 	public String _IP;						// The IP address associated to the radio
+	public String _ouiName;					// The associated manufacturer OUI name
 	
 	public Radio(Radio.Type type) {
 		_RSSI = new ArrayList<Integer>();
+		_MAC=null;
+		_frequency = -1;
 		_type=type;
 		_SSID = null;
 		_BSSID = null;
-		_MAC=null;
 		_IP=null;
-		_frequency = -1;
+		_ouiName=null;
 	}
 	
 	// Report the average RSSI
@@ -74,6 +76,7 @@ public class Radio implements Parcelable {
 	    	dest.writeString(_SSID);
 	    	dest.writeString(_BSSID);
 	    	dest.writeString(_IP);
+	    	dest.writeString(_ouiName);
 	    }
 
 	    public static final Parcelable.Creator<Radio> CREATOR = new Parcelable.Creator<Radio>() {
@@ -95,5 +98,6 @@ public class Radio implements Parcelable {
 	        _SSID = source.readString();
 	        _BSSID = source.readString();
 	        _IP = source.readString();
+	        _ouiName = source.readString();
 	    }
 }
