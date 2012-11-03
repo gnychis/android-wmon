@@ -13,9 +13,9 @@ import android.util.Log;
 
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
-import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
-import com.gnychis.awmon.DeviceScanners.DeviceScanner;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
+import com.gnychis.awmon.RadioScanners.DeviceScanResult;
+import com.gnychis.awmon.RadioScanners.DeviceScanner;
 
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when

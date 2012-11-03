@@ -14,8 +14,8 @@ import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceScanners.WifiDeviceScanner;
 import com.gnychis.awmon.Interfaces.MainInterface;
+import com.gnychis.awmon.RadioScanners.WifiDeviceScanner;
 
 /* 
  * record received packets
