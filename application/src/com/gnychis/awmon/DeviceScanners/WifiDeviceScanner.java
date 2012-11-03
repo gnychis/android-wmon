@@ -15,13 +15,13 @@ import org.jnetpcap.nio.JBuffer;
 import android.content.Context;
 import android.util.Log;
 
-import com.gnychis.awmon.AWMon;
-import com.gnychis.awmon.AWMon.ThreadMessages;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
+import com.gnychis.awmon.Interfaces.AWMon;
+import com.gnychis.awmon.Interfaces.AWMon.ThreadMessages;
 
 public class WifiDeviceScanner extends DeviceScanner {
 

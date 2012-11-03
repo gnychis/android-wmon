@@ -11,8 +11,8 @@ import java.util.Map;
 
 import android.util.Log;
 
-import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.Core.Radio;
+import com.gnychis.awmon.Interfaces.AWMon;
 
 public class OUI extends NameResolver {
 	

@@ -1,4 +1,4 @@
-package com.gnychis.awmon;
+package com.gnychis.awmon.Interfaces;
 
 // do a random port number for pcapd
 
@@ -23,15 +23,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
 import com.gnychis.awmon.BackgroundService.DeviceScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.Interfaces.ManageNetworks;
-import com.gnychis.awmon.Interfaces.Status;
-import com.gnychis.awmon.Interfaces.Welcome;
+import com.gnychis.awmon.R.id;
+import com.gnychis.awmon.R.layout;
 import com.stericson.RootTools.RootTools;
 
 public class AWMon extends Activity implements OnClickListener {
@@ -337,18 +337,5 @@ public class AWMon extends Activity implements OnClickListener {
 		i.putExtra("type", type);
 		c.sendBroadcast(i);
 	}
-	
-	public native String[] getDeviceNames();
-	public native String[] getWiSpyList();
-	public native int USBcheckForDevice(int vid, int pid);
-	public native void libusbTest();
-	public native int pcapGetInterfaces();
-	public native int dissectPacket(byte[] header, byte[] data, int encap);
-	public native void dissectCleanup(int dissect_ptr);
-	public native String wiresharkGet(int dissect_ptr, String param);
-	public native void wiresharkTest(String filename);
-	public native void wiresharkTestGetAll(String filename);
-	public native String[] wiresharkGetAll(int dissect_ptr);
-	public native void wiresharkGetAllTest(int dissect_ptr);	
 		
 }

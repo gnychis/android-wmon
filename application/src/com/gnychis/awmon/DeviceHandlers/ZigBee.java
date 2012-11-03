@@ -11,10 +11,10 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.USBSerial;
+import com.gnychis.awmon.Interfaces.AWMon;
 import com.stericson.RootTools.RootTools;
 
 public class ZigBee extends InternalRadio {

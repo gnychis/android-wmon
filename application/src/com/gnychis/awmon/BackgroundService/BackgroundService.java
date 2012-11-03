@@ -9,8 +9,8 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.Core.UserSettings;
+import com.gnychis.awmon.Interfaces.AWMon;
 
 public class BackgroundService extends Service {
 	

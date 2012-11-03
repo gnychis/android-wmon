@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.R;
+import com.gnychis.awmon.Interfaces.AWMon;
 import com.stericson.RootTools.RootTools;
 
 public class InitLibraries extends AsyncTask<Context, Integer, String> {

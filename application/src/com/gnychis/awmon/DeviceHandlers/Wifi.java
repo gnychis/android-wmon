@@ -10,11 +10,11 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceScanners.WifiDeviceScanner;
+import com.gnychis.awmon.Interfaces.AWMon;
 
 /* 
  * record received packets

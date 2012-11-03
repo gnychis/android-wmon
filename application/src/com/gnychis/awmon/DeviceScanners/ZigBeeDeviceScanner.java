@@ -9,12 +9,12 @@ import org.jnetpcap.nio.JBuffer;
 
 import android.util.Log;
 
-import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBSerial;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.DeviceHandlers.ZigBee;
+import com.gnychis.awmon.Interfaces.AWMon;
 import com.stericson.RootTools.RootTools;
 
 public class ZigBeeDeviceScanner extends DeviceScanner {
