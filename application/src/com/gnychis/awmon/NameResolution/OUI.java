@@ -44,8 +44,8 @@ public class OUI extends NameResolver {
 		catch(Exception e) { Log.e(TAG, "Error opening OUI text file"); }
 	}
 	
-	public ArrayList<Radio> resolveSupportedDevices(ArrayList<Radio> supportedDevices) {
-		for(Radio dev : supportedDevices) {
+	public ArrayList<Radio> resolveSupportedRadios(ArrayList<Radio> supportedRadios) {
+		for(Radio dev : supportedRadios) {
 			// FIXME
 			/*if(dev._name==null) {	// We only care about devices with a null name at the OUI level.
 				String macPrefix = dev._MAC.replace("-", "").replace(":", "").substring(0, 5).toUpperCase();
@@ -54,6 +54,6 @@ public class OUI extends NameResolver {
 					dev._name = companyName; 
 			}*/
 		}
-		return supportedDevices;
+		return supportedRadios;
 	}
 }

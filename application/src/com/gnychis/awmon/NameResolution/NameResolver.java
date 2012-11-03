@@ -10,30 +10,30 @@ abstract public class NameResolver {
 	NameResolutionManager _nr_manager;
 	
 	// This is an array which will keep track of the support hardware types for each name resolver
-	public List<Radio.Type> _supportedDeviceTypes;
+	public List<Radio.Type> _supportedRadios;
 	
-	public NameResolver(NameResolutionManager nrm, List<Radio.Type> supportedDeviceTypes) {
-		_supportedDeviceTypes = supportedDeviceTypes;
+	public NameResolver(NameResolutionManager nrm, List<Radio.Type> supportedRadioTypes) {
+		_supportedRadios = supportedRadioTypes;
 		_nr_manager = nrm;
 	}
 	
 	// This method receives the incoming device list.  Go ahead and strip out the devices the
 	// current name resolver does not support.  But they MUST be put back in the list before
 	// it is returned.  Otherwise they will be lost forever.
-	public ArrayList<Radio> resolveNames(ArrayList<Radio> devices) {
+	public ArrayList<Radio> resolveNames(ArrayList<Radio> radios) {
 		
 		ArrayList<Radio> unsupported = new ArrayList<Radio>();
 		ArrayList<Radio> supported = new ArrayList<Radio>();
 		ArrayList<Radio> merged = new ArrayList<Radio>();
 		
-		for(Radio dev : devices) {
-			if(_supportedDeviceTypes.contains(dev._type))
-				supported.add(dev);
+		for(Radio radio : radios) {
+			if(_supportedRadios.contains(radio._type))
+				supported.add(radio);
 			else
-				unsupported.add(dev);
+				unsupported.add(radio);
 		}
 		
-		supported = resolveSupportedDevices(supported);
+		supported = resolveSupportedRadios(supported);
 		
 		// Merge the newly resolved supported devices with the unsupported and return.
 		merged.addAll(supported);
@@ -41,5 +41,5 @@ abstract public class NameResolver {
 		return merged;
 	}
 	
-	abstract public ArrayList<Radio> resolveSupportedDevices(ArrayList<Radio> supportedDevices);
+	abstract public ArrayList<Radio> resolveSupportedRadios(ArrayList<Radio> supportedRadios);
 }

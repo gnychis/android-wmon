@@ -50,7 +50,7 @@ public class Zeroconf extends NameResolver {
 		super(nrm, Arrays.asList(Radio.Type.Wifi));
 	}
 
-	public ArrayList<Radio> resolveSupportedDevices(ArrayList<Radio> supportedDevices) {
+	public ArrayList<Radio> resolveSupportedRadios(ArrayList<Radio> supportedRadios) {
 		debugOut("Started Zeroconf resolution");
 		
 		_waitingOnThread=true;
@@ -61,7 +61,7 @@ public class Zeroconf extends NameResolver {
 			try { Thread.sleep(1000); } catch(Exception e) {}
 		
 		debugOut("Finished Zeroconf resolution");
-		return supportedDevices;
+		return supportedRadios;
 	}
 	
 	// The purpose of this thread is solely to initialize the Wifi hardware

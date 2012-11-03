@@ -9,12 +9,21 @@ import android.os.Parcelable;
 // A device is a physical thing.  Like a laptop, an access point, etc.  It can
 // have multiple radios attached.
 public class Device implements Parcelable {
+	
+	public enum Mobility {		// Possible types of radios that we support
+		UNKNOWN,
+		MOBILE,
+		FIXED,
+	}
 
 	List<Radio> _radios;	// Keep track of each radio detected
-	String _name;			// A name for the device
-	
+	private String _name;	// A name for the device
+	Mobility _mobile;
+		
 	public Device() {
 		_radios = new ArrayList<Radio>();
+		_name = null;
+		_mobile=Device.Mobility.UNKNOWN;
 	}
 	
 	// ********************************************************************* //
@@ -28,6 +37,7 @@ public class Device implements Parcelable {
     public void writeToParcel(Parcel dest, int parcelableFlags) {
     	dest.writeTypedList(_radios);
     	dest.writeString(_name);
+    	dest.writeInt(_mobile.ordinal());
     }
 
     public static final Parcelable.Creator<Device> CREATOR = new Parcelable.Creator<Device>() {
@@ -44,6 +54,7 @@ public class Device implements Parcelable {
     	_radios = new ArrayList<Radio>();
     	source.readTypedList(_radios, Radio.CREATOR);
     	_name = source.readString();
+    	_mobile = Device.Mobility.values()[source.readInt()];
     }
 
 }

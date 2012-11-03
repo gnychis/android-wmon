@@ -19,7 +19,7 @@ public class ARP extends NameResolver {
 		super(nrm, Arrays.asList(Radio.Type.Wifi));
 	}
 	
-	public ArrayList<Radio> resolveSupportedDevices(ArrayList<Radio> supportedDevices) {
+	public ArrayList<Radio> resolveSupportedRadios(ArrayList<Radio> supportedRadios) {
 		
 		ArrayList<String> arpRaw = BackgroundService.runCommand("arp_scan --interface=wlan0 -l -q");
 		Map<String,String> arpResults = new HashMap<String,String>();
@@ -29,15 +29,15 @@ public class ARP extends NameResolver {
 			arpResults.put(arpResponse.split("\t")[1].toLowerCase(), arpResponse.split("\t")[0]);
 		}
 		
-		for(Radio dev : supportedDevices) {
-			String IP = arpResults.get(dev._MAC.toLowerCase());	// Will return an IP or null
-			debugOut("Checking ARP responses for " + dev._MAC.toLowerCase() + " .... (" + IP + ")");
+		for(Radio radio : supportedRadios) {
+			String IP = arpResults.get(radio._MAC.toLowerCase());	// Will return an IP or null
+			debugOut("Checking ARP responses for " + radio._MAC.toLowerCase() + " .... (" + IP + ")");
 			if(IP != null) {
-				dev._IP = IP;
-				debugOut("...." + dev._MAC + " --> " + dev._IP);
+				radio._IP = IP;
+				debugOut("...." + radio._MAC + " --> " + radio._IP);
 			}
 		}
-		return supportedDevices;
+		return supportedRadios;
 	}
 	
 	private void debugOut(String msg) {
