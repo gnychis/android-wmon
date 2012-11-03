@@ -13,7 +13,7 @@ import android.util.Log;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 
-public class BluetoothDeviceScanner extends DeviceScanner {
+public class BluetoothRadioScanner extends RadioScanner {
 	
 	private static final String TAG = "BluetoothDeviceScanner";
 	
@@ -22,7 +22,7 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 	boolean _bt_scan_complete;
 	ArrayList<Radio> _scanResult;
 	
-	public BluetoothDeviceScanner() {
+	public BluetoothRadioScanner() {
 		super(Radio.Type.Bluetooth);
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}

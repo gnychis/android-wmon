@@ -15,13 +15,13 @@ import com.gnychis.awmon.ScanResultParsers.ZigBeeResultParser;
 // The whole purpose of this abstract class is that for every network device (e.g., 802.11 radio), 
 // you should have a device scanner scanner for it.  This is a thread which can be spawned which
 // will scan all bands for devices.  
-abstract public class DeviceScanner extends AsyncTask<InternalRadio, Integer, ArrayList<Radio> > {
+abstract public class RadioScanner extends AsyncTask<InternalRadio, Integer, ArrayList<Radio> > {
 
 	InternalRadio _hw_device;
 	ScanResultParser _result_parser;
 	public static final String DEVICE_SCAN_RESULT = "awmon.devicescanner.device_scan_result";
 	
-	public DeviceScanner(Radio.Type hw_type) {
+	public RadioScanner(Radio.Type hw_type) {
 		switch(hw_type) {
 			case ZigBee:
 				_result_parser = new ZigBeeResultParser();
@@ -47,7 +47,7 @@ abstract public class DeviceScanner extends AsyncTask<InternalRadio, Integer, Ar
 		Intent i = new Intent();
 		i.setAction(DEVICE_SCAN_RESULT);
 		i.putExtra("hwType", _hw_device.deviceType());
-		i.putExtra("result", new DeviceScanResult(_hw_device.deviceType(), devices));
+		i.putExtra("result", new RadioScanResult(_hw_device.deviceType(), devices));
 		_hw_device._parent.sendBroadcast(i);
     }
 }

@@ -5,15 +5,15 @@ import java.util.concurrent.Semaphore;
 import android.content.Context;
 
 import com.gnychis.awmon.Core.Radio;
-import com.gnychis.awmon.RadioScanners.BluetoothDeviceScanner;
-import com.gnychis.awmon.RadioScanners.DeviceScanner;
-import com.gnychis.awmon.RadioScanners.WifiDeviceScanner;
-import com.gnychis.awmon.RadioScanners.ZigBeeDeviceScanner;
+import com.gnychis.awmon.RadioScanners.BluetoothRadioScanner;
+import com.gnychis.awmon.RadioScanners.RadioScanner;
+import com.gnychis.awmon.RadioScanners.WifiRadioScanner;
+import com.gnychis.awmon.RadioScanners.ZigBeeRadioScanner;
 
 abstract public class InternalRadio {
 	
 	public Context _parent;
-	public DeviceScanner _device_scanner;
+	public RadioScanner _device_scanner;
 	
 	Radio.Type _type;
 	
@@ -32,13 +32,13 @@ abstract public class InternalRadio {
 		
 		switch(deviceType()) {
 			case ZigBee:
-				_device_scanner = new ZigBeeDeviceScanner();
+				_device_scanner = new ZigBeeRadioScanner();
 				break;
 			case Wifi:
-				_device_scanner = new WifiDeviceScanner();
+				_device_scanner = new WifiRadioScanner();
 				break;
 			case Bluetooth:
-				_device_scanner = new BluetoothDeviceScanner();
+				_device_scanner = new BluetoothRadioScanner();
 				break;
 		}
 		

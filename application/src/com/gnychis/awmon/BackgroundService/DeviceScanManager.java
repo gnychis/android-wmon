@@ -14,8 +14,8 @@ import android.util.Log;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
-import com.gnychis.awmon.RadioScanners.DeviceScanResult;
-import com.gnychis.awmon.RadioScanners.DeviceScanner;
+import com.gnychis.awmon.RadioScanners.RadioScanResult;
+import com.gnychis.awmon.RadioScanners.RadioScanner;
 
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when
@@ -52,7 +52,7 @@ public class DeviceScanManager extends Activity {
         { @Override public void onReceive(Context context, Intent intent) { scanRequest(); }
         }, new IntentFilter(DEVICE_SCAN_REQUEST));
         
-        _device_handler._parent.registerReceiver(incomingDeviceScan, new IntentFilter(DeviceScanner.DEVICE_SCAN_RESULT));
+        _device_handler._parent.registerReceiver(incomingDeviceScan, new IntentFilter(RadioScanner.DEVICE_SCAN_RESULT));
 	}
 	
 	// On a scan request, we check for the hardware devices connected and then
@@ -110,7 +110,7 @@ public class DeviceScanManager extends Activity {
     // A broadcast receiver to get messages from background service and threads
     private BroadcastReceiver incomingDeviceScan = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-        	DeviceScanResult scanResult = (DeviceScanResult) intent.getExtras().get("result");
+        	RadioScanResult scanResult = (RadioScanResult) intent.getExtras().get("result");
         	Radio.Type hwType = (Radio.Type) intent.getExtras().get("hwType"); 
         	for(Radio dev : scanResult.devices)
         		_deviceScanResults.add(dev);

@@ -17,7 +17,7 @@ import com.gnychis.awmon.DeviceHandlers.ZigBee;
 import com.gnychis.awmon.Interfaces.MainInterface;
 import com.stericson.RootTools.RootTools;
 
-public class ZigBeeDeviceScanner extends DeviceScanner {
+public class ZigBeeRadioScanner extends RadioScanner {
 	final String TAG = "ZigBeeScanner";
 	static int WTAP_ENCAP_802_15 = 127;
 	private int PCAP_HDR_SIZE = 16;
@@ -35,7 +35,7 @@ public class ZigBeeDeviceScanner extends DeviceScanner {
 	byte SCAN_DONE=0x0006;
 	byte CHAN_IS=0x0007;
 	
-	public ZigBeeDeviceScanner() {
+	public ZigBeeRadioScanner() {
 		super(Radio.Type.ZigBee);
 	}
 	
