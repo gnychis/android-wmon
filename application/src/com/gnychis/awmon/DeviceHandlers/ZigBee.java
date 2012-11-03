@@ -14,7 +14,7 @@ import android.util.Log;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.USBSerial;
-import com.gnychis.awmon.Interfaces.MainMenu;
+import com.gnychis.awmon.Interfaces.MainInterface;
 import com.stericson.RootTools.RootTools;
 
 public class ZigBee extends InternalRadio {
@@ -64,7 +64,7 @@ public class ZigBee extends InternalRadio {
 	
 	public void disconnected() {
 		_device_connected=false;
-		MainMenu.sendToastRequest(_parent, "ZigBee device disconnected");
+		MainInterface.sendToastRequest(_parent, "ZigBee device disconnected");
 	}
 	
 	public boolean isConnected() {
@@ -84,7 +84,7 @@ public class ZigBee extends InternalRadio {
 	    @Override
 	    protected void onPreExecute() {
 	        super.onPreExecute();
-	        MainMenu.sendProgressDialogRequest(_parent, "Initializing ZigBee device..");
+	        MainInterface.sendProgressDialogRequest(_parent, "Initializing ZigBee device..");
 	    }
 		
 		@Override
@@ -110,8 +110,8 @@ public class ZigBee extends InternalRadio {
 			
 			// Wait for the initialized sequence...
 			byte[] readSeq = new byte[initialized_sequence.length];
-			MainMenu.sendThreadMessage(_parent, MainMenu.ThreadMessages.CANCEL_PROGRESS_DIALOG);
-			MainMenu.sendProgressDialogRequest(_parent, "Press the ZigBee reset button...");
+			MainInterface.sendThreadMessage(_parent, MainInterface.ThreadMessages.CANCEL_PROGRESS_DIALOG);
+			MainInterface.sendProgressDialogRequest(_parent, "Press the ZigBee reset button...");
 			while(!checkInitSeq(readSeq)) {
 				for(int i=0; i<initialized_sequence.length-1; i++)
 					readSeq[i] = readSeq[i+1];
@@ -122,15 +122,15 @@ public class ZigBee extends InternalRadio {
 			
 			// Close the port
 			if(!_dev.closePort())
-				MainMenu.sendToastRequest(_parent, "Failed to initialize ZigBee device");
+				MainInterface.sendToastRequest(_parent, "Failed to initialize ZigBee device");
 
 			return "OK";
 		}
 		
 	    @Override
 	    protected void onPostExecute(String result) {
-	    	MainMenu.sendThreadMessage(_parent, MainMenu.ThreadMessages.CANCEL_PROGRESS_DIALOG);
-	    	MainMenu.sendToastRequest(_parent, "ZigBee device initialized");
+	    	MainInterface.sendThreadMessage(_parent, MainInterface.ThreadMessages.CANCEL_PROGRESS_DIALOG);
+	    	MainInterface.sendToastRequest(_parent, "ZigBee device initialized");
 	    }
 		
 		private void debugOut(String msg) {

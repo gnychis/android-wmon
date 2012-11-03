@@ -14,7 +14,7 @@ import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBSerial;
 import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.DeviceHandlers.ZigBee;
-import com.gnychis.awmon.Interfaces.MainMenu;
+import com.gnychis.awmon.Interfaces.MainInterface;
 import com.stericson.RootTools.RootTools;
 
 public class ZigBeeDeviceScanner extends DeviceScanner {
@@ -82,7 +82,7 @@ public class ZigBeeDeviceScanner extends DeviceScanner {
 				_channel = (int)_dev.getByte() & 0xff;
 				
 				// Our way of tracking progress with the main UI
-				MainMenu.sendThreadMessage(_hw_device._parent, MainMenu.ThreadMessages.INCREMENT_SCAN_PROGRESS);
+				MainInterface.sendThreadMessage(_hw_device._parent, MainInterface.ThreadMessages.INCREMENT_SCAN_PROGRESS);
 			}
 			
 			if(cmd==SCAN_DONE)
@@ -127,7 +127,7 @@ public class ZigBeeDeviceScanner extends DeviceScanner {
 		}
 		
 		if(!_dev.closePort())
-			MainMenu.sendToastRequest(_hw_device._parent, "ZigBee device failed while scanning");
+			MainInterface.sendToastRequest(_hw_device._parent, "ZigBee device failed while scanning");
 		
 		return _result_parser.returnDevices(scanResult);
 	}

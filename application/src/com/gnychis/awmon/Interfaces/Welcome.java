@@ -66,7 +66,7 @@ public class Welcome extends Activity {
 	// the settings and fills in the checkbox and all drop down menus.
     protected class UpdateInterface extends AsyncTask<Context, Integer, ArrayList<String>> {
 		Context parent;
-		MainMenu awmon;
+		MainInterface awmon;
 		
         @Override
         protected void onPreExecute() {

@@ -4,7 +4,7 @@ import java.util.List;
 
 import android.util.Log;
 
-import com.gnychis.awmon.Interfaces.MainMenu;
+import com.gnychis.awmon.Interfaces.MainInterface;
 import com.stericson.RootTools.RootTools;
 
 public class USBSerial {
@@ -68,7 +68,7 @@ public class USBSerial {
 	
     public String getAppUser() {
     	try {
-    		List<String> res = RootTools.sendShell("ls -l /data/data | grep " + MainMenu._app_name,0);
+    		List<String> res = RootTools.sendShell("ls -l /data/data | grep " + MainInterface._app_name,0);
     		return res.get(0).split(" ")[1];
     	} catch(Exception e) {
     		return "FAIL";

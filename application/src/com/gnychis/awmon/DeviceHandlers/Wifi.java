@@ -10,11 +10,12 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceScanners.WifiDeviceScanner;
-import com.gnychis.awmon.Interfaces.MainMenu;
+import com.gnychis.awmon.Interfaces.MainInterface;
 
 /* 
  * record received packets
@@ -89,7 +90,7 @@ public class Wifi extends InternalRadio {
 	
 	public void disconnected() {
 		_device_connected=false;
-		MainMenu.sendToastRequest(_parent, "Wifi device disconnected");
+		MainInterface.sendToastRequest(_parent, "Wifi device disconnected");
 	}
 	
 	public boolean isConnected() { return _device_connected; }
@@ -102,15 +103,15 @@ public class Wifi extends InternalRadio {
 	    @Override
 	    protected void onPreExecute() {
 	        super.onPreExecute();
-	        MainMenu.sendProgressDialogRequest(_parent, "Initializing Wifi device..");
+	        MainInterface.sendProgressDialogRequest(_parent, "Initializing Wifi device..");
 	    }
 	    
 		// Initialize the hardware
 		@Override
 		protected String doInBackground( Context ... params )
 		{
-			MainMenu.runCommand("sh /data/data/" + MainMenu._app_name + "/files/init_wifi.sh " + MainMenu._app_name);
-			MainMenu.sendToastRequest(_parent, "Wifi device initialized");
+			BackgroundService.runCommand("sh /data/data/" + MainInterface._app_name + "/files/init_wifi.sh " + MainInterface._app_name);
+			MainInterface.sendToastRequest(_parent, "Wifi device initialized");
 			try { Thread.sleep(100); } catch(Exception e) {}
 			setFrequency(_wlan_iface_name, _settings.getHomeWifiFreq());
 			return "true";
@@ -118,8 +119,8 @@ public class Wifi extends InternalRadio {
 		
 	    @Override
 	    protected void onPostExecute(String result) {
-	    	MainMenu.sendThreadMessage(_parent, MainMenu.ThreadMessages.CANCEL_PROGRESS_DIALOG);
-	    	MainMenu.sendToastRequest(_parent, "Wifi device initialized");
+	    	MainInterface.sendThreadMessage(_parent, MainInterface.ThreadMessages.CANCEL_PROGRESS_DIALOG);
+	    	MainInterface.sendToastRequest(_parent, "Wifi device initialized");
 	    }
 	}
 	
@@ -146,7 +147,7 @@ public class Wifi extends InternalRadio {
 	}
 	
 	static public int getOperationalFreq(String ifname) {
-		ArrayList<String> res = MainMenu.runCommand("iwconfig " + ifname + " | grep Freq | awk '{print $2}' | awk -F':' '{print $2}'");
+		ArrayList<String> res = BackgroundService.runCommand("iwconfig " + ifname + " | grep Freq | awk '{print $2}' | awk -F':' '{print $2}'");
 		if(res.size()==0)
 			return -1;
 		else
@@ -168,15 +169,15 @@ public class Wifi extends InternalRadio {
 	}
 	
 	public void setChannel(int channel) {
-		MainMenu.runCommand("/data/data/" + MainMenu._app_name + "/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
+		BackgroundService.runCommand("/data/data/" + MainInterface._app_name + "/files/iw phy " + _iw_phy + " set channel " + Integer.toString(channel));
 	}
 	
 	static public void setChannel(String ifname, int channel) {
-		MainMenu.runCommand("/data/data/" + MainMenu._app_name + "/files/iw dev " + ifname + " set channel " + Integer.toString(channel));
+		BackgroundService.runCommand("/data/data/" + MainInterface._app_name + "/files/iw dev " + ifname + " set channel " + Integer.toString(channel));
 	}
 	
 	static public void setFrequency(String ifname, int frequency) {
-		MainMenu.runCommand("/data/data/" + MainMenu._app_name + "/files/iw dev " + ifname + " set freq " + Integer.toString(frequency));
+		BackgroundService.runCommand("/data/data/" + MainInterface._app_name + "/files/iw dev " + ifname + " set freq " + Integer.toString(frequency));
 	}
 
 	public void trySleep(int length) {

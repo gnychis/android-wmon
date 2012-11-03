@@ -1,5 +1,9 @@
 package com.gnychis.awmon.BackgroundService;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,14 +14,15 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.Interfaces.MainMenu;
+import com.gnychis.awmon.Interfaces.MainInterface;
+import com.stericson.RootTools.RootTools;
 
 public class BackgroundService extends Service {
 	
 	// Need a binder so that the main activity can communicate with the server
 	private final IBinder _binder = new BackgroundServiceBinder();
 
-    public static MainMenu _awmon;
+    public static MainInterface _awmon;
     static BackgroundService _this;
     private MotionDetector _motionDetector;
     private LocationMonitor _locationMonitor;
@@ -116,6 +121,42 @@ public class BackgroundService extends Service {
         return _binder;
     }
     
-	public static void setMainActivity(MainMenu activity) { _awmon = activity; }
+	public String getAppUser() {
+		try {
+			List<String> res = RootTools.sendShell("ls -l /data/data | grep " + MainInterface._app_name,0);
+			return res.get(0).split(" ")[1];
+		} catch(Exception e) {
+			return "FAIL";
+		}
+	}
+
+	static public ArrayList<String> runCommand(String c) {
+		ArrayList<String> res = new ArrayList<String>();
+		try {
+			// First, run the command push the result to an ArrayList
+			List<String> res_list = RootTools.sendShell(c,0);
+			Iterator<String> it=res_list.iterator();
+			while(it.hasNext()) 
+				res.add((String)it.next());
+			
+			res.remove(res.size()-1);
+			
+			// Trim the ArrayList of an extra blank lines at the end
+			while(true) {
+				int index = res.size()-1;
+				if(index>=0 && res.get(index).length()==0)
+					res.remove(index);
+				else
+					break;
+			}
+			return res;
+			
+		} catch(Exception e) {
+			Log.e("AWMon", "error writing to RootTools the command: " + c, e);
+			return null;
+		}
+	}
+
+	public static void setMainActivity(MainInterface activity) { _awmon = activity; }
 	
 }

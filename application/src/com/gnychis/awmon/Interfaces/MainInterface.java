@@ -3,8 +3,6 @@ package com.gnychis.awmon.Interfaces;
 // do a random port number for pcapd
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -30,9 +28,8 @@ import com.gnychis.awmon.BackgroundService.DeviceScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.UserSettings;
-import com.stericson.RootTools.RootTools;
 
-public class MainMenu extends Activity implements OnClickListener {
+public class MainInterface extends Activity implements OnClickListener {
 	
 	private static final String TAG = "AWMon";
 	public static String _app_name = "com.gnychis.awmon";
@@ -108,7 +105,7 @@ public class MainMenu extends Activity implements OnClickListener {
     		return;
     	
     	// If we do not have the user settings, we open up an activity to query for them
-		Intent i = new Intent(MainMenu.this, Welcome.class);
+		Intent i = new Intent(MainInterface.this, Welcome.class);
         startActivity(i);
     }
     
@@ -176,17 +173,17 @@ public class MainMenu extends Activity implements OnClickListener {
 				break;
 			
 			case R.id.buttonManageDevs:
-				i = new Intent(MainMenu.this, ManageNetworks.class);
+				i = new Intent(MainInterface.this, ManageNetworks.class);
 		        startActivity(i);
 				break;
 				
 			case R.id.buttonSettings:
-				i = new Intent(MainMenu.this, Welcome.class);
+				i = new Intent(MainInterface.this, Welcome.class);
 				startActivity(i);
 				break;
 				
 			case R.id.buttonStatus:
-				i = new Intent(MainMenu.this, Status.class);
+				i = new Intent(MainInterface.this, Status.class);
 				startActivity(i);
 				break;
 		}
@@ -201,44 +198,7 @@ public class MainMenu extends Activity implements OnClickListener {
 	}
 	
 
-	static public ArrayList<String> runCommand(String c) {
-		ArrayList<String> res = new ArrayList<String>();
-		try {
-			// First, run the command push the result to an ArrayList
-			List<String> res_list = RootTools.sendShell(c,0);
-			Iterator<String> it=res_list.iterator();
-			while(it.hasNext()) 
-				res.add((String)it.next());
-			
-			res.remove(res.size()-1);
-			
-			// Trim the ArrayList of an extra blank lines at the end
-			while(true) {
-				int index = res.size()-1;
-				if(index>=0 && res.get(index).length()==0)
-					res.remove(index);
-				else
-					break;
-			}
-			return res;
-			
-		} catch(Exception e) {
-			Log.e("AWMon", "error writing to RootTools the command: " + c, e);
-			return null;
-		}
-	}
-    
-    public String getAppUser() {
-    	try {
-    		List<String> res = RootTools.sendShell("ls -l /data/data | grep " + _app_name,0);
-    		return res.get(0).split(" ")[1];
-    	} catch(Exception e) {
-    		return "FAIL";
-    	}
-    }
-    
-    
-    @Override
+	@Override
     protected void onStart() {
         super.onStart();
         // Bind to LocalService
@@ -259,7 +219,7 @@ public class MainMenu extends Activity implements OnClickListener {
 	@Override
 	public void onResume() { 
 		super.onResume(); 
-		registerReceiver(_messageReceiver, new IntentFilter(MainMenu.THREAD_MESSAGE));
+		registerReceiver(_messageReceiver, new IntentFilter(MainInterface.THREAD_MESSAGE));
 		registerReceiver(_initializedReceiver, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
 		registerReceiver(_deviceScanReceiver, new IntentFilter(DeviceScanManager.DEVICE_SCAN_RESULT));
 		
@@ -308,20 +268,20 @@ public class MainMenu extends Activity implements OnClickListener {
 		showProgressDialog("Scanning for devices, please wait");
 	}
 	
-	private void showProgressDialog(String message) { _pd = ProgressDialog.show(MainMenu.this, "", message, true, false); }
+	private void showProgressDialog(String message) { _pd = ProgressDialog.show(MainInterface.this, "", message, true, false); }
 	
 	public static void sendToastRequest(Context c, String message) {
 		Intent i = new Intent();
-		i.setAction(MainMenu.THREAD_MESSAGE);
-		i.putExtra("type", MainMenu.ThreadMessages.SHOW_TOAST);
+		i.setAction(MainInterface.THREAD_MESSAGE);
+		i.putExtra("type", MainInterface.ThreadMessages.SHOW_TOAST);
 		i.putExtra("msg", message);
 		c.sendBroadcast(i);
 	}
 	
 	public static void sendProgressDialogRequest(Context c, String message) {
 		Intent i = new Intent();
-		i.setAction(MainMenu.THREAD_MESSAGE);
-		i.putExtra("type", MainMenu.ThreadMessages.SHOW_PROGRESS_DIALOG);
+		i.setAction(MainInterface.THREAD_MESSAGE);
+		i.putExtra("type", MainInterface.ThreadMessages.SHOW_PROGRESS_DIALOG);
 		i.putExtra("msg", message);
 		c.sendBroadcast(i);
 	}
