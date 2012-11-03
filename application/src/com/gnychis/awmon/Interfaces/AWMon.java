@@ -30,8 +30,6 @@ import com.gnychis.awmon.BackgroundService.DeviceScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.R.id;
-import com.gnychis.awmon.R.layout;
 import com.stericson.RootTools.RootTools;
 
 public class AWMon extends Activity implements OnClickListener {
@@ -57,7 +55,6 @@ public class AWMon extends Activity implements OnClickListener {
 		SHOW_PROGRESS_DIALOG,
 		CANCEL_PROGRESS_DIALOG,
 		INCREMENT_SCAN_PROGRESS,
-		NETWORK_SCANS_COMPLETE,
 	}
 	
     /** Called when the activity is first created. */
@@ -300,8 +297,6 @@ public class AWMon extends Activity implements OnClickListener {
 	// networks and devices for a user to add for management.
 	// FIXME: this should pop up the progress dialogue and just wait for the broadcast results
 	public void clickAddNetwork() {
-		
-		int max_progress;
 		
 		// Send a request to start a device scan.  If one is not currently being done, it will start.
 		// Otherwise, if one is already running we just await the result.
