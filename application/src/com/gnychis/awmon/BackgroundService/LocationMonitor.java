@@ -24,7 +24,7 @@ import android.util.Log;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceHandlers.Wifi;
+import com.gnychis.awmon.HardwareHandlers.Wifi;
 
 public class LocationMonitor {
 	

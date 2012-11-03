@@ -6,10 +6,10 @@ import android.content.Context;
 
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBMon;
-import com.gnychis.awmon.DeviceHandlers.Bluetooth;
-import com.gnychis.awmon.DeviceHandlers.InternalRadio;
-import com.gnychis.awmon.DeviceHandlers.Wifi;
-import com.gnychis.awmon.DeviceHandlers.ZigBee;
+import com.gnychis.awmon.HardwareHandlers.Bluetooth;
+import com.gnychis.awmon.HardwareHandlers.InternalRadio;
+import com.gnychis.awmon.HardwareHandlers.Wifi;
+import com.gnychis.awmon.HardwareHandlers.ZigBee;
 
 // The handlers to the devices must reside in the background service, because there is
 // not guarantee the main activity (AWMon) is actually active or in use.  But, it is

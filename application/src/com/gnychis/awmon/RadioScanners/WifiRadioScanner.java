@@ -19,8 +19,8 @@ import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceHandlers.InternalRadio;
-import com.gnychis.awmon.DeviceHandlers.Wifi;
+import com.gnychis.awmon.HardwareHandlers.InternalRadio;
+import com.gnychis.awmon.HardwareHandlers.Wifi;
 import com.gnychis.awmon.Interfaces.MainInterface;
 import com.gnychis.awmon.Interfaces.MainInterface.ThreadMessages;
 

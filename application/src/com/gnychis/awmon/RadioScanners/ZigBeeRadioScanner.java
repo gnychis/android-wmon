@@ -12,8 +12,8 @@ import android.util.Log;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBSerial;
-import com.gnychis.awmon.DeviceHandlers.InternalRadio;
-import com.gnychis.awmon.DeviceHandlers.ZigBee;
+import com.gnychis.awmon.HardwareHandlers.InternalRadio;
+import com.gnychis.awmon.HardwareHandlers.ZigBee;
 import com.gnychis.awmon.Interfaces.MainInterface;
 import com.stericson.RootTools.RootTools;
 

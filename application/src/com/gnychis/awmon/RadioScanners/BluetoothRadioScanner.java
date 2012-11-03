@@ -11,7 +11,7 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Radio;
-import com.gnychis.awmon.DeviceHandlers.InternalRadio;
+import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 
 public class BluetoothRadioScanner extends RadioScanner {
 	

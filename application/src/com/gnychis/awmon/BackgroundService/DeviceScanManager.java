@@ -12,7 +12,7 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Radio;
-import com.gnychis.awmon.DeviceHandlers.InternalRadio;
+import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
 import com.gnychis.awmon.RadioScanners.RadioScanResult;
 import com.gnychis.awmon.RadioScanners.RadioScanner;

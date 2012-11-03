@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 
 import com.gnychis.awmon.Core.Radio;
-import com.gnychis.awmon.DeviceHandlers.InternalRadio;
+import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.ScanResultParsers.BluetoothResultParser;
 import com.gnychis.awmon.ScanResultParsers.ScanResultParser;
 import com.gnychis.awmon.ScanResultParsers.WifiResultParser;

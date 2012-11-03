@@ -1,4 +1,4 @@
-package com.gnychis.awmon.DeviceHandlers;
+package com.gnychis.awmon.HardwareHandlers;
 
 import java.math.BigInteger;
 import java.util.ArrayList;

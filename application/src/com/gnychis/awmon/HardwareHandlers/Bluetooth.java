@@ -1,4 +1,4 @@
-package com.gnychis.awmon.DeviceHandlers;
+package com.gnychis.awmon.HardwareHandlers;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;

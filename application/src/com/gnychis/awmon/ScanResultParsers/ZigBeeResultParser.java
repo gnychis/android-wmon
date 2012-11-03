@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.Packet;
-import com.gnychis.awmon.DeviceHandlers.ZigBee;
+import com.gnychis.awmon.HardwareHandlers.ZigBee;
 
 public class ZigBeeResultParser extends ScanResultParser {
 	
