@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import android.util.Log;
 
-import com.gnychis.awmon.Core.Device;
+import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.Packet;
 
 public class WifiResultParser extends ScanResultParser {
@@ -15,17 +15,17 @@ public class WifiResultParser extends ScanResultParser {
 	final String TAG = "WifiResultParser";
 	public final boolean VERBOSE = true;
 
-	public <T extends Object> ArrayList<Device> returnDevices(ArrayList<T> scanResult) {
+	public <T extends Object> ArrayList<Radio> returnDevices(ArrayList<T> scanResult) {
 		
 	    // For keeping track of the APs that we have already parsed, by MAC
-	    Hashtable<String,Device> devs_in_list = new Hashtable<String,Device>();	    
-	    ArrayList<Device> devices = new ArrayList<Device>();
+	    Hashtable<String,Radio> devs_in_list = new Hashtable<String,Radio>();	    
+	    ArrayList<Radio> devices = new ArrayList<Radio>();
 	    
 	    // Go through each scan result, and get the access point information
 	    Iterator<T> results = scanResult.iterator();
 	    while(results.hasNext()) {
 	    	Packet pkt = (Packet) results.next();
-	    	Device dev = new Device(Device.Type.Wifi);
+	    	Radio dev = new Radio(Radio.Type.Wifi);
 	    	
 	    	// If it's a bad packet, ignore
 	    	if(pkt.getField("radiotap.flags.badfcs")==null || pkt.getField("radiotap.flags.badfcs").equals("1"))
@@ -63,7 +63,7 @@ public class WifiResultParser extends ScanResultParser {
 	    		devs_in_list.put(dev._MAC, dev);  // mark that we've seen it
 	    		devices.add(dev);
 	    	} else {  // we already have it, but we can add multiple RSSI readings
-	    		Device tdev = devs_in_list.get(dev._MAC);
+	    		Radio tdev = devs_in_list.get(dev._MAC);
 	    		if(rssi_val!=null)
 	    			tdev._RSSI.add(Integer.parseInt(rssi_val));
 	    		if(tdev._BSSID==null && bssid_addr!=null)	// if we have a BSSID
@@ -74,7 +74,7 @@ public class WifiResultParser extends ScanResultParser {
 	    }
 
 	    // Save this scan as our most current scan
-	    Collections.sort(devices, Device.compareRSSI);
+	    Collections.sort(devices, Radio.compareRSSI);
 		
 		return devices;
 	}

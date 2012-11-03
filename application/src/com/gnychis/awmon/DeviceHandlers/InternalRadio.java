@@ -4,22 +4,18 @@ import java.util.concurrent.Semaphore;
 
 import android.content.Context;
 
+import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.DeviceScanners.BluetoothDeviceScanner;
 import com.gnychis.awmon.DeviceScanners.DeviceScanner;
 import com.gnychis.awmon.DeviceScanners.WifiDeviceScanner;
 import com.gnychis.awmon.DeviceScanners.ZigBeeDeviceScanner;
 
-abstract public class HardwareDevice {
+abstract public class InternalRadio {
 	
 	public Context _parent;
 	public DeviceScanner _device_scanner;
 	
-	HardwareDevice.Type _type;
-	public enum Type {		// A List of possible scans to handle
-		Wifi,
-		ZigBee,
-		Bluetooth,
-	}
+	Radio.Type _type;
 	
 	State _state;
 	Semaphore _state_lock;
@@ -50,14 +46,14 @@ abstract public class HardwareDevice {
 		return true;
 	}
 	
-	public HardwareDevice(HardwareDevice.Type type) {
+	public InternalRadio(Radio.Type type) {
 		_type = type;
 		_state_lock = new Semaphore(1,true);
 		_state = State.IDLE;
 	}
 	
-	public HardwareDevice.Type deviceType() { return _type; }
-	public HardwareDevice.State getState() {
+	public Radio.Type deviceType() { return _type; }
+	public InternalRadio.State getState() {
 		return _state;
 	}
 	

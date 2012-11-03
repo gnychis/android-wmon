@@ -11,8 +11,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import com.gnychis.awmon.Core.Device;
-import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
+import com.gnychis.awmon.Core.Radio;
+import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.DeviceScanners.DeviceScanResult;
 import com.gnychis.awmon.DeviceScanners.DeviceScanner;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
@@ -32,9 +32,9 @@ public class DeviceScanManager extends Activity {
 
 	DeviceHandler _device_handler;
 	NameResolutionManager _nameResolutionManager;
-	ArrayList<Device> _deviceScanResults;
-	Queue<HardwareDevice> _scanQueue;
-	Queue<HardwareDevice.Type> _pendingResults;
+	ArrayList<Radio> _deviceScanResults;
+	Queue<InternalRadio> _scanQueue;
+	Queue<Radio.Type> _pendingResults;
 	
 	State _state;
 	public enum State {
@@ -64,12 +64,12 @@ public class DeviceScanManager extends Activity {
 		
 		// Set the state to scanning, then clear the scan results.
 		_state = State.SCANNING;
-		_deviceScanResults = new ArrayList<Device>();
+		_deviceScanResults = new ArrayList<Radio>();
 		
 		// Put all of the devices in a queue that we will scan devices on
-		_scanQueue = new LinkedList < HardwareDevice >();
-		_pendingResults = new LinkedList < HardwareDevice.Type >();
-		for (HardwareDevice hwDev : _device_handler._hardwareDevices) {
+		_scanQueue = new LinkedList < InternalRadio >();
+		_pendingResults = new LinkedList < Radio.Type >();
+		for (InternalRadio hwDev : _device_handler._hardwareDevices) {
 			if(hwDev.isConnected()) { 
 				_scanQueue.add(hwDev);
 				_pendingResults.add(hwDev.deviceType());
@@ -87,7 +87,7 @@ public class DeviceScanManager extends Activity {
 		if(_scanQueue.isEmpty())
 			return;
 		
-		HardwareDevice dev = _scanQueue.remove();
+		InternalRadio dev = _scanQueue.remove();
 		dev.startDeviceScan();
 		
 		if(OVERLAP_SCANS)				// If we are overlapping scans, just go ahead and
@@ -111,8 +111,8 @@ public class DeviceScanManager extends Activity {
     private BroadcastReceiver incomingDeviceScan = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
         	DeviceScanResult scanResult = (DeviceScanResult) intent.getExtras().get("result");
-        	HardwareDevice.Type hwType = (HardwareDevice.Type) intent.getExtras().get("hwType"); 
-        	for(Device dev : scanResult.devices)
+        	Radio.Type hwType = (Radio.Type) intent.getExtras().get("hwType"); 
+        	for(Radio dev : scanResult.devices)
         		_deviceScanResults.add(dev);
         	
         	if(!OVERLAP_SCANS)				// If we are not overlapping scans, we do it when we get

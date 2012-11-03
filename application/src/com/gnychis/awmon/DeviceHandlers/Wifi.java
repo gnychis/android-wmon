@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
+import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceScanners.WifiDeviceScanner;
@@ -28,7 +29,7 @@ once num_pkts != -1, and read>num_pkts, then leave scanning thread
 
 bingo.
  */
-public class Wifi extends HardwareDevice {
+public class Wifi extends InternalRadio {
 	
 	// This defines the device USB ID we are looking for
 	class USBWifiDev {
@@ -50,7 +51,7 @@ public class Wifi extends HardwareDevice {
 	String _rxpackets_loc;
 	
 	public Wifi(Context c) {
-		super(HardwareDevice.Type.Wifi);
+		super(Radio.Type.Wifi);
 		_parent = c;
 		_settings = new UserSettings(_parent);
 		

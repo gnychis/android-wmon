@@ -8,9 +8,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 // This is the baseline device class from which other devices can be derived.
-public class Device implements Parcelable {
+public class Radio implements Parcelable {
 	
-	public enum Type {		// A List of possible scans to handle
+	public enum Type {		// Possible types of radios that we support
 		Wifi,
 		ZigBee,
 		Bluetooth,
@@ -20,12 +20,12 @@ public class Device implements Parcelable {
 	public String _MAC;						// The MAC address of the device
 	public int _frequency;					// The frequency it operates on
 	public String _name;					// Something human readable (e.g., "Bill's iPad)
-	public Device.Type _type;				// The type of device
+	public Radio.Type _type;				// The type of device
 	public String _SSID;					// If the device belongs to a SSID (e.g., "The Smith's Wifi")
 	public String _BSSID;					// The BSSID (MAC) of the coordinator
 	public String _IP;						// The IP address of the device
 	
-	public Device(Device.Type type) {
+	public Radio(Radio.Type type) {
 		_RSSI = new ArrayList<Integer>();
 		_type=type;
 		_SSID = null;
@@ -50,9 +50,9 @@ public class Device implements Parcelable {
 	
 	  static public Comparator<Object> compareRSSI = new Comparator<Object>() {
 		public int compare(Object arg0, Object arg1) {
-			if(((Device)arg0).averageRSSI() < ((Device)arg1).averageRSSI())
+			if(((Radio)arg0).averageRSSI() < ((Radio)arg1).averageRSSI())
 				return 1;
-			else if( ((Device)arg0).averageRSSI() > ((Device)arg1).averageRSSI())
+			else if( ((Radio)arg0).averageRSSI() > ((Radio)arg1).averageRSSI())
 				return -1;
 			else
 				return 0;
@@ -78,23 +78,23 @@ public class Device implements Parcelable {
 	    	dest.writeString(_IP);
 	    }
 
-	    public static final Parcelable.Creator<Device> CREATOR = new Parcelable.Creator<Device>() {
-	    	public Device createFromParcel(Parcel in) {
-	    		return new Device(in);
+	    public static final Parcelable.Creator<Radio> CREATOR = new Parcelable.Creator<Radio>() {
+	    	public Radio createFromParcel(Parcel in) {
+	    		return new Radio(in);
 	    	}
 
-			public Device[] newArray(int size) {
-				return new Device[size];
+			public Radio[] newArray(int size) {
+				return new Radio[size];
 			}
 	    };
 
 	    @SuppressWarnings("unchecked")
-	    private Device(Parcel source) {
+	    private Radio(Parcel source) {
 	    	_RSSI = (ArrayList<Integer>) source.readSerializable();
 	    	_MAC = source.readString();
 	    	_frequency = source.readInt();
 	    	_name = source.readString();
-	        _type = Device.Type.values()[source.readInt()];
+	        _type = Radio.Type.values()[source.readInt()];
 	        _SSID = source.readString();
 	        _BSSID = source.readString();
 	        _IP = source.readString();

@@ -10,8 +10,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import com.gnychis.awmon.Core.Device;
-import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
+import com.gnychis.awmon.Core.Radio;
+import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 
 public class BluetoothDeviceScanner extends DeviceScanner {
 	
@@ -20,15 +20,15 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 	public BluetoothAdapter _bluetooth;
 	
 	boolean _bt_scan_complete;
-	ArrayList<Device> _scanResult;
+	ArrayList<Radio> _scanResult;
 	
 	public BluetoothDeviceScanner() {
-		super(HardwareDevice.Type.Bluetooth);
+		super(InternalRadio.Type.Bluetooth);
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}
 	
 	@Override
-	protected ArrayList<Device> doInBackground( HardwareDevice ... params )
+	protected ArrayList<Radio> doInBackground( InternalRadio ... params )
 	{
 		Log.d(TAG, "Running a Bluetooth device scan");
 		_hw_device = params[0];
@@ -39,7 +39,7 @@ public class BluetoothDeviceScanner extends DeviceScanner {
 		_hw_device._parent.registerReceiver(bluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		_bluetooth.startDiscovery();
 		
-		_scanResult = new ArrayList<Device>();
+		_scanResult = new ArrayList<Radio>();
 		
 		while(!_bt_scan_complete) 
 			try { Thread.sleep(100); } catch(Exception e) {}
@@ -58,7 +58,7 @@ public class BluetoothDeviceScanner extends DeviceScanner {
     			// the RSSI value of when we discovered the device.  Otherwise, you lose it because
     			// it's simply the last value of RSSI at the card.
     			BluetoothDevice bt_dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-    			Device dev = new Device(Device.Type.Bluetooth);
+    			Radio dev = new Radio(Radio.Type.Bluetooth);
     			short rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
     			dev._RSSI.add((int)rssi);
     			dev._MAC=bt_dev.getAddress();

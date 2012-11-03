@@ -3,12 +3,14 @@ package com.gnychis.awmon.DeviceHandlers;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 
-public class Bluetooth extends HardwareDevice {
+import com.gnychis.awmon.Core.Radio;
+
+public class Bluetooth extends InternalRadio {
 	
 	BluetoothAdapter _bluetooth;
 	
 	public Bluetooth(Context c) {
-		super(HardwareDevice.Type.Bluetooth);
+		super(Radio.Type.Bluetooth);
 		_parent = c;
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}

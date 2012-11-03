@@ -17,10 +17,10 @@ import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
 import com.gnychis.awmon.AWMon.ThreadMessages;
-import com.gnychis.awmon.Core.Device;
+import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceHandlers.HardwareDevice;
+import com.gnychis.awmon.DeviceHandlers.InternalRadio;
 import com.gnychis.awmon.DeviceHandlers.Wifi;
 
 public class WifiDeviceScanner extends DeviceScanner {
@@ -55,7 +55,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	
 	public WifiDeviceScanner() {
-		super(HardwareDevice.Type.Wifi);
+		super(InternalRadio.Type.Wifi);
 		// If we are dumping all of our packets for debugging...
 		if(PCAP_DUMP) {
 			Log.d(TAG, "Trying to open pcap dump file");
@@ -171,7 +171,7 @@ public class WifiDeviceScanner extends DeviceScanner {
 	
 	// The entire meat of the thread, pulls packets off the interface and dissects them
 	@Override
-	protected ArrayList<Device> doInBackground( HardwareDevice ... params )
+	protected ArrayList<Radio> doInBackground( InternalRadio ... params )
 	{
 		debugOut("Starting the Wifi scan thread");
 		_hw_device = params[0];

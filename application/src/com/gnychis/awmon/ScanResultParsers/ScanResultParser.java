@@ -2,10 +2,10 @@ package com.gnychis.awmon.ScanResultParsers;
 
 import java.util.ArrayList;
 
-import com.gnychis.awmon.Core.Device;
+import com.gnychis.awmon.Core.Radio;
 
 abstract public class ScanResultParser {
 
-	abstract public <T extends Object> ArrayList<Device> returnDevices(ArrayList<T> scanResult);
+	abstract public <T extends Object> ArrayList<Radio> returnDevices(ArrayList<T> scanResult);
 	
 }

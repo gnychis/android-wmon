@@ -12,7 +12,7 @@ import java.util.Map;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
-import com.gnychis.awmon.Core.Device;
+import com.gnychis.awmon.Core.Radio;
 
 public class OUI extends NameResolver {
 	
@@ -21,7 +21,7 @@ public class OUI extends NameResolver {
 	Map<String,String> _ouiTable;
 
 	public OUI(NameResolutionManager nrm) {
-		super(nrm, Arrays.asList(Device.Type.Bluetooth, Device.Type.Wifi));
+		super(nrm, Arrays.asList(Radio.Type.Bluetooth, Radio.Type.Wifi));
 		
 		_ouiTable = new HashMap<String,String>();
 		
@@ -44,8 +44,8 @@ public class OUI extends NameResolver {
 		catch(Exception e) { Log.e(TAG, "Error opening OUI text file"); }
 	}
 	
-	public ArrayList<Device> resolveSupportedDevices(ArrayList<Device> supportedDevices) {
-		for(Device dev : supportedDevices) {
+	public ArrayList<Radio> resolveSupportedDevices(ArrayList<Radio> supportedDevices) {
+		for(Radio dev : supportedDevices) {
 			if(dev._name==null) {	// We only care about devices with a null name at the OUI level.
 				String macPrefix = dev._MAC.replace("-", "").replace(":", "").substring(0, 5).toUpperCase();
 				String companyName = _ouiTable.get(macPrefix);

@@ -12,11 +12,12 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.AWMon;
+import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.USBSerial;
 import com.stericson.RootTools.RootTools;
 
-public class ZigBee extends HardwareDevice {
+public class ZigBee extends InternalRadio {
 	private static final String TAG = "ZigbeeDev";
 	private static final boolean VERBOSE = true;
 	
@@ -31,7 +32,7 @@ public class ZigBee extends HardwareDevice {
 	public boolean _device_connected;
 	
 	public ZigBee(Context c) {
-		super(HardwareDevice.Type.ZigBee);
+		super(Radio.Type.ZigBee);
 		_parent = c;
 		Log.d(TAG, "Initializing ZigBee class...");
 		_parent.registerReceiver(usbUpdate, new IntentFilter(USBMon.USBMON_DEVICELIST));

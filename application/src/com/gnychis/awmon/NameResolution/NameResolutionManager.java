@@ -5,7 +5,7 @@ import java.util.List;
 
 import android.content.Context;
 
-import com.gnychis.awmon.Core.Device;
+import com.gnychis.awmon.Core.Radio;
 
 public class NameResolutionManager {
 
@@ -25,7 +25,7 @@ public class NameResolutionManager {
 	// Takes a list of devices as a set of scan results, then goes through
 	// the name resolvers and attempts to resolve the names.  This must return the
 	// same set of devices, albeit updated.  Otherwise the device will be lost.
-	public ArrayList<Device> resolveDeviceNames(ArrayList<Device> scanResults) {
+	public ArrayList<Radio> resolveDeviceNames(ArrayList<Radio> scanResults) {
 		
 		// Go through each resolver.  Overwrite the scan results with the new results.
 		// Keep going through the heirarchy.  The most basic should be first (e.g., OUI).
