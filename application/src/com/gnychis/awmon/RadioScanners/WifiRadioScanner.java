@@ -61,7 +61,6 @@ public class WifiRadioScanner extends RadioScanner {
 			Log.d(TAG, "Trying to open pcap dump file");
 			try {
 				_pcap_dump = new DataOutputStream(new FileOutputStream("/sdcard/coexisyst_wifi.pcap"));
-				byte initialized_sequence[] = {0x67, 0x65, 0x6f, 0x72, 0x67, 0x65, 0x6e, 0x79, 0x63, 0x68, 0x69, 0x73};
 				byte pcap_header[] = {(byte)0xd4, (byte)0xc3, (byte)0xb2, (byte)0xa1, 		// magic number
 						(byte)0x02, (byte)0x00, (byte)0x04,(byte) 0x00, 	// version numbers
 						(byte)0x00, (byte)0x00, (byte)0x00,(byte) 0x00, 	// thiszone
