@@ -7,7 +7,7 @@ import java.util.Iterator;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-// This is the baseline device class from which other devices can be derived.
+// A radio is a physical radio that exists in a device.  
 public class Radio implements Parcelable {
 	
 	public enum Type {		// Possible types of radios that we support
@@ -19,11 +19,10 @@ public class Radio implements Parcelable {
 	public ArrayList<Integer> _RSSI;		// The RSSI of the device at the phone
 	public String _MAC;						// The MAC address of the device
 	public int _frequency;					// The frequency it operates on
-	public String _name;					// Something human readable (e.g., "Bill's iPad)
 	public Radio.Type _type;				// The type of device
 	public String _SSID;					// If the device belongs to a SSID (e.g., "The Smith's Wifi")
 	public String _BSSID;					// The BSSID (MAC) of the coordinator
-	public String _IP;						// The IP address of the device
+	public String _IP;						// The IP address associated to the radio
 	
 	public Radio(Radio.Type type) {
 		_RSSI = new ArrayList<Integer>();
@@ -71,7 +70,6 @@ public class Radio implements Parcelable {
 	    	dest.writeSerializable(_RSSI);
 	    	dest.writeString(_MAC);
 	    	dest.writeInt(_frequency);
-	    	dest.writeString(_name);
 	    	dest.writeInt(_type.ordinal());
 	    	dest.writeString(_SSID);
 	    	dest.writeString(_BSSID);
@@ -93,7 +91,6 @@ public class Radio implements Parcelable {
 	    	_RSSI = (ArrayList<Integer>) source.readSerializable();
 	    	_MAC = source.readString();
 	    	_frequency = source.readInt();
-	    	_name = source.readString();
 	        _type = Radio.Type.values()[source.readInt()];
 	        _SSID = source.readString();
 	        _BSSID = source.readString();

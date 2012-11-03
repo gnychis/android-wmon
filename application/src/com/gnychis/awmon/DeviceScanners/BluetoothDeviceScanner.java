@@ -62,7 +62,7 @@ public class BluetoothDeviceScanner extends DeviceScanner {
     			short rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
     			dev._RSSI.add((int)rssi);
     			dev._MAC=bt_dev.getAddress();
-    			dev._name=bt_dev.getName();
+    			//dev._name=bt_dev.getName();  // FIXME
     			_scanResult.add(dev);
     		}
     		

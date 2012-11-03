@@ -46,12 +46,13 @@ public class OUI extends NameResolver {
 	
 	public ArrayList<Radio> resolveSupportedDevices(ArrayList<Radio> supportedDevices) {
 		for(Radio dev : supportedDevices) {
-			if(dev._name==null) {	// We only care about devices with a null name at the OUI level.
+			// FIXME
+			/*if(dev._name==null) {	// We only care about devices with a null name at the OUI level.
 				String macPrefix = dev._MAC.replace("-", "").replace(":", "").substring(0, 5).toUpperCase();
 				String companyName = _ouiTable.get(macPrefix);
 				if(companyName!=null)
 					dev._name = companyName; 
-			}
+			}*/
 		}
 		return supportedDevices;
 	}

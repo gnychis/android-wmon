@@ -241,7 +241,6 @@ public class MainInterface extends Activity implements OnClickListener {
         		Log.d(TAG, "Got a device: " + dev._MAC 
         				   + " (type: " + dev._type.toString() + ") " 
         				   + " - Freq: " + dev._frequency
-        				   + " - Name: " + dev._name
         				   + " - BSSID: " + dev._BSSID
         				   + " - SSID: " + dev._SSID
         				   + " - RSSI: " + dev.averageRSSI());
