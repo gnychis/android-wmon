@@ -32,7 +32,6 @@ public class WifiDeviceScanner extends DeviceScanner {
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	static int WTAP_ENCAP_ETHERNET = 1;
 	Context parent;
-	MainInterface coexisyst;
 	private int PCAP_HDR_SIZE = 16;
 	private PcapIf _moni0_dev;
 	private Pcap _moni0_pcap;

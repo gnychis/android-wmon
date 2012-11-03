@@ -22,7 +22,7 @@ public class BackgroundService extends Service {
 	// Need a binder so that the main activity can communicate with the server
 	private final IBinder _binder = new BackgroundServiceBinder();
 
-    public static MainInterface _awmon;
+    public static MainInterface _mainInterface;
     static BackgroundService _this;
     private MotionDetector _motionDetector;
     private LocationMonitor _locationMonitor;
@@ -157,6 +157,6 @@ public class BackgroundService extends Service {
 		}
 	}
 
-	public static void setMainActivity(MainInterface activity) { _awmon = activity; }
+	public static void setMainActivity(MainInterface activity) { _mainInterface = activity; }
 	
 }
