@@ -3,16 +3,16 @@ package com.gnychis.awmon.NameResolution;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gnychis.awmon.Core.Radio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
 
 abstract public class NameResolver {
 	
 	NameResolutionManager _nr_manager;
 	
 	// This is an array which will keep track of the support hardware types for each name resolver
-	public List<Radio.Type> _supportedRadios;
+	public List<WirelessRadio.Type> _supportedRadios;
 	
-	public NameResolver(NameResolutionManager nrm, List<Radio.Type> supportedRadioTypes) {
+	public NameResolver(NameResolutionManager nrm, List<WirelessRadio.Type> supportedRadioTypes) {
 		_supportedRadios = supportedRadioTypes;
 		_nr_manager = nrm;
 	}
@@ -20,13 +20,13 @@ abstract public class NameResolver {
 	// This method receives the incoming device list.  Go ahead and strip out the devices the
 	// current name resolver does not support.  But they MUST be put back in the list before
 	// it is returned.  Otherwise they will be lost forever.
-	public ArrayList<Radio> resolveNames(ArrayList<Radio> radios) {
+	public ArrayList<WirelessRadio> resolveNames(ArrayList<WirelessRadio> radios) {
 		
-		ArrayList<Radio> unsupported = new ArrayList<Radio>();
-		ArrayList<Radio> supported = new ArrayList<Radio>();
-		ArrayList<Radio> merged = new ArrayList<Radio>();
+		ArrayList<WirelessRadio> unsupported = new ArrayList<WirelessRadio>();
+		ArrayList<WirelessRadio> supported = new ArrayList<WirelessRadio>();
+		ArrayList<WirelessRadio> merged = new ArrayList<WirelessRadio>();
 		
-		for(Radio radio : radios) {
+		for(WirelessRadio radio : radios) {
 			if(_supportedRadios.contains(radio._type))
 				supported.add(radio);
 			else
@@ -41,5 +41,5 @@ abstract public class NameResolver {
 		return merged;
 	}
 	
-	abstract public ArrayList<Radio> resolveSupportedRadios(ArrayList<Radio> supportedRadios);
+	abstract public ArrayList<WirelessRadio> resolveSupportedRadios(ArrayList<WirelessRadio> supportedRadios);
 }

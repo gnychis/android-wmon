@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import com.gnychis.awmon.Core.Radio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 
 public class BluetoothRadioScanner extends RadioScanner {
@@ -20,15 +20,15 @@ public class BluetoothRadioScanner extends RadioScanner {
 	public BluetoothAdapter _bluetooth;
 	
 	boolean _bt_scan_complete;
-	ArrayList<Radio> _scanResult;
+	ArrayList<WirelessRadio> _scanResult;
 	
 	public BluetoothRadioScanner() {
-		super(Radio.Type.Bluetooth);
+		super(WirelessRadio.Type.Bluetooth);
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}
 	
 	@Override
-	protected ArrayList<Radio> doInBackground( InternalRadio ... params )
+	protected ArrayList<WirelessRadio> doInBackground( InternalRadio ... params )
 	{
 		Log.d(TAG, "Running a Bluetooth device scan");
 		_hw_device = params[0];
@@ -39,7 +39,7 @@ public class BluetoothRadioScanner extends RadioScanner {
 		_hw_device._parent.registerReceiver(bluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		_bluetooth.startDiscovery();
 		
-		_scanResult = new ArrayList<Radio>();
+		_scanResult = new ArrayList<WirelessRadio>();
 		
 		while(!_bt_scan_complete) 
 			try { Thread.sleep(100); } catch(Exception e) {}
@@ -58,7 +58,7 @@ public class BluetoothRadioScanner extends RadioScanner {
     			// the RSSI value of when we discovered the device.  Otherwise, you lose it because
     			// it's simply the last value of RSSI at the card.
     			BluetoothDevice bt_dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-    			Radio dev = new Radio(Radio.Type.Bluetooth);
+    			WirelessRadio dev = new WirelessRadio(WirelessRadio.Type.Bluetooth);
     			short rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
     			dev._RSSI.add((int)rssi);
     			dev._MAC=bt_dev.getAddress();

@@ -5,23 +5,23 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.Packet;
+import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
 import com.gnychis.awmon.HardwareHandlers.ZigBee;
 
 public class ZigBeeResultParser extends ScanResultParser {
 	
-	public <T extends Object> ArrayList<Radio> returnDevices(ArrayList<T> scanResult) {
+	public <T extends Object> ArrayList<WirelessRadio> returnDevices(ArrayList<T> scanResult) {
 				
 	    // For keeping track of the APs that we have already parsed, by MAC
-	    Hashtable<String,Radio> devs_in_list = new Hashtable<String,Radio>();	    
-	    ArrayList<Radio> devices = new ArrayList<Radio>();
+	    Hashtable<String,WirelessRadio> devs_in_list = new Hashtable<String,WirelessRadio>();	    
+	    ArrayList<WirelessRadio> devices = new ArrayList<WirelessRadio>();
 	    
 	    // Go through each scan result, and get the access point information
 	    Iterator<T> results = scanResult.iterator();
 	    while(results.hasNext()) {
 	    	Packet pkt = (Packet) results.next();
-	    	Radio dev = new Radio(Radio.Type.ZigBee);
+	    	WirelessRadio dev = new WirelessRadio(WirelessRadio.Type.ZigBee);
 	    	
 	    	// If it's a bad packet, ignore
 	    	if(pkt.getField("wpan.fcs_ok").equals("0"))
@@ -37,13 +37,13 @@ public class ZigBeeResultParser extends ScanResultParser {
 	    		devs_in_list.put(dev._MAC, dev);  // mark that we've seen it
 	    		devices.add(dev);
 	    	} else {  // we already have it, but we can add multiple RSSI readings
-	    		Radio tdev = devs_in_list.get(dev._MAC);
+	    		WirelessRadio tdev = devs_in_list.get(dev._MAC);
 	    		tdev._RSSI.add(pkt._lqi);
 	    	}
 	    }
 
 	    // Save this scan as our most current scan
-	    Collections.sort(devices, Radio.compareRSSI);
+	    Collections.sort(devices, WirelessRadio.compareRSSI);
 		
 		return devices;
 	}

@@ -10,8 +10,8 @@ import org.jnetpcap.nio.JBuffer;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Packet;
-import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBSerial;
+import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.HardwareHandlers.ZigBee;
 import com.gnychis.awmon.Interfaces.MainInterface;
@@ -36,7 +36,7 @@ public class ZigBeeRadioScanner extends RadioScanner {
 	byte CHAN_IS=0x0007;
 	
 	public ZigBeeRadioScanner() {
-		super(Radio.Type.ZigBee);
+		super(WirelessRadio.Type.ZigBee);
 	}
 	
 	// Transmit a command to start a scan on the hardware (channel hop)
@@ -66,7 +66,7 @@ public class ZigBeeRadioScanner extends RadioScanner {
 	
 	// The entire meat of the thread, pulls packets off the interface and dissects them
 	@Override
-	protected ArrayList<Radio> doInBackground( InternalRadio ... params )
+	protected ArrayList<WirelessRadio> doInBackground( InternalRadio ... params )
 	{
 		_hw_device = params[0];
 		_comm_lock = new Semaphore(1,true);

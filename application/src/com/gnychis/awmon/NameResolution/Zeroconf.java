@@ -18,7 +18,7 @@ import android.net.wifi.WifiManager.MulticastLock;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.gnychis.awmon.Core.Radio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
 
 // Bonjour 
 public class Zeroconf extends NameResolver {
@@ -47,10 +47,10 @@ public class Zeroconf extends NameResolver {
     private ServiceListener _jmdnsListener = null;
 
 	public Zeroconf(NameResolutionManager nrm) {
-		super(nrm, Arrays.asList(Radio.Type.Wifi));
+		super(nrm, Arrays.asList(WirelessRadio.Type.Wifi));
 	}
 
-	public ArrayList<Radio> resolveSupportedRadios(ArrayList<Radio> supportedRadios) {
+	public ArrayList<WirelessRadio> resolveSupportedRadios(ArrayList<WirelessRadio> supportedRadios) {
 		debugOut("Started Zeroconf resolution");
 		
 		_waitingOnThread=true;

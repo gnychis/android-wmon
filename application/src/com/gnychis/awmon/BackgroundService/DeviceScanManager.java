@@ -11,7 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import com.gnychis.awmon.Core.Radio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
 import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
@@ -33,9 +33,9 @@ public class DeviceScanManager extends Activity {
 
 	DeviceHandler _device_handler;
 	NameResolutionManager _nameResolutionManager;
-	ArrayList<Radio> _deviceScanResults;
+	ArrayList<WirelessRadio> _deviceScanResults;
 	Queue<InternalRadio> _scanQueue;
-	Queue<Radio.Type> _pendingResults;
+	Queue<WirelessRadio.Type> _pendingResults;
 	
 	State _state;
 	public enum State {
@@ -65,11 +65,11 @@ public class DeviceScanManager extends Activity {
 		
 		// Set the state to scanning, then clear the scan results.
 		_state = State.SCANNING;
-		_deviceScanResults = new ArrayList<Radio>();
+		_deviceScanResults = new ArrayList<WirelessRadio>();
 		
 		// Put all of the devices in a queue that we will scan devices on
 		_scanQueue = new LinkedList < InternalRadio >();
-		_pendingResults = new LinkedList < Radio.Type >();
+		_pendingResults = new LinkedList < WirelessRadio.Type >();
 		for (InternalRadio hwDev : _device_handler._internalRadios) {
 			if(hwDev.isConnected()) { 
 				_scanQueue.add(hwDev);
@@ -112,8 +112,8 @@ public class DeviceScanManager extends Activity {
     private BroadcastReceiver incomingDeviceScan = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
         	RadioScanResult scanResult = (RadioScanResult) intent.getExtras().get("result");
-        	Radio.Type hwType = (Radio.Type) intent.getExtras().get("hwType"); 
-        	for(Radio dev : scanResult.devices)
+        	WirelessRadio.Type hwType = (WirelessRadio.Type) intent.getExtras().get("hwType"); 
+        	for(WirelessRadio dev : scanResult.devices)
         		_deviceScanResults.add(dev);
         	
         	if(!OVERLAP_SCANS)				// If we are not overlapping scans, we do it when we get
