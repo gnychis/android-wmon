@@ -1,15 +1,12 @@
-package com.gnychis.awmon.BackgroundService;
+package com.gnychis.awmon.HardwareHandlers;
 
 import java.util.ArrayList;
 
 import android.content.Context;
 
+import com.gnychis.awmon.BackgroundService.DeviceScanManager;
 import com.gnychis.awmon.Core.Radio;
 import com.gnychis.awmon.Core.USBMon;
-import com.gnychis.awmon.HardwareHandlers.Bluetooth;
-import com.gnychis.awmon.HardwareHandlers.InternalRadio;
-import com.gnychis.awmon.HardwareHandlers.Wifi;
-import com.gnychis.awmon.HardwareHandlers.ZigBee;
 
 // The handlers to the devices must reside in the background service, because there is
 // not guarantee the main activity (AWMon) is actually active or in use.  But, it is
@@ -20,9 +17,9 @@ public class DeviceHandler {
 	public Context _parent;
 	
 	// Our devices that are accessible
-	ArrayList<InternalRadio> _hardwareDevices;
+	public ArrayList<InternalRadio> _internalRadios;
 	
-	public DeviceScanManager _dev_scan_manager;
+	public DeviceScanManager _deviceScanManager;
 	protected USBMon _usbmon;
 	
 	public DeviceHandler(Context parent) {
@@ -30,21 +27,21 @@ public class DeviceHandler {
 		
 		// Setup the USB monitor thread
 		_usbmon = new USBMon(parent);
-		_dev_scan_manager = new DeviceScanManager(this);
+		_deviceScanManager = new DeviceScanManager(this);
 		
 		// Initialize the device handles and add them all to an ArrayList.  This makes
 		// scanning easy by iterating through this list.
-		_hardwareDevices = new ArrayList<InternalRadio>();
+		_internalRadios = new ArrayList<InternalRadio>();
 		for (Radio.Type type : Radio.Type.values()) {
 			switch(type) {
 				case Wifi:
-					_hardwareDevices.add(new Wifi(_parent));
+					_internalRadios.add(new Wifi(_parent));
 					break;
 				case ZigBee:
-					_hardwareDevices.add(new ZigBee(_parent));
+					_internalRadios.add(new ZigBee(_parent));
 					break;
 				case Bluetooth:
-					_hardwareDevices.add(new Bluetooth(_parent));
+					_internalRadios.add(new Bluetooth(_parent));
 					break;
 			}
 		}

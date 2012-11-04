@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.UserSettings;
+import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
 import com.gnychis.awmon.Interfaces.MainInterface;
 import com.stericson.RootTools.RootTools;
 

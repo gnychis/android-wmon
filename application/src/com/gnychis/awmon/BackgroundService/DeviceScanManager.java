@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Radio;
+import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
 import com.gnychis.awmon.RadioScanners.RadioScanResult;
@@ -69,7 +70,7 @@ public class DeviceScanManager extends Activity {
 		// Put all of the devices in a queue that we will scan devices on
 		_scanQueue = new LinkedList < InternalRadio >();
 		_pendingResults = new LinkedList < Radio.Type >();
-		for (InternalRadio hwDev : _device_handler._hardwareDevices) {
+		for (InternalRadio hwDev : _device_handler._internalRadios) {
 			if(hwDev.isConnected()) { 
 				_scanQueue.add(hwDev);
 				_pendingResults.add(hwDev.deviceType());
