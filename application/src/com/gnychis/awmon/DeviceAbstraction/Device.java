@@ -17,12 +17,12 @@ public class Device implements Parcelable {
 		FIXED,
 	}
 
-	List<WirelessRadio> _radios;	// Keep track of each radio detected
+	List<WirelessInterface> _radios;	// Keep track of each radio detected
 	private String _name;	// A name for the device
 	Mobility _mobile;
 		
 	public Device() {
-		_radios = new ArrayList<WirelessRadio>();
+		_radios = new ArrayList<WirelessInterface>();
 		_name = null;
 		_mobile=Device.Mobility.UNKNOWN;
 	}
@@ -52,8 +52,8 @@ public class Device implements Parcelable {
     };
 
     private Device(Parcel source) {
-    	_radios = new ArrayList<WirelessRadio>();
-    	source.readTypedList(_radios, WirelessRadio.CREATOR);
+    	_radios = new ArrayList<WirelessInterface>();
+    	source.readTypedList(_radios, WirelessInterface.CREATOR);
     	_name = source.readString();
     	_mobile = Device.Mobility.values()[source.readInt()];
     }

@@ -8,24 +8,24 @@ import java.util.Iterator;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Packet;
-import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 public class WifiResultParser extends ScanResultParser {
 	
 	final String TAG = "WifiResultParser";
 	public final boolean VERBOSE = true;
 
-	public <T extends Object> ArrayList<WirelessRadio> returnDevices(ArrayList<T> scanResult) {
+	public <T extends Object> ArrayList<WirelessInterface> returnDevices(ArrayList<T> scanResult) {
 		
 	    // For keeping track of the APs that we have already parsed, by MAC
-	    Hashtable<String,WirelessRadio> devs_in_list = new Hashtable<String,WirelessRadio>();	    
-	    ArrayList<WirelessRadio> devices = new ArrayList<WirelessRadio>();
+	    Hashtable<String,WirelessInterface> devs_in_list = new Hashtable<String,WirelessInterface>();	    
+	    ArrayList<WirelessInterface> devices = new ArrayList<WirelessInterface>();
 	    
 	    // Go through each scan result, and get the access point information
 	    Iterator<T> results = scanResult.iterator();
 	    while(results.hasNext()) {
 	    	Packet pkt = (Packet) results.next();
-	    	WirelessRadio dev = new WirelessRadio(WirelessRadio.Type.Wifi);
+	    	WirelessInterface dev = new WirelessInterface(WirelessInterface.Type.Wifi);
 	    	
 	    	// If it's a bad packet, ignore
 	    	if(pkt.getField("radiotap.flags.badfcs")==null || pkt.getField("radiotap.flags.badfcs").equals("1"))
@@ -63,7 +63,7 @@ public class WifiResultParser extends ScanResultParser {
 	    		devs_in_list.put(dev._MAC, dev);  // mark that we've seen it
 	    		devices.add(dev);
 	    	} else {  // we already have it, but we can add multiple RSSI readings
-	    		WirelessRadio tdev = devs_in_list.get(dev._MAC);
+	    		WirelessInterface tdev = devs_in_list.get(dev._MAC);
 	    		if(rssi_val!=null)
 	    			tdev._RSSI.add(Integer.parseInt(rssi_val));
 	    		if(tdev._BSSID==null && bssid_addr!=null)	// if we have a BSSID
@@ -74,7 +74,7 @@ public class WifiResultParser extends ScanResultParser {
 	    }
 
 	    // Save this scan as our most current scan
-	    Collections.sort(devices, WirelessRadio.compareRSSI);
+	    Collections.sort(devices, WirelessInterface.compareRSSI);
 		
 		return devices;
 	}

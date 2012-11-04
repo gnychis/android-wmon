@@ -18,7 +18,7 @@ import android.util.Log;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUI.MainInterface;
 import com.gnychis.awmon.GUI.MainInterface.ThreadMessages;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
@@ -56,7 +56,7 @@ public class WifiRadioScanner extends RadioScanner {
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	
 	public WifiRadioScanner() {
-		super(WirelessRadio.Type.Wifi);
+		super(WirelessInterface.Type.Wifi);
 		// If we are dumping all of our packets for debugging...
 		if(PCAP_DUMP) {
 			Log.d(TAG, "Trying to open pcap dump file");
@@ -175,7 +175,7 @@ public class WifiRadioScanner extends RadioScanner {
 	
 	// The entire meat of the thread, pulls packets off the interface and dissects them
 	@Override
-	protected ArrayList<WirelessRadio> doInBackground( InternalRadio ... params )
+	protected ArrayList<WirelessInterface> doInBackground( InternalRadio ... params )
 	{
 		debugOut("Starting the Wifi scan thread");
 		_hw_device = params[0];

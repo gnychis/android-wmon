@@ -10,7 +10,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.BackgroundService.BackgroundService;
-import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 public class ARP extends NameResolver {
 
@@ -18,10 +18,10 @@ public class ARP extends NameResolver {
 	public static final boolean VERBOSE = true;
 	
 	public ARP(NameResolutionManager nrm) {
-		super(nrm, Arrays.asList(WirelessRadio.Type.Wifi));
+		super(nrm, Arrays.asList(WirelessInterface.Type.Wifi));
 	}
 	
-	public ArrayList<WirelessRadio> resolveSupportedRadios(ArrayList<WirelessRadio> supportedRadios) {
+	public ArrayList<WirelessInterface> resolveSupportedRadios(ArrayList<WirelessInterface> supportedRadios) {
 		
 		ArrayList<String> arpRaw = BackgroundService.runCommand("arp_scan --interface=wlan0 -l -q");
 		Map<String,String> arpResults = new HashMap<String,String>();
@@ -31,7 +31,7 @@ public class ARP extends NameResolver {
 			arpResults.put(arpResponse.split("\t")[1].toLowerCase(), arpResponse.split("\t")[0]);
 		}
 		
-		for(WirelessRadio radio : supportedRadios) {
+		for(WirelessInterface radio : supportedRadios) {
 			String IP = arpResults.get(radio._MAC.toLowerCase());	// Will return an IP or null
 			debugOut("Checking ARP responses for " + radio._MAC.toLowerCase() + " .... (" + IP + ")");
 			if(IP != null) {

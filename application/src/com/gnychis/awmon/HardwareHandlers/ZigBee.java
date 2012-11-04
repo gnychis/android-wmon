@@ -13,7 +13,7 @@ import android.util.Log;
 
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.USBSerial;
-import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUI.MainInterface;
 import com.stericson.RootTools.RootTools;
 
@@ -32,7 +32,7 @@ public class ZigBee extends InternalRadio {
 	public boolean _device_connected;
 	
 	public ZigBee(Context c) {
-		super(WirelessRadio.Type.ZigBee);
+		super(WirelessInterface.Type.ZigBee);
 		_parent = c;
 		Log.d(TAG, "Initializing ZigBee class...");
 		_parent.registerReceiver(usbUpdate, new IntentFilter(USBMon.USBMON_DEVICELIST));

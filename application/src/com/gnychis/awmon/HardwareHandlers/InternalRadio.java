@@ -4,7 +4,7 @@ import java.util.concurrent.Semaphore;
 
 import android.content.Context;
 
-import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.RadioScanners.BluetoothRadioScanner;
 import com.gnychis.awmon.RadioScanners.RadioScanner;
 import com.gnychis.awmon.RadioScanners.WifiRadioScanner;
@@ -15,7 +15,7 @@ abstract public class InternalRadio {
 	public Context _parent;
 	public RadioScanner _device_scanner;
 	
-	WirelessRadio.Type _type;
+	WirelessInterface.Type _type;
 	
 	State _state;
 	Semaphore _state_lock;
@@ -46,13 +46,13 @@ abstract public class InternalRadio {
 		return true;
 	}
 	
-	public InternalRadio(WirelessRadio.Type type) {
+	public InternalRadio(WirelessInterface.Type type) {
 		_type = type;
 		_state_lock = new Semaphore(1,true);
 		_state = State.IDLE;
 	}
 	
-	public WirelessRadio.Type deviceType() { return _type; }
+	public WirelessInterface.Type deviceType() { return _type; }
 	public InternalRadio.State getState() {
 		return _state;
 	}

@@ -13,7 +13,7 @@ import android.util.Log;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
+import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUI.MainInterface;
 import com.gnychis.awmon.RadioScanners.WifiRadioScanner;
 
@@ -52,7 +52,7 @@ public class Wifi extends InternalRadio {
 	String _rxpackets_loc;
 	
 	public Wifi(Context c) {
-		super(WirelessRadio.Type.Wifi);
+		super(WirelessInterface.Type.Wifi);
 		_parent = c;
 		_settings = new UserSettings(_parent);
 		

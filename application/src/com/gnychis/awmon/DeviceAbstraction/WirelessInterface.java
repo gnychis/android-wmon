@@ -8,7 +8,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 // A radio is a physical radio that exists in a device.  
-public class WirelessRadio implements Parcelable {
+public class WirelessInterface implements Parcelable {
 	
 	public enum Type {		// Possible types of radios that we support
 		Wifi,
@@ -19,13 +19,13 @@ public class WirelessRadio implements Parcelable {
 	public ArrayList<Integer> _RSSI;		// The RSSI of the device at the phone
 	public String _MAC;						// The MAC address of the device
 	public int _frequency;					// The frequency it operates on
-	public WirelessRadio.Type _type;				// The type of device
+	public WirelessInterface.Type _type;				// The type of device
 	public String _SSID;					// If the device belongs to a SSID (e.g., "The Smith's Wifi")
 	public String _BSSID;					// The BSSID (MAC) of the coordinator
 	public String _IP;						// The IP address associated to the radio
 	public String _ouiName;					// The associated manufacturer OUI name
 	
-	public WirelessRadio(WirelessRadio.Type type) {
+	public WirelessInterface(WirelessInterface.Type type) {
 		_RSSI = new ArrayList<Integer>();
 		_MAC=null;
 		_frequency = -1;
@@ -51,9 +51,9 @@ public class WirelessRadio implements Parcelable {
 	
 	  static public Comparator<Object> compareRSSI = new Comparator<Object>() {
 		public int compare(Object arg0, Object arg1) {
-			if(((WirelessRadio)arg0).averageRSSI() < ((WirelessRadio)arg1).averageRSSI())
+			if(((WirelessInterface)arg0).averageRSSI() < ((WirelessInterface)arg1).averageRSSI())
 				return 1;
-			else if( ((WirelessRadio)arg0).averageRSSI() > ((WirelessRadio)arg1).averageRSSI())
+			else if( ((WirelessInterface)arg0).averageRSSI() > ((WirelessInterface)arg1).averageRSSI())
 				return -1;
 			else
 				return 0;
@@ -79,22 +79,22 @@ public class WirelessRadio implements Parcelable {
 	    	dest.writeString(_ouiName);
 	    }
 
-	    public static final Parcelable.Creator<WirelessRadio> CREATOR = new Parcelable.Creator<WirelessRadio>() {
-	    	public WirelessRadio createFromParcel(Parcel in) {
-	    		return new WirelessRadio(in);
+	    public static final Parcelable.Creator<WirelessInterface> CREATOR = new Parcelable.Creator<WirelessInterface>() {
+	    	public WirelessInterface createFromParcel(Parcel in) {
+	    		return new WirelessInterface(in);
 	    	}
 
-			public WirelessRadio[] newArray(int size) {
-				return new WirelessRadio[size];
+			public WirelessInterface[] newArray(int size) {
+				return new WirelessInterface[size];
 			}
 	    };
 
 	    @SuppressWarnings("unchecked")
-	    private WirelessRadio(Parcel source) {
+	    private WirelessInterface(Parcel source) {
 	    	_RSSI = (ArrayList<Integer>) source.readSerializable();
 	    	_MAC = source.readString();
 	    	_frequency = source.readInt();
-	        _type = WirelessRadio.Type.values()[source.readInt()];
+	        _type = WirelessInterface.Type.values()[source.readInt()];
 	        _SSID = source.readString();
 	        _BSSID = source.readString();
 	        _IP = source.readString();
