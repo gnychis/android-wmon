@@ -14,7 +14,7 @@ import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
-import com.gnychis.awmon.Interfaces.MainInterface;
+import com.gnychis.awmon.GUI.MainInterface;
 import com.gnychis.awmon.RadioScanners.WifiRadioScanner;
 
 /* 

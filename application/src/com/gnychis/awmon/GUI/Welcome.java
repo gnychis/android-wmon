@@ -1,4 +1,4 @@
-package com.gnychis.awmon.Interfaces;
+package com.gnychis.awmon.GUI;
 
 import java.io.BufferedReader;
 import java.io.IOException;

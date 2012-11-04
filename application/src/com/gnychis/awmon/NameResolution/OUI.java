@@ -12,7 +12,7 @@ import java.util.Map;
 import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
-import com.gnychis.awmon.Interfaces.MainInterface;
+import com.gnychis.awmon.GUI.MainInterface;
 
 public class OUI extends NameResolver {
 	

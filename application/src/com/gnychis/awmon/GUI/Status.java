@@ -1,4 +1,4 @@
-package com.gnychis.awmon.Interfaces;
+package com.gnychis.awmon.GUI;
 
 import java.util.ArrayList;
 

@@ -12,9 +12,9 @@ import android.util.Log;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBSerial;
 import com.gnychis.awmon.DeviceAbstraction.WirelessRadio;
+import com.gnychis.awmon.GUI.MainInterface;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.HardwareHandlers.ZigBee;
-import com.gnychis.awmon.Interfaces.MainInterface;
 import com.stericson.RootTools.RootTools;
 
 public class ZigBeeRadioScanner extends RadioScanner {
