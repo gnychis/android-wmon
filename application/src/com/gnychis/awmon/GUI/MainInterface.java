@@ -239,7 +239,7 @@ public class MainInterface extends Activity implements OnClickListener {
         	ArrayList<WirelessInterface> deviceScanResult = (ArrayList<WirelessInterface>) intent.getExtras().get("result");
         	for(WirelessInterface dev : deviceScanResult) {
         		Log.d(TAG, "Got a device: " + dev._MAC 
-        				   + " (type: " + dev._type.toString() + ") " 
+        				   + " (type: " + dev._radioType.toString() + ") " 
         				   + " - Freq: " + dev._frequency
         				   + " - BSSID: " + dev._BSSID
         				   + " - SSID: " + dev._SSID

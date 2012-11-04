@@ -27,7 +27,7 @@ abstract public class NameResolver {
 		ArrayList<WirelessInterface> merged = new ArrayList<WirelessInterface>();
 		
 		for(WirelessInterface radio : radios) {
-			if(_supportedRadios.contains(radio._type))
+			if(_supportedRadios.contains(radio._radioType))
 				supported.add(radio);
 			else
 				unsupported.add(radio);

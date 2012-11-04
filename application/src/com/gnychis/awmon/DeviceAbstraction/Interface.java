@@ -1,7 +1,5 @@
 package com.gnychis.awmon.DeviceAbstraction;
 
-import java.util.ArrayList;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -10,6 +8,18 @@ public class Interface implements Parcelable {
 	public enum Type {
 		WIRELESS,
 		WIRED,
+	}
+	
+	Interface.Type _interfaceType;				// Wired or wireless? Has to be one or the other.
+	public String _MAC;							// The MAC address of the interface, or some address.
+	public String _IP;							// The IP address associated to the interface (null if none)
+	public String _ouiName;						// The associated manufacturer OUI name (null if none)
+
+	public Interface(Interface.Type t) {
+		_interfaceType=t;
+		_MAC=null;
+		_IP=null;
+		_ouiName=null;
 	}
 
 	// ********************************************************************* //
@@ -21,7 +31,10 @@ public class Interface implements Parcelable {
 	}
 
 	public void writeToParcel(Parcel dest, int parcelableFlags) {
-
+		dest.writeInt(_interfaceType.ordinal());
+		dest.writeString(_MAC);
+    	dest.writeString(_IP);
+    	dest.writeString(_ouiName);
 	}
 
 	public static final Parcelable.Creator<Interface> CREATOR = new Parcelable.Creator<Interface>() {
@@ -34,9 +47,11 @@ public class Interface implements Parcelable {
 		}
 	};
 
-	@SuppressWarnings("unchecked")
 	private Interface(Parcel source) {
-
+		_interfaceType = Interface.Type.values()[source.readInt()];
+		_MAC = source.readString();
+        _IP = source.readString();
+        _ouiName = source.readString();
 	}
 
 }
