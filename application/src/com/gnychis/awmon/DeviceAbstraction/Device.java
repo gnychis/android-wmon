@@ -52,7 +52,7 @@ public class Device implements Parcelable {
     };
 
     private Device(Parcel source) {
-    	_radios = new ArrayList<WirelessInterface>();
+    	super();
     	source.readTypedList(_radios, WirelessInterface.CREATOR);
     	_name = source.readString();
     	_mobile = Device.Mobility.values()[source.readInt()];

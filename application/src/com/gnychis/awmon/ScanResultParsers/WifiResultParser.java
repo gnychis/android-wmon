@@ -18,9 +18,11 @@ public class WifiResultParser extends ScanResultParser {
 
 	public <T extends Object> ArrayList<Interface> returnInterfaces(ArrayList<T> scanResult) {
 		
-	    // For keeping track of the APs that we have already parsed, by MAC
-	    Hashtable<String,WirelessInterface> devs_in_list = new Hashtable<String,WirelessInterface>();	    
-	    ArrayList<Interface> devices = new ArrayList<Interface>();
+	    // We keep a hash of strings (a MAC address) that will resolve to an interface to see if we
+		// already have an interface detected.
+	    Hashtable<String,WirelessInterface> devs_in_list = new Hashtable<String,WirelessInterface>();  
+	    Hashtable<String,Boolean> devs_confirmed_wireless = new Hashtable<String,Boolean>();
+	    ArrayList<WirelessInterface> devices = new ArrayList<WirelessInterface>();
 	    
 	    // Go through each scan result, and get the access point information
 	    Iterator<T> results = scanResult.iterator();
@@ -35,9 +37,19 @@ public class WifiResultParser extends ScanResultParser {
 	    	// Pull some information from the packet
 	    	String transmitter_addr = pkt.getField("wlan.ta");
 	    	String source_addr = pkt.getField("wlan.sa");
+	    	String receiver_addr = pkt.getField("wlan.ra");
 	    	String bssid_addr = pkt.getField("wlan.bssid");
 	    	String rssi_val = pkt.getField("radiotap.dbm_antsignal");
 	    	String ssid_val = pkt.getField("wlan_mgt.ssid");
+	    	
+	    	// Devices that are confirmed wireless are only those who have sent an 802.11 management
+	    	// frame, or received one (including ACKs).
+	    	if(transmitter_addr != null)
+	    		devs_confirmed_wireless.put(transmitter_addr, true);
+	    	if(receiver_addr != null)
+	    		devs_confirmed_wireless.put(receiver_addr, true);
+	    	if(pkt.getField("wlan_mgt")!=null)
+	    		devs_confirmed_wireless.put(source_addr,true);
 	    	
 	    	// The transmitter address will either be the wlan.sa or wlan.ta.  If
 	    	// both are null, let's just skip this packet
@@ -74,10 +86,10 @@ public class WifiResultParser extends ScanResultParser {
 	    	}
 	    }
 
-	    // Save this scan as our most current scan
-	    Collections.sort(devices, WirelessInterface.compareRSSI);
+	    //
+	    List<Interface> allInterfaces = new ArrayList<Interface>();
 		
-		return devices;
+		return allInterfaces;
 	}
 	
 	private void debugOut(String msg) {

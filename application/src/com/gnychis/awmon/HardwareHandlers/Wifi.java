@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.BackgroundService.BackgroundService;
+import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
@@ -78,6 +79,49 @@ public class Wifi extends InternalRadio {
         	}
         }
     };  
+    
+    // The purpose of this function is to take an 802.11 packet and determine who
+    // the transmitter of the packet was.  This includes inspecting the DS status
+    // and allows us to associate the RSSI of a packet with who actually sent it.
+    // The order of these heuristics matter, don't re-order without understanding.
+    public String getTransmitterAddress(Packet p) {
+    	
+    	if(p==null)
+    		return null;
+    	
+    	String transmitter_addr = p.getField("wlan.ta");
+    	String receiver_addr = p.getField("wlan.ra");
+    	String wlan_sa = p.getField("wlan.sa");
+    	String wlan_bssid = p.getField("wlan.bssid");
+    	String ds_status = p.getField("wlan.fc.ds");
+    	
+    	// If the packet has a receiver address but no transmitter address, it is an
+    	// ACK or a CTS usually, and without some form of logic graph (e.g., JigSaw)
+    	// we don't determine who the transmitter was.
+    	if(receiver_addr!=null && transmitter_addr==null)
+    		return null;
+
+    	// The first heuristic is if there is a wlan.ta, a true transmitter address.
+    	if(transmitter_addr!=null)
+    		return transmitter_addr;
+    	
+    	// If the DS status is "00" (i.e., To DS: 0 and From DS: 0), then it is typically a mangement
+    	// frame and the source address is definitely the transmitter.
+    	if(ds_status=="00")
+    		return wlan_sa;
+    	
+    	// If the DS status is "01" (i.e., To DS: 1 and From DS: 0), then it means it was a frame from
+    	// a station (i.e., a true wireless client) which is the source.
+    	if(ds_status=="01")
+    		return wlan_sa;
+    	
+    	// If the DS status is "10" (i.e., To DS: 0 and From DS: 1), the AP is relaying
+    	// the packet, so the bssid is the source transmitter.
+    	if(ds_status=="10")
+    		return wlan_bssid;
+
+    	return null;  // we have no clue
+    }
     
 
 	// When a wifi device is connected, spawn a thread which
