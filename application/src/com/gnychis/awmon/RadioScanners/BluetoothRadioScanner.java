@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 
@@ -20,7 +21,7 @@ public class BluetoothRadioScanner extends RadioScanner {
 	public BluetoothAdapter _bluetooth;
 	
 	boolean _bt_scan_complete;
-	ArrayList<WirelessInterface> _scanResult;
+	ArrayList<Interface> _scanResult;
 	
 	public BluetoothRadioScanner() {
 		super(WirelessInterface.Type.Bluetooth);
@@ -28,7 +29,7 @@ public class BluetoothRadioScanner extends RadioScanner {
 	}
 	
 	@Override
-	protected ArrayList<WirelessInterface> doInBackground( InternalRadio ... params )
+	protected ArrayList<Interface> doInBackground( InternalRadio ... params )
 	{
 		Log.d(TAG, "Running a Bluetooth device scan");
 		_hw_device = params[0];
@@ -39,14 +40,14 @@ public class BluetoothRadioScanner extends RadioScanner {
 		_hw_device._parent.registerReceiver(bluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		_bluetooth.startDiscovery();
 		
-		_scanResult = new ArrayList<WirelessInterface>();
+		_scanResult = new ArrayList<Interface>();
 		
 		while(!_bt_scan_complete) 
 			try { Thread.sleep(100); } catch(Exception e) {}
 		
 		_hw_device._parent.unregisterReceiver(bluetoothReceiver);
 			
-		return _result_parser.returnDevices(_scanResult);
+		return _result_parser.returnInterfaces(_scanResult);
 	}
 	
     // This receives updates when the phone either enters the home or leaves the home

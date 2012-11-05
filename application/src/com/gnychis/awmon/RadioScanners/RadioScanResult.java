@@ -5,18 +5,19 @@ import java.util.ArrayList;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 // The purpose of this class is to make a type/class that is easily passable through
 // intents around the threads.
 public class RadioScanResult implements Parcelable {
 	public WirelessInterface.Type hwType;
-	public ArrayList<WirelessInterface> devices;
+	public ArrayList<Interface> devices;
 	
-    public RadioScanResult(WirelessInterface.Type hwt, ArrayList<WirelessInterface> devs) {
-    	devices = new ArrayList<WirelessInterface>();
+    public RadioScanResult(WirelessInterface.Type hwt, ArrayList<Interface> interfaces) {
+    	devices = new ArrayList<Interface>();
     	hwType = hwt;
-    	devices = devs;
+    	devices = interfaces;
     }
 
     // ********************************************************************* //
@@ -43,7 +44,7 @@ public class RadioScanResult implements Parcelable {
 
     private RadioScanResult(Parcel source) {
         hwType = WirelessInterface.Type.values()[source.readInt()];
-        devices = new ArrayList<WirelessInterface>();
-        source.readTypedList(devices, WirelessInterface.CREATOR);
+        devices = new ArrayList<Interface>();
+        source.readTypedList(devices, Interface.CREATOR);
     }
 }

@@ -18,6 +18,7 @@ import android.util.Log;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.UserSettings;
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUI.MainInterface;
 import com.gnychis.awmon.GUI.MainInterface.ThreadMessages;
@@ -175,7 +176,7 @@ public class WifiRadioScanner extends RadioScanner {
 	
 	// The entire meat of the thread, pulls packets off the interface and dissects them
 	@Override
-	protected ArrayList<WirelessInterface> doInBackground( InternalRadio ... params )
+	protected ArrayList<Interface> doInBackground( InternalRadio ... params )
 	{
 		debugOut("Starting the Wifi scan thread");
 		_hw_device = params[0];
@@ -223,7 +224,7 @@ public class WifiRadioScanner extends RadioScanner {
 		}
 		debugOut("Finished with scan thread, exiting now");
 		closeDev();
-		return _result_parser.returnDevices(scanResult);
+		return _result_parser.returnInterfaces(scanResult);
 	}
 	
 	private void debugOut(String msg) {

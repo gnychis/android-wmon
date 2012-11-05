@@ -9,7 +9,7 @@ import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 public class BluetoothResultParser extends ScanResultParser {
 
-	public <T extends Object> ArrayList<Interface> returnDevices(ArrayList<T> scanResult) {
+	public <T extends Object> ArrayList<Interface> returnInterfaces(ArrayList<T> scanResult) {
 		ArrayList<Interface> devices = new ArrayList<Interface>();
 		Hashtable<String,WirelessInterface> devs_in_list = new Hashtable<String,WirelessInterface>();	  
 		

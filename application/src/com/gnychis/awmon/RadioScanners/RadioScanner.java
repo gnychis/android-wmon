@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.content.Intent;
 import android.os.AsyncTask;
 
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.ScanResultParsers.BluetoothResultParser;
@@ -15,7 +16,7 @@ import com.gnychis.awmon.ScanResultParsers.ZigBeeResultParser;
 // The whole purpose of this abstract class is that for every network device (e.g., 802.11 radio), 
 // you should have a device scanner scanner for it.  This is a thread which can be spawned which
 // will scan all bands for devices.  
-abstract public class RadioScanner extends AsyncTask<InternalRadio, Integer, ArrayList<WirelessInterface> > {
+abstract public class RadioScanner extends AsyncTask<InternalRadio, Integer, ArrayList<Interface> > {
 
 	InternalRadio _hw_device;
 	ScanResultParser _result_parser;
@@ -36,7 +37,7 @@ abstract public class RadioScanner extends AsyncTask<InternalRadio, Integer, Arr
 	}
 	
     @Override
-    protected void onPostExecute(ArrayList<WirelessInterface> devices) {    		
+    protected void onPostExecute(ArrayList<Interface> devices) {    		
 		_hw_device.stateChange(InternalRadio.State.IDLE);		// change the state to IDLE
 		
 		/* while(_scan_thread.getStatus()!=AsyncTask.Status.FINISHED)

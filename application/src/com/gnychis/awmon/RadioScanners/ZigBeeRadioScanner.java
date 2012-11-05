@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBSerial;
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUI.MainInterface;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
@@ -66,7 +67,7 @@ public class ZigBeeRadioScanner extends RadioScanner {
 	
 	// The entire meat of the thread, pulls packets off the interface and dissects them
 	@Override
-	protected ArrayList<WirelessInterface> doInBackground( InternalRadio ... params )
+	protected ArrayList<Interface> doInBackground( InternalRadio ... params )
 	{
 		_hw_device = params[0];
 		_comm_lock = new Semaphore(1,true);
@@ -129,7 +130,7 @@ public class ZigBeeRadioScanner extends RadioScanner {
 		if(!_dev.closePort())
 			MainInterface.sendToastRequest(_hw_device._parent, "ZigBee device failed while scanning");
 		
-		return _result_parser.returnDevices(scanResult);
+		return _result_parser.returnInterfaces(scanResult);
 	}
 	
 	// First, acquire the lock to communicate with the ZigBee device,

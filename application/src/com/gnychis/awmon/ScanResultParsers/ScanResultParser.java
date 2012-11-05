@@ -8,6 +8,6 @@ import com.gnychis.awmon.DeviceAbstraction.Interface;
 // wireless or wired interfaces in the environment.
 abstract public class ScanResultParser {
 
-	abstract public <T extends Object> ArrayList<Interface> returnDevices(ArrayList<T> scanResult);
+	abstract public <T extends Object> ArrayList<Interface> returnInterfaces(ArrayList<T> scanResult);
 	
 }

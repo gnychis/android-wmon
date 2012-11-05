@@ -16,7 +16,7 @@ public class WifiResultParser extends ScanResultParser {
 	final String TAG = "WifiResultParser";
 	public final boolean VERBOSE = true;
 
-	public <T extends Object> ArrayList<Interface> returnDevices(ArrayList<T> scanResult) {
+	public <T extends Object> ArrayList<Interface> returnInterfaces(ArrayList<T> scanResult) {
 		
 	    // For keeping track of the APs that we have already parsed, by MAC
 	    Hashtable<String,WirelessInterface> devs_in_list = new Hashtable<String,WirelessInterface>();	    
