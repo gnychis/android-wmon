@@ -4,10 +4,17 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class WiredInterface extends Interface implements Parcelable {
-
-	public WiredInterface() {
-		super(Interface.Type.WIRED);
+	
+	@Override
+	public Interface.Type getInterfaceType() { return Interface.Type.WIRED; }
+	
+	// Some variables up in here.
+	
+	public void initVars() {
 	}
+
+	public WiredInterface() { super(); initVars(); }
+	public WiredInterface(Interface i) { super(i); initVars(); }
 
 	// ********************************************************************* //
 	// This code is to make this class parcelable and needs to be updated if
@@ -33,6 +40,6 @@ public class WiredInterface extends Interface implements Parcelable {
 
 	//@SuppressWarnings("unchecked")
 	private WiredInterface(Parcel source) {
-		super(Interface.Type.WIRED);
+		super();
 	}
 }

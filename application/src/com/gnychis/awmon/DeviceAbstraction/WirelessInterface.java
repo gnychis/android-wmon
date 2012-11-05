@@ -9,6 +9,9 @@ import android.os.Parcelable;
 
 // A radio is a physical radio that exists in a device.  
 public class WirelessInterface extends Interface implements Parcelable {
+	
+	@Override
+	public Interface.Type getInterfaceType() { return Interface.Type.WIRELESS; }
 
 	public enum Type {		// Possible types of radios that we support
 		Wifi,
@@ -22,8 +25,10 @@ public class WirelessInterface extends Interface implements Parcelable {
 	public String _SSID;						// If the device belongs to a SSID (e.g., "The Smith's Wifi")
 	public String _BSSID;						// The BSSID (MAC) of the coordinator
 
-	public WirelessInterface(WirelessInterface.Type radioType) {
-		super(Interface.Type.WIRELESS);
+	public WirelessInterface(WirelessInterface.Type radioType) { super(); initVars(radioType); }
+	public WirelessInterface(Interface i, WirelessInterface.Type radioType) { super(i); initVars(radioType); }
+	
+	public void initVars(WirelessInterface.Type radioType) {
 		_RSSI = new ArrayList<Integer>();
 		_frequency = -1;
 		_radioType=radioType;
@@ -83,7 +88,7 @@ public class WirelessInterface extends Interface implements Parcelable {
 
 	@SuppressWarnings("unchecked")
 	private WirelessInterface(Parcel source) {
-		super(Interface.Type.WIRELESS);
+		super();
 		_RSSI = (ArrayList<Integer>) source.readSerializable();
 		_frequency = source.readInt();
 		_radioType = WirelessInterface.Type.values()[source.readInt()];
