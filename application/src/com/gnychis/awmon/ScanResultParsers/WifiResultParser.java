@@ -8,6 +8,7 @@ import java.util.Iterator;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Packet;
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 public class WifiResultParser extends ScanResultParser {
@@ -15,11 +16,11 @@ public class WifiResultParser extends ScanResultParser {
 	final String TAG = "WifiResultParser";
 	public final boolean VERBOSE = true;
 
-	public <T extends Object> ArrayList<WirelessInterface> returnDevices(ArrayList<T> scanResult) {
+	public <T extends Object> ArrayList<Interface> returnDevices(ArrayList<T> scanResult) {
 		
 	    // For keeping track of the APs that we have already parsed, by MAC
 	    Hashtable<String,WirelessInterface> devs_in_list = new Hashtable<String,WirelessInterface>();	    
-	    ArrayList<WirelessInterface> devices = new ArrayList<WirelessInterface>();
+	    ArrayList<Interface> devices = new ArrayList<Interface>();
 	    
 	    // Go through each scan result, and get the access point information
 	    Iterator<T> results = scanResult.iterator();
