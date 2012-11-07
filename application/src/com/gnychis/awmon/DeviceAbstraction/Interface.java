@@ -14,6 +14,7 @@ public class Interface implements Parcelable {
 	public String _MAC;							// The MAC address of the interface, or some address.
 	public String _IP;							// The IP address associated to the interface (null if none)
 	public String _ouiName;						// The associated manufacturer OUI name (null if none)
+	public String _ifaceName;					// A name associated with the specific interface
 
 	public Interface() {
 		_MAC=null;

@@ -20,6 +20,7 @@ netcfg $iface_name down
 # If the monitoring interface does not exist, let's create it
 if [ $moni0_exist -eq 0 ]; then
   phy_iface=$(/data/data/$app_name/files/iw list | head -n 1 | awk '{print $2}')
+  /data/data/$app_name/files/iw dev $iface_name del
   /data/data/$app_name/files/iw phy $phy_iface interface add moni0 type monitor
 fi
 
