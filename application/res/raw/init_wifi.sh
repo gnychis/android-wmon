@@ -22,3 +22,6 @@ if [ $moni0_exist -eq 0 ]; then
   phy_iface=$(/data/data/$app_name/files/iw list | head -n 1 | awk '{print $2}')
   /data/data/$app_name/files/iw phy $phy_iface interface add moni0 type monitor
 fi
+
+netcfg $iface_name down
+netcfg moni0 down
