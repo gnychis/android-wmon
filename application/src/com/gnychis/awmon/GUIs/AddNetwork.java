@@ -1,4 +1,4 @@
-package com.gnychis.awmon.GUI;
+package com.gnychis.awmon.GUIs;
 
 import java.util.ArrayList;
 import java.util.HashMap;

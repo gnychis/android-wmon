@@ -1,12 +1,7 @@
 package com.gnychis.awmon.DeviceAbstraction;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import com.gnychis.awmon.Core.Packet;
 
 public class Interface implements Parcelable {
 	
@@ -19,20 +14,17 @@ public class Interface implements Parcelable {
 	public String _MAC;							// The MAC address of the interface, or some address.
 	public String _IP;							// The IP address associated to the interface (null if none)
 	public String _ouiName;						// The associated manufacturer OUI name (null if none)
-	List<Packet> _packets;						// Any packets that we captured from the interface
 
 	public Interface() {
 		_MAC=null;
 		_IP=null;
 		_ouiName=null;
-		_packets = new ArrayList<Packet>();
 	}
 	
 	public Interface(Interface i) {
 		_MAC=i._MAC;
 		_IP=i._IP;
 		_ouiName=i._ouiName;
-		_packets=i._packets;
 	}
 	
 	public Interface.Type getInterfaceType() { return Interface.Type.UNKNOWN; }
@@ -49,7 +41,6 @@ public class Interface implements Parcelable {
 		dest.writeString(_MAC);
     	dest.writeString(_IP);
     	dest.writeString(_ouiName);
-    	dest.writeTypedList(_packets);
 	}
 
 	public static final Parcelable.Creator<Interface> CREATOR = new Parcelable.Creator<Interface>() {
@@ -63,11 +54,9 @@ public class Interface implements Parcelable {
 	};
 
 	private Interface(Parcel source) {
-		super();
 		_MAC = source.readString();
         _IP = source.readString();
         _ouiName = source.readString();
-        source.readTypedList(_packets, Packet.CREATOR);
 	}
 
 }

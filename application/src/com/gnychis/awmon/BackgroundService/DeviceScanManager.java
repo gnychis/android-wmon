@@ -113,8 +113,8 @@ public class DeviceScanManager extends Activity {
         public void onReceive(Context context, Intent intent) {
         	RadioScanResult scanResult = (RadioScanResult) intent.getExtras().get("result");
         	WirelessInterface.Type hwType = (WirelessInterface.Type) intent.getExtras().get("hwType"); 
-        	for(WirelessInterface dev : scanResult.devices)
-        		_deviceScanResults.add(dev);
+        	//for(WirelessInterface dev : scanResult.devices)  // FIXME
+        	//	_deviceScanResults.add(dev);
         	
         	if(!OVERLAP_SCANS)				// If we are not overlapping scans, we do it when we get
         		triggerNextDeviceScan();	// results of the previous scan

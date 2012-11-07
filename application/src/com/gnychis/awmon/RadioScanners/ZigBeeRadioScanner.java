@@ -13,7 +13,7 @@ import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBSerial;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
-import com.gnychis.awmon.GUI.MainInterface;
+import com.gnychis.awmon.GUIs.MainInterface;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.HardwareHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;

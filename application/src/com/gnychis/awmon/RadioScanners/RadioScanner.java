@@ -37,7 +37,7 @@ abstract public class RadioScanner extends AsyncTask<InternalRadio, Integer, Arr
 	}
 	
     @Override
-    protected void onPostExecute(ArrayList<Interface> devices) {    		
+    protected void onPostExecute(ArrayList<Interface> interfaces) {    		
 		_hw_device.stateChange(InternalRadio.State.IDLE);		// change the state to IDLE
 		
 		/* while(_scan_thread.getStatus()!=AsyncTask.Status.FINISHED)
@@ -48,7 +48,7 @@ abstract public class RadioScanner extends AsyncTask<InternalRadio, Integer, Arr
 		Intent i = new Intent();
 		i.setAction(DEVICE_SCAN_RESULT);
 		i.putExtra("hwType", _hw_device.deviceType());
-		i.putExtra("result", new RadioScanResult(_hw_device.deviceType(), devices));
+		i.putExtra("result", new RadioScanResult(_hw_device.deviceType(), interfaces));
 		_hw_device._parent.sendBroadcast(i);
     }
 }

@@ -1,4 +1,4 @@
-package com.gnychis.awmon.GUI;
+package com.gnychis.awmon.GUIs;
 
 // do a random port number for pcapd
 

@@ -2,6 +2,7 @@ package com.gnychis.awmon.HardwareHandlers;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,7 +16,7 @@ import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
-import com.gnychis.awmon.GUI.MainInterface;
+import com.gnychis.awmon.GUIs.MainInterface;
 import com.gnychis.awmon.RadioScanners.WifiRadioScanner;
 
 /* 
@@ -80,11 +81,39 @@ public class Wifi extends InternalRadio {
         }
     };  
     
+    // The purpose of this function is to take an 802.11 packet and return a list
+    // of all addresses in the packet that are confirmed to be true wireless clients.
+    // It means that the MAC address is guaranteed to be a true wireless client, and
+    // not a client wired to the wireless AP.
+    public static List<String> getWirelessAddresses(Packet p) {
+    	List<String> wirelessAddresses = new ArrayList<String>();
+ 
+    	// First, the true transmitter is definitely a wireless client
+    	if(getTransmitterAddress(p)!=null)
+    		wirelessAddresses.add(getTransmitterAddress(p));
+    	
+    	// Next, the BSSID is always a wireless "client"
+    	String wlan_bssid = p.getField("wlan.bssid");
+    	if(wlan_bssid != null && !wirelessAddresses.contains(wlan_bssid))
+    		wirelessAddresses.add(wlan_bssid);
+    	
+    	// If there was a receiver address (wlan.sa), that is the recipient of an ACK
+    	// or a management frame, so they must also be a wireless client.
+    	String receiver_addr = p.getField("wlan.ra");
+    	if(receiver_addr != null && !wirelessAddresses.contains(receiver_addr))
+    		wirelessAddresses.add(receiver_addr);
+    	
+    	// Note that we don't have to check for (wlan.ta) because if wlan.ta was
+    	// in the packet, getTransmitterAddress() will return it.
+    	
+    	return wirelessAddresses;
+    }
+    
     // The purpose of this function is to take an 802.11 packet and determine who
     // the transmitter of the packet was.  This includes inspecting the DS status
     // and allows us to associate the RSSI of a packet with who actually sent it.
     // The order of these heuristics matter, don't re-order without understanding.
-    public String getTransmitterAddress(Packet p) {
+    public static String getTransmitterAddress(Packet p) {
     	
     	if(p==null)
     		return null;

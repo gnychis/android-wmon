@@ -15,7 +15,6 @@ public class RadioScanResult implements Parcelable {
 	public ArrayList<Interface> devices;
 	
     public RadioScanResult(WirelessInterface.Type hwt, ArrayList<Interface> interfaces) {
-    	devices = new ArrayList<Interface>();
     	hwType = hwt;
     	devices = interfaces;
     }
@@ -28,9 +27,11 @@ public class RadioScanResult implements Parcelable {
         return this.hashCode();
     }
 
+    // You cannot simply use a writeTypedList(devices), because there are different
+    // child classes that interface can be using like WirelessInterface or WiredInterface
     public void writeToParcel(Parcel dest, int parcelableFlags) {
     	dest.writeInt(hwType.ordinal());
-    	dest.writeTypedList(devices);
+    	dest.writeList(devices);
     }
 
     public static final Creator<RadioScanResult> CREATOR = new Creator<RadioScanResult>() {
@@ -45,6 +46,6 @@ public class RadioScanResult implements Parcelable {
     private RadioScanResult(Parcel source) {
         hwType = WirelessInterface.Type.values()[source.readInt()];
         devices = new ArrayList<Interface>();
-        source.readTypedList(devices, Interface.CREATOR);
+        source.readList(devices, this.getClass().getClassLoader());
     }
 }

@@ -4,7 +4,7 @@ import java.util.List;
 
 import android.util.Log;
 
-import com.gnychis.awmon.GUI.MainInterface;
+import com.gnychis.awmon.GUIs.MainInterface;
 import com.stericson.RootTools.RootTools;
 
 public class USBSerial {

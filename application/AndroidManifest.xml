@@ -21,7 +21,7 @@
     <uses-sdk android:targetSdkVersion="10" android:minSdkVersion="10"/>
 
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
-        <activity android:name=".Interfaces.MainInterface"
+        <activity android:name=".GUIs.MainInterface"
             	  android:screenOrientation="portrait"
                   android:label="Android Wireless Monitor: Main Menu">
             <intent-filter>
@@ -38,12 +38,12 @@
 		    </intent-filter>  
 		</receiver>
         
-		<activity android:name="com.gnychis.awmon.Interfaces.Welcome" class=".Welcome" android:label="Welcome, please answer a few questions..." android:screenOrientation="portrait"></activity>
-        <activity android:name="com.gnychis.awmon.Interfaces.ManageNetworks" class=".ManageDevices" android:label="Device Management" android:screenOrientation="portrait"></activity>
-        <activity android:name="com.gnychis.awmon.Interfaces.AddNetwork" class=".AddNetwork" android:label="Add Network" android:screenOrientation="portrait"></activity>
-        <activity android:name="com.gnychis.awmon.Interfaces.GraphWispy" class=".GraphWispy" android:label="Graph Wispy" android:screenOrientation="portrait"></activity>
-        <activity android:name="com.gnychis.awmon.Interfaces.Status" class=".Status" android:label="Application Status" android:screenOrientation="portrait"></activity>
-        <activity android:name="com.gnychis.awmon.Interfaces.Measurements" class=".Measurements" android:label="Developer Measurements" android:screenOrientation="portrait"></activity>
+		<activity android:name="com.gnychis.awmon.GUIs.Welcome" class=".Welcome" android:label="Welcome, please answer a few questions..." android:screenOrientation="portrait"></activity>
+        <activity android:name="com.gnychis.awmon.GUIs.ManageNetworks" class=".ManageDevices" android:label="Device Management" android:screenOrientation="portrait"></activity>
+        <activity android:name="com.gnychis.awmon.GUIs.AddNetwork" class=".AddNetwork" android:label="Add Network" android:screenOrientation="portrait"></activity>
+        <activity android:name="com.gnychis.awmon.GUIs.GraphWispy" class=".GraphWispy" android:label="Graph Wispy" android:screenOrientation="portrait"></activity>
+        <activity android:name="com.gnychis.awmon.GUIs.Status" class=".Status" android:label="Application Status" android:screenOrientation="portrait"></activity>
+        <activity android:name="com.gnychis.awmon.GUIs.Measurements" class=".Measurements" android:label="Developer Measurements" android:screenOrientation="portrait"></activity>
     </application> 
 
 </manifest>
