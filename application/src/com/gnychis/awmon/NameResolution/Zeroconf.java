@@ -91,50 +91,49 @@ public class Zeroconf extends NameResolver {
 		// The application needs to request the multicast lock.  Without it the application will not
 		// receive packets that are not addressed to it.  This should be disabled when the scan is complete.
 		// Otherwise, you will get battery drain.
-	    private void setUp() {
+	    private boolean setUp() {
 	        WifiManager wifi = (WifiManager) _nr_manager._parent.getSystemService(Context.WIFI_SERVICE);
 
 	        WifiInfo wifiinfo = wifi.getConnectionInfo();
 	        int intaddr = wifiinfo.getIpAddress();
 
 	        try {
-		        if (intaddr != 0) { // Only worth doing if there's an actual wifi
-		           // connection
+		        if (intaddr == 0)
+		        	return false;
 	
-		           byte[] byteaddr = new byte[] { (byte) (intaddr & 0xff), (byte) (intaddr >> 8 & 0xff),
-		                    (byte) (intaddr >> 16 & 0xff), (byte) (intaddr >> 24 & 0xff) };
-		           InetAddress addr = InetAddress.getByAddress(byteaddr);
-	
-		           Log.d(TAG, String.format("found intaddr=%d, addr=%s", intaddr, addr.toString()));
-		           // start multicast lock
-		           mLock = wifi.createMulticastLock("TunesRemote lock");
-		           mLock.setReferenceCounted(true);
-		           mLock.acquire();
-		           
-		           _jmdnsListener = new ServiceListener() {
-	
-		                @Override
-		                public void serviceResolved(ServiceEvent ev) {
-		                    debugOut("Service resolved: " + ev.getInfo().getQualifiedName() + " port:" + ev.getInfo().getPort());
-		                }
-	
-		                @Override
-		                public void serviceRemoved(ServiceEvent ev) {
-		                    debugOut("Service removed: " + ev.getName());
-		                }
-	
-		                @Override
-		                public void serviceAdded(ServiceEvent event) {
-		                    // Required to force serviceResolved to be called again (after the first search)
-		                	debugOut("Service added: " + event.getName());
-		                    zeroConf.requestServiceInfo(event.getType(), event.getName(), 1);
-		                }
-		            };
-	
-		           zeroConf = JmDNS.create(addr, "awmon");
-		           for(String service : serviceListeners) 
-		        	   zeroConf.addServiceListener(service, _jmdnsListener);
-		        }
+	           byte[] byteaddr = new byte[] { (byte) (intaddr & 0xff), (byte) (intaddr >> 8 & 0xff),
+	                    (byte) (intaddr >> 16 & 0xff), (byte) (intaddr >> 24 & 0xff) };
+	           InetAddress addr = InetAddress.getByAddress(byteaddr);
+
+	           Log.d(TAG, String.format("found intaddr=%d, addr=%s", intaddr, addr.toString()));
+	           // start multicast lock
+	           mLock = wifi.createMulticastLock("TunesRemote lock");
+	           mLock.setReferenceCounted(true);
+	           mLock.acquire();
+	           
+	           _jmdnsListener = new ServiceListener() {
+
+	                @Override
+	                public void serviceResolved(ServiceEvent ev) {
+	                    debugOut("Service resolved: " + ev.getInfo().getQualifiedName() + " port:" + ev.getInfo().getPort());
+	                }
+
+	                @Override
+	                public void serviceRemoved(ServiceEvent ev) {
+	                    debugOut("Service removed: " + ev.getName());
+	                }
+
+	                @Override
+	                public void serviceAdded(ServiceEvent event) {
+	                    // Required to force serviceResolved to be called again (after the first search)
+	                	debugOut("Service added: " + event.getName());
+	                    zeroConf.requestServiceInfo(event.getType(), event.getName(), 1);
+	                }
+	            };
+
+	           zeroConf = JmDNS.create(addr, "awmon");
+	           for(String service : serviceListeners) 
+	        	   zeroConf.addServiceListener(service, _jmdnsListener);
 	        } catch(Exception e) { Log.e(TAG, "Error" + e); }
 	        
 			// Setup a handler to change the value of _waitingOnResults which blocks progress
@@ -148,19 +147,23 @@ public class Zeroconf extends NameResolver {
 				}
 
 			}, 10000);
+			return true;
 	    }
 	    
 	    
 	    // Give up the multicast lock and teardown, this saves us battery usage.
 	    private void tearDown() {
-	        for(String service : serviceListeners) 
-	        	zeroConf.removeServiceListener(service, _jmdnsListener);
-	        try {
-	        	zeroConf.close();
-	        	zeroConf=null;
-	        } catch(Exception e) { Log.e(TAG, "zeroConf close error: " + e); }
-	        
-	        mLock.release();
+	    	if(zeroConf!=null) {
+		        for(String service : serviceListeners) 
+		        	zeroConf.removeServiceListener(service, _jmdnsListener);
+		        try {
+		        	zeroConf.close();
+		        	zeroConf=null;
+		        } catch(Exception e) { Log.e(TAG, "zeroConf close error: " + e); }
+	    	}
+	    	
+	        if(mLock!=null)
+	        	mLock.release();
 	        mLock=null;
 	    }
 	}

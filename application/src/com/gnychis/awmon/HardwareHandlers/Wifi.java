@@ -43,7 +43,8 @@ public class Wifi extends InternalRadio {
 	public static final int MS_SLEEP_UNTIL_PCAPD = 1500;
 	
 	// A non-CM9 device likely to use wlan0
-	public static String _wlan_iface_name = "moni0";
+	public static String _wlan_iface_name = "wlan1";
+	public static String _moni_iface_name = "moni0";
 	
 	UserSettings _settings;
 	WifiRadioScanner _scan_thread;
@@ -80,79 +81,6 @@ public class Wifi extends InternalRadio {
         	}
         }
     };  
-    
-    // The purpose of this function is to take an 802.11 packet and return a list
-    // of all addresses in the packet that are confirmed to be true wireless clients.
-    // It means that the MAC address is guaranteed to be a true wireless client, and
-    // not a client wired to the wireless AP.
-    public static List<String> getWirelessAddresses(Packet p) {
-    	List<String> wirelessAddresses = new ArrayList<String>();
- 
-    	// First, the true transmitter is definitely a wireless client
-    	if(getTransmitterAddress(p)!=null)
-    		wirelessAddresses.add(getTransmitterAddress(p));
-    	
-    	// Next, the BSSID is always a wireless "client"
-    	String wlan_bssid = p.getField("wlan.bssid");
-    	if(wlan_bssid != null && !wirelessAddresses.contains(wlan_bssid))
-    		wirelessAddresses.add(wlan_bssid);
-    	
-    	// If there was a receiver address (wlan.sa), that is the recipient of an ACK
-    	// or a management frame, so they must also be a wireless client.
-    	String receiver_addr = p.getField("wlan.ra");
-    	if(receiver_addr != null && !wirelessAddresses.contains(receiver_addr))
-    		wirelessAddresses.add(receiver_addr);
-    	
-    	// Note that we don't have to check for (wlan.ta) because if wlan.ta was
-    	// in the packet, getTransmitterAddress() will return it.
-    	
-    	return wirelessAddresses;
-    }
-    
-    // The purpose of this function is to take an 802.11 packet and determine who
-    // the transmitter of the packet was.  This includes inspecting the DS status
-    // and allows us to associate the RSSI of a packet with who actually sent it.
-    // The order of these heuristics matter, don't re-order without understanding.
-    public static String getTransmitterAddress(Packet p) {
-    	
-    	if(p==null)
-    		return null;
-    	
-    	String transmitter_addr = p.getField("wlan.ta");
-    	String receiver_addr = p.getField("wlan.ra");
-    	String wlan_sa = p.getField("wlan.sa");
-    	String wlan_bssid = p.getField("wlan.bssid");
-    	String ds_status = p.getField("wlan.fc.ds");
-    	Log.d("TMP", "DS_STATUS: " + ds_status);
-    	
-    	// If the packet has a receiver address but no transmitter address, it is an
-    	// ACK or a CTS usually, and without some form of logic graph (e.g., JigSaw)
-    	// we don't determine who the transmitter was.
-    	if(receiver_addr!=null && transmitter_addr==null)
-    		return null;
-
-    	// The first heuristic is if there is a wlan.ta, a true transmitter address.
-    	if(transmitter_addr!=null)
-    		return transmitter_addr;
-    	
-    	// If the DS status is "0x00" (i.e., To DS: 0 and From DS: 0), then it is typically a mangement
-    	// frame and the source address is definitely the transmitter.
-    	if(ds_status=="0x00")
-    		return wlan_sa;
-    	
-    	// If the DS status is "0x01" (i.e., To DS: 1 and From DS: 0), then it means it was a frame from
-    	// a station (i.e., a true wireless client) which is the source.
-    	if(ds_status=="0x01")
-    		return wlan_sa;
-    	
-    	// If the DS status is "0x02" (i.e., To DS: 0 and From DS: 1), the AP is relaying
-    	// the packet, so the bssid is the source transmitter.
-    	if(ds_status=="0x02")
-    		return wlan_bssid;
-
-    	return null;  // we have no clue
-    }
-    
 
 	// When a wifi device is connected, spawn a thread which
 	// initializes the hardware
@@ -168,6 +96,16 @@ public class Wifi extends InternalRadio {
 	}
 	
 	public boolean isConnected() { return _device_connected; }
+	
+	@Override
+	public void leavingIdleState() {	
+		BackgroundService.runCommand("netcfg moni0 down && netcfg wlan1 down");
+	}
+	
+	@Override
+	public void enteringIdleState() {	// Save power by bringing interfaces down If our interaction with the hardware is idle
+		BackgroundService.runCommand("netcfg wlan1 up && netcfg moni0 up");
+	}
 	
 	
 	// The purpose of this thread is solely to initialize the Wifi hardware
@@ -282,4 +220,77 @@ public class Wifi extends InternalRadio {
 		BigInteger ret = new BigInteger(newMac, 16);  // 16 specifies hex
 		return ret;
 	}
+	
+    
+    // The purpose of this function is to take an 802.11 packet and return a list
+    // of all addresses in the packet that are confirmed to be true wireless clients.
+    // It means that the MAC address is guaranteed to be a true wireless client, and
+    // not a client wired to the wireless AP.
+    public static List<String> getWirelessAddresses(Packet p) {
+    	List<String> wirelessAddresses = new ArrayList<String>();
+ 
+    	// First, the true transmitter is definitely a wireless client
+    	if(getTransmitterAddress(p)!=null)
+    		wirelessAddresses.add(getTransmitterAddress(p));
+    	
+    	// Next, the BSSID is always a wireless "client"
+    	String wlan_bssid = p.getField("wlan.bssid");
+    	if(wlan_bssid != null && !wirelessAddresses.contains(wlan_bssid))
+    		wirelessAddresses.add(wlan_bssid);
+    	
+    	// If there was a receiver address (wlan.sa), that is the recipient of an ACK
+    	// or a management frame, so they must also be a wireless client.
+    	String receiver_addr = p.getField("wlan.ra");
+    	if(receiver_addr != null && !wirelessAddresses.contains(receiver_addr))
+    		wirelessAddresses.add(receiver_addr);
+    	
+    	// Note that we don't have to check for (wlan.ta) because if wlan.ta was
+    	// in the packet, getTransmitterAddress() will return it.
+    	
+    	return wirelessAddresses;
+    }
+    
+    // The purpose of this function is to take an 802.11 packet and determine who
+    // the transmitter of the packet was.  This includes inspecting the DS status
+    // and allows us to associate the RSSI of a packet with who actually sent it.
+    // The order of these heuristics matter, don't re-order without understanding.
+    public static String getTransmitterAddress(Packet p) {
+    	
+    	if(p==null)
+    		return null;
+    	
+    	String transmitter_addr = p.getField("wlan.ta");
+    	String receiver_addr = p.getField("wlan.ra");
+    	String wlan_sa = p.getField("wlan.sa");
+    	String wlan_bssid = p.getField("wlan.bssid");
+    	String ds_status = p.getField("wlan.fc.ds");
+    	Log.d("TMP", "DS_STATUS: " + ds_status);
+    	
+    	// If the packet has a receiver address but no transmitter address, it is an
+    	// ACK or a CTS usually, and without some form of logic graph (e.g., JigSaw)
+    	// we don't determine who the transmitter was.
+    	if(receiver_addr!=null && transmitter_addr==null)
+    		return null;
+
+    	// The first heuristic is if there is a wlan.ta, a true transmitter address.
+    	if(transmitter_addr!=null)
+    		return transmitter_addr;
+    	
+    	// If the DS status is "0x00" (i.e., To DS: 0 and From DS: 0), then it is typically a mangement
+    	// frame and the source address is definitely the transmitter.
+    	if(ds_status=="0x00")
+    		return wlan_sa;
+    	
+    	// If the DS status is "0x01" (i.e., To DS: 1 and From DS: 0), then it means it was a frame from
+    	// a station (i.e., a true wireless client) which is the source.
+    	if(ds_status=="0x01")
+    		return wlan_sa;
+    	
+    	// If the DS status is "0x02" (i.e., To DS: 0 and From DS: 1), the AP is relaying
+    	// the packet, so the bssid is the source transmitter.
+    	if(ds_status=="0x02")
+    		return wlan_bssid;
+
+    	return null;  // we have no clue
+    }
 }

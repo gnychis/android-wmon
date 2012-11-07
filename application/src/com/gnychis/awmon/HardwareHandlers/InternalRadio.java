@@ -57,6 +57,10 @@ abstract public class InternalRadio {
 		return _state;
 	}
 	
+	// Some methods the child class can override
+	public void leavingIdleState() { }
+	public void enteringIdleState() { }
+	
 	// Attempts to change the current state, will return
 	// the state after the change if successful/failure
 	public boolean stateChange(State s) {
@@ -67,17 +71,19 @@ abstract public class InternalRadio {
 				// Can add logic here to only allow certain state changes
 				// Given a _state... then...
 				switch(_state) {
-				
-				// From the IDLE state, we can go anywhere...
-				case IDLE:
-					_state = s;
-					res = true;
+			
+				case IDLE:	// Given the IDLE state...
+					if(s==State.IDLE) {
+						res=false;  // Going from IDLE to IDLE should be res=false, it's not a real state change.
+					} else {
+						_state = s;	// anywhere else is acceptable though....
+						res = true;
+						leavingIdleState();
+					}
 				break;
 				
-				// We can go to idle, or ignore if we are in a
-				// scan already.
-				case SCANNING:
-					if(s==State.IDLE) {  // cannot go directly to IDLE from SCANNING
+				case SCANNING:	// Given the SCANNING state...
+					if(s==State.IDLE) {
 						_state = s;
 						res = true;
 					} else if(s==State.SCANNING) {  // ignore an attempt to switch in to same state
@@ -89,6 +95,10 @@ abstract public class InternalRadio {
 					res = false;
 				}
 				
+				// If res is true, we had a real state change.  (false if going from same state to same state).
+				if(res && _state==State.IDLE)
+					enteringIdleState();
+								
 			} finally {
 				_state_lock.release();
 			}

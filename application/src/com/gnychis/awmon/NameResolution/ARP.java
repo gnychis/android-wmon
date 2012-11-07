@@ -23,7 +23,7 @@ public class ARP extends NameResolver {
 	
 	public ArrayList<WirelessInterface> resolveSupportedRadios(ArrayList<WirelessInterface> supportedRadios) {
 		
-		ArrayList<String> arpRaw = BackgroundService.runCommand("arp_scan --interface=wlan0 -l -q");
+		ArrayList<String> arpRaw = BackgroundService.runCommand("arp_scan --interface=wlan0 -l -q 2> /dev/null");
 		Map<String,String> arpResults = new HashMap<String,String>();
 		
 		for(String arpResponse : arpRaw) {  // Maps this as Map<MAC,IP>
