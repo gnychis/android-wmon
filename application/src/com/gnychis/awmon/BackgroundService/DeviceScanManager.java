@@ -114,7 +114,7 @@ public class DeviceScanManager extends Activity {
         public void onReceive(Context context, Intent intent) {
         	RadioScanResult scanResult = (RadioScanResult) intent.getExtras().get("result");
         	WirelessInterface.Type hwType = (WirelessInterface.Type) intent.getExtras().get("hwType"); 
-        	for(Interface iface : scanResult.devices) 
+        	for(Interface iface : scanResult._interfaces) 
         		_deviceScanResults.add(iface);
         	
         	if(!OVERLAP_SCANS)				// If we are not overlapping scans, we do it when we get

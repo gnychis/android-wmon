@@ -18,7 +18,7 @@ public class WifiResultParser extends ScanResultParser {
 	
 	WirelessInterface getInterfaceFromMAC(ArrayList<Interface> devices, String MAC) {
 		for(int i=0; i<devices.size(); i++)
-			if(devices.get(i)._MAC==MAC)
+			if(devices.get(i)._MAC.equals(MAC))
 				return (WirelessInterface) devices.get(i);
 		return null;
 	}

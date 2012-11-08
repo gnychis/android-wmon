@@ -12,11 +12,11 @@ import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 // intents around the threads.
 public class RadioScanResult implements Parcelable {
 	public WirelessInterface.Type hwType;
-	public ArrayList<Interface> devices;
+	public ArrayList<Interface> _interfaces;
 	
     public RadioScanResult(WirelessInterface.Type hwt, ArrayList<Interface> interfaces) {
     	hwType = hwt;
-    	devices = interfaces;
+    	_interfaces = interfaces;
     }
 
     // ********************************************************************* //
@@ -31,7 +31,7 @@ public class RadioScanResult implements Parcelable {
     // child classes that interface can be using like WirelessInterface or WiredInterface
     public void writeToParcel(Parcel dest, int parcelableFlags) {
     	dest.writeInt(hwType.ordinal());
-    	dest.writeList(devices);
+    	dest.writeList(_interfaces);
     }
 
     public static final Creator<RadioScanResult> CREATOR = new Creator<RadioScanResult>() {
@@ -45,7 +45,7 @@ public class RadioScanResult implements Parcelable {
 
     private RadioScanResult(Parcel source) {
         hwType = WirelessInterface.Type.values()[source.readInt()];
-        devices = new ArrayList<Interface>();
-        source.readList(devices, this.getClass().getClassLoader());
+        _interfaces = new ArrayList<Interface>();
+        source.readList(_interfaces, this.getClass().getClassLoader());
     }
 }

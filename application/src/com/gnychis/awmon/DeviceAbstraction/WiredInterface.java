@@ -45,7 +45,6 @@ public class WiredInterface extends Interface implements Parcelable {
 
 	//@SuppressWarnings("unchecked")
 	private WiredInterface(Parcel source) {
-		super();
 		_wiredType = WiredInterface.Type.values()[source.readInt()];
 	}
 }

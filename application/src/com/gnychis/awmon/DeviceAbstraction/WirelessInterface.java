@@ -88,7 +88,6 @@ public class WirelessInterface extends Interface implements Parcelable {
 
 	@SuppressWarnings("unchecked")
 	private WirelessInterface(Parcel source) {
-		super();
 		_RSSI = new ArrayList<Integer>();
 		_RSSI = (ArrayList<Integer>) source.readSerializable();
 		_frequency = source.readInt();
