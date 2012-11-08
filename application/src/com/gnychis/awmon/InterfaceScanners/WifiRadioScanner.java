@@ -8,6 +8,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapBpfProgram;
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.nio.JBuffer;
@@ -124,6 +125,24 @@ public class WifiRadioScanner extends RadioScanner {
         _moni0_pcap =  
                 Pcap.openLive(_moni0_dev.getName(), snaplen, flags, timeout, errbuf);
         
+        // We want to filter out all packets that our phone sends/receives.  This is to avoid picking up
+        // our ARP scan requests which generates too much traffic for the phone to parse.
+        // and (not wlan addr1 00:26:bb:74:5f:e5 and not type ctl subtype cts)
+        PcapBpfProgram program = new PcapBpfProgram();  
+        String expression = "not (wlan addr1 a0:0b:ba:e7:89:59 or wlan addr2 a0:0b:ba:e7:89:59 or wlan addr3 a0:0b:ba:e7:89:59 or (wlan addr1 00:26:bb:74:5f:e5 and type ctl subtype cts))";
+        int optimize = 0;         // 0 = false  
+        int netmask = 0xFFFFFFFF; // 255.255.255.255 ... not sure this is actually used
+        
+        if (_moni0_pcap.compile(program, expression, optimize, netmask) != Pcap.OK) {
+        	Log.d(TAG, "Error while compiling filter for capture");
+        	return false;
+        }
+        
+        if (_moni0_pcap.setFilter(program) != Pcap.OK) {  
+        	Log.d(TAG, "Error setting the filter on the capture");
+        	return false;
+        }
+                
         if (_moni0_pcap == null) {  
             debugOut("Error while opening device for capture: "  
                 + errbuf.toString());  

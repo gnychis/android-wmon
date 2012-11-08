@@ -99,12 +99,12 @@ public class Wifi extends InternalRadio {
 	
 	@Override
 	public void leavingIdleState() {	
-		BackgroundService.runCommand("netcfg moni0 down && netcfg wlan1 down");
+		BackgroundService.runCommand("netcfg moni0 up && netcfg wlan1 up");
 	}
 	
 	@Override
 	public void enteringIdleState() {	// Save power by bringing interfaces down If our interaction with the hardware is idle
-		BackgroundService.runCommand("netcfg wlan1 up && netcfg moni0 up");
+		BackgroundService.runCommand("netcfg wlan1 down && netcfg moni0 down");
 	}
 	
 	
@@ -264,7 +264,6 @@ public class Wifi extends InternalRadio {
     	String wlan_sa = p.getField("wlan.sa");
     	String wlan_bssid = p.getField("wlan.bssid");
     	String ds_status = p.getField("wlan.fc.ds");
-    	Log.d("TMP", "DS_STATUS: " + ds_status);
     	
     	// If the packet has a receiver address but no transmitter address, it is an
     	// ACK or a CTS usually, and without some form of logic graph (e.g., JigSaw)
