@@ -15,9 +15,9 @@ import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
+import com.gnychis.awmon.InterfaceScanners.RadioScanResult;
+import com.gnychis.awmon.InterfaceScanners.RadioScanner;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
-import com.gnychis.awmon.RadioScanners.RadioScanResult;
-import com.gnychis.awmon.RadioScanners.RadioScanner;
 
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when

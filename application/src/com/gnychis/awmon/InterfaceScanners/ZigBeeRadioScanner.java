@@ -1,4 +1,4 @@
-package com.gnychis.awmon.RadioScanners;
+package com.gnychis.awmon.InterfaceScanners;
 
 import java.util.ArrayList;
 import java.util.List;

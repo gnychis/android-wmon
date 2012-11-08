@@ -5,10 +5,10 @@ import java.util.concurrent.Semaphore;
 import android.content.Context;
 
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
-import com.gnychis.awmon.RadioScanners.BluetoothRadioScanner;
-import com.gnychis.awmon.RadioScanners.RadioScanner;
-import com.gnychis.awmon.RadioScanners.WifiRadioScanner;
-import com.gnychis.awmon.RadioScanners.ZigBeeRadioScanner;
+import com.gnychis.awmon.InterfaceScanners.BluetoothRadioScanner;
+import com.gnychis.awmon.InterfaceScanners.RadioScanner;
+import com.gnychis.awmon.InterfaceScanners.WifiRadioScanner;
+import com.gnychis.awmon.InterfaceScanners.ZigBeeRadioScanner;
 
 abstract public class InternalRadio {
 	

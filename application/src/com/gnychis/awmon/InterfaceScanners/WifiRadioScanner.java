@@ -1,4 +1,4 @@
-package com.gnychis.awmon.RadioScanners;
+package com.gnychis.awmon.InterfaceScanners;
 
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
