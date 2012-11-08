@@ -11,6 +11,8 @@ import java.util.Map;
 
 import android.util.Log;
 
+import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.DeviceAbstraction.WiredInterface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUIs.MainInterface;
 
@@ -21,7 +23,8 @@ public class OUI extends NameResolver {
 	Map<String,String> _ouiTable;
 
 	public OUI(NameResolutionManager nrm) {
-		super(nrm, Arrays.asList(WirelessInterface.Type.Bluetooth, WirelessInterface.Type.Wifi));
+		super(nrm, Arrays.asList(WirelessInterface.Type.Bluetooth, WirelessInterface.Type.Wifi),
+					Arrays.asList(WiredInterface.Type.Ethernet));
 		
 		_ouiTable = new HashMap<String,String>();
 		
@@ -44,13 +47,13 @@ public class OUI extends NameResolver {
 		catch(Exception e) { Log.e(TAG, "Error opening OUI text file"); }
 	}
 	
-	public ArrayList<WirelessInterface> resolveSupportedRadios(ArrayList<WirelessInterface> supportedRadios) {
-		for(WirelessInterface dev : supportedRadios) {
+	public ArrayList<Interface> resolveSupportedInterfaces(ArrayList<Interface> supportedInterfaces) {
+		for(Interface dev : supportedInterfaces) {
 			String macPrefix = dev._MAC.replace("-", "").replace(":", "").substring(0, 5).toUpperCase();
 			String companyName = _ouiTable.get(macPrefix);
 			if(companyName!=null)
 				dev._ouiName = companyName; 
 		}
-		return supportedRadios;
+		return supportedInterfaces;
 	}
 }

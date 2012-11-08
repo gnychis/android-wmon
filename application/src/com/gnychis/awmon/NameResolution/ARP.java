@@ -9,6 +9,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.BackgroundService.BackgroundService;
+import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.DeviceAbstraction.WiredInterface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 public class ARP extends NameResolver {
@@ -17,10 +19,11 @@ public class ARP extends NameResolver {
 	public static final boolean VERBOSE = true;
 	
 	public ARP(NameResolutionManager nrm) {
-		super(nrm, Arrays.asList(WirelessInterface.Type.Wifi));
+		super(nrm, Arrays.asList(WirelessInterface.Type.Wifi),
+					Arrays.asList(WiredInterface.Type.Ethernet));
 	}
 	
-	public ArrayList<WirelessInterface> resolveSupportedRadios(ArrayList<WirelessInterface> supportedRadios) {
+	public ArrayList<Interface> resolveSupportedInterfaces(ArrayList<Interface> supportedInterfaces) {
 		
 		ArrayList<String> arpRaw = BackgroundService.runCommand("arp_scan --interface=wlan0 -l -q 2> /dev/null");
 		Map<String,String> arpResults = new HashMap<String,String>();
@@ -30,15 +33,15 @@ public class ARP extends NameResolver {
 			arpResults.put(arpResponse.split("\t")[1].toLowerCase(), arpResponse.split("\t")[0]);
 		}
 		
-		for(WirelessInterface radio : supportedRadios) {
-			String IP = arpResults.get(radio._MAC.toLowerCase());	// Will return an IP or null
-			debugOut("Checking ARP responses for " + radio._MAC.toLowerCase() + " .... (" + IP + ")");
+		for(Interface iface : supportedInterfaces) {
+			String IP = arpResults.get(iface._MAC.toLowerCase());	// Will return an IP or null
+			debugOut("Checking ARP responses for " + iface._MAC.toLowerCase() + " .... (" + IP + ")");
 			if(IP != null) {
-				radio._IP = IP;
-				debugOut("...." + radio._MAC + " --> " + radio._IP);
+				iface._IP = IP;
+				debugOut("...." + iface._MAC + " --> " + iface._IP);
 			}
 		}
-		return supportedRadios;
+		return supportedInterfaces;
 	}
 	
 	private void debugOut(String msg) {

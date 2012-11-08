@@ -18,6 +18,8 @@ import android.net.wifi.WifiManager.MulticastLock;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.DeviceAbstraction.WiredInterface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 // Bonjour 
@@ -47,10 +49,10 @@ public class Zeroconf extends NameResolver {
     private ServiceListener _jmdnsListener = null;
 
 	public Zeroconf(NameResolutionManager nrm) {
-		super(nrm, Arrays.asList(WirelessInterface.Type.Wifi));
+		super(nrm, Arrays.asList(WirelessInterface.Type.Wifi), Arrays.asList(WiredInterface.Type.Ethernet));
 	}
 
-	public ArrayList<WirelessInterface> resolveSupportedRadios(ArrayList<WirelessInterface> supportedRadios) {
+	public ArrayList<Interface> resolveSupportedInterfaces(ArrayList<Interface> supportedInterfaces) {
 		debugOut("Started Zeroconf resolution");
 		
 		_waitingOnThread=true;
@@ -61,7 +63,7 @@ public class Zeroconf extends NameResolver {
 			try { Thread.sleep(1000); } catch(Exception e) {}
 		
 		debugOut("Finished Zeroconf resolution");
-		return supportedRadios;
+		return supportedInterfaces;
 	}
 	
 	// The purpose of this thread is solely to initialize the Wifi hardware

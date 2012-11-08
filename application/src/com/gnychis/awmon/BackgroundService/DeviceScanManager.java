@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
@@ -33,7 +34,7 @@ public class DeviceScanManager extends Activity {
 
 	DeviceHandler _device_handler;
 	NameResolutionManager _nameResolutionManager;
-	ArrayList<WirelessInterface> _deviceScanResults;
+	ArrayList<Interface> _deviceScanResults;
 	Queue<InternalRadio> _scanQueue;
 	Queue<WirelessInterface.Type> _pendingResults;
 	
@@ -53,7 +54,7 @@ public class DeviceScanManager extends Activity {
         { @Override public void onReceive(Context context, Intent intent) { scanRequest(); }
         }, new IntentFilter(DEVICE_SCAN_REQUEST));
         
-        _device_handler._parent.registerReceiver(incomingDeviceScan, new IntentFilter(RadioScanner.DEVICE_SCAN_RESULT));
+        _device_handler._parent.registerReceiver(incomingInterfaceScan, new IntentFilter(RadioScanner.DEVICE_SCAN_RESULT));
 	}
 	
 	// On a scan request, we check for the hardware devices connected and then
@@ -65,7 +66,7 @@ public class DeviceScanManager extends Activity {
 		
 		// Set the state to scanning, then clear the scan results.
 		_state = State.SCANNING;
-		_deviceScanResults = new ArrayList<WirelessInterface>();
+		_deviceScanResults = new ArrayList<Interface>();
 		
 		// Put all of the devices in a queue that we will scan devices on
 		_scanQueue = new LinkedList < InternalRadio >();
@@ -109,12 +110,12 @@ public class DeviceScanManager extends Activity {
 	}
 	
     // A broadcast receiver to get messages from background service and threads
-    private BroadcastReceiver incomingDeviceScan = new BroadcastReceiver() {
+    private BroadcastReceiver incomingInterfaceScan = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
         	RadioScanResult scanResult = (RadioScanResult) intent.getExtras().get("result");
         	WirelessInterface.Type hwType = (WirelessInterface.Type) intent.getExtras().get("hwType"); 
-        	//for(WirelessInterface dev : scanResult.devices)  // FIXME
-        	//	_deviceScanResults.add(dev);
+        	for(Interface iface : scanResult.devices) 
+        		_deviceScanResults.add(iface);
         	
         	if(!OVERLAP_SCANS)				// If we are not overlapping scans, we do it when we get
         		triggerNextDeviceScan();	// results of the previous scan
