@@ -45,6 +45,7 @@ public class WifiResultParser extends ScanResultParser {
 	    	// Note that probe requests do not count towards frequencies, because clients
 	    	// are typically just hopping at this point looking for APs in range, and not sitting on that channel.
 	    	for(String wc_mac : wireless_clients) {
+	    		
 	    		WirelessInterface wiface = getInterfaceFromMAC(devices, wc_mac);
 	    		
 	    		// If we do not yet have this device in our list of wireless devices yet...

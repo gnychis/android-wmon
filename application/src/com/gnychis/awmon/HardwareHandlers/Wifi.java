@@ -221,6 +221,11 @@ public class Wifi extends InternalRadio {
 		return ret;
 	}
 	
+	public static boolean validClientAddress(String MAC) {
+		if(MAC==null || MAC.equals("ff:ff:ff:ff:ff:ff") || MAC.equals("00:00:00:00:00:00"))
+			return false;
+		return true;
+	}
     
     // The purpose of this function is to take an 802.11 packet and return a list
     // of all addresses in the packet that are confirmed to be true wireless clients.
@@ -230,18 +235,19 @@ public class Wifi extends InternalRadio {
     	List<String> wirelessAddresses = new ArrayList<String>();
  
     	// First, the true transmitter is definitely a wireless client
-    	if(getTransmitterAddress(p)!=null)
-    		wirelessAddresses.add(getTransmitterAddress(p));
+    	String transmitter_addr = getTransmitterAddress(p);
+    	if(transmitter_addr!=null && validClientAddress(transmitter_addr))
+    		wirelessAddresses.add(transmitter_addr);
     	
     	// Next, the BSSID is always a wireless "client"
     	String wlan_bssid = p.getField("wlan.bssid");
-    	if(wlan_bssid != null && !wirelessAddresses.contains(wlan_bssid))
+    	if(wlan_bssid != null && validClientAddress(wlan_bssid) && !wirelessAddresses.contains(wlan_bssid))
     		wirelessAddresses.add(wlan_bssid);
     	
     	// If there was a receiver address (wlan.sa), that is the recipient of an ACK
     	// or a management frame, so they must also be a wireless client.
     	String receiver_addr = p.getField("wlan.ra");
-    	if(receiver_addr != null && !wirelessAddresses.contains(receiver_addr))
+    	if(receiver_addr != null && validClientAddress(wlan_bssid) && !wirelessAddresses.contains(receiver_addr))
     		wirelessAddresses.add(receiver_addr);
     	
     	// Note that we don't have to check for (wlan.ta) because if wlan.ta was
@@ -264,6 +270,15 @@ public class Wifi extends InternalRadio {
     	String wlan_sa = p.getField("wlan.sa");
     	String wlan_bssid = p.getField("wlan.bssid");
     	String ds_status = p.getField("wlan.fc.ds");
+    	
+    	if(transmitter_addr=="ff:ff:ff:ff:ff:ff" || transmitter_addr=="00:00:00:00:00:00")
+    		transmitter_addr=null;
+    	if(receiver_addr=="ff:ff:ff:ff:ff:ff" || receiver_addr=="00:00:00:00:00:00")
+    		receiver_addr=null;
+    	if(wlan_sa=="ff:ff:ff:ff:ff:ff" || wlan_sa=="00:00:00:00:00:00")
+    		wlan_sa=null;
+    	if(wlan_bssid=="ff:ff:ff:ff:ff:ff" || wlan_bssid=="00:00:00:00:00:00")
+    		wlan_bssid=null;
     	
     	// If the packet has a receiver address but no transmitter address, it is an
     	// ACK or a CTS usually, and without some form of logic graph (e.g., JigSaw)
