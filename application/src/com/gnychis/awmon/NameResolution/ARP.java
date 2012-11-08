@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
