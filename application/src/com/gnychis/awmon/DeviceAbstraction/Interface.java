@@ -37,11 +37,15 @@ public class Interface implements Parcelable {
 	public int describeContents() {
 		return this.hashCode();
 	}
-
-	public void writeToParcel(Parcel dest, int parcelableFlags) {
+	
+	public void writeInterfaceToParcel(Parcel dest, int parcelableFlags) {
 		dest.writeString(_MAC);
     	dest.writeString(_IP);
     	dest.writeString(_ouiName);
+	}
+
+	public void writeToParcel(Parcel dest, int parcelableFlags) {
+		writeInterfaceToParcel(dest, parcelableFlags);
 	}
 
 	public static final Parcelable.Creator<Interface> CREATOR = new Parcelable.Creator<Interface>() {
@@ -53,11 +57,15 @@ public class Interface implements Parcelable {
 			return new Interface[size];
 		}
 	};
-
-	private Interface(Parcel source) {
+	
+	public void readInterfaceParcel(Parcel source) {
 		_MAC = source.readString();
         _IP = source.readString();
         _ouiName = source.readString();
+	}
+
+	private Interface(Parcel source) {
+		readInterfaceParcel(source);
 	}
 
 }

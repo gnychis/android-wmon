@@ -38,6 +38,9 @@ public class WirelessInterface extends Interface implements Parcelable {
 
 	// Report the average RSSI
 	public int averageRSSI() {
+		
+		if(_RSSI.size()==0)
+			return -500;
 
 		Iterator<Integer> rssis = _RSSI.iterator();
 		int sum=0;
@@ -74,6 +77,7 @@ public class WirelessInterface extends Interface implements Parcelable {
 		dest.writeInt(_radioType.ordinal());
 		dest.writeString(_SSID);
 		dest.writeString(_BSSID);
+		writeInterfaceToParcel(dest, parcelableFlags);
 	}
 
 	public static final Parcelable.Creator<WirelessInterface> CREATOR = new Parcelable.Creator<WirelessInterface>() {
@@ -94,5 +98,6 @@ public class WirelessInterface extends Interface implements Parcelable {
 		_radioType = WirelessInterface.Type.values()[source.readInt()];
 		_SSID = source.readString();
 		_BSSID = source.readString();
+		readInterfaceParcel(source);
 	}
 }

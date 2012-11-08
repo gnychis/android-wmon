@@ -31,6 +31,7 @@ public class WiredInterface extends Interface implements Parcelable {
 
 	public void writeToParcel(Parcel dest, int parcelableFlags) {
 		dest.writeInt(_wiredType.ordinal());
+		writeInterfaceToParcel(dest, parcelableFlags);
 	}
 	
 	public static final Parcelable.Creator<WiredInterface> CREATOR = new Parcelable.Creator<WiredInterface>() {
@@ -46,5 +47,6 @@ public class WiredInterface extends Interface implements Parcelable {
 	//@SuppressWarnings("unchecked")
 	private WiredInterface(Parcel source) {
 		_wiredType = WiredInterface.Type.values()[source.readInt()];
+		readInterfaceParcel(source);
 	}
 }

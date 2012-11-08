@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
@@ -30,9 +31,13 @@ public class RadioScanResult implements Parcelable {
     // You cannot simply use a writeTypedList(devices), because there are different
     // child classes that interface can be using like WirelessInterface or WiredInterface
     public void writeToParcel(Parcel dest, int parcelableFlags) {
+    	Log.d("RadioScanResult", "Entering writeToParcel");
     	dest.writeInt(hwType.ordinal());
     	dest.writeList(_interfaces);
+    	for(Interface iface : _interfaces)
+    		Log.d("RadioScanResult", "... writing iface with MAC: " + iface._MAC + " and freq: " + ((WirelessInterface)iface)._frequency);
     }
+    
 
     public static final Creator<RadioScanResult> CREATOR = new Creator<RadioScanResult>() {
         public RadioScanResult createFromParcel(Parcel source) {
@@ -44,8 +49,11 @@ public class RadioScanResult implements Parcelable {
     };
 
     private RadioScanResult(Parcel source) {
+        Log.d("RadioScanResult", "Entering RadioScanResult(Parcel source)");
         hwType = WirelessInterface.Type.values()[source.readInt()];
         _interfaces = new ArrayList<Interface>();
         source.readList(_interfaces, this.getClass().getClassLoader());
+    	for(Interface iface : _interfaces)
+    		Log.d("RadioScanResult", "... reading iface with MAC: " + iface._MAC + " and freq: " + ((WirelessInterface)iface)._frequency);
     }
 }
