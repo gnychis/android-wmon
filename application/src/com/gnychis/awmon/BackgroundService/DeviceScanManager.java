@@ -15,9 +15,9 @@ import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
-import com.gnychis.awmon.InterfaceScanners.RadioScanResult;
-import com.gnychis.awmon.InterfaceScanners.RadioScanner;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
+import com.gnychis.awmon.Scanners.ScanResult;
+import com.gnychis.awmon.Scanners.Scanner;
 
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when
@@ -36,7 +36,7 @@ public class DeviceScanManager extends Activity {
 	NameResolutionManager _nameResolutionManager;
 	ArrayList<Interface> _deviceScanResults;
 	Queue<InternalRadio> _scanQueue;
-	Queue<WirelessInterface.Type> _pendingResults;
+	Queue<Class<?>> _pendingResults;
 	
 	State _state;
 	public enum State {
@@ -54,7 +54,7 @@ public class DeviceScanManager extends Activity {
         { @Override public void onReceive(Context context, Intent intent) { scanRequest(); }
         }, new IntentFilter(DEVICE_SCAN_REQUEST));
         
-        _device_handler._parent.registerReceiver(incomingInterfaceScan, new IntentFilter(RadioScanner.DEVICE_SCAN_RESULT));
+        _device_handler._parent.registerReceiver(incomingInterfaceScan, new IntentFilter(Scanner.DEVICE_SCAN_RESULT));
 	}
 	
 	// On a scan request, we check for the hardware devices connected and then
@@ -70,12 +70,11 @@ public class DeviceScanManager extends Activity {
 		
 		// Put all of the devices in a queue that we will scan devices on
 		_scanQueue = new LinkedList < InternalRadio >();
-		_pendingResults = new LinkedList < WirelessInterface.Type >();
+		_pendingResults = new LinkedList < Class<?> >();
 		for (InternalRadio hwDev : _device_handler._internalRadios) {
 			if(hwDev.isConnected()) { 
 				_scanQueue.add(hwDev);
-				_pendingResults.add(hwDev.deviceType());
-				Log.d(TAG, "... adding hardware device type: " + hwDev.deviceType());
+				_pendingResults.add(hwDev.getClass());
 			}
 		}
 		
@@ -112,7 +111,7 @@ public class DeviceScanManager extends Activity {
     // A broadcast receiver to get messages from background service and threads
     private BroadcastReceiver incomingInterfaceScan = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-        	RadioScanResult scanResult = (RadioScanResult) intent.getExtras().get("result");
+        	ScanResult scanResult = (ScanResult) intent.getExtras().get("result");
         	WirelessInterface.Type hwType = (WirelessInterface.Type) intent.getExtras().get("hwType"); 
         	for(Interface iface : scanResult._interfaces) 
         		_deviceScanResults.add(iface);
@@ -121,7 +120,7 @@ public class DeviceScanManager extends Activity {
         		triggerNextDeviceScan();	// results of the previous scan
         	
         	// If we have all of the results we need, we can set it to complete
-        	_pendingResults.remove(hwType);
+        	_pendingResults.remove(hwType.getClass());
         	if(_pendingResults.size()==0)
         		deviceScanComplete();
         }

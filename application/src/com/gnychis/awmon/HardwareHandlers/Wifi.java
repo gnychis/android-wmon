@@ -17,7 +17,7 @@ import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUIs.MainInterface;
-import com.gnychis.awmon.InterfaceScanners.WifiRadioScanner;
+import com.gnychis.awmon.Scanners.WifiScanner;
 
 /* 
  * record received packets
@@ -47,7 +47,7 @@ public class Wifi extends InternalRadio {
 	public static String _moni_iface_name = "moni0";
 	
 	UserSettings _settings;
-	WifiRadioScanner _scan_thread;
+	WifiScanner _scan_thread;
 	
 	public boolean _device_connected;
 
