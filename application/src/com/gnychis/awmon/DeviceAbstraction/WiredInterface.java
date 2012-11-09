@@ -5,21 +5,11 @@ import android.os.Parcelable;
 
 public class WiredInterface extends Interface implements Parcelable {
 	
-	@Override
-	public Interface.Type getInterfaceType() { return Interface.Type.WIRED; }
-	
-	// Some variables up in here.
-	public enum Type {		// Possible types of radios that we support
-		Ethernet,
-	}
-	public WiredInterface.Type _wiredType;
-	
-	public void initVars(WiredInterface.Type type) {
-		_wiredType = type;
+	public void initVars() {
 	}
 
-	public WiredInterface(WiredInterface.Type type) { super(); initVars(type); }
-	public WiredInterface(Interface i,WiredInterface.Type type) { super(i); initVars(type); }
+	public WiredInterface() { super(); initVars(); }
+	public WiredInterface(Interface i) { super(i); initVars(); }
 
 	// ********************************************************************* //
 	// This code is to make this class parcelable and needs to be updated if
@@ -30,7 +20,6 @@ public class WiredInterface extends Interface implements Parcelable {
 	}
 
 	public void writeToParcel(Parcel dest, int parcelableFlags) {
-		dest.writeInt(_wiredType.ordinal());
 		writeInterfaceToParcel(dest, parcelableFlags);
 	}
 	
@@ -46,7 +35,6 @@ public class WiredInterface extends Interface implements Parcelable {
 
 	//@SuppressWarnings("unchecked")
 	private WiredInterface(Parcel source) {
-		_wiredType = WiredInterface.Type.values()[source.readInt()];
 		readInterfaceParcel(source);
 	}
 }

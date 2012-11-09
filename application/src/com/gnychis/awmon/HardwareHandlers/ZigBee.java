@@ -32,7 +32,7 @@ public class ZigBee extends InternalRadio {
 	public boolean _device_connected;
 	
 	public ZigBee(Context c) {
-		super(WirelessInterface.Type.ZigBee);
+		super();
 		_parent = c;
 		Log.d(TAG, "Initializing ZigBee class...");
 		_parent.registerReceiver(usbUpdate, new IntentFilter(USBMon.USBMON_DEVICELIST));

@@ -12,7 +12,6 @@ import android.util.Log;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBSerial;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUIs.MainInterface;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.HardwareHandlers.ZigBee;
@@ -37,7 +36,7 @@ public class ZigBeeScanner extends Scanner {
 	byte CHAN_IS=0x0007;
 	
 	public ZigBeeScanner() {
-		super(WirelessInterface.Type.ZigBee);
+		super(ZigBee.class);
 	}
 	
 	// Transmit a command to start a scan on the hardware (channel hop)

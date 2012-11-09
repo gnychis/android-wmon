@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.os.AsyncTask;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
+import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
+import com.gnychis.awmon.HardwareHandlers.Wifi;
+import com.gnychis.awmon.HardwareHandlers.ZigBee;
 import com.gnychis.awmon.ScanResultParsers.BluetoothResultParser;
 import com.gnychis.awmon.ScanResultParsers.ScanResultParser;
 import com.gnychis.awmon.ScanResultParsers.WifiResultParser;
@@ -22,18 +24,13 @@ abstract public class Scanner extends AsyncTask<InternalRadio, Integer, ArrayLis
 	ScanResultParser _result_parser;
 	public static final String DEVICE_SCAN_RESULT = "awmon.devicescanner.device_scan_result";
 	
-	public Scanner(WirelessInterface.Type hw_type) {
-		switch(hw_type) {
-			case ZigBee:
-				_result_parser = new ZigBeeResultParser();
-				break;
-			case Wifi:
-				_result_parser = new WifiResultParser();
-				break;
-			case Bluetooth:
-				_result_parser = new BluetoothResultParser();
-				break;
-		}
+	public Scanner(Class<?> hardwareClass) {
+		if(hardwareClass == ZigBee.class)
+			_result_parser = new ZigBeeResultParser();
+		if(hardwareClass == Wifi.class)
+			_result_parser = new WifiResultParser();
+		if(hardwareClass == Bluetooth.class)
+			_result_parser = new BluetoothResultParser();
 	}
 	
     @Override

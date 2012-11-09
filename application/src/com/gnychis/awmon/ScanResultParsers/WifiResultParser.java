@@ -50,7 +50,7 @@ public class WifiResultParser extends ScanResultParser {
 	    		
 	    		// If we do not yet have this device in our list of wireless devices yet...
 	    		if(wiface==null) {
-	    			wiface = new WirelessInterface(WirelessInterface.Type.Wifi);
+	    			wiface = new WirelessInterface(Wifi.class);
 	    			wiface._MAC=wc_mac;
 	    			devices.add(wiface);
 	    		}

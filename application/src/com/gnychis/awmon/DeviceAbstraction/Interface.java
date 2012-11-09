@@ -15,21 +15,24 @@ public class Interface implements Parcelable {
 	public String _IP;							// The IP address associated to the interface (null if none)
 	public String _ouiName;						// The associated manufacturer OUI name (null if none)
 	public String _ifaceName;					// A name associated with the specific interface
+	public Class<?> _type;						// The interface type (should be a class in HardwareHandlers that extended InternalRadio)
 
-	public Interface() {
+	public Interface(Class<?> type) {
 		_MAC=null;
 		_IP=null;
 		_ouiName=null;
+		_ifaceName=null;
+		_type=type;
 	}
 	
 	public Interface(Interface i) {
 		_MAC=i._MAC;
 		_IP=i._IP;
 		_ouiName=i._ouiName;
+		_ifaceName=i._ifaceName;
+		_type=i._type;
 	}
 	
-	public Interface.Type getInterfaceType() { return Interface.Type.UNKNOWN; }
-
 	// ********************************************************************* //
 	// This code is to make this class parcelable and needs to be updated if
 	// any new members are added to the Device class
@@ -38,6 +41,7 @@ public class Interface implements Parcelable {
 		return this.hashCode();
 	}
 	
+	// FIXME
 	public void writeInterfaceToParcel(Parcel dest, int parcelableFlags) {
 		dest.writeString(_MAC);
     	dest.writeString(_IP);

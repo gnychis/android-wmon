@@ -12,6 +12,7 @@ import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
+import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 
 public class BluetoothScanner extends Scanner {
@@ -24,7 +25,7 @@ public class BluetoothScanner extends Scanner {
 	ArrayList<Interface> _scanResult;
 	
 	public BluetoothScanner() {
-		super(WirelessInterface.Type.Bluetooth);
+		super(Bluetooth.class);
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}
 	
@@ -59,7 +60,7 @@ public class BluetoothScanner extends Scanner {
     			// the RSSI value of when we discovered the device.  Otherwise, you lose it because
     			// it's simply the last value of RSSI at the card.
     			BluetoothDevice bt_dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-    			WirelessInterface dev = new WirelessInterface(WirelessInterface.Type.Bluetooth);
+    			WirelessInterface dev = new WirelessInterface(Bluetooth.class);
     			short rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
     			dev._RSSI.add((int)rssi);
     			dev._MAC=bt_dev.getAddress();

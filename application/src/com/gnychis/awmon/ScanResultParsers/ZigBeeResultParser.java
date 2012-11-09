@@ -22,7 +22,7 @@ public class ZigBeeResultParser extends ScanResultParser {
 	    Iterator<T> results = scanResult.iterator();
 	    while(results.hasNext()) {
 	    	Packet pkt = (Packet) results.next();
-	    	WirelessInterface dev = new WirelessInterface(WirelessInterface.Type.ZigBee);
+	    	WirelessInterface dev = new WirelessInterface(ZigBee.class);
 	    	
 	    	// If it's a bad packet, ignore
 	    	if(pkt.getField("wpan.fcs_ok").equals("0"))

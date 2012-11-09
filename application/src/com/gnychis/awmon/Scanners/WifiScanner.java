@@ -20,7 +20,6 @@ import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUIs.MainInterface;
 import com.gnychis.awmon.GUIs.MainInterface.ThreadMessages;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
@@ -58,7 +57,7 @@ public class WifiScanner extends Scanner {
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	
 	public WifiScanner() {
-		super(WirelessInterface.Type.Wifi);
+		super(Wifi.class);
 		// If we are dumping all of our packets for debugging...
 		if(PCAP_DUMP) {
 			Log.d(TAG, "Trying to open pcap dump file");

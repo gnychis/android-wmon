@@ -6,7 +6,6 @@ import android.content.Context;
 
 import com.gnychis.awmon.BackgroundService.DeviceScanManager;
 import com.gnychis.awmon.Core.USBMon;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 // The handlers to the devices must reside in the background service, because there is
 // not guarantee the main activity (AWMon) is actually active or in use.  But, it is
@@ -32,19 +31,9 @@ public class DeviceHandler {
 		// Initialize the device handles and add them all to an ArrayList.  This makes
 		// scanning easy by iterating through this list.
 		_internalRadios = new ArrayList<InternalRadio>();
-		for (WirelessInterface.Type type : WirelessInterface.Type.values()) {
-			switch(type) {
-				case Wifi:
-					_internalRadios.add(new Wifi(_parent));
-					break;
-				case ZigBee:
-					_internalRadios.add(new ZigBee(_parent));
-					break;
-				case Bluetooth:
-					_internalRadios.add(new Bluetooth(_parent));
-					break;
-			}
-		}
-
+		_internalRadios.add(new Wifi(_parent));
+		_internalRadios.add(new ZigBee(_parent));
+		_internalRadios.add(new Bluetooth(_parent));
+		_internalRadios.add(new LAN(_parent));
 	}
 }

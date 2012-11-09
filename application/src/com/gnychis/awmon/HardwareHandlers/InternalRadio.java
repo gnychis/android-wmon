@@ -4,7 +4,6 @@ import java.util.concurrent.Semaphore;
 
 import android.content.Context;
 
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.Scanners.BluetoothScanner;
 import com.gnychis.awmon.Scanners.Scanner;
 import com.gnychis.awmon.Scanners.WifiScanner;
@@ -13,10 +12,8 @@ import com.gnychis.awmon.Scanners.ZigBeeScanner;
 abstract public class InternalRadio {
 	
 	public Context _parent;
-	public Scanner _device_scanner;
-	
-	WirelessInterface.Type _type;
-	
+	public Scanner _interfaceScanner;
+		
 	State _state;
 	Semaphore _state_lock;
 	public enum State {
@@ -30,29 +27,22 @@ abstract public class InternalRadio {
 		if(!stateChange(State.SCANNING))
 			return false;
 		
-		switch(deviceType()) {
-			case ZigBee:
-				_device_scanner = new ZigBeeScanner();
-				break;
-			case Wifi:
-				_device_scanner = new WifiScanner();
-				break;
-			case Bluetooth:
-				_device_scanner = new BluetoothScanner();
-				break;
-		}
+		if(this.getClass() == ZigBee.class)
+			_interfaceScanner = new ZigBeeScanner();
+		if(this.getClass() == Wifi.class)
+			_interfaceScanner = new WifiScanner();
+		if(this.getClass() == Bluetooth.class)
+			_interfaceScanner = new BluetoothScanner();
 		
-		_device_scanner.execute(this);
+		_interfaceScanner.execute(this);
 		return true;
 	}
 	
-	public InternalRadio(WirelessInterface.Type type) {
-		_type = type;
+	public InternalRadio() {
 		_state_lock = new Semaphore(1,true);
 		_state = State.IDLE;
 	}
 	
-	public WirelessInterface.Type deviceType() { return _type; }
 	public InternalRadio.State getState() {
 		return _state;
 	}

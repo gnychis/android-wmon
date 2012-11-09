@@ -15,7 +15,6 @@ import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUIs.MainInterface;
 import com.gnychis.awmon.Scanners.WifiScanner;
 
@@ -55,7 +54,7 @@ public class Wifi extends InternalRadio {
 	String _rxpackets_loc;
 	
 	public Wifi(Context c) {
-		super(WirelessInterface.Type.Wifi);
+		super();
 		_parent = c;
 		_settings = new UserSettings(_parent);
 		
