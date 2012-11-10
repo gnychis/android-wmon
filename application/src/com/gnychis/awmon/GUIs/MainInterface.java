@@ -27,7 +27,7 @@ import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBi
 import com.gnychis.awmon.BackgroundService.DeviceScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.UserSettings;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 
 public class MainInterface extends Activity implements OnClickListener {
 	
@@ -236,13 +236,14 @@ public class MainInterface extends Activity implements OnClickListener {
     private BroadcastReceiver _deviceScanReceiver = new BroadcastReceiver() {
     	@SuppressWarnings("unchecked")
         public void onReceive(Context context, Intent intent) {
-        	ArrayList<WirelessInterface> deviceScanResult = (ArrayList<WirelessInterface>) intent.getExtras().get("result");
-        	for(WirelessInterface dev : deviceScanResult) {
-        		Log.d(TAG, "Got a device: " + dev._MAC 
-        				   + " - Freq: " + dev._frequency
-        				   + " - BSSID: " + dev._BSSID
-        				   + " - SSID: " + dev._SSID
-        				   + " - RSSI: " + dev.averageRSSI());
+        	ArrayList<Interface> deviceScanResult = (ArrayList<Interface>) intent.getExtras().get("result");
+        	for(Interface iface : deviceScanResult) {
+        		Log.d(TAG, "Got a device (" + iface.getClass() + " - " + iface._type + "): " 
+        				   + iface._MAC 
+        				   + " - " + iface._IP
+        				   + " - " + iface._ifaceName
+        				   + " - " + iface._ouiName
+        				   );
         	}
         	if(_pd!=null)
         		_pd.dismiss();
