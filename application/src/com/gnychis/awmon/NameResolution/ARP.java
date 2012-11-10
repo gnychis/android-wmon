@@ -10,17 +10,17 @@ import android.util.Log;
 
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WiredInterface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
+import com.gnychis.awmon.HardwareHandlers.LAN;
+import com.gnychis.awmon.HardwareHandlers.Wifi;
 
 public class ARP extends NameResolver {
 
 	public static final String TAG = "ARP";
 	public static final boolean VERBOSE = true;
 	
+	@SuppressWarnings("unchecked")
 	public ARP(NameResolutionManager nrm) {
-		super(nrm, Arrays.asList(WirelessInterface.Type.Wifi),
-					Arrays.asList(WiredInterface.Type.Ethernet));
+		super(nrm, Arrays.asList(Wifi.class,LAN.class));
 	}
 	
 	public ArrayList<Interface> resolveSupportedInterfaces(ArrayList<Interface> supportedInterfaces) {

@@ -4,20 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WiredInterface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
+import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 
 abstract public class NameResolver {
 	
 	NameResolutionManager _nr_manager;
 	
 	// This is an array which will keep track of the support hardware types for each name resolver
-	public List<WirelessInterface.Type> _supportedRadioTypes;
-	public List<WiredInterface.Type> _supportedWiredTypes; 
+	public List<Class<? extends InternalRadio>> _supportedInterfaces;
 	
-	public NameResolver(NameResolutionManager nrm, List<WirelessInterface.Type> supportedRadioTypes, List<WiredInterface.Type> supportedWiredTypes) {
-		_supportedRadioTypes = supportedRadioTypes;
-		_supportedWiredTypes = supportedWiredTypes;
+	public NameResolver(NameResolutionManager nrm, List<Class<? extends InternalRadio>> supportedInterfaces) {
+		_supportedInterfaces = supportedInterfaces;
 		_nr_manager = nrm;
 	}
 	
@@ -31,9 +28,7 @@ abstract public class NameResolver {
 		ArrayList<Interface> merged = new ArrayList<Interface>();
 		
 		for(Interface iface : interfaces) {
-			if(iface.getClass() == WirelessInterface.class && _supportedRadioTypes.contains(((WirelessInterface)iface)._radioType))
-				supported.add(iface);
-			else if(iface.getClass() == WiredInterface.class && _supportedWiredTypes.contains(((WiredInterface)iface)._wiredType))
+			if(_supportedInterfaces.contains(iface.getClass()))
 				supported.add(iface);
 			else
 				unsupported.add(iface);

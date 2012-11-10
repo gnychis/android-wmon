@@ -12,9 +12,10 @@ import java.util.Map;
 import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WiredInterface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.GUIs.MainInterface;
+import com.gnychis.awmon.HardwareHandlers.Bluetooth;
+import com.gnychis.awmon.HardwareHandlers.LAN;
+import com.gnychis.awmon.HardwareHandlers.Wifi;
 
 public class OUI extends NameResolver {
 	
@@ -22,9 +23,9 @@ public class OUI extends NameResolver {
 	
 	Map<String,String> _ouiTable;
 
+	@SuppressWarnings("unchecked")
 	public OUI(NameResolutionManager nrm) {
-		super(nrm, Arrays.asList(WirelessInterface.Type.Bluetooth, WirelessInterface.Type.Wifi),
-					Arrays.asList(WiredInterface.Type.Ethernet));
+		super(nrm, Arrays.asList(Wifi.class, Bluetooth.class, LAN.class));
 		
 		_ouiTable = new HashMap<String,String>();
 		

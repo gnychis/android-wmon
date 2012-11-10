@@ -19,8 +19,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WiredInterface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
+import com.gnychis.awmon.HardwareHandlers.LAN;
+import com.gnychis.awmon.HardwareHandlers.Wifi;
 
 // Bonjour 
 public class Zeroconf extends NameResolver {
@@ -48,8 +48,9 @@ public class Zeroconf extends NameResolver {
     private static MulticastLock mLock = null;
     private ServiceListener _jmdnsListener = null;
 
+    @SuppressWarnings("unchecked")
 	public Zeroconf(NameResolutionManager nrm) {
-		super(nrm, Arrays.asList(WirelessInterface.Type.Wifi), Arrays.asList(WiredInterface.Type.Ethernet));
+		super(nrm, Arrays.asList(Wifi.class, LAN.class));
 	}
 
 	public ArrayList<Interface> resolveSupportedInterfaces(ArrayList<Interface> supportedInterfaces) {
