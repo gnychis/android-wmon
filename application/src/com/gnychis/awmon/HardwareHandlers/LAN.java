@@ -17,7 +17,7 @@ public class LAN extends InternalRadio {
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}
 	
-	public boolean 		isConnected() { return _bluetooth.isEnabled(); }
+	public boolean 		isConnected() { return false; }
 
 
 }

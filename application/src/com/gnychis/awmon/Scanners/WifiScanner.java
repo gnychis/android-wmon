@@ -128,7 +128,10 @@ public class WifiScanner extends Scanner {
         // our ARP scan requests which generates too much traffic for the phone to parse.
         // and (not wlan addr1 00:26:bb:74:5f:e5 and not type ctl subtype cts)
         PcapBpfProgram program = new PcapBpfProgram();  
-        String expression = "not (wlan addr1 a0:0b:ba:e7:89:59 or wlan addr2 a0:0b:ba:e7:89:59 or wlan addr3 a0:0b:ba:e7:89:59 or (wlan addr1 00:26:bb:74:5f:e5 and type ctl subtype cts))";
+        String expression = "not (wlan addr1 " + ((Wifi)_hw_device)._wlan_mac 
+        				   + " or wlan addr2 "+ ((Wifi)_hw_device)._wlan_mac
+        				   + " or wlan addr3 " + ((Wifi)_hw_device)._wlan_mac
+        				   + " or (wlan addr1 00:26:bb:74:5f:e5 and type ctl subtype cts))";
         int optimize = 0;         // 0 = false  
         int netmask = 0xFFFFFFFF; // 255.255.255.255 ... not sure this is actually used
         

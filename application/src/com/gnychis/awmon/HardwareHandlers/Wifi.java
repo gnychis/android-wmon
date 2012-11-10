@@ -44,6 +44,7 @@ public class Wifi extends InternalRadio {
 	// A non-CM9 device likely to use wlan0
 	public static String _wlan_iface_name = "wlan1";
 	public static String _moni_iface_name = "moni0";
+	public String _wlan_mac;
 	
 	UserSettings _settings;
 	WifiScanner _scan_thread;
@@ -58,8 +59,8 @@ public class Wifi extends InternalRadio {
 		_parent = c;
 		_settings = new UserSettings(_parent);
 		
-		Log.d("WifiDev", "Inserted kernel modules");
-		
+		_wlan_mac = BackgroundService.runCommand("netcfg | grep wlan0 | awk '{print $5}'").get(0);
+				
 		_parent.registerReceiver(usbUpdate, new IntentFilter(USBMon.USBMON_DEVICELIST));
 	}
 	

@@ -35,6 +35,9 @@ abstract public class InternalRadio {
 		if(this.getClass() == Bluetooth.class)
 			_interfaceScanner = new BluetoothScanner();
 		
+		if(_interfaceScanner==null)
+			return false;
+		
 		_interfaceScanner.execute(this);
 		return true;
 	}
