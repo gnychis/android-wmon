@@ -1,15 +1,9 @@
 package com.gnychis.awmon.DeviceAbstraction;
 
 import android.os.Parcel;
-import android.os.Parcelable;
+import android.util.Log;
 
-public class Interface implements Parcelable {
-	
-	public enum Type {
-		UNKNOWN,
-		WIRELESS,
-		WIRED,
-	}
+abstract public class Interface {
 	
 	public String _MAC;							// The MAC address of the interface, or some address.
 	public String _IP;							// The IP address associated to the interface (null if none)
@@ -17,6 +11,14 @@ public class Interface implements Parcelable {
 	public String _ifaceName;					// A name associated with the specific interface
 	public Class<?> _type;						// The interface type (should be a class in HardwareHandlers that extended InternalRadio)
 
+	public Interface() {
+		_MAC=null;
+		_IP=null;
+		_ouiName=null;
+		_ifaceName=null;
+		_type=null;	
+	}
+	
 	public Interface(Class<?> type) {
 		_MAC=null;
 		_IP=null;
@@ -37,39 +39,21 @@ public class Interface implements Parcelable {
 	// This code is to make this class parcelable and needs to be updated if
 	// any new members are added to the Device class
 	// ********************************************************************* //
-	public int describeContents() {
-		return this.hashCode();
-	}
-	
-	// FIXME
 	public void writeInterfaceToParcel(Parcel dest, int parcelableFlags) {
 		dest.writeString(_MAC);
     	dest.writeString(_IP);
     	dest.writeString(_ouiName);
+    	dest.writeString(_ifaceName);
+    	dest.writeString(_type.getName());
 	}
 
-	public void writeToParcel(Parcel dest, int parcelableFlags) {
-		writeInterfaceToParcel(dest, parcelableFlags);
-	}
-
-	public static final Parcelable.Creator<Interface> CREATOR = new Parcelable.Creator<Interface>() {
-		public Interface createFromParcel(Parcel in) {
-			return new Interface(in);
-		}
-
-		public Interface[] newArray(int size) {
-			return new Interface[size];
-		}
-	};
-	
 	public void readInterfaceParcel(Parcel source) {
 		_MAC = source.readString();
         _IP = source.readString();
         _ouiName = source.readString();
+        _ifaceName = source.readString();
+        try {
+        _type = Class.forName(source.readString());
+        } catch(Exception e) { Log.e("Interface", "Error getting class in Interface parcel"); }
 	}
-
-	private Interface(Parcel source) {
-		readInterfaceParcel(source);
-	}
-
 }

@@ -4,18 +4,18 @@ import java.util.ArrayList;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 // The purpose of this class is to make a type/class that is easily passable through
 // intents around the threads.
 public class ScanResult implements Parcelable {
-	public WirelessInterface.Type hwType;
+	public Class<?> _interfaceType;
 	public ArrayList<Interface> _interfaces;
 	
-    public ScanResult(WirelessInterface.Type hwt, ArrayList<Interface> interfaces) {
-    	hwType = hwt;
+    public ScanResult(Class<?> ifaceType, ArrayList<Interface> interfaces) {
+    	_interfaceType = ifaceType;
     	_interfaces = interfaces;
     }
 
@@ -30,7 +30,7 @@ public class ScanResult implements Parcelable {
     // You cannot simply use a writeTypedList(devices), because there are different
     // child classes that interface can be using like WirelessInterface or WiredInterface
     public void writeToParcel(Parcel dest, int parcelableFlags) {
-    	dest.writeInt(hwType.ordinal());
+    	dest.writeString(_interfaceType.getName());
     	dest.writeList(_interfaces);
     }
     
@@ -45,7 +45,9 @@ public class ScanResult implements Parcelable {
     };
 
     private ScanResult(Parcel source) {
-        hwType = WirelessInterface.Type.values()[source.readInt()];
+        try {
+        _interfaceType = Class.forName(source.readString());
+        } catch(Exception e) { Log.e("ScanResult", "Error getting class in ScanResult parcel"); }
         _interfaces = new ArrayList<Interface>();
         source.readList(_interfaces, this.getClass().getClassLoader());
     }

@@ -3,6 +3,7 @@ package com.gnychis.awmon.HardwareHandlers;
 import java.util.concurrent.Semaphore;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.gnychis.awmon.Scanners.BluetoothScanner;
 import com.gnychis.awmon.Scanners.Scanner;
@@ -45,6 +46,14 @@ abstract public class InternalRadio {
 	
 	public InternalRadio.State getState() {
 		return _state;
+	}
+	
+	public Class<?> deviceType() { return this.getClass(); };
+	public static Class<?> deviceType(String name) { 
+        try {
+        return Class.forName(name);
+        } catch(Exception e) { Log.e("Interface", "Error getting class in Interface parcel"); }
+        return null;
 	}
 	
 	// Some methods the child class can override

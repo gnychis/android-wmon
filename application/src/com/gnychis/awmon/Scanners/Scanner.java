@@ -44,8 +44,8 @@ abstract public class Scanner extends AsyncTask<InternalRadio, Integer, ArrayLis
 		// the ArrayList of all the devices!
 		Intent i = new Intent();
 		i.setAction(DEVICE_SCAN_RESULT);
-		i.putExtra("hwType", _hw_device.deviceType());
-		i.putExtra("result", new ScanResult(_hw_device.deviceType(), interfaces));
+		i.putExtra("hwType", _hw_device.deviceType().getName());
+		i.putExtra("result", new ScanResult(_hw_device.getClass(), interfaces));
 		_hw_device._parent.sendBroadcast(i);
     }
 }

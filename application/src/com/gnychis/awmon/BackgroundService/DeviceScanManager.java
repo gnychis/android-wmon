@@ -12,7 +12,6 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
@@ -112,7 +111,7 @@ public class DeviceScanManager extends Activity {
     private BroadcastReceiver incomingInterfaceScan = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
         	ScanResult scanResult = (ScanResult) intent.getExtras().get("result");
-        	WirelessInterface.Type hwType = (WirelessInterface.Type) intent.getExtras().get("hwType"); 
+        	Class<?> ifaceType = InternalRadio.deviceType((String)intent.getExtras().get("hwType")); 
         	for(Interface iface : scanResult._interfaces) 
         		_deviceScanResults.add(iface);
         	
@@ -120,7 +119,7 @@ public class DeviceScanManager extends Activity {
         		triggerNextDeviceScan();	// results of the previous scan
         	
         	// If we have all of the results we need, we can set it to complete
-        	_pendingResults.remove(hwType.getClass());
+        	_pendingResults.remove(ifaceType);
         	if(_pendingResults.size()==0)
         		deviceScanComplete();
         }
