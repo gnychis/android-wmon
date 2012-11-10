@@ -6,6 +6,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.gnychis.awmon.Scanners.BluetoothScanner;
+import com.gnychis.awmon.Scanners.LANScanner;
 import com.gnychis.awmon.Scanners.Scanner;
 import com.gnychis.awmon.Scanners.WifiScanner;
 import com.gnychis.awmon.Scanners.ZigBeeScanner;
@@ -34,6 +35,8 @@ abstract public class InternalRadio {
 			_interfaceScanner = new WifiScanner();
 		if(this.getClass() == Bluetooth.class)
 			_interfaceScanner = new BluetoothScanner();
+		if(this.getClass() == LAN.class)
+			_interfaceScanner = new LANScanner();
 		
 		if(_interfaceScanner==null)
 			return false;

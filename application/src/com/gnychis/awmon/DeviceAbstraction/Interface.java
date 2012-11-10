@@ -3,7 +3,7 @@ package com.gnychis.awmon.DeviceAbstraction;
 import android.os.Parcel;
 import android.util.Log;
 
-abstract public class Interface {
+public class Interface {
 	
 	public String _MAC;							// The MAC address of the interface, or some address.
 	public String _IP;							// The IP address associated to the interface (null if none)
