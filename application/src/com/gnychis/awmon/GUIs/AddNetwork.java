@@ -1,24 +1,6 @@
 package com.gnychis.awmon.GUIs;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
-import android.content.DialogInterface;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
-import android.widget.SimpleExpandableListAdapter;
-import android.widget.Toast;
-
-import com.gnychis.awmon.R;
-import com.gnychis.awmon.Core.DBAdapter;
 
 
 public class AddNetwork extends ExpandableListActivity {
