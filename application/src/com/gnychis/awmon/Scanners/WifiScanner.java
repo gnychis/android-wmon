@@ -24,7 +24,6 @@ import com.gnychis.awmon.GUIs.MainInterface;
 import com.gnychis.awmon.GUIs.MainInterface.ThreadMessages;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.HardwareHandlers.Wifi;
-import com.gnychis.awmon.NameResolution.ARP;
 
 public class WifiScanner extends Scanner {
 
@@ -175,7 +174,7 @@ public class WifiScanner extends Scanner {
 		}, SCAN_WAIT_TIME, SCAN_WAIT_TIME);		// Wait one scan time on the home AP's channel
 		
 		// Trigger some ARP scans to get local traffic as we sit on the home AP's channel
-		ARP.backgroundARPScan(3);
+		LANScanner.backgroundARPScan(3);
 		
 		_timer_counts = NUMBER_OF_SCANS;			
 	}
