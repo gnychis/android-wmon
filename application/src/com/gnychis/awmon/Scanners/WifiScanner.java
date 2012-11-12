@@ -131,7 +131,7 @@ public class WifiScanner extends Scanner {
         String expression = "not (wlan addr1 " + ((Wifi)_hw_device)._wlan_mac 
         				   + " or wlan addr2 "+ ((Wifi)_hw_device)._wlan_mac
         				   + " or wlan addr3 " + ((Wifi)_hw_device)._wlan_mac
-        				   + " or (wlan addr1 00:26:bb:74:5f:e5 and type ctl subtype cts))";
+        				   + " or (wlan addr1 " + _settings.getHomeWifiMAC() + " and type ctl subtype cts))";
         int optimize = 0;         // 0 = false  
         int netmask = 0xFFFFFFFF; // 255.255.255.255 ... not sure this is actually used
         
