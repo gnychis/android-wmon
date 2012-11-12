@@ -158,25 +158,28 @@ public class Zeroconf extends NameResolver {
 	    List<String> buildServiceListenerList() {
 	    	List<String> services = new ArrayList<String>();
 	    	
+			// Now go through each of the supported interfaces and add an ARPA request which will get us
+			// a name, typically if it even has no services shared. To catch the response you need to
+			// registered with "_tcp.in-addr.arpa."  You need to reverse the IP also.
+			services.add("_tcp.in-addr.arpa.");
+			for(Interface iface : _supportedInterfaces) {
+				if(iface.hasValidIP()) {
+					services.add(iface.getReverseIP() + ".in-addr.arpa.");
+					debugOut("Adding in a query for " + iface._IP + " as: " + iface.getReverseIP() + ".in-addr.arpa."); 
+				}
+			}
+	    	
 			try {	// First go through the list of known service types and add each of them
 				DataInputStream in = new DataInputStream(new FileInputStream("/data/data/" + MainInterface._app_name + "/files/mdns_service_types.txt"));
 				BufferedReader br = new BufferedReader(new InputStreamReader(in));
 				
 				String service;	// Get the service, append a "_" to it and make it end with "._tcp.local."
-				 while ((service = br.readLine().replace("\n", "").replace("\r", "")) != null) {
-					 services.add("_" + service + "._tcp.local.");
+				 while ((service = br.readLine()) != null) {
+					 services.add("_" + service.replace("\n", "").replace("\r", "") + "._tcp.local.");
 				 }
 				in.close();
 			} catch(Exception e) { Log.e(TAG, "Error opening MDNS service types text file"); }
-	    	
-			// Now go through each of the supported interfaces and add an ARPA request which will get us
-			// a name, typically if it even has no services shared. To catch the response you need to
-			// registered with "_tcp.in-addr.arpa."  You need to reverse the IP also.
-			services.add("_tcp.in-addr.arpa.");
-			for(Interface iface : _supportedInterfaces)
-				if(iface.hasValidIP())
-					services.add(iface.getReverseIP() + ".in-addr.arpa.");
-			
+
 	    	return services;
 	    }
 	    

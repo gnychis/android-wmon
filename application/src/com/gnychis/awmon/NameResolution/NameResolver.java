@@ -28,7 +28,7 @@ abstract public class NameResolver {
 		ArrayList<Interface> merged = new ArrayList<Interface>();
 		
 		for(Interface iface : interfaces) {
-			if(_supportedInterfaces.contains(iface.getClass()))
+			if(_supportedInterfaces.contains(iface._type))
 				supported.add(iface);
 			else
 				unsupported.add(iface);

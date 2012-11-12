@@ -1,6 +1,7 @@
 package com.gnychis.awmon.Scanners;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import android.os.AsyncTask;
 
@@ -12,6 +13,8 @@ import com.gnychis.awmon.HardwareHandlers.LAN;
 // Scanning the LAN is doing an active ARP scan, and then seeing which devices
 // are active on the LAN.
 public class LANScanner extends Scanner {
+	
+	private final int NUM_ARP_SCANS = 3;
 
 	public LANScanner() {
 		super(LAN.class);
@@ -21,7 +24,16 @@ public class LANScanner extends Scanner {
 	protected ArrayList<Interface> doInBackground( InternalRadio ... params )
 	{
 		_hw_device = params[0];		
-		ArrayList<String> scanResult = BackgroundService.runCommand("arp_scan --interface=wlan0 -l -q 2> /dev/null");
+		ArrayList<String> scanResult = new ArrayList<String>();
+		
+		// Do multiple scans and then take the unique
+		int i;
+		for(i=NUM_ARP_SCANS; i>0; i--)
+			scanResult.addAll(BackgroundService.runCommand("arp_scan --interface=wlan0 -l -q 2> /dev/null"));
+		HashSet<String> hs = new HashSet<String>();
+		hs.addAll(scanResult);
+		scanResult.clear();
+		scanResult.addAll(hs);
 		return _result_parser.returnInterfaces(scanResult);
 	}
 
