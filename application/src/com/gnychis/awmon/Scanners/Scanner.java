@@ -8,9 +8,11 @@ import android.os.AsyncTask;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
+import com.gnychis.awmon.HardwareHandlers.LAN;
 import com.gnychis.awmon.HardwareHandlers.Wifi;
 import com.gnychis.awmon.HardwareHandlers.ZigBee;
 import com.gnychis.awmon.ScanResultParsers.BluetoothResultParser;
+import com.gnychis.awmon.ScanResultParsers.LANResultParser;
 import com.gnychis.awmon.ScanResultParsers.ScanResultParser;
 import com.gnychis.awmon.ScanResultParsers.WifiResultParser;
 import com.gnychis.awmon.ScanResultParsers.ZigBeeResultParser;
@@ -31,6 +33,8 @@ abstract public class Scanner extends AsyncTask<InternalRadio, Integer, ArrayLis
 			_result_parser = new WifiResultParser();
 		if(hardwareClass == Bluetooth.class)
 			_result_parser = new BluetoothResultParser();
+		if(hardwareClass == LAN.class)
+			_result_parser = new LANResultParser();
 	}
 	
     @Override

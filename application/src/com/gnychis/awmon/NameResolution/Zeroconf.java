@@ -1,5 +1,9 @@
 package com.gnychis.awmon.NameResolution;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +23,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.GUIs.MainInterface;
 import com.gnychis.awmon.HardwareHandlers.LAN;
 import com.gnychis.awmon.HardwareHandlers.Wifi;
 
@@ -30,19 +35,9 @@ public class Zeroconf extends NameResolver {
 	
     private boolean _waitingOnResults;
     private boolean _waitingOnThread;
+    ArrayList<Interface> _supportedInterfaces;
     
-    public final static List<String> serviceListeners 
-    				= Arrays.asList("100.1.168.192.in-addr.arpa.",
-    								"_workstation._tcp.local.",
-    								"_tcp.in-addr.arpa.",
-    								//"in-addr.arpa.",
-    								"_device-info._tcp.local.",
-    								//"_home-sharing._tcp.local.",
-    								//"_touch-able._tcp.local.",
-    								//"_dacp._tcp.local.",
-    								"_ssh._tcp.local.",
-    								"_udp.local."
-    						);
+    List<String> _serviceListeners;
     
     private static JmDNS zeroConf = null;
     private static MulticastLock mLock = null;
@@ -55,6 +50,7 @@ public class Zeroconf extends NameResolver {
 
 	public ArrayList<Interface> resolveSupportedInterfaces(ArrayList<Interface> supportedInterfaces) {
 		debugOut("Started Zeroconf resolution");
+		_supportedInterfaces = supportedInterfaces;  // make them accessible
 		
 		_waitingOnThread=true;
 		zeroConfThread monitorThread = new zeroConfThread();
@@ -64,7 +60,7 @@ public class Zeroconf extends NameResolver {
 			try { Thread.sleep(1000); } catch(Exception e) {}
 		
 		debugOut("Finished Zeroconf resolution");
-		return supportedInterfaces;
+		return _supportedInterfaces;	// Make sure to return the _ version.
 	}
 	
 	// The purpose of this thread is solely to initialize the Wifi hardware
@@ -135,8 +131,12 @@ public class Zeroconf extends NameResolver {
 	            };
 
 	           zeroConf = JmDNS.create(addr, "awmon");
-	           for(String service : serviceListeners) 
+	           
+	           // Build the list of services we are listening for
+	           _serviceListeners = buildServiceListenerList();
+	           for(String service : _serviceListeners) 
 	        	   zeroConf.addServiceListener(service, _jmdnsListener);
+	           
 	        } catch(Exception e) { Log.e(TAG, "Error" + e); }
 	        
 			// Setup a handler to change the value of _waitingOnResults which blocks progress
@@ -153,11 +153,37 @@ public class Zeroconf extends NameResolver {
 			return true;
 	    }
 	    
+	    // This function reads through the services listed in the mdns_sevice_types.txt, as well
+	    // as adds some services dynamically.
+	    List<String> buildServiceListenerList() {
+	    	List<String> services = new ArrayList<String>();
+	    	
+			try {	// First go through the list of known service types and add each of them
+				DataInputStream in = new DataInputStream(new FileInputStream("/data/data/" + MainInterface._app_name + "/files/mdns_service_types.txt"));
+				BufferedReader br = new BufferedReader(new InputStreamReader(in));
+				
+				String service;	// Get the service, append a "_" to it and make it end with "._tcp.local."
+				 while ((service = br.readLine().replace("\n", "").replace("\r", "")) != null) {
+					 services.add("_" + service + "._tcp.local.");
+				 }
+				in.close();
+			} catch(Exception e) { Log.e(TAG, "Error opening MDNS service types text file"); }
+	    	
+			// Now go through each of the supported interfaces and add an ARPA request which will get us
+			// a name, typically if it even has no services shared. To catch the response you need to
+			// registered with "_tcp.in-addr.arpa."  You need to reverse the IP also.
+			services.add("_tcp.in-addr.arpa.");
+			for(Interface iface : _supportedInterfaces)
+				if(iface.hasValidIP())
+					services.add(iface.getReverseIP() + ".in-addr.arpa.");
+			
+	    	return services;
+	    }
 	    
 	    // Give up the multicast lock and teardown, this saves us battery usage.
 	    private void tearDown() {
 	    	if(zeroConf!=null) {
-		        for(String service : serviceListeners) 
+		        for(String service : _serviceListeners) 
 		        	zeroConf.removeServiceListener(service, _jmdnsListener);
 		        try {
 		        	zeroConf.close();

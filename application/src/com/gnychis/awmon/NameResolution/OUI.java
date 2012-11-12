@@ -32,8 +32,7 @@ public class OUI extends NameResolver {
 		// Read in the OUI list
 		try {
 			// Open the file first
-			FileInputStream fstream = new FileInputStream("/data/data/" + MainInterface._app_name + "/files/oui.txt");
-			DataInputStream in = new DataInputStream(fstream);
+			DataInputStream in = new DataInputStream(new FileInputStream("/data/data/" + MainInterface._app_name + "/files/oui.txt"));
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			
 			// Go through and read each of the IDs and store them

@@ -60,14 +60,6 @@ public class WirelessInterface extends Interface implements Parcelable {
 		return this.hashCode();
 	}
 
-	public void writeToParcel(Parcel dest, int parcelableFlags) {
-		dest.writeSerializable(_RSSI);
-		dest.writeInt(_frequency);
-		dest.writeString(_SSID);
-		dest.writeString(_BSSID);
-		writeInterfaceToParcel(dest, parcelableFlags);
-	}
-
 	public static final Parcelable.Creator<WirelessInterface> CREATOR = new Parcelable.Creator<WirelessInterface>() {
 		public WirelessInterface createFromParcel(Parcel in) {
 			return new WirelessInterface(in);
@@ -77,6 +69,14 @@ public class WirelessInterface extends Interface implements Parcelable {
 			return new WirelessInterface[size];
 		}
 	};
+	
+	public void writeToParcel(Parcel dest, int parcelableFlags) {
+		dest.writeSerializable(_RSSI);
+		dest.writeInt(_frequency);
+		dest.writeString(_SSID);
+		dest.writeString(_BSSID);
+		writeInterfaceToParcel(dest, parcelableFlags);
+	}
 
 	@SuppressWarnings("unchecked")
 	private WirelessInterface(Parcel source) {
