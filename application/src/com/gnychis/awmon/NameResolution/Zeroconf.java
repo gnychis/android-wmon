@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -134,8 +135,10 @@ public class Zeroconf extends NameResolver {
 	           
 	           // Build the list of services we are listening for
 	           _serviceListeners = buildServiceListenerList();
+	           debugOut("Adding in the service listeners..." + Calendar.getInstance().getTime());
 	           for(String service : _serviceListeners) 
 	        	   zeroConf.addServiceListener(service, _jmdnsListener);
+	           debugOut("...done adding service listeners!" + Calendar.getInstance().getTime());
 	           
 	        } catch(Exception e) { Log.e(TAG, "Error" + e); }
 	        
