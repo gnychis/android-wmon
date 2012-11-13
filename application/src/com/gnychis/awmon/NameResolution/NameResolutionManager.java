@@ -16,7 +16,7 @@ import com.gnychis.awmon.DeviceAbstraction.Interface;
 public class NameResolutionManager {
 
 	private static final String TAG = "DeviceScanManager";
-	static final boolean VERBOSE = true;
+	private static final boolean VERBOSE = true;
 	
 	public static final String NAME_RESOLUTION_REQUEST = "awmon.scanmanager.name_resolution_request";
 	public static final String NAME_RESOLUTION_RESPONSE = "awmon.scanmanager.name_resolution_response";
@@ -49,7 +49,7 @@ public class NameResolutionManager {
         		/***************************** IDLE **********************************/
         		case IDLE:
         			if(intent.getAction().equals(NAME_RESOLUTION_REQUEST)) {
-        				debugOut("Receiving an incoming name resolution request");
+        				debugOut("Receiving an incoming name resolution request, triggering");
         				ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("interfaces");
         				
         				// Set the state to scanning, then clear the scan results.
@@ -71,6 +71,7 @@ public class NameResolutionManager {
         	        	Class<?> resolverType = (Class<?>) intent.getExtras().get("resolver");
         	        	
         	        	// Remove this result as pending, then check if there are any more resolutions we need.
+        	        	debugOut("Received name resolution from: " + resolverType.getName());
         	        	_pendingResults.remove(resolverType);
         	        	triggerNextNameResolver(interfaces);
         	        	
@@ -80,6 +81,8 @@ public class NameResolutionManager {
         	        		i.putExtra("result", interfaces);
         	        		_parent.sendBroadcast(i);
         	        		_state=State.IDLE;
+        	        		debugOut("Received responses from all the name resolvers, going back to idle.");
+        	        		return;
         	        	}
         			}
         		break;
@@ -104,6 +107,8 @@ public class NameResolutionManager {
 			return false;
 		
 		resolver.execute(interfaces);
+		
+		debugOut("Executing the name resolver: " + resolver.getClass().getName());
 		return true;
 	}
 	

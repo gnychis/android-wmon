@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
@@ -18,6 +19,9 @@ import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 // all of the protocols.  That way, we can cache results and determine when
 // each of the protocols has been scanned for.
 public class InterfaceScanManager extends Activity { 
+	
+	private static final String TAG = "InterfaceScanManager";
+	private static final boolean VERBOSE = true;
 	
 	private static final boolean OVERLAP_SCANS = true;
 	
@@ -51,7 +55,10 @@ public class InterfaceScanManager extends Activity {
         	
         		/***************************** IDLE **********************************/
         		case IDLE:
+        			
         			if(intent.getAction().equals(INTERFACE_SCAN_REQUEST)) {
+        				
+        				debugOut("Got an incoming scan request in the idle state");
 	        			_interfaceScanResults = new ArrayList<Interface>();
 	
 	        			// Put all of the devices in a queue that we will scan devices on
@@ -68,14 +75,21 @@ public class InterfaceScanManager extends Activity {
 	        			triggerNextInterfaceScan();
 	        			
 	        			_state = State.SCANNING;
+        				debugOut("State is now scanning");
+
         			}
         		break;
         		
     			/*************************** SCANNING ********************************/
         		case SCANNING:
+        			
         			if(intent.getAction().equals(InterfaceScanner.HW_SCAN_RESULT)) {
+        				
         	        	InterfaceScanResult scanResult = (InterfaceScanResult) intent.getExtras().get("result");
         	        	Class<?> ifaceType = InternalRadio.deviceType((String)intent.getExtras().get("hwType")); 
+        				
+        	        	debugOut("Got a hardware interface scan result from " + ifaceType.getName());
+        	        	
         	        	for(Interface iface : scanResult._interfaces) 
         	        		_interfaceScanResults.add(iface);
         	        	
@@ -92,6 +106,7 @@ public class InterfaceScanManager extends Activity {
         	        		i.putExtra("result", _interfaceScanResults);
         	        		_hardwareHandler._parent.sendBroadcast(i);
         	        		_state=State.IDLE;
+            	        	debugOut("Finished scanning on all hardware interfaces, broadcasting the results");
         	        	}
         			}
         		break;
@@ -107,8 +122,14 @@ public class InterfaceScanManager extends Activity {
 		
 		InternalRadio dev = _scanQueue.remove();
 		dev.startDeviceScan();
+		debugOut("Triggering the next scan on: " + dev.deviceType().getName());
 		
 		if(OVERLAP_SCANS)				// If we are overlapping scans, just go ahead and
 			triggerNextInterfaceScan();	// trigger the next one.
+	}
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
 	}
 }

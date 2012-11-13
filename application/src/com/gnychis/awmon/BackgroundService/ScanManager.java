@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
@@ -15,6 +16,9 @@ import com.gnychis.awmon.NameResolution.NameResolutionManager;
 
 @SuppressWarnings("unchecked")
 public class ScanManager {
+	
+	private static final String TAG = "ScanManager";
+	private static final boolean VERBOSE = true;
 	
 	Context _parent;								// Access to the parent class for broadcasts
 	HardwareHandler _hardwareHandler;				// To have access to the internal radios
@@ -75,11 +79,15 @@ public class ScanManager {
         			
         			if(intent.getAction().equals(ScanManager.SCAN_REQUEST)) {
         				
+        				debugOut("Got an incoming scan request in the idle state");
+        				
         				// Get the type of scan request, then cache it as our active request
         				ScanRequest request = null;
         				if((request = (ScanRequest) intent.getExtras().get("request"))==null)
         					return;
         				_workingRequest = request;
+        				debugOut("... doNameResolution: " + _workingRequest.doNameResolution()
+        						 	+ "   doMerging: " + _workingRequest.doMerging());
         				
         				// Go ahead and switch out state to scanning, then send out the request
         				// for an interface scan.
@@ -87,7 +95,8 @@ public class ScanManager {
         				i.setAction(InterfaceScanManager.INTERFACE_SCAN_REQUEST);
         				_parent.sendBroadcast(i);
         				
-        				_state=State.SCANNING;       // We are scanning now!				
+        				_state=State.SCANNING;       // We are scanning now!	
+        				debugOut("Sent the scan request to scan on the hardware");
         			}
         
     			break;
@@ -98,11 +107,14 @@ public class ScanManager {
         			if(intent.getAction().equals(InterfaceScanManager.INTERFACE_SCAN_RESULT)) {
         				ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("result");
         				
+        				debugOut("Received the results from the interface scan");
+        				
         				// Now, we decide to do name resolution and merging.  If we do not do name resolution,
         				// then we do NOT merge.  This is because a significant portion of merging uses names.
         				if(!_workingRequest.doNameResolution()) {
         					broadcastResults(ScanManager.ResultType.INTERFACES, interfaces);
         					_state=State.IDLE;
+        					debugOut("Name resolution was not set, returning to idle");
         					return;
         				}
         				
@@ -113,6 +125,7 @@ public class ScanManager {
         				_parent.sendBroadcast(i);
         				
         				_state=ScanManager.State.RESOLVING;
+        				debugOut("Name resolution was set, we are now resolving!");
         			}
         			
     			break;
@@ -123,14 +136,19 @@ public class ScanManager {
         			if(intent.getAction().equals(NameResolutionManager.NAME_RESOLUTION_RESPONSE)) {
         				ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("result");
         				
+        				debugOut("Receveived the interfaces from the name resolution manager");
+        				
         				// If we are not doing merging (OK), then we just return the interfaces with names.
         				if(!_workingRequest.doMerging()) {
         					broadcastResults(ScanManager.ResultType.INTERFACES, interfaces);
         					_state=State.IDLE;
+        					debugOut("Merging was not set, returning to the idle state");
         					return;
         				}
         				
         				// FIXME: Fill in the code here for merging
+    					_state=ScanManager.State.MERGING;
+    					debugOut("Merging was set, let's try to merge the devices in to interfaces");
         			}
         			
         		break;
@@ -144,4 +162,9 @@ public class ScanManager {
         	
     	}
     };
+    
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
+	}
 }
