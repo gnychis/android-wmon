@@ -41,6 +41,7 @@ public class InterfaceScanManager extends Activity {
 	public enum State {
 		IDLE,
 		SCANNING,
+		NAME_RESOLVING,
 	}
 
 	public InterfaceScanManager(DeviceHandler dh) {
@@ -60,7 +61,7 @@ public class InterfaceScanManager extends Activity {
 	// put them in a queue which we will trigger scans on.
 	public void scanRequest() {
 		Log.d(TAG, "Receiving an incoming scanRequest()");
-		if(_state==State.SCANNING)
+		if(_state!=State.IDLE)
 			return;
 		
 		// Set the state to scanning, then clear the scan results.
@@ -97,14 +98,18 @@ public class InterfaceScanManager extends Activity {
 	// When the scan is complete, we send out a broadcast with the results.
 	public void interfaceScanComplete() {
 		
-		if(NAME_RESOLUTION_ENABLED)		// Try to get user recognizable identifiers
-			_nameResolutionManager.resolveDeviceNames(_interfaceScanResults);
-		
-		_state=State.IDLE;
-		Intent i = new Intent();
-		i.setAction(INTERFACE_SCAN_RESULT);
-		i.putExtra("result", _interfaceScanResults);
-		_device_handler._parent.sendBroadcast(i);
+		if(NAME_RESOLUTION_ENABLED) {		// Try to get user recognizable identifiers
+			Intent i = new Intent();
+			i.setAction(NameResolutionManager.NAME_RESOLUTION_REQUEST);
+			_device_handler._parent.sendBroadcast(i);
+			_state=State.NAME_RESOLVING;
+		} else {
+			Intent i = new Intent();
+			i.setAction(INTERFACE_SCAN_RESULT);
+			i.putExtra("result", _interfaceScanResults);
+			_device_handler._parent.sendBroadcast(i);
+			_state=State.IDLE;
+		}
 	}
 	
     // A broadcast receiver to get messages from background service and threads
