@@ -57,7 +57,7 @@ public class Zeroconf extends NameResolver {
 		zeroConfThread monitorThread = new zeroConfThread();
 		monitorThread.execute(_nr_manager._parent);
 		
-		while(_waitingOnThread)
+		while(_waitingOnThread)  // FIXME this blocks the main thread
 			try { Thread.sleep(1000); } catch(Exception e) {}
 		
 		debugOut("Finished Zeroconf resolution");
@@ -127,6 +127,7 @@ public class Zeroconf extends NameResolver {
 	                public void serviceAdded(ServiceEvent event) {
 	                    // Required to force serviceResolved to be called again (after the first search)
 	                	debugOut("Service added: " + event.getName());
+	                	debugOut(".... info: " + event.getInfo().getName());
 	                    zeroConf.requestServiceInfo(event.getType(), event.getName(), 1);
 	                }
 	            };

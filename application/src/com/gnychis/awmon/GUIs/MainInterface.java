@@ -24,7 +24,7 @@ import android.widget.Toast;
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
-import com.gnychis.awmon.BackgroundService.DeviceScanManager;
+import com.gnychis.awmon.BackgroundService.InterfaceScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
@@ -221,7 +221,7 @@ public class MainInterface extends Activity implements OnClickListener {
 		super.onResume(); 
 		registerReceiver(_messageReceiver, new IntentFilter(MainInterface.THREAD_MESSAGE));
 		registerReceiver(_initializedReceiver, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
-		registerReceiver(_deviceScanReceiver, new IntentFilter(DeviceScanManager.DEVICE_SCAN_RESULT));
+		registerReceiver(_deviceScanReceiver, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
 		
 	}
 	public void onPause() { 
@@ -260,7 +260,7 @@ public class MainInterface extends Activity implements OnClickListener {
 		// Send a request to start a device scan.  If one is not currently being done, it will start.
 		// Otherwise, if one is already running we just await the result.
 		Intent i = new Intent();
-		i.setAction(DeviceScanManager.DEVICE_SCAN_REQUEST);
+		i.setAction(InterfaceScanManager.INTERFACE_SCAN_REQUEST);
 		this.sendBroadcast(i);
 		
 		// Start a progress dialogue which will be canceled when the scan result returns.

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import android.content.Context;
 
-import com.gnychis.awmon.BackgroundService.DeviceScanManager;
+import com.gnychis.awmon.BackgroundService.InterfaceScanManager;
 import com.gnychis.awmon.Core.USBMon;
 
 // The handlers to the devices must reside in the background service, because there is
@@ -18,7 +18,7 @@ public class DeviceHandler {
 	// Our devices that are accessible
 	public ArrayList<InternalRadio> _internalRadios;
 	
-	public DeviceScanManager _deviceScanManager;
+	public InterfaceScanManager _deviceScanManager;
 	protected USBMon _usbmon;
 	
 	public DeviceHandler(Context parent) {
@@ -26,7 +26,7 @@ public class DeviceHandler {
 		
 		// Setup the USB monitor thread
 		_usbmon = new USBMon(parent);
-		_deviceScanManager = new DeviceScanManager(this);
+		_deviceScanManager = new InterfaceScanManager(this);
 		
 		// Initialize the device handles and add them all to an ArrayList.  This makes
 		// scanning easy by iterating through this list.

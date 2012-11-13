@@ -24,7 +24,7 @@ abstract public class Scanner extends AsyncTask<InternalRadio, Integer, ArrayLis
 
 	InternalRadio _hw_device;
 	ScanResultParser _result_parser;
-	public static final String DEVICE_SCAN_RESULT = "awmon.devicescanner.device_scan_result";
+	public static final String HW_SCAN_RESULT = "awmon.devicescanner.hw_scan_result";
 	
 	public Scanner(Class<?> hardwareClass) {
 		if(hardwareClass == ZigBee.class)
@@ -47,7 +47,7 @@ abstract public class Scanner extends AsyncTask<InternalRadio, Integer, ArrayLis
 		// Now, construct a broadcast that includes the hardware that it came from and
 		// the ArrayList of all the devices!
 		Intent i = new Intent();
-		i.setAction(DEVICE_SCAN_RESULT);
+		i.setAction(HW_SCAN_RESULT);
 		i.putExtra("hwType", _hw_device.deviceType().getName());
 		i.putExtra("result", new ScanResult(_hw_device.getClass(), interfaces));
 		_hw_device._parent.sendBroadcast(i);

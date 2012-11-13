@@ -21,19 +21,19 @@ import com.gnychis.awmon.Scanners.Scanner;
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when
 // each of the protocols has been scanned for.
-public class DeviceScanManager extends Activity { 
+public class InterfaceScanManager extends Activity { 
 	
 	private static final String TAG = "DeviceScanManager";
 	
 	private static final boolean OVERLAP_SCANS = true;
 	private static final boolean NAME_RESOLUTION_ENABLED = true;
 	
-	public static final String DEVICE_SCAN_REQUEST = "awmon.scanmanager.request_scan";
-	public static final String DEVICE_SCAN_RESULT = "awmon.scanmanager.scan_result";
+	public static final String INTERFACE_SCAN_REQUEST = "awmon.scanmanager.interface_scan_request";
+	public static final String INTERFACE_SCAN_RESULT = "awmon.scanmanager.interface_scan_result";
 
 	DeviceHandler _device_handler;
 	NameResolutionManager _nameResolutionManager;
-	ArrayList<Interface> _deviceScanResults;
+	ArrayList<Interface> _interfaceScanResults;
 	Queue<InternalRadio> _scanQueue;
 	Queue<Class<?>> _pendingResults;
 	
@@ -43,7 +43,7 @@ public class DeviceScanManager extends Activity {
 		SCANNING,
 	}
 
-	public DeviceScanManager(DeviceHandler dh) {
+	public InterfaceScanManager(DeviceHandler dh) {
 		_device_handler=dh;
 		_nameResolutionManager = new NameResolutionManager(_device_handler._parent);
 		_state = State.IDLE;
@@ -51,9 +51,9 @@ public class DeviceScanManager extends Activity {
 		// Register a receiver to handle the incoming scan requests
         _device_handler._parent.registerReceiver(new BroadcastReceiver()
         { @Override public void onReceive(Context context, Intent intent) { scanRequest(); }
-        }, new IntentFilter(DEVICE_SCAN_REQUEST));
+        }, new IntentFilter(INTERFACE_SCAN_REQUEST));
         
-        _device_handler._parent.registerReceiver(incomingInterfaceScan, new IntentFilter(Scanner.DEVICE_SCAN_RESULT));
+        _device_handler._parent.registerReceiver(incomingInterfaceScan, new IntentFilter(Scanner.HW_SCAN_RESULT));
 	}
 	
 	// On a scan request, we check for the hardware devices connected and then
@@ -65,7 +65,7 @@ public class DeviceScanManager extends Activity {
 		
 		// Set the state to scanning, then clear the scan results.
 		_state = State.SCANNING;
-		_deviceScanResults = new ArrayList<Interface>();
+		_interfaceScanResults = new ArrayList<Interface>();
 		
 		// Put all of the devices in a queue that we will scan devices on
 		_scanQueue = new LinkedList < InternalRadio >();
@@ -78,12 +78,12 @@ public class DeviceScanManager extends Activity {
 		}
 		
 		// Start the chain of device scans by triggering one of them
-		triggerNextDeviceScan();
+		triggerNextInterfaceScan();
 	}
 	
 	// To trigger the next scan, we pull the next device from the queue.  If there are no
 	// devices left, the scan is complete.
-	public void triggerNextDeviceScan() {
+	public void triggerNextInterfaceScan() {
 		if(_scanQueue.isEmpty())
 			return;
 		
@@ -91,19 +91,19 @@ public class DeviceScanManager extends Activity {
 		dev.startDeviceScan();
 		
 		if(OVERLAP_SCANS)				// If we are overlapping scans, just go ahead and
-			triggerNextDeviceScan();	// trigger the next one.
+			triggerNextInterfaceScan();	// trigger the next one.
 	}
 	
 	// When the scan is complete, we send out a broadcast with the results.
-	public void deviceScanComplete() {
+	public void interfaceScanComplete() {
 		
 		if(NAME_RESOLUTION_ENABLED)		// Try to get user recognizable identifiers
-			_nameResolutionManager.resolveDeviceNames(_deviceScanResults);
+			_nameResolutionManager.resolveDeviceNames(_interfaceScanResults);
 		
 		_state=State.IDLE;
 		Intent i = new Intent();
-		i.setAction(DEVICE_SCAN_RESULT);
-		i.putExtra("result", _deviceScanResults);
+		i.setAction(INTERFACE_SCAN_RESULT);
+		i.putExtra("result", _interfaceScanResults);
 		_device_handler._parent.sendBroadcast(i);
 	}
 	
@@ -113,15 +113,15 @@ public class DeviceScanManager extends Activity {
         	ScanResult scanResult = (ScanResult) intent.getExtras().get("result");
         	Class<?> ifaceType = InternalRadio.deviceType((String)intent.getExtras().get("hwType")); 
         	for(Interface iface : scanResult._interfaces) 
-        		_deviceScanResults.add(iface);
+        		_interfaceScanResults.add(iface);
         	
         	if(!OVERLAP_SCANS)				// If we are not overlapping scans, we do it when we get
-        		triggerNextDeviceScan();	// results of the previous scan
+        		triggerNextInterfaceScan();	// results of the previous scan
         	
         	// If we have all of the results we need, we can set it to complete
         	_pendingResults.remove(ifaceType);
         	if(_pendingResults.size()==0)
-        		deviceScanComplete();
+        		interfaceScanComplete();
         }
     }; 
 }
