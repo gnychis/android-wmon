@@ -1,4 +1,4 @@
-package com.gnychis.awmon.Scanners;
+package com.gnychis.awmon.InterfaceScanners;
 
 import java.util.ArrayList;
 
@@ -10,11 +10,11 @@ import com.gnychis.awmon.DeviceAbstraction.Interface;
 
 // The purpose of this class is to make a type/class that is easily passable through
 // intents around the threads.
-public class ScanResult implements Parcelable {
+public class InterfaceScanResult implements Parcelable {
 	public Class<?> _interfaceType;
 	public ArrayList<Interface> _interfaces;
 	
-    public ScanResult(Class<?> ifaceType, ArrayList<Interface> interfaces) {
+    public InterfaceScanResult(Class<?> ifaceType, ArrayList<Interface> interfaces) {
     	_interfaceType = ifaceType;
     	_interfaces = interfaces;
     }
@@ -35,16 +35,16 @@ public class ScanResult implements Parcelable {
     }
     
 
-    public static final Creator<ScanResult> CREATOR = new Creator<ScanResult>() {
-        public ScanResult createFromParcel(Parcel source) {
-            return new ScanResult(source);
+    public static final Creator<InterfaceScanResult> CREATOR = new Creator<InterfaceScanResult>() {
+        public InterfaceScanResult createFromParcel(Parcel source) {
+            return new InterfaceScanResult(source);
         }
-        public ScanResult[] newArray(int size) {
-            return new ScanResult[size];
+        public InterfaceScanResult[] newArray(int size) {
+            return new InterfaceScanResult[size];
         }
     };
 
-    private ScanResult(Parcel source) {
+    private InterfaceScanResult(Parcel source) {
         try {
         _interfaceType = Class.forName(source.readString());
         } catch(Exception e) { Log.e("ScanResult", "Error getting class in ScanResult parcel"); }

@@ -1,4 +1,4 @@
-package com.gnychis.awmon.Scanners;
+package com.gnychis.awmon.InterfaceScanners;
 
 import java.util.ArrayList;
 
@@ -15,7 +15,7 @@ import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 
-public class BluetoothScanner extends Scanner {
+public class BluetoothScanner extends InterfaceScanner {
 	
 	private static final String TAG = "BluetoothDeviceScanner";
 	

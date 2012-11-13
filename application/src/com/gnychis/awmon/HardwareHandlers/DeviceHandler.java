@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 import android.content.Context;
 
-import com.gnychis.awmon.BackgroundService.InterfaceScanManager;
 import com.gnychis.awmon.Core.USBMon;
+import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
 
 // The handlers to the devices must reside in the background service, because there is
 // not guarantee the main activity (AWMon) is actually active or in use.  But, it is

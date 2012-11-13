@@ -1,4 +1,4 @@
-package com.gnychis.awmon.Scanners;
+package com.gnychis.awmon.InterfaceScanners;
 
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
@@ -25,7 +25,7 @@ import com.gnychis.awmon.GUIs.MainInterface.ThreadMessages;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.HardwareHandlers.Wifi;
 
-public class WifiScanner extends Scanner {
+public class WifiScanner extends InterfaceScanner {
 
 	final String TAG = "WifiScanner";
 	private static final boolean VERBOSE = false;

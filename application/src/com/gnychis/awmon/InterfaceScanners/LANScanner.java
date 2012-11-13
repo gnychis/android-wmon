@@ -1,4 +1,4 @@
-package com.gnychis.awmon.Scanners;
+package com.gnychis.awmon.InterfaceScanners;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,7 +12,7 @@ import com.gnychis.awmon.HardwareHandlers.LAN;
 
 // Scanning the LAN is doing an active ARP scan, and then seeing which devices
 // are active on the LAN.
-public class LANScanner extends Scanner {
+public class LANScanner extends InterfaceScanner {
 	
 	private final int NUM_ARP_SCANS = 3;
 

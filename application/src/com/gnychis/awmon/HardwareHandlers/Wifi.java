@@ -16,7 +16,7 @@ import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.Core.USBMon;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.GUIs.MainInterface;
-import com.gnychis.awmon.Scanners.WifiScanner;
+import com.gnychis.awmon.InterfaceScanners.WifiScanner;
 
 /* 
  * record received packets

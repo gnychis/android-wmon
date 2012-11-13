@@ -24,10 +24,10 @@ import android.widget.Toast;
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
-import com.gnychis.awmon.BackgroundService.InterfaceScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
 
 public class MainInterface extends Activity implements OnClickListener {
 	

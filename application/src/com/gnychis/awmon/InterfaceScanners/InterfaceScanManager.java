@@ -1,4 +1,4 @@
-package com.gnychis.awmon.BackgroundService;
+package com.gnychis.awmon.InterfaceScanners;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -15,8 +15,6 @@ import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
-import com.gnychis.awmon.Scanners.ScanResult;
-import com.gnychis.awmon.Scanners.Scanner;
 
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when
@@ -41,7 +39,6 @@ public class InterfaceScanManager extends Activity {
 	public enum State {
 		IDLE,
 		SCANNING,
-		NAME_RESOLVING,
 	}
 
 	public InterfaceScanManager(DeviceHandler dh) {
@@ -54,7 +51,7 @@ public class InterfaceScanManager extends Activity {
         { @Override public void onReceive(Context context, Intent intent) { scanRequest(); }
         }, new IntentFilter(INTERFACE_SCAN_REQUEST));
         
-        _device_handler._parent.registerReceiver(incomingInterfaceScan, new IntentFilter(Scanner.HW_SCAN_RESULT));
+        _device_handler._parent.registerReceiver(incomingInterfaceScanResult, new IntentFilter(InterfaceScanner.HW_SCAN_RESULT));
 	}
 	
 	// On a scan request, we check for the hardware devices connected and then
@@ -102,20 +99,19 @@ public class InterfaceScanManager extends Activity {
 			Intent i = new Intent();
 			i.setAction(NameResolutionManager.NAME_RESOLUTION_REQUEST);
 			_device_handler._parent.sendBroadcast(i);
-			_state=State.NAME_RESOLVING;
 		} else {
 			Intent i = new Intent();
 			i.setAction(INTERFACE_SCAN_RESULT);
 			i.putExtra("result", _interfaceScanResults);
 			_device_handler._parent.sendBroadcast(i);
-			_state=State.IDLE;
 		}
+		_state=State.IDLE;
 	}
 	
     // A broadcast receiver to get messages from background service and threads
-    private BroadcastReceiver incomingInterfaceScan = new BroadcastReceiver() {
+    private BroadcastReceiver incomingInterfaceScanResult = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-        	ScanResult scanResult = (ScanResult) intent.getExtras().get("result");
+        	InterfaceScanResult scanResult = (InterfaceScanResult) intent.getExtras().get("result");
         	Class<?> ifaceType = InternalRadio.deviceType((String)intent.getExtras().get("hwType")); 
         	for(Interface iface : scanResult._interfaces) 
         		_interfaceScanResults.add(iface);

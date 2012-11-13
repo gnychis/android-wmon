@@ -1,4 +1,4 @@
-package com.gnychis.awmon.Scanners;
+package com.gnychis.awmon.InterfaceScanners;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.HardwareHandlers.ZigBee;
 import com.stericson.RootTools.RootTools;
 
-public class ZigBeeScanner extends Scanner {
+public class ZigBeeScanner extends InterfaceScanner {
 	final String TAG = "ZigBeeScanner";
 	static int WTAP_ENCAP_802_15 = 127;
 	private int PCAP_HDR_SIZE = 16;

@@ -5,16 +5,16 @@ import java.util.concurrent.Semaphore;
 import android.content.Context;
 import android.util.Log;
 
-import com.gnychis.awmon.Scanners.BluetoothScanner;
-import com.gnychis.awmon.Scanners.LANScanner;
-import com.gnychis.awmon.Scanners.Scanner;
-import com.gnychis.awmon.Scanners.WifiScanner;
-import com.gnychis.awmon.Scanners.ZigBeeScanner;
+import com.gnychis.awmon.InterfaceScanners.BluetoothScanner;
+import com.gnychis.awmon.InterfaceScanners.LANScanner;
+import com.gnychis.awmon.InterfaceScanners.InterfaceScanner;
+import com.gnychis.awmon.InterfaceScanners.WifiScanner;
+import com.gnychis.awmon.InterfaceScanners.ZigBeeScanner;
 
 abstract public class InternalRadio {
 	
 	public Context _parent;
-	public Scanner _interfaceScanner;
+	public InterfaceScanner _interfaceScanner;
 		
 	State _state;
 	Semaphore _state_lock;
