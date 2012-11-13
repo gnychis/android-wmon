@@ -28,7 +28,7 @@ public class NameResolutionManager {
 	State _state;
 	public enum State {
 		IDLE,
-		SCANNING,
+		RESOLVING,
 	}
 	
 	public NameResolutionManager(Context parent) {
@@ -55,7 +55,7 @@ public class NameResolutionManager {
 		ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("interfaces");
 		
 		// Set the state to scanning, then clear the scan results.
-		_state = State.SCANNING;
+		_state = State.RESOLVING;
 		
 		// Put all of the name resolves on to a stack.  Push last the one that you want to go first.
 		_nameResolverQueue = new Stack<Class<?>>();
@@ -106,6 +106,7 @@ public class NameResolutionManager {
 		i.setAction(NAME_RESOLUTION_RESPONSE);
 		i.putExtra("result", interfaces);
 		_parent.sendBroadcast(i);
+		_state=State.IDLE;
 	}
 
 	private void debugOut(String msg) {

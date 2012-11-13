@@ -12,7 +12,7 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
+import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
 
@@ -24,12 +24,11 @@ public class InterfaceScanManager extends Activity {
 	private static final String TAG = "DeviceScanManager";
 	
 	private static final boolean OVERLAP_SCANS = true;
-	private static final boolean NAME_RESOLUTION_ENABLED = true;
 	
 	public static final String INTERFACE_SCAN_REQUEST = "awmon.scanmanager.interface_scan_request";
 	public static final String INTERFACE_SCAN_RESULT = "awmon.scanmanager.interface_scan_result";
 
-	DeviceHandler _device_handler;
+	HardwareHandler _device_handler;
 	NameResolutionManager _nameResolutionManager;
 	ArrayList<Interface> _interfaceScanResults;
 	Queue<InternalRadio> _scanQueue;
@@ -41,7 +40,7 @@ public class InterfaceScanManager extends Activity {
 		SCANNING,
 	}
 
-	public InterfaceScanManager(DeviceHandler dh) {
+	public InterfaceScanManager(HardwareHandler dh) {
 		_device_handler=dh;
 		_nameResolutionManager = new NameResolutionManager(_device_handler._parent);
 		_state = State.IDLE;
@@ -94,17 +93,10 @@ public class InterfaceScanManager extends Activity {
 	
 	// When the scan is complete, we send out a broadcast with the results.
 	public void interfaceScanComplete() {
-		
-		if(NAME_RESOLUTION_ENABLED) {		// Try to get user recognizable identifiers
-			Intent i = new Intent();
-			i.setAction(NameResolutionManager.NAME_RESOLUTION_REQUEST);
-			_device_handler._parent.sendBroadcast(i);
-		} else {
-			Intent i = new Intent();
-			i.setAction(INTERFACE_SCAN_RESULT);
-			i.putExtra("result", _interfaceScanResults);
-			_device_handler._parent.sendBroadcast(i);
-		}
+		Intent i = new Intent();
+		i.setAction(INTERFACE_SCAN_RESULT);
+		i.putExtra("result", _interfaceScanResults);
+		_device_handler._parent.sendBroadcast(i);
 		_state=State.IDLE;
 	}
 	

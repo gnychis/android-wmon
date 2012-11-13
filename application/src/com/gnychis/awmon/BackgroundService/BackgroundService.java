@@ -15,9 +15,10 @@ import android.util.Log;
 
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.GUIs.MainInterface;
-import com.gnychis.awmon.HardwareHandlers.DeviceHandler;
+import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
 import com.stericson.RootTools.RootTools;
 
+@SuppressWarnings("unused")
 public class BackgroundService extends Service {
 	
 	// Need a binder so that the main activity can communicate with the server
@@ -27,7 +28,8 @@ public class BackgroundService extends Service {
     static BackgroundService _this;
     private MotionDetector _motionDetector;
     private LocationMonitor _locationMonitor;
-    public DeviceHandler _deviceHandler;
+    public HardwareHandler _hardwareHandler;
+    private ScanManager _scanManager;
     
     public static String TAG = "AWMonBackground";
 	public static final String SYSTEM_INITIALIZED = "awmon.system.initialized";
@@ -77,7 +79,8 @@ public class BackgroundService extends Service {
 		_settings = new UserSettings(this);
 		_motionDetector = new MotionDetector(this);
 		_locationMonitor = new LocationMonitor(this);
-		_deviceHandler = new DeviceHandler(this);
+		_hardwareHandler = new HardwareHandler(this);
+		_scanManager = new ScanManager(this, _hardwareHandler);
 		_serviceState=ServiceState.IDLE;
     }
     
