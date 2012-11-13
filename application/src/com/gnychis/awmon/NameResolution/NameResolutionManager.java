@@ -1,6 +1,9 @@
 package com.gnychis.awmon.NameResolution;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
@@ -41,6 +44,16 @@ public class NameResolutionManager {
 
 	}
 	
+	private void registerNameResolver(List<Class<? extends NameResolver>> resolvers) {
+		_nameResolverQueue = new Stack<Class<?>>();
+		_pendingResults = new LinkedList < Class<?> >();
+		for(Class<?> resolver : resolvers) {
+			debugOut("Registering the following name resolver: " + resolver.getName());
+			_nameResolverQueue.push(resolver);
+			_pendingResults.add(resolver);
+		}
+	}
+	
     private BroadcastReceiver incomingEvent = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
         	
@@ -56,9 +69,8 @@ public class NameResolutionManager {
         				_state = State.RESOLVING;
         				
         				// Put all of the name resolves on to a stack.  Push last the one that you want to go first.
-        				_nameResolverQueue = new Stack<Class<?>>();
-        				_nameResolverQueue.push(Zeroconf.class);
-        				_nameResolverQueue.push(OUI.class);
+        				registerNameResolver(Arrays.asList(Zeroconf.class, 
+        													OUI.class));
         				
         				triggerNextNameResolver(interfaces);
         			}
@@ -92,11 +104,12 @@ public class NameResolutionManager {
 
 	
 	public boolean triggerNextNameResolver(ArrayList<Interface> interfaces) {
+		
+		if(_nameResolverQueue.size()==0)
+			return false;
+		
 		Class<?> resolverRequest = _nameResolverQueue.pop();
 		NameResolver resolver = null;
-		
-		if(resolverRequest==null)
-			return false;
 		
 		if(resolverRequest == Zeroconf.class)
 			resolver = new Zeroconf(this);
