@@ -25,6 +25,7 @@ import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
 import com.gnychis.awmon.Core.DBAdapter;
+import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
@@ -259,9 +260,10 @@ public class MainInterface extends Activity implements OnClickListener {
 		
 		// Send a request to start a device scan.  If one is not currently being done, it will start.
 		// Otherwise, if one is already running we just await the result.
-		Intent i = new Intent();
-		i.setAction(InterfaceScanManager.INTERFACE_SCAN_REQUEST);
-		this.sendBroadcast(i);
+		ScanRequest request = new ScanRequest();
+		request.setNameResolution(true);
+		request.setMerging(false);
+		request.send(this);
 		
 		// Start a progress dialogue which will be canceled when the scan result returns.
 		showProgressDialog("Scanning for devices, please wait");

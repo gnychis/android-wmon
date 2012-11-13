@@ -13,7 +13,6 @@ import android.content.IntentFilter;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
-import com.gnychis.awmon.NameResolution.NameResolutionManager;
 
 // The purpose of this class is to keep track of a scan taking place across
 // all of the protocols.  That way, we can cache results and determine when
@@ -25,8 +24,7 @@ public class InterfaceScanManager extends Activity {
 	public static final String INTERFACE_SCAN_REQUEST = "awmon.scanmanager.interface_scan_request";
 	public static final String INTERFACE_SCAN_RESULT = "awmon.scanmanager.interface_scan_result";
 
-	HardwareHandler _device_handler;
-	NameResolutionManager _nameResolutionManager;
+	HardwareHandler _hardwareHandler;
 	ArrayList<Interface> _interfaceScanResults;
 	Queue<InternalRadio> _scanQueue;
 	Queue<Class<?>> _pendingResults;
@@ -38,12 +36,11 @@ public class InterfaceScanManager extends Activity {
 	}
 
 	public InterfaceScanManager(HardwareHandler dh) {
-		_device_handler=dh;
-		_nameResolutionManager = new NameResolutionManager(_device_handler._parent);
+		_hardwareHandler=dh;
 		_state = State.IDLE;
 
-        _device_handler._parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceScanner.HW_SCAN_RESULT));
-        _device_handler._parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_REQUEST));
+        _hardwareHandler._parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceScanner.HW_SCAN_RESULT));
+        _hardwareHandler._parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_REQUEST));
 
 	}
 	
@@ -60,7 +57,7 @@ public class InterfaceScanManager extends Activity {
 	        			// Put all of the devices in a queue that we will scan devices on
 	        			_scanQueue = new LinkedList < InternalRadio >();
 	        			_pendingResults = new LinkedList < Class<?> >();
-	        			for (InternalRadio hwDev : _device_handler._internalRadios) {
+	        			for (InternalRadio hwDev : _hardwareHandler._internalRadios) {
 	        				if(hwDev.isConnected()) { 
 	        					_scanQueue.add(hwDev);
 	        					_pendingResults.add(hwDev.getClass());
@@ -93,7 +90,7 @@ public class InterfaceScanManager extends Activity {
         	        		Intent i = new Intent();
         	        		i.setAction(INTERFACE_SCAN_RESULT);
         	        		i.putExtra("result", _interfaceScanResults);
-        	        		_device_handler._parent.sendBroadcast(i);
+        	        		_hardwareHandler._parent.sendBroadcast(i);
         	        		_state=State.IDLE;
         	        	}
         			}

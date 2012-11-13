@@ -1,7 +1,11 @@
 package com.gnychis.awmon.Core;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.gnychis.awmon.BackgroundService.ScanManager;
 
 public class ScanRequest implements Parcelable  {
 	
@@ -17,6 +21,13 @@ public class ScanRequest implements Parcelable  {
 	public void setMerging(boolean value) { _doMerging=value; }
 	public boolean doNameResolution() { return _doNameResoution; }
 	public boolean doMerging() { return _doMerging; }
+	
+	public void send(Context parent) {
+		Intent i = new Intent();
+		i.setAction(ScanManager.SCAN_REQUEST);
+		i.putExtra("request", this);
+		parent.sendBroadcast(i);
+	}
 	
 	// ********************************************************************* //
 	// This code is to make this class parcelable and needs to be updated if

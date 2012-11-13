@@ -16,9 +16,10 @@ import com.gnychis.awmon.NameResolution.NameResolutionManager;
 @SuppressWarnings("unchecked")
 public class ScanManager {
 	
-	Context _parent;					// Access to the parent class for broadcasts
-	HardwareHandler _hardwareHandler;	// To have access to the internal radios
-	ScanRequest _workingRequest;		// The most recent scan request we are working on
+	Context _parent;								// Access to the parent class for broadcasts
+	HardwareHandler _hardwareHandler;				// To have access to the internal radios
+	NameResolutionManager _nameResolutionManager;	// For resolving the names of interfaces
+	ScanRequest _workingRequest;					// The most recent scan request we are working on
 	
 	public static final String SCAN_REQUEST = "awmon.scanmanager.scan_request";
 	public static final String SCAN_RESPONSE = "awmon.scanmanager.scan_response";
@@ -46,6 +47,7 @@ public class ScanManager {
 	public ScanManager(Context p, HardwareHandler dh) {
 		_parent=p;
 		_hardwareHandler=dh;
+		_nameResolutionManager = new NameResolutionManager(_parent);
 		
 		_parent.registerReceiver(incomingEvent, new IntentFilter(ScanManager.SCAN_REQUEST));
 		_parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
