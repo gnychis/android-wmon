@@ -12,6 +12,7 @@ import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 
+@SuppressWarnings("unchecked")
 public class NameResolutionManager {
 
 	private static final String TAG = "DeviceScanManager";
@@ -34,38 +35,59 @@ public class NameResolutionManager {
 	public NameResolutionManager(Context parent) {
 		_parent = parent;
 		_state = State.IDLE;
-		
-		// Register a receiver to handle the incoming resolution requests
-        _parent.registerReceiver(new BroadcastReceiver()
-        { @Override public void onReceive(Context context, Intent intent) { nameResolutionRequest(intent); }
-        }, new IntentFilter(NAME_RESOLUTION_REQUEST));
         
-        _parent.registerReceiver(incomingResolverResponse, new IntentFilter(NameResolver.NAME_RESOLVER_RESPONSE));
+        _parent.registerReceiver(incomingEvent, new IntentFilter(NameResolver.NAME_RESOLVER_RESPONSE));
+        _parent.registerReceiver(incomingEvent, new IntentFilter(NAME_RESOLUTION_REQUEST));
+
 	}
 	
-	// On a scan request, we check for the hardware devices connected and then
-	// put them in a queue which we will trigger scans on.
-	@SuppressWarnings("unchecked")
-	public void nameResolutionRequest(Intent intent) {
-		debugOut("Receiving an incoming name resolution request");
-		
-		if(_state!=State.IDLE)
-			return;
-		
-		ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("interfaces");
-		
-		// Set the state to scanning, then clear the scan results.
-		_state = State.RESOLVING;
-		
-		// Put all of the name resolves on to a stack.  Push last the one that you want to go first.
-		_nameResolverQueue = new Stack<Class<?>>();
-		_nameResolverQueue.push(Zeroconf.class);
-		_nameResolverQueue.push(OUI.class);
-		
-		triggerNextNameResolver(interfaces);
-	}
+    private BroadcastReceiver incomingEvent = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+        	
+        	switch(_state) {	// Based on the current state, decide what next to do
+        	
+        		/***************************** IDLE **********************************/
+        		case IDLE:
+        			if(intent.getAction().equals(NAME_RESOLUTION_REQUEST)) {
+        				debugOut("Receiving an incoming name resolution request");
+        				ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("interfaces");
+        				
+        				// Set the state to scanning, then clear the scan results.
+        				_state = State.RESOLVING;
+        				
+        				// Put all of the name resolves on to a stack.  Push last the one that you want to go first.
+        				_nameResolverQueue = new Stack<Class<?>>();
+        				_nameResolverQueue.push(Zeroconf.class);
+        				_nameResolverQueue.push(OUI.class);
+        				
+        				triggerNextNameResolver(interfaces);
+        			}
+        		break;
+        		
+    			/*************************** RESOLVING ********************************/
+        		case RESOLVING:
+        			if(intent.getAction().equals(NameResolver.NAME_RESOLVER_RESPONSE)) {
+        	        	ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("result");
+        	        	Class<?> resolverType = (Class<?>) intent.getExtras().get("resolver");
+        	        	
+        	        	// Remove this result as pending, then check if there are any more resolutions we need.
+        	        	_pendingResults.remove(resolverType);
+        	        	triggerNextNameResolver(interfaces);
+        	        	
+        	        	if(_pendingResults.size()==0) {
+        	        		Intent i = new Intent();
+        	        		i.setAction(NAME_RESOLUTION_RESPONSE);
+        	        		i.putExtra("result", interfaces);
+        	        		_parent.sendBroadcast(i);
+        	        		_state=State.IDLE;
+        	        	}
+        			}
+        		break;
+        	}
+        }
+    };
+
 	
-	@SuppressWarnings("unchecked")
 	public boolean triggerNextNameResolver(ArrayList<Interface> interfaces) {
 		Class<?> resolverRequest = _nameResolverQueue.pop();
 		NameResolver resolver = null;
@@ -85,30 +107,6 @@ public class NameResolutionManager {
 		return true;
 	}
 	
-    // A broadcast receiver to get messages from background service and threads
-    private BroadcastReceiver incomingResolverResponse = new BroadcastReceiver() {
-    	@SuppressWarnings("unchecked")
-        public void onReceive(Context context, Intent intent) {
-        	ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("result");
-        	Class<?> resolverType = (Class<?>) intent.getExtras().get("resolver");
-        	
-        	// Remove this result as pending, then check if there are any more resolutions we need.
-        	_pendingResults.remove(resolverType);
-        	if(_pendingResults.size()==0)
-        		nameResolutionComplete(interfaces);
-        	else
-        		triggerNextNameResolver(interfaces);
-        }
-    };
-    
-	private void nameResolutionComplete(ArrayList<Interface> interfaces) {
-		Intent i = new Intent();
-		i.setAction(NAME_RESOLUTION_RESPONSE);
-		i.putExtra("result", interfaces);
-		_parent.sendBroadcast(i);
-		_state=State.IDLE;
-	}
-
 	private void debugOut(String msg) {
 		if(VERBOSE)
 			Log.d(TAG, msg);
