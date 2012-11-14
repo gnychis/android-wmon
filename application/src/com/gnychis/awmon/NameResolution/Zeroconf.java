@@ -66,6 +66,10 @@ public class Zeroconf extends NameResolver {
 	
 	// The purpose of this thread is solely to initialize the Wifi hardware
 	// that will be used for monitoring.
+	/**
+	 * @author gnychis
+	 *
+	 */
 	protected class zeroConfThread extends AsyncTask<Context, Integer, String>
 	{
 		// Initialize the hardware
@@ -112,24 +116,23 @@ public class Zeroconf extends NameResolver {
 	           mLock.acquire();
 	           
 	           _jmdnsListener = new ServiceListener() {
-
-	                @Override
-	                public void serviceResolved(ServiceEvent ev) {
-	                    debugOut("Service resolved: " + ev.getInfo().getQualifiedName() + " port:" + ev.getInfo().getPort());
-	                }
-
-	                @Override
-	                public void serviceRemoved(ServiceEvent ev) {
-	                    debugOut("Service removed: " + ev.getName());
-	                }
-
+	        	   
+	        	    /** This is mainly called whenever we get a response about an ARPA resolutions */
 	                @Override
 	                public void serviceAdded(ServiceEvent event) {
-	                    // Required to force serviceResolved to be called again (after the first search)
-	                	debugOut("Service added: " + event.getName());
-	                	debugOut(".... info: " + event.getInfo().getName());
-	                    zeroConf.requestServiceInfo(event.getType(), event.getName(), 1);
+	                    if(event.getType().equals("_tcp.in-addr.arpa.")) {
+	                    	namingResponse(cleanName(event.getName()), Interface.reverseIPAddress(event.getInfo().getName().replace("/", "")));
+	                    }
 	                }
+
+	                /** This is usually called when we get a resolution from another type of service (e.g., airport) */
+	                @Override
+	                public void serviceResolved(ServiceEvent ev) {
+	                    namingResponse(cleanName(ev.getInfo().getName()), ev.getInfo().getInet4Addresses()[0].toString().replace("/", ""));
+	                }
+
+	                @Override
+	                public void serviceRemoved(ServiceEvent ev) {}
 	            };
 
 	           zeroConf = JmDNS.create(addr, "awmon");
@@ -155,6 +158,20 @@ public class Zeroconf extends NameResolver {
 
 			}, 10000);
 			return true;
+	    }
+	    
+	    
+	    /** Handles an incoming naming response and attempts to store and cache this data with an
+	     * associated interface.
+	     * @param name The human recognizable identifier (e.g., Bill's iPad)
+	     * @param IP The IP address associated with the interface
+	     */
+	    private void namingResponse(String name, String IP) {
+	    	debugOut("Resolved Name: " + name + "  Address: " + IP);
+	    	
+	    	for(Interface iface : _supportedInterfaces)
+	    		if(iface._IP.equals(IP))		// we found the interface
+	    			iface._ifaceName = name;	// name it
 	    }
 	    
 	    // This function reads through the services listed in the mdns_sevice_types.txt, as well
@@ -207,5 +224,12 @@ public class Zeroconf extends NameResolver {
 	private void debugOut(String msg) {
 		if(VERBOSE)
 			Log.d(TAG, msg);
+	}
+	
+	public static String cleanName(String name) {
+		name = name.replace("-", " ");
+		name = name.replace(".local.", "");
+		name = name.replace("'", "");
+		return name;
 	}
 }
