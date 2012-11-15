@@ -66,10 +66,6 @@ public class Zeroconf extends NameResolver {
 	
 	// The purpose of this thread is solely to initialize the Wifi hardware
 	// that will be used for monitoring.
-	/**
-	 * @author gnychis
-	 *
-	 */
 	protected class zeroConfThread extends AsyncTask<Context, Integer, String>
 	{
 		// Initialize the hardware
@@ -226,6 +222,12 @@ public class Zeroconf extends NameResolver {
 			Log.d(TAG, msg);
 	}
 	
+	
+	/** Takes out a couple non-alphabetical characters to try and get clean names for interfaces.
+	 * Otherwise you can get things like: "Georges-MacBook-Air" ... replace those "-" with spaces.
+	 * @param name The name to be cleaned.
+	 * @return the clean name of an interface, removing erroneous characters.
+	 */
 	public static String cleanName(String name) {
 		name = name.replace("-", " ");
 		name = name.replace(".local.", "");

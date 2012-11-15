@@ -1,5 +1,7 @@
 package com.gnychis.awmon.DeviceAbstraction;
 
+import java.util.Comparator;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -36,12 +38,19 @@ public class Interface implements Parcelable {
 		_type=i._type;
 	}
 	
+	/** Checks whether the instance of the interface has a valid IP address
+	 * @return false if the IP address is invalid, true otherwise.
+	 */
 	public boolean hasValidIP() {
 		if(_IP==null)
 			return false;
 		return validateIPAddress(_IP);
 	}
 	
+	/** Checks that the string representation of the ip address is valid.
+	 * @param ipAddress the IP address in question.
+	 * @return true if the IP address is valid, false otherwise.
+	 */
 	public final static boolean validateIPAddress( String ipAddress )
 	{
 	    String[] parts = ipAddress.split( "\\." );
@@ -56,18 +65,38 @@ public class Interface implements Parcelable {
 	    return true;
 	}
 	
+	/** Gets the reverse of this specific interfaces IP address;
+	 * @return the reverse of the interface's IP.
+	 */
 	public String getReverseIP() {
 		if(_IP==null)
 			return null;
 		return reverseIPAddress(_IP);
 	}
 	
+	/** Takes a string representation of an IP addresses and reverts it (e.g., from
+	 * big endian to little endian.  Any address can be passed to this.
+	 * @param ipAddress the IP to reverse
+	 * @return the string representation of the reversed IP, null if IP was invalid.
+	 */
 	public final static String reverseIPAddress( String ipAddress ) {
 		if(!validateIPAddress(ipAddress))
 			return null;
 		String[] parts = ipAddress.split( "\\." );
 		return parts[3] + "." + parts[2] + "." + parts[1] + "." + parts[0];
 	}
+	
+    /** A sorter for interfaces by the string representation of the MAC address. */
+    public static Comparator<Object> macsort = new Comparator<Object>() {
+    	public int compare(Object arg0, Object arg1) {
+    		if(((Interface)arg0)._MAC.compareTo(((Interface)arg1)._MAC)>0)
+    			return 1;
+    		else if(((Interface)arg0)._MAC.compareTo(((Interface)arg1)._MAC)<0)
+    			return -1;
+    		else
+    			return 0;
+    	}
+      };
 	
 	// ********************************************************************* //
 	// This code is to make this class parcelable and needs to be updated if
@@ -106,7 +135,5 @@ public class Interface implements Parcelable {
         try {
         _type = Class.forName(source.readString());
         } catch(Exception e) { Log.e("Interface", "Error getting class in Interface parcel"); }
-	}
-	
-	
+	}	
 }
