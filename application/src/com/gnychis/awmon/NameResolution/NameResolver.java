@@ -11,7 +11,7 @@ import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 
 abstract public class NameResolver extends AsyncTask<ArrayList<Interface>, Integer, ArrayList<Interface> > {
 	
-	public static final String NAME_RESOLVER_RESPONSE = "awmon.scanmanager.name_resolver_response";
+	public static final String NAME_RESOLVER_RESPONSE = "awmon.nameresolver.name_resolver_response";
 	
 	NameResolutionManager _nr_manager;
 	
