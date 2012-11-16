@@ -1,5 +1,6 @@
 package com.gnychis.awmon.InterfaceMerging;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -498,7 +499,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
      * @param types The types of interfaces that should be returned.
      * @return a list of interfaces that belong to 'types'
      */
-    public List<Interface> getInterfacesOfTypes(List<Class<? extends InternalRadio>> types) {
+    public List<Interface> getInterfacesOfTypes(List<? extends Class<? extends InternalRadio>> types) {
     	List<Interface> interfaces = new ArrayList<Interface>();
     	
     	for(Interface iface : _nodes)
@@ -509,17 +510,12 @@ public class InterfaceConnectivityGraph implements Parcelable {
     }
     
     /** This will return all interfaces in the graph that are of a certain type.
-     * @param types The types of interfaces that should be returned.
+     * @param type The type of interfaces that should be returned.
      * @return a list of interfaces that are of type 'type'
      */
-    public List<Interface> getInterfacesOfType(Class<? extends InternalRadio> type) {
-    	List<Interface> interfaces = new ArrayList<Interface>();
-    	
-    	for(Interface iface : _nodes)
-    		if(type == iface._type)
-    			interfaces.add(iface);
-    	
-    	return interfaces;
+    @SuppressWarnings("unchecked")
+    public List<Interface> getInterfacesOfType(Class<? extends InternalRadio> type) {    	
+    	return getInterfacesOfTypes(Arrays.asList(type));
     }
     
     /** Returns a list of all interface pairs with no redundancy.
@@ -549,22 +545,23 @@ public class InterfaceConnectivityGraph implements Parcelable {
     	
     	return new ArrayList<InterfacePair>(pairMapping.values());
     }
+
+    /** Get all interface pairs of certain types that belong to the graph.
+     * @param types the type that the interfaces must match
+     * @return a list of InterfacePair items
+     */
+    public List<InterfacePair> getInterfacePairsOfTypes(List<? extends Class<? extends InternalRadio>> types) {
+    	List<Interface> interfaces = getInterfacesOfTypes(types);
+    	return getInterfacePairs(interfaces);
+    }
+    
     
     /** Get all interface pairs of a certain type that belong to the graph.
      * @param type the type that the interfaces must match
      * @return a list of InterfacePair items
      */
+    @SuppressWarnings("unchecked")
     public List<InterfacePair> getInterfacePairsOfType(Class<? extends InternalRadio> type) {
-    	List<Interface> interfaces = getInterfacesOfType(type);
-    	return getInterfacePairs(interfaces);
-    }
-    
-    /** Get all interface pairs of certain types that belong to the graph.
-     * @param types the type that the interfaces must match
-     * @return a list of InterfacePair items
-     */
-    public List<InterfacePair> getInterfacePairsOfTypes(List<Class<? extends InternalRadio>> types) {
-    	List<Interface> interfaces = getInterfacesOfTypes(types);
-    	return getInterfacePairs(interfaces);
+    	return getInterfacePairsOfTypes(Arrays.asList(type));
     }
 }
