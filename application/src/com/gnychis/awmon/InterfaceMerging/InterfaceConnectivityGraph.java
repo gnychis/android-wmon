@@ -2,8 +2,12 @@ package com.gnychis.awmon.InterfaceMerging;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.InterfaceGroup;
@@ -17,7 +21,7 @@ import com.gnychis.awmon.DeviceAbstraction.InterfaceGroup;
  * 
  * @author George Nychis (gnychis)
  */
-public class InterfaceConnectivityGraph {
+public class InterfaceConnectivityGraph implements Parcelable {
 
 	private List<Interface> _interfaces;
 	private Map<String,Boolean> _graph;
@@ -262,4 +266,46 @@ public class InterfaceConnectivityGraph {
 			ifaces += i._MAC + ",";
 		return ifaces.substring(0, ifaces.length()-1) + "}";
 	}
+	
+    // ********************************************************************* //
+    // This code is to make this class parcelable and needs to be updated if
+    // any new members are added to the Device class
+    // ********************************************************************* //
+    public int describeContents() {
+        return this.hashCode();
+    }
+    
+    public static final Creator<InterfaceConnectivityGraph> CREATOR = new Creator<InterfaceConnectivityGraph>() {
+        public InterfaceConnectivityGraph createFromParcel(Parcel source) { return new InterfaceConnectivityGraph(source); }
+        public InterfaceConnectivityGraph[] newArray(int size) { return new InterfaceConnectivityGraph[size]; }
+    };
+
+    public void writeToParcel(Parcel dest, int parcelableFlags) {
+    	dest.writeList(_interfaces);
+    	
+    	// To make this parcelable, write the graph size and then one-by-one pump the
+    	// keys and values through
+    	dest.writeInt(_graph.size());
+    	for (String key : _graph.keySet()) {
+    		dest.writeString(key);
+    		dest.writeInt( _graph.get(key) ? 1 : 0 );
+    	}
+    	
+    	// NOTE: we do NOT write _visitedNodes.  It carries no persistent state.  It is a temp variable.
+    }
+    
+    private InterfaceConnectivityGraph(Parcel source) {
+    	source.readList(_interfaces, this.getClass().getClassLoader());
+    	
+    	// Create a new HashMap and read the number of elements in the graph
+    	int graph_size = source.readInt();
+    	_graph = new HashMap<String,Boolean>();
+    	while(graph_size>0) {
+    		String key = source.readString();
+    		boolean val = (source.readInt()==1) ? true : false;
+    		_graph.put(key, val);
+    	}
+    	
+    	_visitedNodes=null;
+    }
 }

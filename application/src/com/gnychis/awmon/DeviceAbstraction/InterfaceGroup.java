@@ -45,5 +45,4 @@ public class InterfaceGroup implements Parcelable {
     private InterfaceGroup(Parcel source) {
     	source.readList(_members, this.getClass().getClassLoader());
     }
-    
 }
