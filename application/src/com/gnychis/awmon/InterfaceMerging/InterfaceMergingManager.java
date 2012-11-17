@@ -1,19 +1,19 @@
 package com.gnychis.awmon.InterfaceMerging;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
-
-import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.NameResolution.NameResolver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
+
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 
 @SuppressWarnings("unchecked")
 public class InterfaceMergingManager {
@@ -55,12 +55,74 @@ public class InterfaceMergingManager {
     private BroadcastReceiver incomingEvent = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
         	
+        	switch(_state) {	// Based on the current state, decide what next to do
+        	
+    		/***************************** IDLE **********************************/
+    		case IDLE:
+    			if(intent.getAction().equals(INTERFACE_MERGING_REQUEST)) {
+    				debugOut("Receiving an incoming interface merging request, triggering");
+    				ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("interfaces");
+    				
+    				// From the incoming interfaces, create a new InterfaceConnectivityGraph
+    				InterfaceConnectivityGraph graph = new InterfaceConnectivityGraph(interfaces);
+    				
+    				// Put all of the name resolves on to a stack.  Push last the one that you want to go first.
+    				registerHeuristic(Arrays.asList(AdjacentMACs.class, 
+    													SimilarInterfaceNames.class));
+    				
+    				// Set the state to scanning, then clear the scan results.
+    				_state = State.MERGING;
+    				
+    				triggerNextHeuristic(graph);
+    			}
+    		break;
+    		
+			/**************************** MERGING ********************************/
+    		case MERGING:
+    			if(intent.getAction().equals(MergeHeuristic.MERGE_HEURISTIC_RESPONSE)) {
+    	        	InterfaceConnectivityGraph graph = (InterfaceConnectivityGraph) intent.getExtras().get("result");
+    	        	Class<?> heuristicType = (Class<?>) intent.getExtras().get("heuristic");
+    	        	
+    	        	// Remove this result as pending, then check if there are any more resolutions we need.
+    	        	debugOut("Received heuristic response from: " + heuristicType.getName());
+    	        	_pendingResults.remove(heuristicType);
+    	        	triggerNextHeuristic(graph);
+    	        	
+    	        	if(_pendingResults.size()==0) {
+    	        		Intent i = new Intent();
+    	        		i.setAction(INTERFACE_MERGING_RESPONSE);
+    	        		i.putExtra("result", graph);
+    	        		_parent.sendBroadcast(i);
+    	        		_state=State.IDLE;
+    	        		debugOut("Received responses from all the name resolvers, going back to idle.");
+    	        		return;
+    	        	}
+    			}
+    		break;
+    	}
         }
     };
     
 	public boolean triggerNextHeuristic(InterfaceConnectivityGraph graph) {
 		
-		return true;
+		if(_heuristicQueue.size()==0)
+			return false;
+		
+		Class<?> heuristicRequest = _heuristicQueue.pop();
+		MergeHeuristic heuristic = null;	
+		
+		if(heuristicRequest == AdjacentMACs.class)
+			heuristic = new AdjacentMACs(_parent);
+		if(heuristicRequest == SimilarInterfaceNames.class)
+			heuristic = new SimilarInterfaceNames(_parent);
+		
+		if(heuristic == null)
+			return false;
+		
+		heuristic.execute(graph);
+		
+		debugOut("Executing the heuristic: " + heuristic.getClass().getName());
+		return true;		
 	}
 	
 	private void debugOut(String msg) {
