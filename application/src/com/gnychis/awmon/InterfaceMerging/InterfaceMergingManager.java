@@ -26,7 +26,7 @@ public class InterfaceMergingManager {
 	
 	Context _parent;
 	Queue<Class<?>> _pendingResults;
-	Stack<Class<?>> _heuristicQueue;	// These should be kept in a heirarchy such that
+	Stack<Class<?>> _heuristicQueue;	// These should be kept in a hierarchy such that
 										// it would be OK if the next resolver overwrote previous.
 	State _state;
 	public enum State {
