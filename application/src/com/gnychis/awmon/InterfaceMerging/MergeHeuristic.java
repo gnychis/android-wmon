@@ -1,5 +1,6 @@
 package com.gnychis.awmon.InterfaceMerging;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,8 +46,12 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 		
 		// Get all interface pairs for the supported types, pass it to the classifier (heuristic)
 		List<InterfacePair> supportedPairs = graph.getInterfacePairsOfTypes(_supportedInterfaceTypes);
-		Map<InterfacePair,MergeStrength> classifications = classifyInterfacePairs(supportedPairs);
 		
+		// For all pairs, get the classification
+		Map<InterfacePair,MergeStrength> classifications = new HashMap<InterfacePair,MergeStrength>();
+		for(InterfacePair pair : supportedPairs)
+			classifications.put(pair, classifyInterfacePair(pair));
+				
 		// Now, apply the classification done by the heuristic to the graph
 		graph.applyHeuristicClassification(classifications);
 		
@@ -68,5 +73,5 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 	 * @param pairs the interface pairs that should be classified by the heuristic
 	 * @return a map of each InterfacePair to the merge strength
 	 */
-	abstract public Map<InterfacePair,MergeStrength> classifyInterfacePairs(List<InterfacePair> pairs);
+	abstract public MergeStrength classifyInterfacePair(InterfacePair pair);
 }

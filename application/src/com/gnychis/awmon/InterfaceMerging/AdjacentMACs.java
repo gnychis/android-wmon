@@ -1,9 +1,6 @@
 package com.gnychis.awmon.InterfaceMerging;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import android.content.Context;
 
@@ -20,30 +17,28 @@ import com.gnychis.awmon.HardwareHandlers.Wifi;
  * 
  * @author George Nychis (gnychis)
  */
-@SuppressWarnings("unchecked")
 public class AdjacentMACs extends MergeHeuristic {
 	
 	public static final int MAX_ADDRESS_DISTANCE = 1;	// The maximum distance to consider "adjacent"
 	
+	@SuppressWarnings("unchecked")
 	public AdjacentMACs(Context p) {
 		super(p,Arrays.asList(Wifi.class, Bluetooth.class, LAN.class));
 	}
 
-	public Map<InterfacePair,MergeStrength> classifyInterfacePairs(List<InterfacePair> pairs) {
+	public MergeStrength classifyInterfacePair(InterfacePair pair) {
 		
-		Map<InterfacePair,MergeStrength> classifications = new HashMap<InterfacePair,MergeStrength>();
+		// First, calculate the distance between the two MAC addresses by converting them to
+		// long format, subtracting them, and then taking the absolute value.
+		long distance = Math.abs(Interface.macStringToLong(pair.getLeft()._MAC)
+				- Interface.macStringToLong(pair.getRight()._MAC));
+
+		// If the distance is less than our tolerance, then return LIKELY, otherwise consider
+		// it undetermined.  Don't return "UNLIKELY" because it is quite possible that two 
+		// different interfaces on a device have unsimilar addresses.
+		if(distance <= MAX_ADDRESS_DISTANCE)
+			return MergeStrength.LIKELY;
 		
-		// For each pair of interfaces, calculate the distance between the MAC address values
-		for(InterfacePair pair : pairs) {
-			long distance = Math.abs(Interface.macStringToLong(pair.getLeft()._MAC)
-										- Interface.macStringToLong(pair.getRight()._MAC));
-			if(distance <= MAX_ADDRESS_DISTANCE)
-				classifications.put(pair, MergeStrength.LIKELY);
-			else
-				classifications.put(pair, MergeStrength.UNDETERMINED);
-		}
-		
-		return classifications;
+		return MergeStrength.UNDETERMINED;		
 	}
-	
 }
