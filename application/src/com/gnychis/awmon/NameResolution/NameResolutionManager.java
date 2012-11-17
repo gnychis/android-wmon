@@ -21,8 +21,8 @@ public class NameResolutionManager {
 	private static final String TAG = "DeviceScanManager";
 	private static final boolean VERBOSE = true;
 	
-	public static final String NAME_RESOLUTION_REQUEST = "awmon.scanmanager.name_resolution_request";
-	public static final String NAME_RESOLUTION_RESPONSE = "awmon.scanmanager.name_resolution_response";
+	public static final String NAME_RESOLUTION_REQUEST = "awmon.nameresolution.name_resolution_request";
+	public static final String NAME_RESOLUTION_RESPONSE = "awmon.nameresolution.name_resolution_response";
 	
 	Context _parent;
 	Queue<Class<?>> _pendingResults;
