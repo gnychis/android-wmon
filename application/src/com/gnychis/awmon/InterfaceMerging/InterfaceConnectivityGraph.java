@@ -606,8 +606,8 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	 * 
 	 * @return a list of devices from the connectivity graph.
 	 */
-	public List<Device> devicesFromConnectivityGraph() {
-		List<Device> devices = new ArrayList<Device>();
+	public ArrayList<Device> devicesFromConnectivityGraph() {
+		ArrayList<Device> devices = new ArrayList<Device>();
 		
 		// Get a list of InterfaceGroup from the graph
 		List<InterfaceGroup> interfaceGroups = getInterfaceGroups();

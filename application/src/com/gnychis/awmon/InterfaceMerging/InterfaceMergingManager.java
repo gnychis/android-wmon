@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
+import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 
 @SuppressWarnings("unchecked")
@@ -83,18 +84,25 @@ public class InterfaceMergingManager {
     	        	InterfaceConnectivityGraph graph = (InterfaceConnectivityGraph) intent.getExtras().get("result");
     	        	Class<?> heuristicType = (Class<?>) intent.getExtras().get("heuristic");
     	        	
-    	        	// Remove this result as pending, then check if there are any more resolutions we need.
+    	        	// Remove this result as pending, then check if there are any more heuristics we need.
     	        	debugOut("Received heuristic response from: " + heuristicType.getName());
     	        	_pendingResults.remove(heuristicType);
     	        	triggerNextHeuristic(graph);
     	        	
     	        	if(_pendingResults.size()==0) {
+    	        		
+    	        		// Since there are no more heuristics to run, we can now use the graph to get the current
+    	        		// groups of interfaces and create Devices from them.
+    	        		ArrayList<Device> devices = graph.devicesFromConnectivityGraph();
+    	        		
+    	        		// Broadcast out the list of devices that came from our interface scan, naming, and merging.
     	        		Intent i = new Intent();
     	        		i.setAction(INTERFACE_MERGING_RESPONSE);
-    	        		i.putExtra("result", graph);
+    	        		i.putExtra("result", devices);
     	        		_parent.sendBroadcast(i);
     	        		_state=State.IDLE;
-    	        		debugOut("Received responses from all the name resolvers, going back to idle.");
+    	        		
+    	        		debugOut("Received responses from all of the heuristics, going back to idle.");
     	        		return;
     	        	}
     			}

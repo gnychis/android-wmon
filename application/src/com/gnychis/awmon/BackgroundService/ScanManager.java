@@ -9,8 +9,10 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.ScanRequest;
+import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
+import com.gnychis.awmon.InterfaceMerging.InterfaceMergingManager;
 import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
 
@@ -33,8 +35,8 @@ public class ScanManager {
 	public enum State {
 		IDLE,
 		SCANNING,
-		RESOLVING,
-		MERGING,
+		NAME_RESOLUTION,
+		INTERFACE_MERGING,
 	}
 	
 	public enum ResultType {
@@ -60,6 +62,7 @@ public class ScanManager {
 		_parent.registerReceiver(incomingEvent, new IntentFilter(ScanManager.SCAN_REQUEST));
 		_parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
 		_parent.registerReceiver(incomingEvent, new IntentFilter(NameResolutionManager.NAME_RESOLUTION_RESPONSE));
+		_parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE));
 
 	}
 	
@@ -128,14 +131,14 @@ public class ScanManager {
         				i.putExtra("interfaces", interfaces);
         				_parent.sendBroadcast(i);
         				
-        				_state=ScanManager.State.RESOLVING;
+        				_state=ScanManager.State.NAME_RESOLUTION;
         				debugOut("Name resolution was set, we are now resolving!");
         			}
         			
     			break;
     			
     			/*************************** RESOLVING ********************************/
-        		case RESOLVING:
+        		case NAME_RESOLUTION:
         			
         			if(intent.getAction().equals(NameResolutionManager.NAME_RESOLUTION_RESPONSE)) {
         				ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("result");
@@ -150,15 +153,31 @@ public class ScanManager {
         					return;
         				}
         				
-        				// FIXME: Fill in the code here for merging
-    					_state=ScanManager.State.MERGING;
+        				// Send the request to do interface merging, passing them along
+        				Intent i = new Intent();
+        				i.setAction(InterfaceMergingManager.INTERFACE_MERGING_REQUEST);
+        				i.putExtra("interfaces", interfaces);
+        				_parent.sendBroadcast(i);
+        				
+    					_state=ScanManager.State.INTERFACE_MERGING;
     					debugOut("Merging was set, let's try to merge the devices in to interfaces");
         			}
         			
         		break;
         		
         		/**************************** MERGING *********************************/
-        		case MERGING:
+        		case INTERFACE_MERGING:
+        			
+        			if(intent.getAction().equals(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE)) {
+        				ArrayList<Device> devices = (ArrayList<Device>) intent.getExtras().get("result");
+        				
+        				debugOut("Receveived the devices from interface merging manager");
+        				
+        				// Finally, send out the result which is devices after merging the interfaces together
+        				broadcastResults(ScanManager.ResultType.DEVICES, devices);
+        				_state = State.IDLE;
+        				return;
+        			}
         			
         		break;
         		

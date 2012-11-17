@@ -6,8 +6,13 @@ import java.util.List;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-// A device is a physical thing.  Like a laptop, an access point, etc.  It can
-// have multiple radios attached.
+
+/**
+ * A device is a physical thing.  Like a laptop, an access point, etc.  It can have multiple radios attached
+ * which we save and represent as interfaces.
+ * 
+ * @author George Nychis (gnychis)
+ */
 public class Device implements Parcelable {
 	
 	public enum Mobility {		// Possible types of radios that we support
@@ -17,7 +22,7 @@ public class Device implements Parcelable {
 	}
 
 	List<Interface> _interfaces;	// Keep track of each radio detected
-	private String _name;			// A name for the device
+	private String _name;			// A name for the device, could be user generated?
 	Mobility _mobile;
 		
 	public Device() {
@@ -30,6 +35,25 @@ public class Device implements Parcelable {
 		_interfaces = interfaces;
 		_name = null;
 		_mobile=Device.Mobility.UNKNOWN;
+	}
+	
+	/** 
+	 * This functionality could change in the future, but right now it returns
+	 * _name if it is not null (could be chosen by the user).  Otherwise, it goes
+	 * through the interfaces and returns the name of one of them. 
+	 * 
+	 * @return a human readable name for the device, null if for some reason there is no
+	 * saved name
+	 */
+	public String getName() {
+		if(_name!=null)
+			return _name;
+		
+		for(Interface iface : _interfaces)
+			if(iface._ifaceName != null)
+				return iface._ifaceName;
+		
+		return null;
 	}
 	
 	// ********************************************************************* //
