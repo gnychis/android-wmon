@@ -7,6 +7,7 @@ import java.util.Map;
 
 import android.content.Context;
 
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.InterfacePair;
 import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 import com.gnychis.awmon.HardwareHandlers.LAN;
@@ -32,7 +33,15 @@ public class AdjacentMACs extends MergeHeuristic {
 		
 		Map<InterfacePair,MergeStrength> classifications = new HashMap<InterfacePair,MergeStrength>();
 		
-		
+		// For each pair of interfaces, calculate the distance between the MAC address values
+		for(InterfacePair pair : pairs) {
+			long distance = Math.abs(Interface.macStringToLong(pair.getLeft()._MAC)
+										- Interface.macStringToLong(pair.getRight()._MAC));
+			if(distance <= MAX_ADDRESS_DISTANCE)
+				classifications.put(pair, MergeStrength.LIKELY);
+			else
+				classifications.put(pair, MergeStrength.UNDETERMINED);
+		}
 		
 		return classifications;
 	}
