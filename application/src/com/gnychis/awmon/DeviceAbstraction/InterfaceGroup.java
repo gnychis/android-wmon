@@ -20,7 +20,7 @@ public class InterfaceGroup implements Parcelable {
 	// Methods for accessing and setting members
 	public void setMembers(List<Interface> members) { _members = members; }
 	public void addMembers(List<Interface> members) { _members.addAll(members); }
-	public List<Interface> getMembers() { return _members; }
+	public List<Interface> getInterfaces() { return _members; }
 	
 	// For checking if this group contains an interface
 	public boolean hasInterface(Interface iface) { return _members.contains(iface); }

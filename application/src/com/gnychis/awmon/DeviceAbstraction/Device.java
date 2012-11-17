@@ -3,7 +3,6 @@ package com.gnychis.awmon.DeviceAbstraction;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -17,12 +16,18 @@ public class Device implements Parcelable {
 		FIXED,
 	}
 
-	List<WirelessInterface> _radios;	// Keep track of each radio detected
-	private String _name;	// A name for the device
+	List<Interface> _interfaces;	// Keep track of each radio detected
+	private String _name;			// A name for the device
 	Mobility _mobile;
 		
 	public Device() {
-		_radios = new ArrayList<WirelessInterface>();
+		_interfaces = new ArrayList<Interface>();
+		_name = null;
+		_mobile=Device.Mobility.UNKNOWN;
+	}
+	
+	public Device(List<Interface> interfaces) {
+		_interfaces = interfaces;
 		_name = null;
 		_mobile=Device.Mobility.UNKNOWN;
 	}
@@ -36,7 +41,7 @@ public class Device implements Parcelable {
     }
 
     public void writeToParcel(Parcel dest, int parcelableFlags) {
-    	dest.writeTypedList(_radios);
+    	dest.writeList(_interfaces);
     	dest.writeString(_name);
     	dest.writeInt(_mobile.ordinal());
     }
@@ -52,8 +57,8 @@ public class Device implements Parcelable {
     };
 
     private Device(Parcel source) {
-    	_radios = new ArrayList<WirelessInterface>();
-    	source.readTypedList(_radios, WirelessInterface.CREATOR);
+    	_interfaces = new ArrayList<Interface>();
+    	source.readList(_interfaces, this.getClass().getClassLoader());
     	_name = source.readString();
     	_mobile = Device.Mobility.values()[source.readInt()];
     }

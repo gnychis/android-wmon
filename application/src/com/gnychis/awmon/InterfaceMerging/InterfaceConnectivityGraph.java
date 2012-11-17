@@ -9,6 +9,7 @@ import java.util.Map;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.InterfaceGroup;
 import com.gnychis.awmon.DeviceAbstraction.InterfacePair;
@@ -529,53 +530,6 @@ public class InterfaceConnectivityGraph implements Parcelable {
 		return ifaces.substring(0, ifaces.length()-1) + "}";
 	}
 	
-    // ********************************************************************* //
-    // This code is to make this class parcelable and needs to be updated if
-    // any new members are added to the Device class
-    // ********************************************************************* //
-    public int describeContents() {
-        return this.hashCode();
-    }
-    
-    public static final Creator<InterfaceConnectivityGraph> CREATOR = new Creator<InterfaceConnectivityGraph>() {
-        public InterfaceConnectivityGraph createFromParcel(Parcel source) { return new InterfaceConnectivityGraph(source); }
-        public InterfaceConnectivityGraph[] newArray(int size) { return new InterfaceConnectivityGraph[size]; }
-    };
-
-    public void writeToParcel(Parcel dest, int parcelableFlags) {
-    	dest.writeList(_nodes);
-    	
-    	// To make this parcelable, write the graph size and then one-by-one pump the
-    	// keys and values through
-    	dest.writeInt(_graph.size());
-    	for (String key : _graph.keySet()) {
-    		dest.writeString(key);
-    		dest.writeInt( _graph.get(key) ? 1 : 0 );
-    		dest.writeInt(_positiveWeight.get(key));
-    		dest.writeInt(_negativeWeight.get(key));
-    	}
-    	
-    	// NOTE: we do NOT write _visitedNodes.  It carries no persistent state.  It is a temp variable.
-    }
-    
-    private InterfaceConnectivityGraph(Parcel source) {
-    	source.readList(_nodes, this.getClass().getClassLoader());
-    	
-    	// Create a new HashMap and read the number of elements in the graph
-    	int graph_size = source.readInt();
-    	_graph = new HashMap<String,Boolean>();
-    	_positiveWeight = new HashMap<String,Integer>();
-    	_negativeWeight = new HashMap<String,Integer>();
-    	while(graph_size>0) {
-    		String key = source.readString();
-    		boolean val = (source.readInt()==1) ? true : false;
-    		_graph.put(key, val);
-    		_positiveWeight.put(key,source.readInt());
-    		_negativeWeight.put(key,source.readInt());
-    	}
-    	
-    	_visitedNodes=null;
-    }
     
     /** This will return all interfaces in the graph that are of a certain type or types.
      * @param types The types of interfaces that should be returned.
@@ -645,5 +599,73 @@ public class InterfaceConnectivityGraph implements Parcelable {
     @SuppressWarnings("unchecked")
     public List<InterfacePair> getInterfacePairsOfType(Class<? extends InternalRadio> type) {
     	return getInterfacePairsOfTypes(Arrays.asList(type));
+    }
+	
+	/** The purpose of this function is to take a connectivity graph of interfaces,
+	 * and from it create a list of devices.
+	 * 
+	 * @return a list of devices from the connectivity graph.
+	 */
+	public List<Device> devicesFromConnectivityGraph() {
+		List<Device> devices = new ArrayList<Device>();
+		
+		// Get a list of InterfaceGroup from the graph
+		List<InterfaceGroup> interfaceGroups = getInterfaceGroups();
+		
+		// For each interface group, create a device
+		for(InterfaceGroup group : interfaceGroups) {
+			List<Interface> interfaces = group.getInterfaces();
+			devices.add(new Device(interfaces));
+		}
+		
+		return devices;
+	}
+	
+    // ********************************************************************* //
+    // This code is to make this class parcelable and needs to be updated if
+    // any new members are added to the Device class
+    // ********************************************************************* //
+    public int describeContents() {
+        return this.hashCode();
+    }
+    
+    public static final Creator<InterfaceConnectivityGraph> CREATOR = new Creator<InterfaceConnectivityGraph>() {
+        public InterfaceConnectivityGraph createFromParcel(Parcel source) { return new InterfaceConnectivityGraph(source); }
+        public InterfaceConnectivityGraph[] newArray(int size) { return new InterfaceConnectivityGraph[size]; }
+    };
+
+    public void writeToParcel(Parcel dest, int parcelableFlags) {
+    	dest.writeList(_nodes);
+    	
+    	// To make this parcelable, write the graph size and then one-by-one pump the
+    	// keys and values through
+    	dest.writeInt(_graph.size());
+    	for (String key : _graph.keySet()) {
+    		dest.writeString(key);
+    		dest.writeInt( _graph.get(key) ? 1 : 0 );
+    		dest.writeInt(_positiveWeight.get(key));
+    		dest.writeInt(_negativeWeight.get(key));
+    	}
+    	
+    	// NOTE: we do NOT write _visitedNodes.  It carries no persistent state.  It is a temp variable.
+    }
+    
+    private InterfaceConnectivityGraph(Parcel source) {
+    	source.readList(_nodes, this.getClass().getClassLoader());
+    	
+    	// Create a new HashMap and read the number of elements in the graph
+    	int graph_size = source.readInt();
+    	_graph = new HashMap<String,Boolean>();
+    	_positiveWeight = new HashMap<String,Integer>();
+    	_negativeWeight = new HashMap<String,Integer>();
+    	while(graph_size>0) {
+    		String key = source.readString();
+    		boolean val = (source.readInt()==1) ? true : false;
+    		_graph.put(key, val);
+    		_positiveWeight.put(key,source.readInt());
+    		_negativeWeight.put(key,source.readInt());
+    	}
+    	
+    	_visitedNodes=null;
     }
 }
