@@ -97,7 +97,79 @@ public class Interface implements Parcelable {
     			return 0;
     	}
       };
-	
+      
+  	
+  	/** Converts a string representation of an IEEE MAC address to a byte array
+  	 * @param macString the string representation of the MAC
+  	 * @return the MAC as a byte array
+  	 */
+  	public static byte[] macStringToBytes(String macString) {
+  	    String[] mac = macString.split(":");
+  	    byte[] macAddress = new byte[6];        // mac.length == 6 bytes
+  	    for(int i = 0; i < mac.length; i++) {
+  	        macAddress[i] = Integer.decode("0x" + mac[i]).byteValue();
+  	    }
+  	    return macAddress;
+  	}
+  	
+  	/** Helps convert the string representation of an IEEE MAC to long
+  	 * @param macString the string representation of the MAC
+  	 * @return the long representation of the MAC
+  	 */
+  	public static long macStringToLong(String macString) {
+  		byte[] addr = macStringToBytes(macString);
+  		final long address = ((long)addr[5] & 0xff) 
+  			    + (((long)addr[4] & 0xff) << 8) 
+  			    + (((long)addr[3] & 0xff) << 16) 
+  			    + (((long)addr[2] & 0xff) << 24) 
+  			    + (((long)addr[1] & 0xff) << 32) 
+  			    + (((long)addr[0] & 0xff) << 40);
+  		return address;
+  	}
+  	
+  	/** Helps convert a byte representation of an IEEE MAC address to long
+  	 * @param macBytes The byte representation of the MAC address.
+  	 * @return the long representation of the MAC address.
+  	 */
+  	public static long macBytesToLong(byte[] macBytes) {
+  		final long address = ((long)macBytes[5] & 0xff) 
+  			    + (((long)macBytes[4] & 0xff) << 8) 
+  			    + (((long)macBytes[3] & 0xff) << 16) 
+  			    + (((long)macBytes[2] & 0xff) << 24) 
+  			    + (((long)macBytes[1] & 0xff) << 32) 
+  			    + (((long)macBytes[0] & 0xff) << 40);
+  		return address;
+  	}
+  	
+  	/** This function helps convert a long representation of an IEEE MAC address to a byte array.
+  	 * @param addr The MAC address, 'long' format.
+  	 * @return the byte array representation of the MAC.
+  	 */
+  	public static byte[] macLongToBytes(long addr) {
+  		byte[] macBytes = new byte[6]; 
+  		macBytes[0] = (byte) (addr >> 40);
+  		macBytes[1] = (byte) (addr >> 32);
+  		macBytes[2] = (byte) (addr >> 24);
+  		macBytes[3] = (byte) (addr >> 16);
+  		macBytes[4] = (byte) (addr >> 8);
+  		macBytes[5] = (byte) addr;
+  		return macBytes;
+  	}
+  	
+  	/** This function helps convert a byte representation of an IEEE MAC address to a string.
+  	 * @param macBytes the byte representation of the MAC
+  	 * @return returns the string representation of a MAC (e.g., "aa:bb:cc:dd:ee:ff")
+  	 */
+  	public static String macBytesToString(byte[] macBytes) {
+  	    StringBuilder sb = new StringBuilder(18);
+  	    for (byte b : macBytes) {
+  	        if (sb.length() > 0)
+  	            sb.append(':');
+  	        sb.append(String.format("%02x", b));
+  	    }
+  	    return sb.toString();
+  	}
+
 	// ********************************************************************* //
 	// This code is to make this class parcelable and needs to be updated if
 	// any new members are added to the Device class

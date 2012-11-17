@@ -16,10 +16,10 @@ abstract public class NameResolver extends AsyncTask<ArrayList<Interface>, Integ
 	NameResolutionManager _nr_manager;
 	
 	// This is an array which will keep track of the support hardware types for each name resolver
-	public List<Class<? extends InternalRadio>> _supportedInterfaces;
+	public List<Class<? extends InternalRadio>> _supportedInterfaceTypes;
 	
 	public NameResolver(NameResolutionManager nrm, List<Class<? extends InternalRadio>> supportedInterfaces) {
-		_supportedInterfaces = supportedInterfaces;
+		_supportedInterfaceTypes = supportedInterfaces;
 		_nr_manager = nrm;
 	}
 	
@@ -32,7 +32,7 @@ abstract public class NameResolver extends AsyncTask<ArrayList<Interface>, Integ
 		ArrayList<Interface> merged = new ArrayList<Interface>();
 		
 		for(Interface iface : interfaces) {
-			if(_supportedInterfaces.contains(iface._type))
+			if(_supportedInterfaceTypes.contains(iface._type))
 				supported.add(iface);
 			else
 				unsupported.add(iface);

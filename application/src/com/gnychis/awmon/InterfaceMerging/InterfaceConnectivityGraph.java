@@ -13,6 +13,7 @@ import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.InterfaceGroup;
 import com.gnychis.awmon.DeviceAbstraction.InterfacePair;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
+import com.gnychis.awmon.InterfaceMerging.MergeHeuristic.MergeStrength;
 
 
 /** The purpose of this class is to provide an implementation of a graph where
@@ -61,6 +62,37 @@ public class InterfaceConnectivityGraph implements Parcelable {
 		}
 	}
 	
+	/** The purpose of this function is to take a graph and a series of classifications that were output from one of the heuristics,
+	 * and then modify the graph (connect/disconnect edges) based on it.
+	 * @param graph
+	 * @return
+	 */
+	public void applyHeuristicClassification(Map<InterfacePair,MergeStrength> classifications) {
+		
+		// For all hashKeys of all the interface pairs, update the links
+		for(InterfacePair pair : classifications.keySet()) {
+			MergeStrength strength = classifications.get(pair);
+			switch(strength) {
+			
+				/******************************** LIKELY ********************************/
+				case LIKELY:
+					incrementPositiveWeight(pair);
+					connect(pair);
+				break;
+				
+				/******************************* UNLIKELY ********************************/
+				case UNLIKELY:
+					incrementNegativeWeight(pair);
+				break;
+				
+				/***************************** UNDETERMINED ******************************/
+				case UNDETERMINED:
+				break;
+			}
+		}
+	}
+	
+	
 	/**  Gets the total weight on a link between two interfaces by summing the positive
 	 * and negative weights
 	 * @param i1 Interface 1
@@ -71,6 +103,15 @@ public class InterfaceConnectivityGraph implements Parcelable {
 		if(!validPair(i1, i2))
 			return INVALID_WEIGHT_VAL;
 		return positiveWeight(i1, i2) + negativeWeight(i1, i2);
+	}
+	
+	/**  Gets the total weight on a link between two interfaces by summing the positive
+	 * and negative weights
+	 * @param ifacePair the interface pair
+	 * @return the total weight, INVALID_WEIGHT_VAL if link-pair is invalid
+	 */
+	public int getWeight(InterfacePair ifacePair) {
+		return getWeight(ifacePair.getLeft(), ifacePair.getRight());
 	}
 	
 	/** Get the positive weight value between two interfaces on their link.
@@ -84,6 +125,14 @@ public class InterfaceConnectivityGraph implements Parcelable {
 		return _positiveWeight.get(hashKey(i1,i2));
 	}
 	
+	/** Get the positive weight value between two interfaces on their link.
+	 * @param ifacePair the interface pair
+	 * @return positive weight, INVALID_WEIGHT_VAL if invalid
+	 */
+	public int positiveWeight(InterfacePair ifacePair) {
+		return positiveWeight(ifacePair.getLeft(), ifacePair.getRight());
+	}
+	
 	/** Get the negative weight value between two interfaces on their link.
 	 * @param i1 Interface 1
 	 * @param i2 Interface 2
@@ -93,6 +142,14 @@ public class InterfaceConnectivityGraph implements Parcelable {
 		if(!validPair(i1, i2))
 			return INVALID_WEIGHT_VAL;
 		return _negativeWeight.get(hashKey(i1,i2));
+	}
+	
+	/** Get the negative weight value between two interfaces on their link.
+	 * @param ifacePair the interface pair
+	 * @return negative weight, INVALID_WEIGHT_VAL if invalid
+	 */
+	public int negativeWeight(InterfacePair ifacePair) {
+		return negativeWeight(ifacePair.getLeft(), ifacePair.getRight());
 	}
 	
 	/** This function allows us to increment the positive weight on a link in the graph
@@ -108,6 +165,14 @@ public class InterfaceConnectivityGraph implements Parcelable {
 		return true;
 	}
 	
+	/** This function allows us to increment the positive weight on a link in the graph
+	 * @param ifacePair the interface pair
+	 * @return true if we were able to increment it, false otherwise
+	 */
+	public boolean incrementPositiveWeight(InterfacePair ifacePair) {
+		return incrementPositiveWeight(ifacePair.getLeft(), ifacePair.getRight());
+	}
+	
 	/** This function allows us to increment the negative weight on a link in the graph
 	 * @param i1 Interface 1
 	 * @param i2 Interface 2
@@ -119,6 +184,14 @@ public class InterfaceConnectivityGraph implements Parcelable {
 		int curr_val = _negativeWeight.get(hashKey(i1,i2));
 		_negativeWeight.put(hashKey(i1,i2), curr_val+1);
 		return true;
+	}
+	
+	/** This function allows us to increment the negative weight on a link in the graph
+	 * @param ifacePair the interface pair
+	 * @return true if we were able to increment it, false otherwise
+	 */
+	public boolean incrementNegativeWeight(InterfacePair ifacePair) {
+		return incrementNegativeWeight(ifacePair.getLeft(), ifacePair.getRight());
 	}
 	
 	/** This function allows us to easily set the positive weight on a link in the graph
@@ -133,6 +206,15 @@ public class InterfaceConnectivityGraph implements Parcelable {
 		return true;
 	}
 	
+	
+	/** This function allows us to easily set the positive weight on a link in the graph
+	 * @param ifacePair the interface pair
+	 * @return true if we were able to set the weight, false otherwise
+	 */
+	private boolean setPositiveWeight(InterfacePair ifacePair, int value) {
+		return setPositiveWeight(ifacePair.getLeft(), ifacePair.getRight(), value);
+	}
+	
 	/** This function allows us to easily set the negative weight on a link in the graph
 	 * @param i1 Interface 1
 	 * @param i2 Interface 2
@@ -143,6 +225,14 @@ public class InterfaceConnectivityGraph implements Parcelable {
 			return false;
 		_positiveWeight.put(hashKey(i1,i2), value);
 		return true;
+	}
+	
+	/** This function allows us to easily set the negative weight on a link in the graph
+	 * @param ifacePair the interface pair
+	 * @return true if we were able to set the weight, false otherwise
+	 */
+	private boolean setNegativeWeight(InterfacePair ifacePair, int value) {
+		return setNegativeWeight(ifacePair.getLeft(), ifacePair.getRight(), value);
 	}
 	
 	/** Returns the hash key for the two interfaces in our connectivity graph.  Since
@@ -162,8 +252,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	
 	/** Returns the hash key for the two interfaces using an InterfacePair in our connectivity graph.  Since
 	 * the graph is bidirectional, we make sure that the ordering does not matter.
-	 * @param i1 Interface 1
-	 * @param i2 Interface 2
+	 * @param ifacePair the interface pair
 	 * @return the key to _graph for the two interfaces.  Returns null if pair doesn't exist.
 	 */
 	public static String hashKey(InterfacePair ifacePair) {
@@ -189,8 +278,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	}
 	
 	/** This sets the value of the connection between two interfaces in the graph.
-	 * @param i1 Interface 1
-	 * @param i2 Interface 2
+	 * @param ifacePair the interface pair
 	 * @param value true for connected, false for unconnected.
 	 * @return true of the connection succeeded, false otherwise
 	 */
@@ -211,8 +299,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	}
 	
 	/** This function connects two interfaces together in our graph.
-	 * @param i1 Interface 1
-	 * @param i2 Interface 2
+	 * @param ifacePair the interface pair
 	 * @return returns true if they were connected, false if the connection failed.
 	 */
 	public boolean connect(InterfacePair ifacePair) {
@@ -232,8 +319,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	}
 	
 	/** This function disconnects two interfaces together in our graph.
-	 * @param i1 Interface 1
-	 * @param i2 Interface 2
+	 * @param ifacePair the interface pair
 	 * @return returns true if they were disconnected, false if the connection failed.
 	 */
 	public boolean disconnect(InterfacePair ifacePair) {
@@ -255,8 +341,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	
 	/** This returns whether or not the pair of interfaces is valid in our graph.  I.e.,
 	 * both must exist in our graph to be valid.
-	 * @param i1 Interface 1
-	 * @param i2 Interface 2
+	 * @param ifacePair the interface pair
 	 * @return true if valid, false if not.
 	 */
 	public boolean validPair(InterfacePair ifacePair) {
@@ -283,8 +368,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	
 	/** This function will return true if the two interfaces are connected in our
 	 * graph, false if otherwise.  There is no ordering here, it is bidirectional.
-	 * @param i1 Interface 1
-	 * @param i2 Interface 2
+	 * @param ifacePair the interface pair
 	 * @return true if i1 and i2 are connected, false otherwise.
 	 */
 	public boolean areConnected(InterfacePair ifacePair) {
@@ -305,8 +389,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	
 	/** This function will return true if the two interfaces are directly connected in our
 	 * graph, false if otherwise.  There is no ordering here, it is bidirectional.
-	 * @param i1 Interface 1
-	 * @param i2 Interface 2
+	 * @param ifacePair the interface pair
 	 * @return true if i1 and i2 are connected, false otherwise.
 	 */
 	public boolean areDirectlyConnected(InterfacePair ifacePair) {
@@ -341,8 +424,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	
 	/** This function which will be used via recursion to try and get all of the connected nodes,
 	 *  passing along a "visited" variable to avoid loops.
-	 * @param i1 Interface 1
-	 * @param i2 Interface 2
+	 * @param ifacePair the interface pair
 	 * @param visited A list of the visited nodes so far
 	 * @return true if i1 and i2 are connected, false otherwise.
 	 */
