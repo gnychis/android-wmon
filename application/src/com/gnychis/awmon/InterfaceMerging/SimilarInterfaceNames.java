@@ -30,9 +30,10 @@ public class SimilarInterfaceNames extends MergeHeuristic {
 		// Use LevenshteinDistance to calculate the difference in a pair of strings, and if
 		// that distance is less than our tolerable distance, we consider their names to
 		// be highly similar.
-		if(computeLevenshteinDistance(pair.getLeft()._ifaceName, pair.getRight()._ifaceName)
-				<= TOLERABLE_STRING_DIFFERENCE)
-			return MergeStrength.LIKELY;
+		if(pair.getLeft()._ifaceName!=null && pair.getRight()._ifaceName!=null)
+			if(computeLevenshteinDistance(pair.getLeft()._ifaceName, pair.getRight()._ifaceName)
+					<= TOLERABLE_STRING_DIFFERENCE)
+				return MergeStrength.LIKELY;
 		
 		return MergeStrength.UNDETERMINED;	
 	}
@@ -47,6 +48,10 @@ public class SimilarInterfaceNames extends MergeHeuristic {
 	//  http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Java
 	public static int computeLevenshteinDistance(CharSequence str1,
 			CharSequence str2) {
+		
+		if(str1==null || str2==null)
+			return 1000000;		// invalid
+		
 		int[][] distance = new int[str1.length() + 1][str2.length() + 1];
 
 		for (int i = 0; i <= str1.length(); i++)

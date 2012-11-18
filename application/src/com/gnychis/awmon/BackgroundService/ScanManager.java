@@ -27,6 +27,7 @@ public class ScanManager {
 	NameResolutionManager _nameResolutionManager;	// For resolving the names of interfaces
 	ScanRequest _workingRequest;					// The most recent scan request we are working on
 	InterfaceScanManager _ifaceScanManager;			// Scan for interfaces.
+	InterfaceMergingManager _ifaceMergingManager;	// To merge interfaces in to devices
 	
 	public static final String SCAN_REQUEST = "awmon.scanmanager.scan_request";
 	public static final String SCAN_RESPONSE = "awmon.scanmanager.scan_response";
@@ -58,6 +59,7 @@ public class ScanManager {
 		_hardwareHandler=dh;
 		_nameResolutionManager = new NameResolutionManager(_parent);
 		_ifaceScanManager = new InterfaceScanManager(dh);
+		_ifaceMergingManager = new InterfaceMergingManager(_parent);
 		
 		_parent.registerReceiver(incomingEvent, new IntentFilter(ScanManager.SCAN_REQUEST));
 		_parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
@@ -68,7 +70,7 @@ public class ScanManager {
 	
 	private void broadcastResults(ScanManager.ResultType type, ArrayList<?> results) {
 		Intent i = new Intent();
-		i.setAction(InterfaceScanManager.INTERFACE_SCAN_REQUEST);
+		i.setAction(SCAN_RESPONSE);
 		i.putExtra("type", type);
 		i.putExtra("result", results);
 		_parent.sendBroadcast(i);

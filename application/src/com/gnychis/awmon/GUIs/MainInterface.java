@@ -3,6 +3,7 @@ package com.gnychis.awmon.GUIs;
 // do a random port number for pcapd
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -24,9 +25,11 @@ import android.widget.Toast;
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
+import com.gnychis.awmon.BackgroundService.ScanManager;
 import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.UserSettings;
+import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
 
@@ -222,7 +225,7 @@ public class MainInterface extends Activity implements OnClickListener {
 		super.onResume(); 
 		registerReceiver(_messageReceiver, new IntentFilter(MainInterface.THREAD_MESSAGE));
 		registerReceiver(_initializedReceiver, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
-		registerReceiver(_deviceScanReceiver, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
+		registerReceiver(_deviceScanReceiver, new IntentFilter(ScanManager.SCAN_RESPONSE));
 		
 	}
 	public void onPause() { 
@@ -237,17 +240,43 @@ public class MainInterface extends Activity implements OnClickListener {
     private BroadcastReceiver _deviceScanReceiver = new BroadcastReceiver() {
     	@SuppressWarnings("unchecked")
         public void onReceive(Context context, Intent intent) {
-        	ArrayList<Interface> deviceScanResult = (ArrayList<Interface>) intent.getExtras().get("result");
-        	for(Interface iface : deviceScanResult) {
-        		Log.d(TAG, "Got a device (" + iface.getClass() + " - " + iface._type + "): " 
-        				   + iface._MAC 
-        				   + " - " + iface._IP
-        				   + " - " + iface._ifaceName
-        				   + " - " + iface._ouiName
-        				   );
-        	}
-        	if(_pd!=null)
-        		_pd.dismiss();
+    		
+    		// First, get the response and see if the results are interfaces or devices.
+    		ScanManager.ResultType resultType = (ScanManager.ResultType) intent.getExtras().get("type");
+    		
+    		if(resultType == ScanManager.ResultType.INTERFACES) {
+	        	ArrayList<Interface> deviceScanResult = (ArrayList<Interface>) intent.getExtras().get("result");
+	        	
+	        	for(Interface iface : deviceScanResult) {
+	        		Log.d(TAG, "Got a device (" + iface.getClass() + " - " + iface._type + "): " 
+	        				   + iface._MAC 
+	        				   + " - " + iface._IP
+	        				   + " - " + iface._ifaceName
+	        				   + " - " + iface._ouiName
+	        				   );
+	        	}
+	        	if(_pd!=null)
+	        		_pd.dismiss();
+    		}
+    		
+    		if(resultType == ScanManager.ResultType.DEVICES) {
+	        	ArrayList<Device> deviceScanResult = (ArrayList<Device>) intent.getExtras().get("result");
+	        	
+	        	for(Device device : deviceScanResult) {
+	        		Log.d(TAG, "Got a device: " + device.getName());
+	        		List<Interface> interfaces = device.getInterfaces();
+	        		for(Interface iface : interfaces) {
+		        		Log.d(TAG, "... interface (" + iface.getClass() + " - " + iface._type + "): " 
+		        				   + iface._MAC 
+		        				   + " - " + iface._IP
+		        				   + " - " + iface._ifaceName
+		        				   + " - " + iface._ouiName
+		        				   );	
+	        		}
+	        	}
+	        	if(_pd!=null)
+	        		_pd.dismiss();
+    		}
         }
     }; 
 	
@@ -262,7 +291,7 @@ public class MainInterface extends Activity implements OnClickListener {
 		// Otherwise, if one is already running we just await the result.
 		ScanRequest request = new ScanRequest();
 		request.setNameResolution(true);
-		request.setMerging(false);
+		request.setMerging(true);
 		request.send(this);
 		
 		// Start a progress dialogue which will be canceled when the scan result returns.

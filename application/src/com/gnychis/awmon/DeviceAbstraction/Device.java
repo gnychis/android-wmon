@@ -56,6 +56,15 @@ public class Device implements Parcelable {
 		return null;
 	}
 	
+	/** 
+	 * Get the list of interfaces that are associated with the device.
+	 * 
+	 * @return a list of interfaces
+	 */
+	public List<Interface> getInterfaces() {
+		return _interfaces;
+	}
+	
 	// ********************************************************************* //
 	// This code is to make this class parcelable and needs to be updated if
 	// any new members are added to the Device class

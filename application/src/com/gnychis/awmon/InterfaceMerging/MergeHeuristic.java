@@ -7,6 +7,7 @@ import java.util.Map;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.InterfacePair;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
@@ -24,6 +25,8 @@ import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGraph, Integer, InterfaceConnectivityGraph > {
 
 	public static final String MERGE_HEURISTIC_RESPONSE = "awmon.interfacemerging.merge_heuristic_response";
+	public static final String TAG = "MergeHeuristic";
+	public static final boolean VERBOSE = false;
 	
 	public enum MergeStrength {
 		LIKELY,
@@ -43,28 +46,34 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 	protected InterfaceConnectivityGraph doInBackground( InterfaceConnectivityGraph ... params )
 	{
 		InterfaceConnectivityGraph graph = params[0];
+		debugOut("In the background thread for " + this.getClass().getName());
 		
 		// Get all interface pairs for the supported types, pass it to the classifier (heuristic)
 		List<InterfacePair> supportedPairs = graph.getInterfacePairsOfTypes(_supportedInterfaceTypes);
 		
 		// For all pairs, get the classification
+		debugOut("Running the classification for " + this.getClass().getName());
 		Map<InterfacePair,MergeStrength> classifications = new HashMap<InterfacePair,MergeStrength>();
 		for(InterfacePair pair : supportedPairs)
 			classifications.put(pair, classifyInterfacePair(pair));
-				
+		debugOut("... classification finished");
+
 		// Now, apply the classification done by the heuristic to the graph
+		debugOut("Updating the graph from the classifications done by " + this.getClass().getName());
 		graph.applyHeuristicClassification(classifications);
-		
+		debugOut("... done");
+
 		return graph;
 	}
 	
     @Override
-    protected void onPostExecute(InterfaceConnectivityGraph graph) {    		
+    protected void onPostExecute(InterfaceConnectivityGraph graph) {    	
 		Intent i = new Intent();
 		i.setAction(MERGE_HEURISTIC_RESPONSE);
 		i.putExtra("heuristic", this.getClass());
 		i.putExtra("result", graph);
 		_parent.sendBroadcast(i);
+    	debugOut("Finished the heuristic for " + this.getClass().getName() + ", sent broadcast");
     }
 	
 	/** This should be overriden by the child class extending MergeHeuristic. It should create a Map<InterfacePair,MergeStrength>,
@@ -74,4 +83,9 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 	 * @return a map of each InterfacePair to the merge strength
 	 */
 	abstract public MergeStrength classifyInterfacePair(InterfacePair pair);
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
+	}
 }

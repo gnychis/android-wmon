@@ -23,7 +23,7 @@ public class InterfaceMergingManager {
 	private static final boolean VERBOSE = true;
 	
 	public static final String INTERFACE_MERGING_REQUEST = "awmon.interfacemerging.interface_merging_request";
-	public static final String INTERFACE_MERGING_RESPONSE = "awmon.interfacemerging.interface_merging_request";
+	public static final String INTERFACE_MERGING_RESPONSE = "awmon.interfacemerging.interface_merging_response";
 	
 	Context _parent;
 	Queue<Class<?>> _pendingResults;
@@ -68,8 +68,8 @@ public class InterfaceMergingManager {
     				InterfaceConnectivityGraph graph = new InterfaceConnectivityGraph(interfaces);
     				
     				// Put all of the name resolves on to a stack.  Push last the one that you want to go first.
-    				registerHeuristic(Arrays.asList(AdjacentMACs.class, 
-    													SimilarInterfaceNames.class));
+    				registerHeuristic(Arrays.asList(SimilarInterfaceNames.class,
+    													AdjacentMACs.class));
     				
     				// Set the state to scanning, then clear the scan results.
     				_state = State.MERGING;

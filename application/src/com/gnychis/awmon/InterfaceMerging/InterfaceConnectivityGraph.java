@@ -224,7 +224,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	private boolean setNegativeWeight(Interface i1, Interface i2, int value) {
 		if(!validPair(i1, i2))
 			return false;
-		_positiveWeight.put(hashKey(i1,i2), value);
+		_negativeWeight.put(hashKey(i1,i2), value);
 		return true;
 	}
 	
@@ -651,6 +651,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
     }
     
     private InterfaceConnectivityGraph(Parcel source) {
+    	_nodes = new ArrayList<Interface>();
     	source.readList(_nodes, this.getClass().getClassLoader());
     	
     	// Create a new HashMap and read the number of elements in the graph

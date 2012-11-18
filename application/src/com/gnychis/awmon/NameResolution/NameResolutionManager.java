@@ -18,7 +18,7 @@ import com.gnychis.awmon.DeviceAbstraction.Interface;
 @SuppressWarnings("unchecked")
 public class NameResolutionManager {
 
-	private static final String TAG = "DeviceScanManager";
+	private static final String TAG = "NameResolutionManager";
 	private static final boolean VERBOSE = true;
 	
 	public static final String NAME_RESOLUTION_REQUEST = "awmon.nameresolution.name_resolution_request";
