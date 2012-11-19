@@ -43,6 +43,13 @@ public class InterfaceMergingManager {
         _parent.registerReceiver(incomingEvent, new IntentFilter(INTERFACE_MERGING_REQUEST));
 	}
 	
+	public void requestMerge(ArrayList<Interface> interfaces) {
+		Intent i = new Intent();
+		i.setAction(InterfaceMergingManager.INTERFACE_MERGING_REQUEST);
+		i.putExtra("interfaces", interfaces);
+		_parent.sendBroadcast(i);
+	}
+	
 	private void registerHeuristic(List<Class<? extends MergeHeuristic>> heuristics) {
 		_heuristicQueue = new Stack<Class<?>>();
 		_pendingResults = new LinkedList < Class<?> >();

@@ -128,10 +128,7 @@ public class ScanManager {
         				}
         				
         				// Send the request to do name resolution on the interfaces, passing them along
-        				Intent i = new Intent();
-        				i.setAction(NameResolutionManager.NAME_RESOLUTION_REQUEST);
-        				i.putExtra("interfaces", interfaces);
-        				_parent.sendBroadcast(i);
+        				_nameResolutionManager.requestNameResolution(interfaces);
         				
         				_state=ScanManager.State.NAME_RESOLUTION;
         				debugOut("Name resolution was set, we are now resolving!");
@@ -156,10 +153,7 @@ public class ScanManager {
         				}
         				
         				// Send the request to do interface merging, passing them along
-        				Intent i = new Intent();
-        				i.setAction(InterfaceMergingManager.INTERFACE_MERGING_REQUEST);
-        				i.putExtra("interfaces", interfaces);
-        				_parent.sendBroadcast(i);
+        				_ifaceMergingManager.requestMerge(interfaces);
         				
     					_state=ScanManager.State.INTERFACE_MERGING;
     					debugOut("Merging was set, let's try to merge the devices in to interfaces");

@@ -3,6 +3,7 @@ package com.gnychis.awmon.InterfaceMerging;
 import java.util.Arrays;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.InterfacePair;
@@ -18,6 +19,9 @@ import com.gnychis.awmon.HardwareHandlers.Wifi;
  * @author George Nychis (gnychis)
  */
 public class AdjacentMACs extends MergeHeuristic {
+	
+	private static final String TAG = "AdjacentMACs";
+	private static final boolean VERBOSE = true;
 	
 	public static final int MAX_ADDRESS_DISTANCE = 1;	// The maximum distance to consider "adjacent"
 	
@@ -36,9 +40,17 @@ public class AdjacentMACs extends MergeHeuristic {
 		// If the distance is less than our tolerance, then return LIKELY, otherwise consider
 		// it undetermined.  Don't return "UNLIKELY" because it is quite possible that two 
 		// different interfaces on a device have unsimilar addresses.
-		if(distance <= MAX_ADDRESS_DISTANCE)
+		if(distance <= MAX_ADDRESS_DISTANCE) {
+			debugOut("Likely: " + pair.getLeft()._MAC + " and " + pair.getRight()._MAC);
 			return MergeStrength.LIKELY;
+		}
 		
+		debugOut("Unlikely: " + pair.getLeft()._MAC + " and " + pair.getRight()._MAC);
 		return MergeStrength.UNDETERMINED;		
+	}
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
 	}
 }

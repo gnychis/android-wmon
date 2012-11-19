@@ -41,7 +41,13 @@ public class NameResolutionManager {
         
         _parent.registerReceiver(incomingEvent, new IntentFilter(NameResolver.NAME_RESOLVER_RESPONSE));
         _parent.registerReceiver(incomingEvent, new IntentFilter(NAME_RESOLUTION_REQUEST));
-
+	}
+	
+	public void requestNameResolution(ArrayList<Interface> interfaces) {
+		Intent i = new Intent();
+		i.setAction(NameResolutionManager.NAME_RESOLUTION_REQUEST);
+		i.putExtra("interfaces", interfaces);
+		_parent.sendBroadcast(i);
 	}
 	
 	private void registerNameResolver(List<Class<? extends NameResolver>> resolvers) {

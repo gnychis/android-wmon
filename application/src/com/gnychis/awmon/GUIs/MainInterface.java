@@ -31,7 +31,9 @@ import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
+import com.gnychis.awmon.HardwareHandlers.LAN;
+import com.gnychis.awmon.HardwareHandlers.Wifi;
+import com.gnychis.awmon.InterfaceMerging.InterfaceMergingManager;
 
 public class MainInterface extends Activity implements OnClickListener {
 	
@@ -97,6 +99,16 @@ public class MainInterface extends Activity implements OnClickListener {
     	// If the background service is already initialized, then we can go ahead call the post-init
     	if(_backgroundService.getSystemState()==BackgroundService.ServiceState.IDLE)
     		systemInitialized();
+        
+        // Create some test interfaces
+        Interface a = new Interface(LAN.class);  a._MAC="11:11:11:11:11:11"; a._ifaceName="Boboksdofk";
+        Interface b = new Interface(Wifi.class); b._MAC="11:11:11:11:11:12"; b._ifaceName="George";
+        ArrayList<Interface> interfaces = new ArrayList<Interface>();
+        interfaces.add(a); interfaces.add(b);
+        
+        // Try to merge the interfaces together
+        InterfaceMergingManager imm = new InterfaceMergingManager(this);
+        imm.requestMerge(interfaces);
     }
     
     // This runs after the initialization of the libraries, etc.
@@ -110,7 +122,7 @@ public class MainInterface extends Activity implements OnClickListener {
     	
     	// If we do not have the user settings, we open up an activity to query for them
 		Intent i = new Intent(MainInterface.this, Welcome.class);
-        startActivity(i);
+        startActivity(i);        
     }
     
     // A broadcast receiver to get messages from background service and threads
@@ -248,7 +260,7 @@ public class MainInterface extends Activity implements OnClickListener {
 	        	ArrayList<Interface> deviceScanResult = (ArrayList<Interface>) intent.getExtras().get("result");
 	        	
 	        	for(Interface iface : deviceScanResult) {
-	        		Log.d(TAG, "Got a device (" + iface.getClass() + " - " + iface._type + "): " 
+	        		Log.d(TAG, "Got a device (" + simplifiedClassName(iface.getClass()) + " - " + simplifiedClassName(iface._type) + "): " 
 	        				   + iface._MAC 
 	        				   + " - " + iface._IP
 	        				   + " - " + iface._ifaceName
@@ -263,10 +275,10 @@ public class MainInterface extends Activity implements OnClickListener {
 	        	ArrayList<Device> deviceScanResult = (ArrayList<Device>) intent.getExtras().get("result");
 	        	
 	        	for(Device device : deviceScanResult) {
-	        		Log.d(TAG, "Got a device: " + device.getName());
+	        		Log.d(TAG, "Got a device: " + simplifiedClassName(device.getClass()));
 	        		List<Interface> interfaces = device.getInterfaces();
 	        		for(Interface iface : interfaces) {
-		        		Log.d(TAG, "... interface (" + iface.getClass() + " - " + iface._type + "): " 
+		        		Log.d(TAG, "... interface (" + simplifiedClassName(iface.getClass()) + " - " + simplifiedClassName(iface._type) + "): " 
 		        				   + iface._MAC 
 		        				   + " - " + iface._IP
 		        				   + " - " + iface._ifaceName
@@ -323,4 +335,11 @@ public class MainInterface extends Activity implements OnClickListener {
 		c.sendBroadcast(i);
 	}
 		
+	public static String simplifiedClassName(Class<?> c) {
+		String fullName = c.getName();
+		String[] topName = fullName.split("\\.");
+		if(topName.length==0)
+			return fullName;
+		return topName[topName.length-1];
+	}
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
@@ -26,6 +27,9 @@ import com.gnychis.awmon.InterfaceMerging.MergeHeuristic.MergeStrength;
  * @author George Nychis (gnychis)
  */
 public class InterfaceConnectivityGraph implements Parcelable {
+	
+	static final String TAG = "InterfaceConnectivityGraph";
+	static final boolean VERBOSE = true;
 
 	private List<Interface> _nodes;					// Each interface is a node
 	private Map<String,Boolean> _graph;				// If a pair of interfaces have an active link between them
@@ -79,6 +83,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 				case LIKELY:
 					incrementPositiveWeight(pair);
 					connect(pair);
+					debugOut("Connecting " + pair.getLeft()._ifaceName + " and " + pair.getRight()._ifaceName);
 				break;
 				
 				/******************************* UNLIKELY ********************************/
@@ -244,10 +249,10 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	 */
 	public static String hashKey(Interface i1, Interface i2) {
 		String key=null;
-		if(i1.hashCode()<i2.hashCode())
-			key = Integer.toString(i1.hashCode()) + "," + Integer.toString(i2.hashCode());
+		if(i1.getKey()<i2.getKey())
+			key = Long.toString(i1.getKey()) + "," + Long.toString(i2.getKey());
 		else
-			key = Integer.toString(i2.hashCode()) + "," + Integer.toString(i1.hashCode());
+			key = Long.toString(i2.getKey()) + "," + Long.toString(i1.getKey());
 		return key;
 	}
 	
@@ -258,10 +263,10 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	 */
 	public static String hashKey(InterfacePair ifacePair) {
 		String key=null;
-		if(ifacePair.getLeft().hashCode()<ifacePair.getRight().hashCode())
-			key = Integer.toString(ifacePair.getLeft().hashCode()) + "," + Integer.toString(ifacePair.getRight().hashCode());
+		if(ifacePair.getLeft().getKey()<ifacePair.getRight().getKey())
+			key = Long.toString(ifacePair.getLeft().getKey()) + "," + Long.toString(ifacePair.getRight().getKey());
 		else
-			key = Integer.toString(ifacePair.getRight().hashCode()) + "," + Integer.toString(ifacePair.getLeft().hashCode());
+			key = Long.toString(ifacePair.getRight().getKey()) + "," + Long.toString(ifacePair.getLeft().getKey());
 		return key;
 	}
 		
@@ -665,8 +670,15 @@ public class InterfaceConnectivityGraph implements Parcelable {
     		_graph.put(key, val);
     		_positiveWeight.put(key,source.readInt());
     		_negativeWeight.put(key,source.readInt());
+    		graph_size--;
     	}
     	
     	_visitedNodes=null;
     }
+    
+    @SuppressWarnings("unused")
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
+	}
 }

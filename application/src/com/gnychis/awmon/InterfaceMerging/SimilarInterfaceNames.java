@@ -3,6 +3,7 @@ package com.gnychis.awmon.InterfaceMerging;
 import java.util.Arrays;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.InterfacePair;
 import com.gnychis.awmon.HardwareHandlers.Bluetooth;
@@ -18,6 +19,9 @@ import com.gnychis.awmon.HardwareHandlers.ZigBee;
  */
 public class SimilarInterfaceNames extends MergeHeuristic {
 	
+	private static final String TAG = "SimilarInterfaceNames";
+	private static final boolean VERBOSE = false;
+	
 	private static final int TOLERABLE_STRING_DIFFERENCE = 2;
 
 	@SuppressWarnings("unchecked")
@@ -30,10 +34,15 @@ public class SimilarInterfaceNames extends MergeHeuristic {
 		// Use LevenshteinDistance to calculate the difference in a pair of strings, and if
 		// that distance is less than our tolerable distance, we consider their names to
 		// be highly similar.
-		if(pair.getLeft()._ifaceName!=null && pair.getRight()._ifaceName!=null)
+		if(pair.getLeft()._ifaceName!=null && pair.getRight()._ifaceName!=null) {
+			debugOut("Comparing -" + pair.getLeft()._ifaceName + "-  to  -" + pair.getRight()._ifaceName + "-");
 			if(computeLevenshteinDistance(pair.getLeft()._ifaceName, pair.getRight()._ifaceName)
-					<= TOLERABLE_STRING_DIFFERENCE)
+					<= TOLERABLE_STRING_DIFFERENCE) {
+				debugOut("... likely");
 				return MergeStrength.LIKELY;
+			}
+			debugOut("...unlikely");
+		}
 		
 		return MergeStrength.UNDETERMINED;	
 	}
@@ -69,5 +78,10 @@ public class SimilarInterfaceNames extends MergeHeuristic {
 										: 1));
 
 		return distance[str1.length()][str2.length()];
+	}
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
 	}
 }

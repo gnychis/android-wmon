@@ -26,7 +26,7 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 
 	public static final String MERGE_HEURISTIC_RESPONSE = "awmon.interfacemerging.merge_heuristic_response";
 	public static final String TAG = "MergeHeuristic";
-	public static final boolean VERBOSE = false;
+	public static final boolean VERBOSE = true;
 	
 	public enum MergeStrength {
 		LIKELY,
