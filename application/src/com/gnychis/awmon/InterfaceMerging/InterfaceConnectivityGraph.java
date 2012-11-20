@@ -69,21 +69,23 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	
 	/** The purpose of this function is to take a graph and a series of classifications that were output from one of the heuristics,
 	 * and then modify the graph (connect/disconnect edges) based on it.
-	 * @param graph
-	 * @return
+	 * @param classifications a map of classifications that are returned from a merge heuristic
 	 */
 	public void applyHeuristicClassification(Map<InterfacePair,MergeStrength> classifications) {
 		
 		// For all hashKeys of all the interface pairs, update the links
 		for(InterfacePair pair : classifications.keySet()) {
 			MergeStrength strength = classifications.get(pair);
+			Interface left = pair.getLeft();
+			Interface right = pair.getRight();
+			
 			switch(strength) {
 			
 				/******************************** LIKELY ********************************/
 				case LIKELY:
 					incrementPositiveWeight(pair);
 					connect(pair);
-					debugOut("Connecting " + pair.getLeft()._ifaceName + " and " + pair.getRight()._ifaceName);
+					debugOut("Connecting " + left._ifaceName + " and " + right._ifaceName);
 				break;
 				
 				/******************************* UNLIKELY ********************************/
@@ -94,10 +96,75 @@ public class InterfaceConnectivityGraph implements Parcelable {
 				/***************************** UNDETERMINED ******************************/
 				case UNDETERMINED:
 				break;
+				
+				/***************************** FLATTEN LEFT ******************************/
+				case FLATTEN_LEFT:
+					left.merge(right);
+					removeInterface(right);
+				break;
+				
+				/***************************** FLATTEN RIGHT ******************************/
+				case FLATTEN_RIGHT:
+					right.merge(left);
+					removeInterface(left);
+				break;
 			}
 		}
 	}
 	
+	/** Removes an interface from the connectivity graph.
+	 * @param iface The interface to remove.
+	 * @return true if successful, false otherwise.
+	 */
+	public boolean removeInterface(Interface iface) {
+		for(Interface i : _nodes) {
+			if(iface.getKey() == i.getKey()) {
+				_nodes.remove(i);
+				removeKeys(i);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/** This removes an Interface from our HashMaps that keep track of its connectivity
+	 * in the graph (e.g., from _graph).
+	 * @param iface The interface to remove.
+	 */
+	public void removeKeys(Interface iface) {
+		
+		// Remove the Interface from the graph
+		for(String key : _graph.keySet())
+			if(hashKeyContainsInterface(key, iface))
+				_graph.remove(key);
+		
+		// Then, remove its positive and negative weight
+		for(String key : _positiveWeight.keySet())
+			if(hashKeyContainsInterface(key, iface))
+				_positiveWeight.remove(key);
+		
+		for(String key : _negativeWeight.keySet())
+			if(hashKeyContainsInterface(key, iface))
+				_negativeWeight.remove(key);
+	}
+	
+	/** This checks if the current hashKey contains the specified interface.
+	 * @param key	The key to check
+	 * @param iface	The interface to see if it exists in 'key'
+	 * @return true if key contains iface, false otherwise.
+	 */
+	public static boolean hashKeyContainsInterface(String key, Interface iface) {
+		String[] keyPair = key.split(",");
+		if(keyPair.length!=2)
+			return false;
+		
+		if(Long.parseLong(keyPair[0]) == iface.getKey())
+			return true;
+		if(Long.parseLong(keyPair[1]) == iface.getKey())
+			return true;
+			
+		return false;
+	}
 	
 	/**  Gets the total weight on a link between two interfaces by summing the positive
 	 * and negative weights

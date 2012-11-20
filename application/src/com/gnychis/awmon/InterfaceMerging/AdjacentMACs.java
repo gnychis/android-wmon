@@ -21,7 +21,7 @@ import com.gnychis.awmon.HardwareHandlers.Wifi;
 public class AdjacentMACs extends MergeHeuristic {
 	
 	private static final String TAG = "AdjacentMACs";
-	private static final boolean VERBOSE = true;
+	private static final boolean VERBOSE = false;
 	
 	public static final int MAX_ADDRESS_DISTANCE = 1;	// The maximum distance to consider "adjacent"
 	

@@ -80,6 +80,7 @@ public class SimilarInterfaceNames extends MergeHeuristic {
 		return distance[str1.length()][str2.length()];
 	}
 	
+	@SuppressWarnings("unused")
 	private void debugOut(String msg) {
 		if(VERBOSE)
 			Log.d(TAG, msg);

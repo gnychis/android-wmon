@@ -29,9 +29,11 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 	public static final boolean VERBOSE = true;
 	
 	public enum MergeStrength {
-		LIKELY,
-		UNLIKELY,
-		UNDETERMINED,
+		LIKELY,			// The two pairs of interfaces likely are on the same device
+		UNLIKELY,		// The two pairs of interfaces are unlikely on the same device
+		UNDETERMINED,	// The heuristic cannot make a decision
+		FLATTEN_LEFT,	// The "two" interfaces are actually one interface, flatten them to the left in the pair
+		FLATTEN_RIGHT,	// '...' to the right in the pair
 	}
 	
 	Context _parent;		// Need the parent to do things like send broadcasts.

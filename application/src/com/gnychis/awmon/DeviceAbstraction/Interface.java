@@ -43,6 +43,18 @@ public class Interface implements Parcelable {
 		_key=i._key;
 	}
 	
+	/** This merges the information from Interface 'i' in to the current interface,
+	 * if it is any information that the current interface is lacking.
+	 * @param i the Interface to merge in
+	 */
+	public void merge(Interface i) {
+		if(_MAC==null) 			_MAC = i._MAC;
+		if(_IP==null) 			_IP = i._IP;
+		if(_ouiName==null)  	_ouiName = i._ouiName;
+		if(_ifaceName==null)	_ifaceName = i._ifaceName;
+		if(_type==null)			_type = i._type;
+	}
+	
 	/** Returns the unique key for the interface which is persistent as interfaces are copied
 	 * with broadcasts, merged in to devices, etc.
 	 * @return

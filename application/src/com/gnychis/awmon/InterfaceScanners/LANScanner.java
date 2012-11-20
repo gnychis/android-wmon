@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
@@ -14,6 +15,9 @@ import com.gnychis.awmon.HardwareHandlers.LAN;
 // are active on the LAN.
 public class LANScanner extends InterfaceScanner {
 	
+	private static String TAG = "LANScanner";
+	private static boolean VERBOSE = true;
+	
 	private final int NUM_ARP_SCANS = 3;
 
 	public LANScanner() {
@@ -23,6 +27,7 @@ public class LANScanner extends InterfaceScanner {
 	@Override
 	protected ArrayList<Interface> doInBackground( InternalRadio ... params )
 	{
+		debugOut("Scanning the LAN with ARP requests...");
 		_hw_device = params[0];		
 		ArrayList<String> scanResult = new ArrayList<String>();
 		
@@ -34,6 +39,8 @@ public class LANScanner extends InterfaceScanner {
 		hs.addAll(scanResult);
 		scanResult.clear();
 		scanResult.addAll(hs);
+		
+		debugOut("Completed LAN scan");
 		return _result_parser.returnInterfaces(scanResult);
 	}
 
@@ -56,4 +63,9 @@ public class LANScanner extends InterfaceScanner {
 		}
 	}
 	//**********************************************************************************************//
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
+	}
 }
