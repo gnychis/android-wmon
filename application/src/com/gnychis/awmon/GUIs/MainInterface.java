@@ -99,16 +99,6 @@ public class MainInterface extends Activity implements OnClickListener {
     	// If the background service is already initialized, then we can go ahead call the post-init
     	if(_backgroundService.getSystemState()==BackgroundService.ServiceState.IDLE)
     		systemInitialized();
-        
-        // Create some test interfaces
-        Interface a = new Interface(LAN.class);  a._MAC="11:11:11:11:11:11"; a._ifaceName="Boboksdofk";
-        Interface b = new Interface(Wifi.class); b._MAC="11:11:11:11:11:12"; b._ifaceName="George";
-        ArrayList<Interface> interfaces = new ArrayList<Interface>();
-        interfaces.add(a); interfaces.add(b);
-        
-        // Try to merge the interfaces together
-        InterfaceMergingManager imm = new InterfaceMergingManager(this);
-        imm.requestMerge(interfaces);
     }
     
     // This runs after the initialization of the libraries, etc.
