@@ -5,8 +5,13 @@ import android.os.Parcelable;
 
 public class WiredInterface extends Interface implements Parcelable {
 	
+	public boolean _gateway;
+	
 	public void initVars() {
+		_gateway=false;
 	}
+	
+	public boolean isGateway() { return _gateway; }
 
 	public WiredInterface() { super(); initVars(); }
 	public WiredInterface(Interface i) { super(i); initVars(); }
@@ -19,10 +24,6 @@ public class WiredInterface extends Interface implements Parcelable {
 		return this.hashCode();
 	}
 
-	public void writeToParcel(Parcel dest, int parcelableFlags) {
-		writeInterfaceToParcel(dest, parcelableFlags);
-	}
-	
 	public static final Parcelable.Creator<WiredInterface> CREATOR = new Parcelable.Creator<WiredInterface>() {
 		public WiredInterface createFromParcel(Parcel in) {
 			return new WiredInterface(in);
@@ -33,8 +34,14 @@ public class WiredInterface extends Interface implements Parcelable {
 		}
 	};
 
+	public void writeToParcel(Parcel dest, int parcelableFlags) {
+		writeInterfaceToParcel(dest, parcelableFlags);
+		dest.writeInt( (_gateway) ? 1 : 0 );
+	}
+
 	//@SuppressWarnings("unchecked")
 	private WiredInterface(Parcel source) {
 		readInterfaceParcel(source);
+		_gateway = (source.readInt()==1) ? true : false;
 	}
 }

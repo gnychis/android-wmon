@@ -3,6 +3,7 @@ package com.gnychis.awmon.InterfaceScanners;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -20,8 +21,8 @@ public class LANScanner extends InterfaceScanner {
 	
 	private final int NUM_ARP_SCANS = 3;
 
-	public LANScanner() {
-		super(LAN.class);
+	public LANScanner(Context c) {
+		super(c, LAN.class);
 	}
 	
 	@Override

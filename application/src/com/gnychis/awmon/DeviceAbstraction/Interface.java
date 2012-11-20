@@ -1,5 +1,7 @@
 package com.gnychis.awmon.DeviceAbstraction;
 
+import java.math.BigInteger;
+import java.net.InetAddress;
 import java.util.Comparator;
 import java.util.Random;
 
@@ -96,6 +98,14 @@ public class Interface implements Parcelable {
 	            return false;
 
 	    return true;
+	}
+	
+	public static String intIPtoString(int IP) {
+		byte[] bytes = BigInteger.valueOf(IP).toByteArray();
+		try {
+			InetAddress address = InetAddress.getByAddress(bytes);
+			return address.toString();
+		} catch(Exception e) { return null; }
 	}
 	
 	/** Gets the reverse of this specific interfaces IP address;

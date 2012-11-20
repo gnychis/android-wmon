@@ -30,13 +30,13 @@ abstract public class InternalRadio {
 			return false;
 		
 		if(this.getClass() == ZigBee.class)
-			_interfaceScanner = new ZigBeeScanner();
+			_interfaceScanner = new ZigBeeScanner(_parent);
 		if(this.getClass() == Wifi.class)
-			_interfaceScanner = new WifiScanner();
+			_interfaceScanner = new WifiScanner(_parent);
 		if(this.getClass() == Bluetooth.class)
-			_interfaceScanner = new BluetoothScanner();
+			_interfaceScanner = new BluetoothScanner(_parent);
 		if(this.getClass() == LAN.class)
-			_interfaceScanner = new LANScanner();
+			_interfaceScanner = new LANScanner(_parent);
 		
 		if(_interfaceScanner==null)
 			return false;
@@ -45,7 +45,8 @@ abstract public class InternalRadio {
 		return true;
 	}
 	
-	public InternalRadio() {
+	public InternalRadio(Context c) {
+		_parent = c;
 		_state_lock = new Semaphore(1,true);
 		_state = State.IDLE;
 	}

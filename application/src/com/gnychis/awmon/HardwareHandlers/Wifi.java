@@ -55,8 +55,7 @@ public class Wifi extends InternalRadio {
 	String _rxpackets_loc;
 	
 	public Wifi(Context c) {
-		super();
-		_parent = c;
+		super(c);
 		_settings = new UserSettings(_parent);
 		
 		_wlan_mac = BackgroundService.runCommand("netcfg | grep wlan0 | awk '{print $5}'").get(0);
@@ -271,13 +270,13 @@ public class Wifi extends InternalRadio {
     	String wlan_bssid = p.getField("wlan.bssid");
     	String ds_status = p.getField("wlan.fc.ds");
     	
-    	if(transmitter_addr=="ff:ff:ff:ff:ff:ff" || transmitter_addr=="00:00:00:00:00:00")
+    	if(transmitter_addr.equals("ff:ff:ff:ff:ff:ff") || transmitter_addr.equals("00:00:00:00:00:00"))
     		transmitter_addr=null;
-    	if(receiver_addr=="ff:ff:ff:ff:ff:ff" || receiver_addr=="00:00:00:00:00:00")
+    	if(receiver_addr.equals("ff:ff:ff:ff:ff:ff") || receiver_addr.equals("00:00:00:00:00:00"))
     		receiver_addr=null;
-    	if(wlan_sa=="ff:ff:ff:ff:ff:ff" || wlan_sa=="00:00:00:00:00:00")
+    	if(wlan_sa.equals("ff:ff:ff:ff:ff:ff") || wlan_sa.equals("00:00:00:00:00:00"))
     		wlan_sa=null;
-    	if(wlan_bssid=="ff:ff:ff:ff:ff:ff" || wlan_bssid=="00:00:00:00:00:00")
+    	if(wlan_bssid.equals("ff:ff:ff:ff:ff:ff") || wlan_bssid.equals("00:00:00:00:00:00"))
     		wlan_bssid=null;
     	
     	// If the packet has a receiver address but no transmitter address, it is an
@@ -292,17 +291,17 @@ public class Wifi extends InternalRadio {
     	
     	// If the DS status is "0x00" (i.e., To DS: 0 and From DS: 0), then it is typically a mangement
     	// frame and the source address is definitely the transmitter.
-    	if(ds_status=="0x00")
+    	if(ds_status.equals("0x00"))
     		return wlan_sa;
     	
     	// If the DS status is "0x01" (i.e., To DS: 1 and From DS: 0), then it means it was a frame from
     	// a station (i.e., a true wireless client) which is the source.
-    	if(ds_status=="0x01")
+    	if(ds_status.equals("0x01"))
     		return wlan_sa;
     	
     	// If the DS status is "0x02" (i.e., To DS: 0 and From DS: 1), the AP is relaying
     	// the packet, so the bssid is the source transmitter.
-    	if(ds_status=="0x02")
+    	if(ds_status.equals("0x02"))
     		return wlan_bssid;
 
     	return null;  // we have no clue

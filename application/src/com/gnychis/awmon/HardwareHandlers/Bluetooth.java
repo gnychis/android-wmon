@@ -8,8 +8,7 @@ public class Bluetooth extends InternalRadio {
 	BluetoothAdapter _bluetooth;
 	
 	public Bluetooth(Context c) {
-		super();
-		_parent = c;
+		super(c);
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}
 	

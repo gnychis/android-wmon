@@ -55,8 +55,8 @@ public class WifiScanner extends InterfaceScanner {
 	private boolean _scan_timer_expired;
 	private Timer _scan_timer;		// the timer which will fire to end the scan or update it
 	
-	public WifiScanner() {
-		super(Wifi.class);
+	public WifiScanner(Context c) {
+		super(c, Wifi.class);
 		// If we are dumping all of our packets for debugging...
 		if(PCAP_DUMP) {
 			Log.d(TAG, "Trying to open pcap dump file");

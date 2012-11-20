@@ -24,8 +24,8 @@ public class BluetoothScanner extends InterfaceScanner {
 	boolean _bt_scan_complete;
 	ArrayList<Interface> _scanResult;
 	
-	public BluetoothScanner() {
-		super(Bluetooth.class);
+	public BluetoothScanner(Context c) {
+		super(c, Bluetooth.class);
 		_bluetooth = BluetoothAdapter.getDefaultAdapter();
 	}
 	

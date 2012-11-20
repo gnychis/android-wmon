@@ -2,6 +2,7 @@ package com.gnychis.awmon.InterfaceScanners;
 
 import java.util.ArrayList;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 
@@ -26,15 +27,15 @@ abstract public class InterfaceScanner extends AsyncTask<InternalRadio, Integer,
 	ScanResultParser _result_parser;
 	public static final String HW_SCAN_RESULT = "awmon.devicescanner.hw_scan_result";
 	
-	public InterfaceScanner(Class<?> hardwareClass) {
+	public InterfaceScanner(Context c, Class<?> hardwareClass) {
 		if(hardwareClass == ZigBee.class)
-			_result_parser = new ZigBeeResultParser();
+			_result_parser = new ZigBeeResultParser(c);
 		if(hardwareClass == Wifi.class)
-			_result_parser = new WifiResultParser();
+			_result_parser = new WifiResultParser(c);
 		if(hardwareClass == Bluetooth.class)
-			_result_parser = new BluetoothResultParser();
+			_result_parser = new BluetoothResultParser(c);
 		if(hardwareClass == LAN.class)
-			_result_parser = new LANResultParser();
+			_result_parser = new LANResultParser(c);		
 	}
 	
     @Override

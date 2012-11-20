@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import android.content.Context;
+
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 public class BluetoothResultParser extends ScanResultParser {
+	
+	public BluetoothResultParser(Context c) { super(c); }
 
 	public <T extends Object> ArrayList<Interface> returnInterfaces(ArrayList<T> scanResult) {
 		ArrayList<Interface> interfaces = new ArrayList<Interface>();

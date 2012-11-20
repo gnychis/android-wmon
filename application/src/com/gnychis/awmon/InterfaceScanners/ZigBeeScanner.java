@@ -7,6 +7,7 @@ import java.util.concurrent.Semaphore;
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.nio.JBuffer;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.Packet;
@@ -35,8 +36,8 @@ public class ZigBeeScanner extends InterfaceScanner {
 	byte SCAN_DONE=0x0006;
 	byte CHAN_IS=0x0007;
 	
-	public ZigBeeScanner() {
-		super(ZigBee.class);
+	public ZigBeeScanner(Context c) {
+		super(c, ZigBee.class);
 	}
 	
 	// Transmit a command to start a scan on the hardware (channel hop)

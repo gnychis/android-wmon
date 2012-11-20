@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import android.content.Context;
+import android.util.Log;
+
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
@@ -13,6 +16,8 @@ public class WifiResultParser extends ScanResultParser {
 	
 	final String TAG = "WifiResultParser";
 	public final boolean VERBOSE = true;
+	
+	public WifiResultParser(Context c) { super(c); }
 	
 	WirelessInterface getInterfaceFromMAC(ArrayList<Interface> devices, String MAC) {
 		for(int i=0; i<devices.size(); i++)
@@ -63,5 +68,10 @@ public class WifiResultParser extends ScanResultParser {
 	    }
 		
 		return devices;
+	}
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
 	}
 }

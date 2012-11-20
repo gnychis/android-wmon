@@ -5,12 +5,16 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import android.content.Context;
+
 import com.gnychis.awmon.Core.Packet;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.HardwareHandlers.ZigBee;
 
 public class ZigBeeResultParser extends ScanResultParser {
+	
+	public ZigBeeResultParser(Context c) { super(c); }
 	
 	public <T extends Object> ArrayList<Interface> returnInterfaces(ArrayList<T> scanResult) {
 				

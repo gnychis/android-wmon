@@ -16,8 +16,7 @@ public class LAN extends InternalRadio {
 	UserSettings _settings;
 	
 	public LAN(Context c) {
-		super();
-		_parent = c;
+		super(c);
 		_wifi = (WifiManager) _parent.getSystemService(Context.WIFI_SERVICE);
 		_settings = new UserSettings(_parent);
 	}
