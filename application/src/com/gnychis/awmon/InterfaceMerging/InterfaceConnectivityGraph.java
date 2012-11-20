@@ -133,19 +133,30 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	 */
 	public void removeKeys(Interface iface) {
 		
+		List<String> removeKey;
+		
 		// Remove the Interface from the graph
+		removeKey = new ArrayList<String>();
 		for(String key : _graph.keySet())
 			if(hashKeyContainsInterface(key, iface))
-				_graph.remove(key);
+				removeKey.add(key);
+		for(String key : removeKey)
+			_graph.remove(key);
 		
 		// Then, remove its positive and negative weight
+		removeKey = new ArrayList<String>();
 		for(String key : _positiveWeight.keySet())
 			if(hashKeyContainsInterface(key, iface))
-				_positiveWeight.remove(key);
+				removeKey.add(key);
+		for(String key : removeKey)
+			_positiveWeight.remove(key);
 		
+		removeKey = new ArrayList<String>();
 		for(String key : _negativeWeight.keySet())
 			if(hashKeyContainsInterface(key, iface))
-				_negativeWeight.remove(key);
+				removeKey.add(key);
+		for(String key : removeKey)
+			_negativeWeight.remove(key);
 	}
 	
 	/** This checks if the current hashKey contains the specified interface.

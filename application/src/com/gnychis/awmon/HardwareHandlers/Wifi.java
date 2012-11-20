@@ -18,19 +18,7 @@ import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.GUIs.MainInterface;
 import com.gnychis.awmon.InterfaceScanners.WifiScanner;
 
-/* 
- * record received packets
-set state to SCANNING
-initialize number of packets to -1
-initiate a non-blocking scan
-in the thread, count up the number of received packets while in SCANNING
-after 5 seconds record the received packets again
-keep receiving packets in thread, counting up
-if(num_pkts==-1) then just keep going
-once num_pkts != -1, and read>num_pkts, then leave scanning thread
 
-bingo.
- */
 public class Wifi extends InternalRadio {
 	
 	// This defines the device USB ID we are looking for
@@ -270,13 +258,13 @@ public class Wifi extends InternalRadio {
     	String wlan_bssid = p.getField("wlan.bssid");
     	String ds_status = p.getField("wlan.fc.ds");
     	
-    	if(transmitter_addr.equals("ff:ff:ff:ff:ff:ff") || transmitter_addr.equals("00:00:00:00:00:00"))
+    	if(transmitter_addr!=null && (transmitter_addr.equals("ff:ff:ff:ff:ff:ff") || transmitter_addr.equals("00:00:00:00:00:00")))
     		transmitter_addr=null;
-    	if(receiver_addr.equals("ff:ff:ff:ff:ff:ff") || receiver_addr.equals("00:00:00:00:00:00"))
+    	if(receiver_addr!=null && (receiver_addr.equals("ff:ff:ff:ff:ff:ff") || receiver_addr.equals("00:00:00:00:00:00")))
     		receiver_addr=null;
-    	if(wlan_sa.equals("ff:ff:ff:ff:ff:ff") || wlan_sa.equals("00:00:00:00:00:00"))
+    	if(wlan_sa!=null && (wlan_sa.equals("ff:ff:ff:ff:ff:ff") || wlan_sa.equals("00:00:00:00:00:00")))
     		wlan_sa=null;
-    	if(wlan_bssid.equals("ff:ff:ff:ff:ff:ff") || wlan_bssid.equals("00:00:00:00:00:00"))
+    	if(wlan_bssid!=null && (wlan_bssid.equals("ff:ff:ff:ff:ff:ff") || wlan_bssid.equals("00:00:00:00:00:00")))
     		wlan_bssid=null;
     	
     	// If the packet has a receiver address but no transmitter address, it is an
