@@ -166,7 +166,7 @@ public class Zeroconf extends NameResolver {
 	    	debugOut("Resolved Name: " + name + "  Address: " + IP);
 	    	
 	    	for(Interface iface : _supportedInterfaces)
-	    		if(iface._IP.equals(IP) && iface._ifaceName==null)	// we found the interface, and the name is null
+	    		if(iface._IP!=null && iface._IP.equals(IP) && iface._ifaceName==null)	// we found the interface, and the name is null
 	    			iface._ifaceName = name;	// name it
 	    }
 	    
