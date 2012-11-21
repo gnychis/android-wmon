@@ -29,7 +29,7 @@ import com.gnychis.awmon.InterfaceMerging.MergeHeuristic.MergeStrength;
 public class InterfaceConnectivityGraph implements Parcelable {
 	
 	static final String TAG = "InterfaceConnectivityGraph";
-	static final boolean VERBOSE = true;
+	static final boolean VERBOSE = false;
 
 	private List<Interface> _nodes;					// Each interface is a node
 	private Map<String,Boolean> _graph;				// If a pair of interfaces have an active link between them
