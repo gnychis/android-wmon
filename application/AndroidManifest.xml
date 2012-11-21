@@ -31,7 +31,7 @@
         </activity>
         
        	<service android:enabled="true" android:name=".BackgroundService.BackgroundService" />
-		
+       	
 		<receiver android:name=".BackgroundService.BootupReceiver">
 		    <intent-filter>
 		        <action android:name="android.intent.action.BOOT_COMPLETED" />

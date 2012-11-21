@@ -3,6 +3,7 @@ package com.gnychis.awmon.NameResolution;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 
@@ -14,6 +15,7 @@ abstract public class NameResolver extends AsyncTask<ArrayList<Interface>, Integ
 	public static final String NAME_RESOLVER_RESPONSE = "awmon.nameresolver.name_resolver_response";
 	
 	NameResolutionManager _nr_manager;
+	Context _parent;
 	
 	// This is an array which will keep track of the support hardware types for each name resolver
 	public List<Class<? extends InternalRadio>> _supportedInterfaceTypes;
@@ -21,6 +23,7 @@ abstract public class NameResolver extends AsyncTask<ArrayList<Interface>, Integ
 	public NameResolver(NameResolutionManager nrm, List<Class<? extends InternalRadio>> supportedInterfaces) {
 		_supportedInterfaceTypes = supportedInterfaces;
 		_nr_manager = nrm;
+		_parent = _nr_manager._parent;
 	}
 	
 	@Override

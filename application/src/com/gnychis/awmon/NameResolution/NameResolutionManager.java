@@ -76,6 +76,7 @@ public class NameResolutionManager {
         				
         				// Put all of the name resolves on to a stack.  Push last the one that you want to go first.
         				registerNameResolver(Arrays.asList(Zeroconf.class, 
+        													SSDP.class, 
         													OUI.class));
         				
         				triggerNextNameResolver(interfaces);
@@ -121,6 +122,8 @@ public class NameResolutionManager {
 			resolver = new Zeroconf(this);
 		if(resolverRequest == OUI.class)
 			resolver = new OUI(this);
+		if(resolverRequest == SSDP.class)
+			resolver = new SSDP(this);
 		
 		if(resolver == null)
 			return false;
