@@ -2,7 +2,9 @@ package com.gnychis.awmon.DeviceAbstraction;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 
 import android.os.Parcel;
@@ -43,6 +45,18 @@ public class Interface implements Parcelable {
 		_ifaceName=i._ifaceName;
 		_type=i._type;
 		_key=i._key;
+	}
+	
+	
+	/** This just strips some of the junk out of OUI names like "corp." and "LTD"
+	 * @return returns the clean OUI name.
+	 */
+	public String cleanOUIname() {
+		List<String> kill = Arrays.asList(" INC.", " CORP.", " LTD.", ",", " Ltd.", " Inc.", " CO.");
+		String cleanName = _ouiName;
+		for(String k : kill)
+			cleanName = cleanName.replace(k, "");
+		return cleanName;
 	}
 	
 	/** This merges the information from Interface 'i' in to the current interface,

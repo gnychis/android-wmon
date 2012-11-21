@@ -53,6 +53,11 @@ public class Device implements Parcelable {
 			if(iface._ifaceName != null)
 				return iface._ifaceName;
 		
+		// If we are still in this function, there were no interface names.  Return an OUI name.
+		for(Interface iface : _interfaces)
+			if(iface._ouiName != null)
+				return iface.cleanOUIname();
+		
 		return null;
 	}
 	

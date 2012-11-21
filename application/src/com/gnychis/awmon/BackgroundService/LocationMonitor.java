@@ -30,6 +30,7 @@ public class LocationMonitor {
 	
     public static String TAG = "AWMonLocationMonitor";
     public static final String LOCATION_UPDATE = "awmon.location.update";
+    public static final boolean VERBOSE = false;
 
 	HomeState _homeState;
 	public static enum HomeState {
@@ -103,15 +104,15 @@ public class LocationMonitor {
 	               
 	               home_ssid = _settings.getHomeSSID();
 	               
-	               Log.d(TAG, "Scan result received, current scan: " + Integer.toString(mScansLeft));
+	               debugOut("Scan result received, current scan: " + Integer.toString(mScansLeft));
 	               
 	               if(--mScansLeft>0) {		// If there are more scans left....
-	            	   Log.d(TAG, "Triggering another scan...");
+	            	   debugOut("Triggering another scan...");
 	            	   wifi.startScan();	// scan again.
 	               } else {								// There are no scans left.
-	            	   Log.d(TAG, "Finished with the scans...");
+	            	   debugOut("Finished with the scans...");
 		               if(mDisableWifiAS) {				// If the user had Wifi disabled, disable it again
-		            	   Log.d(TAG, "Trying to disable Wifi");
+		            	   debugOut("Trying to disable Wifi");
 		            	   while(wifi.isWifiEnabled()) { wifi.setWifiEnabled(false); }
 		            	   mDisableWifiAS=false;		// Reset the wifi disable state.
 		               }
@@ -186,7 +187,7 @@ public class LocationMonitor {
         boolean wifi_enabled=wifi.isWifiEnabled();
         if(!wifi_enabled) {
         	wifi.setWifiEnabled(true);
-        	Log.d(TAG, "Enabling Wifi, disable after scan: " + Boolean.toString(mDisableWifiAS));
+        	debugOut("Enabling Wifi, disable after scan: " + Boolean.toString(mDisableWifiAS));
         }
         while(!wifi.isWifiEnabled()) {}
         mScansLeft=NUM_SCANS;
@@ -203,7 +204,7 @@ public class LocationMonitor {
     	if(location==null)	// The location must not be null
     		return;
     	
-    	Log.d(TAG, "Got a location: (" + location.getLatitude() + "," + location.getLongitude() + ") .. Accuracy: " + Double.toString(location.getAccuracy()));
+    	debugOut("Got a location: (" + location.getLatitude() + "," + location.getLongitude() + ") .. Accuracy: " + Double.toString(location.getAccuracy()));
     	
     	// First, if we are associated to an access point that is the same name of the user's home access
     	// point, then we consider them home and save locations with a greater accuracy than what we have
@@ -220,7 +221,7 @@ public class LocationMonitor {
     	// If we have marked the next location as home, we will save it only if we are associated to the access point.
     	// This tries to help in scenarios with SSIDs that are too general, and to improve location accuracy.
     	if(mNextLocIsHome && associatedToHomeAP()) {
-    		Log.d(TAG, "Saving the location of the home");
+    		debugOut("Saving the location of the home");
     		_settings.setHomeLocation(location);
     		mHomeLoc=location;
     		mNextLocIsHome=false;
@@ -249,7 +250,7 @@ public class LocationMonitor {
     // (which is NEVER sent back to us, it's only kept locally on the user's phone), 
     // then we save it in the application preferences.
     public void home() {
-    	Log.d(TAG, "Got an update that the phone is in the home");
+    	debugOut("Got an update that the phone is in the home");
     	
     	// We are switching from the not home to home, let's go ahead and announce that.
     	if(_homeState==HomeState.NOT_HOME) {
@@ -264,7 +265,7 @@ public class LocationMonitor {
     
     // The user's phone is not in the home based on localization information.
     public void notHome() {
-    	Log.d(TAG, "The phone is not in the home");
+    	debugOut("The phone is not in the home");
     	
     	// We are switching from the home to the not home state, announce!
     	if(_homeState==HomeState.HOME) {
@@ -292,5 +293,10 @@ public class LocationMonitor {
 	public String getAssociatedMAC() {
 		WifiInfo currWifi = wifi.getConnectionInfo();
     	return currWifi.getBSSID();
+	}
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
 	}
 }

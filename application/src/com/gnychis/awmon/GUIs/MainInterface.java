@@ -265,7 +265,7 @@ public class MainInterface extends Activity implements OnClickListener {
 	        	ArrayList<Device> deviceScanResult = (ArrayList<Device>) intent.getExtras().get("result");
 	        	
 	        	for(Device device : deviceScanResult) {
-	        		Log.d(TAG, "Got a device");
+	        		Log.d(TAG, "Got a device: " + device.getName());
 	        		List<Interface> interfaces = device.getInterfaces();
 	        		for(Interface iface : interfaces) {
 		        		Log.d(TAG, "... interface (" + simplifiedClassName(iface.getClass()) + " - " + simplifiedClassName(iface._type) + "): " 
