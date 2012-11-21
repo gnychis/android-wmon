@@ -77,7 +77,8 @@ public class InterfaceMergingManager {
     				// Put all of the name resolves on to a stack.  Push last the one that you want to go first.
     				registerHeuristic(Arrays.asList(SimilarInterfaceNames.class,
     													AdjacentMACs.class,
-    													SameMAC.class));
+    													SameMAC.class,
+    													APGatewayInterface.class));
     				
     				// Set the state to scanning, then clear the scan results.
     				_state = State.MERGING;
@@ -133,6 +134,8 @@ public class InterfaceMergingManager {
 			heuristic = new SimilarInterfaceNames(_parent);
 		if(heuristicRequest == SameMAC.class)
 			heuristic = new SameMAC(_parent);
+		if(heuristicRequest == APGatewayInterface.class)
+			heuristic = new APGatewayInterface(_parent);
 		
 		if(heuristic == null)
 			return false;

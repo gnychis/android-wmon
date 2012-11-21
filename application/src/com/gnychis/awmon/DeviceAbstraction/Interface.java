@@ -117,6 +117,25 @@ public class Interface implements Parcelable {
 		return reverseIPAddress(_IP);
 	}
 	
+	
+	/** Checks if the interface's current MAC address is a valid IEEE address.
+	 * @return true if the MAC is valid, false otherwise.
+	 */
+	public boolean hasValidIEEEmac() {
+		return validIEEEmac(_MAC);
+	}
+	
+	
+	/** Checks the given MAC address for a valid IEEE MAC.
+	 * @param mac the MAC address to check
+	 * @return true if 'mac' is a valid MAC
+	 */
+	public static boolean validIEEEmac(String mac) {
+		if(mac==null)
+			return false;
+		return mac.toUpperCase().matches("^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$");
+	}
+	
 	/** Takes a string representation of an IP addresses and reverts it (e.g., from
 	 * big endian to little endian.  Any address can be passed to this.
 	 * @param ipAddress the IP to reverse

@@ -32,6 +32,10 @@ public class AdjacentMACs extends MergeHeuristic {
 
 	public MergeStrength classifyInterfacePair(InterfacePair pair) {
 		
+		// If one or the other has an invalid MAC address, let's just bail.
+		if(!pair.getLeft().hasValidIEEEmac() || !pair.getRight().hasValidIEEEmac())
+			return MergeStrength.UNDETERMINED;
+		
 		// First, calculate the distance between the two MAC addresses by converting them to
 		// long format, subtracting them, and then taking the absolute value.
 		long distance = Math.abs(Interface.macStringToLong(pair.getLeft()._MAC)

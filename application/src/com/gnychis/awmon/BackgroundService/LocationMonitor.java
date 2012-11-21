@@ -127,7 +127,8 @@ public class LocationMonitor {
 		            		   mNextLocIsHome=true;
 		            		   changeUpdateInterval(60000);
 	            		   }
-	            		   if(_settings.getHomeWifiMAC().equals(result.BSSID))  // Their home network is in the list, must be home
+	            		   
+	            		   if(_settings.getHomeWifiMAC()!=null && _settings.getHomeWifiMAC().equals(result.BSSID))
 	            			   home();	// Their home network is in the list, so they must be home 
 	            		   return;
 	            	   }
