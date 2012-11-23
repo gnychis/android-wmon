@@ -3,7 +3,8 @@
       package="com.gnychis.awmon"
       android:installLocation="preferExternal"
       android:versionCode="1"
-      android:versionName="1.0">
+      android:versionName="1.0"
+      >
       
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -18,9 +19,10 @@
 	<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
       
 	<uses-feature android:name="android.hardware.usb.host" />
-    <uses-sdk android:targetSdkVersion="10" android:minSdkVersion="10"/>
+    <uses-sdk android:targetSdkVersion="16" android:minSdkVersion="16"/>
 
-    <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
+    <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true" android:theme="@android:style/Theme.NoTitleBar">
+        <uses-library android:name="com.google.android.maps"/>
         <activity android:name=".GUIs.MainInterface"
             	  android:screenOrientation="portrait"
                   android:label="Android Wireless Monitor: Main Menu">
@@ -38,7 +40,8 @@
 		    </intent-filter>  
 		</receiver>
         
-		<activity android:name="com.gnychis.awmon.GUIs.Welcome" class=".Welcome" android:label="Welcome, please answer a few questions..." android:screenOrientation="portrait"></activity>
+		<activity android:name="com.gnychis.awmon.GUIs.Welcome" class=".Welcome" android:label="Welcome to the home wireless monitor" android:screenOrientation="portrait"></activity>
+		<activity android:name="com.gnychis.awmon.GUIs.HomeLocation" android:theme="@android:style/Theme.NoTitleBar" class=".HomeLocation" android:label="Verify your home's location" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.ManageNetworks" class=".ManageDevices" android:label="Device Management" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.AddNetwork" class=".AddNetwork" android:label="Add Network" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.GraphWispy" class=".GraphWispy" android:label="Graph Wispy" android:screenOrientation="portrait"></activity>

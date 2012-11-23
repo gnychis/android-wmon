@@ -1,7 +1,5 @@
 package com.gnychis.awmon.GUIs;
 
-// do a random port number for pcapd
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,15 +29,13 @@ import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.HardwareHandlers.LAN;
-import com.gnychis.awmon.HardwareHandlers.Wifi;
-import com.gnychis.awmon.InterfaceMerging.InterfaceMergingManager;
 
 public class MainInterface extends Activity implements OnClickListener {
 	
 	private static final String TAG = "AWMon";
 	public static String _app_name = "com.gnychis.awmon";
 	public static final String THREAD_MESSAGE = "awmon.thread.message";
+	public static final boolean VERBOSE = true;
 	
 	// Internal Android mechanisms for settings/storage
 	public DBAdapter _db;
@@ -111,8 +107,11 @@ public class MainInterface extends Activity implements OnClickListener {
     		return;
     	
     	// If we do not have the user settings, we open up an activity to query for them
-		Intent i = new Intent(MainInterface.this, Welcome.class);
-        startActivity(i);        
+    	/*debugOut("Trying to load the Home Location GUI");
+		Intent i = new Intent(MainInterface.this, HomeLocation.class);
+        startActivity(i);
+        debugOut("Loading the UI is complete");
+        */
     }
     
     // A broadcast receiver to get messages from background service and threads
@@ -331,5 +330,10 @@ public class MainInterface extends Activity implements OnClickListener {
 		if(topName.length==0)
 			return fullName;
 		return topName[topName.length-1];
+	}
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
 	}
 }

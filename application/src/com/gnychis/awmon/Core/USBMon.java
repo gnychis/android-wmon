@@ -59,7 +59,9 @@ public class USBMon
 	public void usbPoll( )
 	{
 		String usbList[] = GetUSBList();
-		ArrayList<String> list = new ArrayList<String>(Arrays.asList(usbList));
+		ArrayList<String> list = new ArrayList<String>();
+		if(usbList!=null && usbList.length>0)
+			list = new ArrayList<String>(Arrays.asList(usbList));
 		
 		// Store the entire device list in a broadcast message and send it out.
 		// This allows each of the device handlers to be able to detect if their

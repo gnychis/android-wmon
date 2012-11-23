@@ -23,7 +23,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.Spinner;
 
 import com.gnychis.awmon.R;
@@ -32,7 +31,7 @@ import com.nullwire.trace.ExceptionHandler;
 
 public class Welcome extends Activity {
 	
-    Spinner netlist, agelist;
+    Spinner netlist;
 	private UserSettings _settings;
 	WifiManager _wifi;
 	boolean _reverse_sort;
@@ -111,21 +110,6 @@ public class Welcome extends Activity {
 		
         @Override
         protected void onPostExecute(ArrayList<String> spinnerArray) {
-			
-  	      // Setup the age-range list and put it in a drop-down menu for them to select.
-  	      agelist = (Spinner) findViewById(R.id.age_group);
-  	      ArrayAdapter<CharSequence> ageAdapter = ArrayAdapter.createFromResource(Welcome.this, R.array.age_ranges, android.R.layout.simple_spinner_item);
-  	      ageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-  	      agelist.setAdapter(ageAdapter);
-  	      
-  	      // Set the checkboxes back to what the user had
-  	      int ar = _settings.getAgeRange();
-  	      if(ar!=-1)
-  	    	  agelist.setSelection(ar);
-  	      ((CheckBox) findViewById(R.id.kitchen)).setChecked(_settings.getSurveyKitchen());
-  	      ((CheckBox) findViewById(R.id.bedroom)).setChecked(_settings.getSurveyBedroom());
-  	      ((CheckBox) findViewById(R.id.livingRoom)).setChecked(_settings.getSurveyLivingRoom());
-  	      ((CheckBox) findViewById(R.id.bathroom)).setChecked(_settings.getSurveyBathroom());
         	
     		ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(Welcome.this, android.R.layout.simple_spinner_item, spinnerArray);
     		spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -153,11 +137,6 @@ public class Welcome extends Activity {
     	
     	// Save their settings and set it to initialized
     	_settings.setHomeSSID(home_ssid);
-    	_settings.setSurvey((int) agelist.getSelectedItemId(),
-    						((CheckBox) findViewById(R.id.kitchen)).isChecked(),
-    						((CheckBox) findViewById(R.id.bedroom)).isChecked(),
-    						((CheckBox) findViewById(R.id.livingRoom)).isChecked(),
-    						((CheckBox) findViewById(R.id.bathroom)).isChecked());
     	_settings.setHaveUserSettings();
     	finish();
     }

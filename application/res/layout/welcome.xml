@@ -5,110 +5,56 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
+     <TextView
+	     android:id="@+id/heading"
+	     android:layout_marginTop="15dp"
+	     android:layout_width="wrap_content"
+	     android:layout_height="wrap_content"
+	     android:text="Welcome!"
+	     android:textSize="40sp"
+	     android:textStyle="italic"
+	     />
+     
+     
+    <TextView
+        android:id="@+id/overview"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/heading"
+        android:text="    We are going to begin by training your smartphone to understand what networks and devices belong to your home.  The process should take no more than 5-10 minutes."
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
     <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
+        android:layout_below="@+id/overview"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="My home Wifi network is ..."
+        android:layout_marginTop="40dp"
+        android:layout_marginLeft="5dp"
+        android:text="    Let's begin with your home Wi-Fi network. Please select it from the list:"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Spinner
         android:id="@+id/network_list"
+        android:layout_marginTop="10dp"
         android:layout_below="@+id/textView1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15pt"
-        android:layout_below="@+id/network_list"
-        android:text="(Optional) My age range is ..."
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <Spinner
-        android:id="@+id/age_group"
-        android:layout_below="@+id/textView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20pt"
-        android:layout_below="@+id/age_group"
-        android:text="(Optional) My phone has been in the ..."
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TableLayout
-        android:id="@+id/tableLayout1"
-        android:layout_below="@+id/textView3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TableRow
-            android:id="@+id/tableRow1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <CheckBox
-                android:id="@+id/kitchen"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:text="Kitchen" />
-
-            <CheckBox
-                android:id="@+id/bedroom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:text="Bedroom" />
-        </TableRow>
-
-        <TableRow
-            android:id="@+id/tableRow2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <CheckBox
-                android:id="@+id/livingRoom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:text="Living room" />
-
-            <CheckBox
-                android:id="@+id/bathroom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:text="Bathroom" />
-        </TableRow>
-    </TableLayout>
-
-    
     <Button
         android:id="@+id/continue_button"
         android:layout_width="105dp"
+        android:layout_marginTop="70dp"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/textView4"
+        android:layout_below="@+id/network_list"
         android:layout_alignParentRight="true"
-        android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
         android:onClick="clickedFinished"
-        android:text="Done" />
-    
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-		android:layout_alignParentBottom="true"
-        android:text="NOTE:  Your home network needs to be correct!"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:text="Next" />
 
 
 </RelativeLayout>

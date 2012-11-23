@@ -35,7 +35,7 @@ public class SSDP extends NameResolver {
 	static final String TAG = "SSDP";
 	static final boolean VERBOSE = true;
 	
-	static final int RESPONSE_WAIT_TIME = 10000; // in milliseconds
+	static final int RESPONSE_WAIT_TIME = 15000; // in milliseconds
 	
 	private UpnpService _upnpService;
 	

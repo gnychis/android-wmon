@@ -178,10 +178,13 @@ public class LocationMonitor {
     }
     
 
-    // This triggers a wifi scan.  If the wifi is disabled, it enables it for the duration of
-    // a single scan and then disables it again.  This likely only takes 200ms total from the time
-    // to enable, scan, and get a result, and then disable it again.  If the wifi is already enabled,
-    // then it simply triggers the scan.
+
+    /**This triggers a wifi scan.  If the wifi is disabled, it enables it for the duration of
+     * a single scan and then disables it again.  This likely only takes 200ms total from the time
+     * to enable, scan, and get a result, and then disable it again.  If the wifi is already enabled,
+     * then it simply triggers the scan.
+     * @param disable_after_scan
+     */
     public void triggerScan(boolean disable_after_scan) {
     	mDisableWifiAS=disable_after_scan;
         boolean wifi_enabled=wifi.isWifiEnabled();

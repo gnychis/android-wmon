@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    >
+    
+    <LinearLayout
+        android:id="@+id/bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="54dip"
+        android:layout_alignParentBottom="true"
+        android:background="@android:drawable/bottom_bar" >
+
+        <Button
+            android:id="@+id/buttonStatus"
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_weight="1"
+            android:text="Incorrect" />
+
+        <Button
+            android:id="@+id/buttonSettings"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_weight="1"
+            android:text="Correct, let's continue..." />
+    </LinearLayout>
+
+         <TextView
+	     android:id="@+id/heading"
+	     android:layout_marginLeft="10dp"
+	     android:layout_marginTop="10dp"
+	     android:layout_width="wrap_content"
+	     android:layout_height="wrap_content"
+	     android:text="Home Location"
+	     android:textSize="40sp"
+	     android:textStyle="italic"
+	     />
+         
+         
+    <TextView
+        android:id="@+id/description"
+        android:layout_below="@+id/heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+       	android:layout_marginLeft="10dp"
+	    android:layout_marginTop="15dp"
+        android:text="    To save power, we disable the wireless monitoring system entirely when your phone is not in your home.  To do so, we ask you to verify that the location shown below is the location of your home..."
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <com.google.android.maps.MapView
+	    xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:id="@+id/mapview"
+	   	android:layout_below="@+id/description"
+	    android:layout_width="fill_parent"
+	    android:layout_height="340dp"
+	    android:layout_marginTop="15dp"
+	    android:layout_marginLeft="10dp"
+	    android:layout_marginRight="10dp"
+	    android:clickable="true"
+	    android:apiKey="0tbXIFVdD_KutzVAY8yXnNcOOWUBtJvD6G6XXrg"
+	/>
+    
+
+    
+</RelativeLayout>
