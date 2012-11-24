@@ -43,8 +43,8 @@ public class LocationMonitor {
 		ENTERING_HOME,
 	}
 	
-    public final int LOCATION_TOLERANCE=150;			// in meters
-    public final int LOCATION_UPDATE_INTERVAL=120000; //900000;	// in milliseconds (15 minutes)
+    public static final int LOCATION_TOLERANCE=150;			// in meters
+    public static final int LOCATION_UPDATE_INTERVAL=120000; //900000;	// in milliseconds (15 minutes)
     
     private static BackgroundService _backgroundService;
     

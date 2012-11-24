@@ -49,7 +49,7 @@
         android:layout_height="wrap_content"
        	android:layout_marginLeft="10dp"
 	    android:layout_marginTop="15dp"
-        android:text="    To save power, we disable the wireless monitoring system entirely when your phone is not in your home.  To do so, we ask you to verify that the location shown below is the location of your home..."
+        android:text="    To save power, we disable the wireless monitoring system entirely when your phone is not in your home.  To do so, we ask you to verify that your home is located in the area highlighted below..."
         android:textAppearance="?android:attr/textAppearanceMedium" />
     
     <com.google.android.maps.MapView
