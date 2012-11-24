@@ -2,12 +2,17 @@ package com.gnychis.awmon.GUIs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import android.app.ProgressDialog;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.gnychis.awmon.R;
+import com.gnychis.awmon.Core.UserSettings;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -24,6 +29,8 @@ public class HomeLocation extends MapActivity {
     Drawable drawable;
     List<Overlay> mapOverlays;
     Itemization itemizedOverlay;
+    UserSettings _settings;
+    ProgressDialog _pd;
 	
 	@Override
 	protected boolean isRouteDisplayed() {
@@ -33,21 +40,49 @@ public class HomeLocation extends MapActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        debugOut("Entering the creation of the Home Location activity");
         setContentView(R.layout.home_location);
-       
+        
+        debugOut("Entering the creation of the Home Location activity");
+        
+        // Initialize a few local variables
         mapView = (MapView) findViewById(R.id.mapview);
-        
-        //sets the zoom to see the location closer
-        mapView.getController().setZoom(18);
- 
-        //this will let you to zoom in or out using the controllers
         mapView.setBuiltInZoomControls(true);
- 
-        GeoPoint point = new GeoPoint((int)(40.443181 * 1E6), (int) (-79.943060 * 1E6));
-       //this will show you the map at the exact location you want (if you not set this you will see the map somewhere in America)
-        mapView.getController().setCenter(point);
+        _settings = new UserSettings(this);
+
+        // Try to get the location of the user's home, if it is set we zoom
+        // in on it and then we return.
+        if(setHomeLocationIfKnown())
+        	return;
         
+        // We don't have the home location, so we wait for it to be broadcast from the background service
+        _pd = ProgressDialog.show(this, "", "Retrieving your current location", true, false);  
+		Timer scan_timer=new Timer();
+		scan_timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				if(setHomeLocationIfKnown())
+					cancel();
+			}
+
+		}, 0, 1000);  // every second, we will check if we have the home location yet
+  
+        debugOut("done loading Home Location activity");
+    }
+    
+    public boolean setHomeLocationIfKnown() {
+        Location homeLoc = _settings.getHomeLocation();
+        if(homeLoc != null) {
+        	zoomAndMarkLocation(homeLoc);
+        	return true;
+        }
+        return false;
+    }
+    
+    public void zoomAndMarkLocation(Location l) {
+        GeoPoint point = new GeoPoint((int)(l.getLatitude() * 1E6), (int) (l.getLongitude() * 1E6));
+        mapView.getController().setCenter(point);
+        mapView.getController().setZoom(18);
+
         mapOverlays = mapView.getOverlays();
         drawable = this.getResources().getDrawable(R.drawable.mapmarker);
         itemizedOverlay = new Itemization(drawable);
@@ -55,7 +90,8 @@ public class HomeLocation extends MapActivity {
         OverlayItem overlayitem = new OverlayItem(point, "", "");
         itemizedOverlay.addOverlay(overlayitem);
         mapOverlays.add(itemizedOverlay);
-        debugOut("done loading Home Location activity");
+        if(_pd!=null)
+        	_pd.dismiss();
     }
     
     public class Itemization extends ItemizedOverlay<OverlayItem> {

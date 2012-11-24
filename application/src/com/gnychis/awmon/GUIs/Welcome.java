@@ -138,6 +138,8 @@ public class Welcome extends Activity {
     	// Save their settings and set it to initialized
     	_settings.setHomeSSID(home_ssid);
     	_settings.setHaveUserSettings();
+		Intent i = new Intent(Welcome.this, HomeLocation.class);
+        startActivity(i);
     	finish();
     }
     

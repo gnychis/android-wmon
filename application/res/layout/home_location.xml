@@ -57,11 +57,13 @@
 	    android:id="@+id/mapview"
 	   	android:layout_below="@+id/description"
 	    android:layout_width="fill_parent"
-	    android:layout_height="340dp"
+	    android:layout_height="fill_parent"
 	    android:layout_marginTop="15dp"
 	    android:layout_marginLeft="10dp"
 	    android:layout_marginRight="10dp"
+	    android:layout_marginBottom="70dp"
 	    android:clickable="true"
+	    android:visibility="visible"
 	    android:apiKey="0tbXIFVdD_KutzVAY8yXnNcOOWUBtJvD6G6XXrg"
 	/>
     

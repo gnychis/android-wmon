@@ -107,11 +107,10 @@ public class MainInterface extends Activity implements OnClickListener {
     		return;
     	
     	// If we do not have the user settings, we open up an activity to query for them
-    	/*debugOut("Trying to load the Home Location GUI");
-		Intent i = new Intent(MainInterface.this, HomeLocation.class);
+    	debugOut("Trying to load the Home Location GUI");
+		Intent i = new Intent(MainInterface.this, Welcome.class);
         startActivity(i);
         debugOut("Loading the UI is complete");
-        */
     }
     
     // A broadcast receiver to get messages from background service and threads
