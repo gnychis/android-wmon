@@ -177,8 +177,8 @@ public class MainInterface extends Activity implements OnClickListener {
 				break;
 			
 			case R.id.buttonManageDevs:
-				i = new Intent(MainInterface.this, ManageNetworks.class);
-		        startActivity(i);
+				//i = new Intent(MainInterface.this, ManageNetworks.class);
+		        //startActivity(i);
 				break;
 				
 			case R.id.buttonSettings:

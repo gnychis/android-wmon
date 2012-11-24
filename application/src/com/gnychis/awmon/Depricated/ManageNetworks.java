@@ -1,4 +1,4 @@
-package com.gnychis.awmon.GUIs;
+package com.gnychis.awmon.Depricated;
 
 import java.util.ArrayList;
 import java.util.HashMap;

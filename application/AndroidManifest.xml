@@ -42,7 +42,7 @@
         
 		<activity android:name="com.gnychis.awmon.GUIs.Welcome" class=".Welcome" android:label="Welcome to the home wireless monitor" android:screenOrientation="portrait"></activity>
 		<activity android:name="com.gnychis.awmon.GUIs.HomeLocation" android:theme="@android:style/Theme.NoTitleBar" class=".HomeLocation" android:label="Verify your home's location" android:screenOrientation="portrait"></activity>
-        <activity android:name="com.gnychis.awmon.GUIs.ManageNetworks" class=".ManageDevices" android:label="Device Management" android:screenOrientation="portrait"></activity>
+        <activity android:name=".Depricated.ManageNetworks" class=".ManageDevices" android:label="Device Management" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.AddNetwork" class=".AddNetwork" android:label="Add Network" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.GraphWispy" class=".GraphWispy" android:label="Graph Wispy" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.Status" class=".Status" android:label="Application Status" android:screenOrientation="portrait"></activity>
