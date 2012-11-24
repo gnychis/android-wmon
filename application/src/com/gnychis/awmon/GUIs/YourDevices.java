@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -131,4 +132,10 @@ public class YourDevices extends Activity {
 
 	}
 
+    @Override
+    public void onBackPressed() {
+    	Intent i = new Intent(YourDevices.this, HomeLocation.class);
+        startActivity(i);
+    	finish();
+    }
 }

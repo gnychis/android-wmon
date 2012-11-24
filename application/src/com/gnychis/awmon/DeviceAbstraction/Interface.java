@@ -47,6 +47,17 @@ public class Interface implements Parcelable {
 		_key=i._key;
 	}
 	
+	/** This let's us know if the device belongs on the home LAN.  We make the assumption
+	 * for now that, if it has an IP address, it must be associated to the LAN.  We assign
+	 * IPs from the active ARP scan which only occurs on the local LAN, so for now this should hold.
+	 * @return true if the interface belongs to the home LAN, false otherwise
+	 */
+	public boolean interfaceOnHomeLAN() {
+		if(_IP!=null)
+			return true;
+		return false;
+	}
+	
 	
 	/** This just strips some of the junk out of OUI names like "corp." and "LTD"
 	 * @return returns the clean OUI name.

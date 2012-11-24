@@ -196,6 +196,16 @@ public class HomeLocation extends MapActivity {
     	finish();
     }
     
+    @Override
+    public void onBackPressed() {
+    	if(_pd!=null)
+    		return;
+    	
+    	Intent i = new Intent(HomeLocation.this, Welcome.class);
+        startActivity(i);
+    	finish();
+    }
+    
     public void clickedIncorrect(View v) {
 		
     }

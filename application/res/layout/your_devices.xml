@@ -46,11 +46,11 @@
 
         <Button
             android:id="@+id/buttonSettings"
-            android:layout_width="175dip"
+            android:layout_width="300dip"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
             android:layout_alignParentRight = "true"
-            android:text="Done let&apos;s continue..." />
+            android:text="Done, let&apos;s take care of missing devices..." />
 
     </RelativeLayout>
 

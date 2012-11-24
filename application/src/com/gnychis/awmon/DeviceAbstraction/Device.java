@@ -38,6 +38,18 @@ public class Device implements Parcelable {
 	}
 	
 	/** 
+	 * This goes through the list of interfaces and returns true if one of the interfaces
+	 * is on the home LAN.
+	 * @return true if on the LAN, false otherwise.
+	 */
+	public boolean onHomeLAN() {
+		for(Interface iface : _interfaces)
+			if(iface.interfaceOnHomeLAN())
+				return true;
+		return false;
+	}
+	
+	/** 
 	 * This functionality could change in the future, but right now it returns
 	 * _name if it is not null (could be chosen by the user).  Otherwise, it goes
 	 * through the interfaces and returns the name of one of them. 
