@@ -7,6 +7,7 @@ import java.util.TimerTask;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -16,6 +17,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.LocationMonitor;
@@ -185,4 +187,16 @@ public class HomeLocation extends MapActivity {
 		if(VERBOSE)
 			Log.d(TAG, msg);
 	}
+	
+    // When the user clicks finished, we save some information locally.  The home network name is
+    // only saved locally (so that our application can work), and it is never shared back with us.
+    public void clickedCorrect(View v) {
+		Intent i = new Intent(HomeLocation.this, YourDevices.class);
+        startActivity(i);
+    	finish();
+    }
+    
+    public void clickedIncorrect(View v) {
+		
+    }
 }

@@ -14,19 +14,21 @@
         android:background="@android:drawable/bottom_bar" >
 
         <Button
-            android:id="@+id/buttonStatus"
+            android:id="@+id/buttonIncorrect"
             android:layout_width="250dip"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
             android:layout_weight="1"
+            android:onClick="clickedIncorrect"
             android:text="Incorrect" />
 
         <Button
-            android:id="@+id/buttonSettings"
+            android:id="@+id/buttonCorrect"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
             android:layout_weight="1"
+            android:onClick="clickedCorrect"
             android:text="Correct, let's continue..." />
     </LinearLayout>
 

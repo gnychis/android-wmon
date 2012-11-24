@@ -40,8 +40,11 @@
 		    </intent-filter>  
 		</receiver>
         
-		<activity android:name="com.gnychis.awmon.GUIs.Welcome" class=".Welcome" android:label="Welcome to the home wireless monitor" android:screenOrientation="portrait"></activity>
-		<activity android:name="com.gnychis.awmon.GUIs.HomeLocation" android:theme="@android:style/Theme.NoTitleBar" class=".HomeLocation" android:label="Verify your home's location" android:screenOrientation="portrait"></activity>
+		<!--  Activities that belong to the "Training Stage" -->
+		<activity android:name="com.gnychis.awmon.GUIs.Welcome" class=".Welcome" android:screenOrientation="portrait"></activity>
+		<activity android:name="com.gnychis.awmon.GUIs.HomeLocation" class=".HomeLocation" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
+		<activity android:name="com.gnychis.awmon.GUIs.YourDevices" class=".YourDevices" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
+		
         <activity android:name=".Depricated.ManageNetworks" class=".ManageDevices" android:label="Device Management" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.AddNetwork" class=".AddNetwork" android:label="Add Network" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.GraphWispy" class=".GraphWispy" android:label="Graph Wispy" android:screenOrientation="portrait"></activity>

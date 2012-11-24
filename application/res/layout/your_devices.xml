@@ -42,7 +42,7 @@
         android:layout_height="54dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight = "true"
-        android:background="@android:color/black" >
+        android:background="@android:color/transparent" >
 
         <Button
             android:id="@+id/buttonSettings"

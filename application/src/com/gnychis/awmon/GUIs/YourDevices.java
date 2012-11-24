@@ -27,7 +27,7 @@ public class YourDevices extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
+		setContentView(R.layout.your_devices);
 		
 		m_listview = (ListView) findViewById(android.R.id.list);
 		inflater=(LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
