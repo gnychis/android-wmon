@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="deviceson">&#160;&#160;&#160;&#160;To properly monitor and improve wireless performance in your home, 
+        the monitoring system needs to learn about your devices.  For the next few minutes, you will train 
+        the system as to which devices in range belong to you (e.g., <i>and not your neighbor</i>).  
+        
+        \n\n&#160;&#160;&#160;&#160;To be comprehensive:  &#160;&#160;<font fgcolor="#ffff0000"><b>please turn on all devices in your home.</b></font>
+        
+        \n\n<u>A few reminders of possible devices:</u>
+    </string>
+    <string name="devicereminders"><ul>
+        	<li>Bluetooth headsets and speakers\n</li>
+            <li>Gaming consoles and controllers\n</li>
+            <li>Laptops and desktops (on and awake)\n</li>
+            <li>Wireless printers, telivisions, and tablets\n</li>
+            <li>Other mobile or cordless phones\n</li>
+        </ul>
+    </string>
     <string name="hello">Hello World, CoexiSyst!</string>
     <string name="app_name">Android Wireless Monitor</string>
-	<string-array name="countries_array">
-        <item>Bahrain</item>
-        <item>Bangladesh</item>
-        <item>Barbados</item>
-        <item>Belarus</item>
-        <item>Belgium</item>
-        <item>Belize</item>
-        <item>Benin</item>
-    </string-array>
         <string name="sdata">Spectrum Data</string>
     <string-array name="age_ranges">
     <item>…</item>

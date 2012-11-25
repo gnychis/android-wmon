@@ -133,13 +133,13 @@ public class MotionDetector implements SensorEventListener {
 			_backgroundService.sendBroadcast(i);
 			
 			if (deltaX > deltaY) {  // We moved horizontally
-				if(BackgroundService._mainInterface!=null && BackgroundService.DEBUG) BackgroundService._mainInterface.findViewById(R.id.main_id).setBackgroundColor(Color.RED);
+				//if(BackgroundService._mainInterface!=null && BackgroundService.DEBUG) BackgroundService._mainInterface.findViewById(R.id.main_id).setBackgroundColor(Color.RED);
 				_movement=true;
 			} else if (deltaY > deltaX) {  // We moved vertically
-				if(BackgroundService._mainInterface!=null && BackgroundService.DEBUG) BackgroundService._mainInterface.findViewById(R.id.main_id).setBackgroundColor(Color.RED);
+				//if(BackgroundService._mainInterface!=null && BackgroundService.DEBUG) BackgroundService._mainInterface.findViewById(R.id.main_id).setBackgroundColor(Color.RED);
 				_movement=true;
 			} else {
-				if(BackgroundService._mainInterface!=null && BackgroundService.DEBUG) BackgroundService._mainInterface.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
+				//if(BackgroundService._mainInterface!=null && BackgroundService.DEBUG) BackgroundService._mainInterface.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
 				_movement=false;
 			}
 		}

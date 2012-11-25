@@ -277,7 +277,7 @@ public class LocationMonitor {
 			i.putExtra("state", StateChange.LEAVING_HOME);
 			_backgroundService.sendBroadcast(i);
     	}
-    	if(BackgroundService._mainInterface!=null && BackgroundService.DEBUG) BackgroundService._mainInterface.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
+    	//if(BackgroundService._mainInterface!=null && BackgroundService.DEBUG) BackgroundService._mainInterface.findViewById(R.id.main_id).setBackgroundColor(Color.BLACK);
     	_homeState=HomeState.NOT_HOME;
     	_settings.setPhoneIsInHome(false);
     }

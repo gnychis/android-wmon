@@ -191,7 +191,7 @@ public class HomeLocation extends MapActivity {
     // When the user clicks finished, we save some information locally.  The home network name is
     // only saved locally (so that our application can work), and it is never shared back with us.
     public void clickedCorrect(View v) {
-		Intent i = new Intent(HomeLocation.this, YourDevices.class);
+		Intent i = new Intent(HomeLocation.this, TurnDevicesOn.class);
         startActivity(i);
     	finish();
     }

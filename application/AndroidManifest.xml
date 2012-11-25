@@ -43,6 +43,7 @@
 		<!--  Activities that belong to the "Training Stage" -->
 		<activity android:name="com.gnychis.awmon.GUIs.Welcome" class=".Welcome" android:screenOrientation="portrait"></activity>
 		<activity android:name="com.gnychis.awmon.GUIs.HomeLocation" class=".HomeLocation" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
+		<activity android:name="com.gnychis.awmon.GUIs.TurnDevicesOn" class=".TurnDevicesOn" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
 		<activity android:name="com.gnychis.awmon.GUIs.YourDevices" class=".YourDevices" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
 		
         <activity android:name=".Depricated.ManageNetworks" class=".ManageDevices" android:label="Device Management" android:screenOrientation="portrait"></activity>

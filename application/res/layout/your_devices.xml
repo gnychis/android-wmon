@@ -11,11 +11,11 @@
 	     android:layout_marginLeft="5dp"
 	     android:layout_width="wrap_content"
 	     android:layout_height="wrap_content"
-	     android:text="Your Devices"
-	     android:textSize="40sp"
+	     android:text="Select Your Devices"
+	     android:textSize="35sp"
 	     android:textStyle="italic"
 	     />
-    
+       
         <TextView
         android:id="@+id/description"
         android:layout_below="@+id/heading"
@@ -23,12 +23,12 @@
         android:layout_height="wrap_content"
        	android:layout_marginLeft="10dp"
 	    android:layout_marginTop="10dp"
-        android:text="    To properly monitor interference on your devices, the system needs to know which devices are yours (and not your neighbors).  Place a checkmark next to devices that belong to you.  We will address devices missing from this list in the next step!"
+        android:text="    Place a checkmark next to devices that belong to you.  We will address devices missing from this list in the next step!"
         android:textAppearance="?android:attr/textAppearanceMedium" />
-    
+      
 	<ListView
         android:id="@android:id/list"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="70dp"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
