@@ -37,6 +37,19 @@ public class Device implements Parcelable {
 		_mobile=Device.Mobility.UNKNOWN;
 	}
 	
+	/**
+	 * Attempts to get the manufacturer of the device by getting the OUI name
+	 * of any one of its interfaces.
+	 * @return returns the manufacturer name.
+	 */
+	public String getManufacturer() {
+		// If we are still in this function, there were no interface names.  Return an OUI name.
+		for(Interface iface : _interfaces)
+			if(iface._ouiName != null)
+				return iface.cleanOUIname();
+		return "";
+	}
+	
 	/** 
 	 * This goes through the list of interfaces and returns true if one of the interfaces
 	 * is on the home LAN.
