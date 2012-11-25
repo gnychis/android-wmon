@@ -2,7 +2,6 @@ package com.gnychis.awmon.GUIs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -11,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +25,9 @@ import com.gnychis.awmon.BackgroundService.ScanManager;
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.InterfaceMerging.InterfaceMergingManager;
+import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
+import com.gnychis.awmon.NameResolution.NameResolutionManager;
 
 public class YourDevices extends Activity {
 
@@ -36,6 +39,12 @@ public class YourDevices extends Activity {
 	LayoutInflater inflater;
 	ProgressDialog _pd;
 	CustomAdapter _adapter;
+    Handler _handler;
+    
+    ScanManager.ResultType _resultType;
+    Object _scanResult;
+    
+    private Context _context;
 
 	private ListView m_listview;
 
@@ -43,13 +52,10 @@ public class YourDevices extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.your_devices);
-
-		m_listview = (ListView) findViewById(android.R.id.list);
-		inflater=(LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		_context = this;
 
 		_deviceList=new ArrayList<HashMap<String,Object>>();
-		_adapter=new CustomAdapter(this, R.layout.device_list_item ,_deviceList); 
-		m_listview.setAdapter(_adapter);
+		_handler = new Handler();
 
 		// Send out a request for a device scan.
 		ScanRequest request = new ScanRequest();
@@ -58,9 +64,25 @@ public class YourDevices extends Activity {
 		request.send(this);
 
 		// Pop up a progress dialog
-		_pd = ProgressDialog.show(this, "", "Retrieving a list of devices in range", true, false);
+		_pd = ProgressDialog.show(this, "", "Scanning for devices", true, false);
 		registerReceiver(_deviceScanReceiver, new IntentFilter(ScanManager.SCAN_RESPONSE));
+		registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
+		registerReceiver(incomingEvent, new IntentFilter(NameResolutionManager.NAME_RESOLUTION_RESPONSE));
+		registerReceiver(incomingEvent, new IntentFilter(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE));
 	}
+	
+    private BroadcastReceiver incomingEvent = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+        	if(intent.getAction().equals(InterfaceScanManager.INTERFACE_SCAN_RESULT)) {
+        		_pd.dismiss();
+        		_pd = ProgressDialog.show(_context, "", "Resolving device names", true, false);
+        	}
+        	if(intent.getAction().equals(NameResolutionManager.NAME_RESOLUTION_RESPONSE)) {
+        		_pd.dismiss();
+        		_pd = ProgressDialog.show(_context, "", "Merging interfaces to devices", true, false);
+        	}
+        }
+    };
 
 	// A broadcast receiver to get messages from background service and threads
 	private BroadcastReceiver _deviceScanReceiver = new BroadcastReceiver() {
@@ -68,9 +90,10 @@ public class YourDevices extends Activity {
 		public void onReceive(Context context, Intent intent) {
 
 			// First, get the response and see if the results are interfaces or devices.
-			ScanManager.ResultType resultType = (ScanManager.ResultType) intent.getExtras().get("type");
+			_resultType = (ScanManager.ResultType) intent.getExtras().get("type");
+			_scanResult = intent.getExtras().get("result");
 
-			if(resultType == ScanManager.ResultType.INTERFACES) {
+			if(_resultType == ScanManager.ResultType.INTERFACES) {
 				ArrayList<Interface> deviceScanResult = (ArrayList<Interface>) intent.getExtras().get("result");
 				_deviceList=new ArrayList<HashMap<String,Object>>();	// Reset the list
 
@@ -78,21 +101,16 @@ public class YourDevices extends Activity {
 				HashMap<String , Object> temp;
 				for(Interface iface : deviceScanResult) {
 					temp=new HashMap<String, Object>();
-					temp.put("name", simplifiedClassName(iface._type));
+					temp.put("name", Interface.simplifiedClassName(iface._type));
 					temp.put("additional", iface._ouiName);    
-					_deviceList.add(temp);  
-					
-					debugOut("Got an interface (" + simplifiedClassName(iface.getClass()) + " - " + simplifiedClassName(iface._type) + "): " 
-							+ iface._MAC 
-							+ " - " + iface._IP
-							+ " - " + iface._ifaceName
-							+ " - " + iface._ouiName
-							);
+					temp.put("key", iface.getKey());
+					_deviceList.add(temp);	
+					debugOut(iface.toString());
 				}
 
 			}
 
-			if(resultType == ScanManager.ResultType.DEVICES) {
+			if(_resultType == ScanManager.ResultType.DEVICES) {
 				ArrayList<Device> deviceScanResult = (ArrayList<Device>) intent.getExtras().get("result");
 
 				HashMap<String , Object> temp;
@@ -101,27 +119,29 @@ public class YourDevices extends Activity {
 					temp.put("name", device.getName());
 					temp.put("additional", device.getManufacturer()); 
 					_deviceList.add(temp);  
-					
-					debugOut("Got a device: " + device.getName());
-					List<Interface> interfaces = device.getInterfaces();
-					for(Interface iface : interfaces) {
-						debugOut("... interface (" + simplifiedClassName(iface.getClass()) + " - " + simplifiedClassName(iface._type) + "): " 
-								+ iface._MAC 
-								+ " - " + iface._IP
-								+ " - " + iface._ifaceName
-								+ " - " + iface._ouiName
-								);	
-					}
+					debugOut(device.toString());
 				}
 			}
 			
-			// Now, update the list
-			_adapter.notifyDataSetChanged();
+			updateDeviceList();
 			
 			if(_pd!=null)
 				_pd.dismiss();
 		}
 	}; 
+	
+	private void updateDeviceList() {
+        _handler.post(new Runnable() {	// Must do this on the main UI thread...
+            @Override
+            public void run() {
+        		_adapter=new CustomAdapter(_context, R.layout.device_list_item ,_deviceList); 
+        		m_listview = (ListView) findViewById(android.R.id.list);
+        		m_listview.setAdapter(_adapter);
+        		inflater=(LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        		_adapter.notifyDataSetChanged();
+            }
+          });
+	}
 
 
 	//define your custom adapter
@@ -158,12 +178,14 @@ public class YourDevices extends Activity {
 
 				//link the cached views to the convertview
 				convertView.setTag( viewHolder);
-
-
 			}
 			else
 				viewHolder=(ViewHolder) convertView.getTag();
 
+			debugOut("Trying to get position(" + position + ") in _deviceList of size " + _deviceList.size());
+			debugOut("... deviceList: " + _deviceList);
+			debugOut("... deviceList(" + position + "): " + _deviceList.get(position));
+			debugOut("... deviceList(" + position + ").get(\"name\"): " + _deviceList.get(position).get("name"));
 			viewHolder.name.setText(_deviceList.get(position).get("name").toString());
 			viewHolder.additional.setText("Additional: " + _deviceList.get(position).get("additional").toString());
 			viewHolder.checkBox.setChecked(checkBoxState[position]);
@@ -190,15 +212,6 @@ public class YourDevices extends Activity {
 		Intent i = new Intent(YourDevices.this, HomeLocation.class);
 		startActivity(i);
 		finish();
-	}
-
-
-	public static String simplifiedClassName(Class<?> c) {
-		String fullName = c.getName();
-		String[] topName = fullName.split("\\.");
-		if(topName.length==0)
-			return fullName;
-		return topName[topName.length-1];
 	}
 
 	private void debugOut(String msg) {

@@ -18,7 +18,7 @@ public class Interface implements Parcelable {
 	public String _ouiName;						// The associated manufacturer OUI name (null if none)
 	public String _ifaceName;					// A name associated with the specific interface
 	public Class<?> _type;						// The interface type (should be a class in HardwareHandlers that extended InternalRadio)
-	private long _key;							// This is a random long to denote a unique Interface that we can track, ask George for importance
+	private long _ifaceKey;						// This is a random long to denote a unique Interface that we can track, ask George for importance
 
 	public Interface() {
 		_MAC=null;
@@ -26,7 +26,7 @@ public class Interface implements Parcelable {
 		_ouiName=null;
 		_ifaceName=null;
 		_type=null;	
-		_key = generateKey();
+		_ifaceKey = generateKey();
 	}
 	
 	public Interface(Class<?> type) {
@@ -35,7 +35,7 @@ public class Interface implements Parcelable {
 		_ouiName=null;
 		_ifaceName=null;
 		_type=type;
-		_key = generateKey();
+		_ifaceKey = generateKey();
 	}
 	
 	public Interface(Interface i) {
@@ -44,7 +44,16 @@ public class Interface implements Parcelable {
 		_ouiName=i._ouiName;
 		_ifaceName=i._ifaceName;
 		_type=i._type;
-		_key=i._key;
+		_ifaceKey=i._ifaceKey;
+	}
+	
+	@Override
+	public String toString()  {
+		return 	"Got an interface (" + simplifiedClassName(getClass()) + " - " + simplifiedClassName(_type) + "): " 
+				+ _MAC 
+				+ " - " + _IP
+				+ " - " + _ifaceName
+				+ " - " + _ouiName;
 	}
 	
 	/** This let's us know if the device belongs on the home LAN.  We make the assumption
@@ -86,7 +95,7 @@ public class Interface implements Parcelable {
 	 * with broadcasts, merged in to devices, etc.
 	 * @return
 	 */
-	public long getKey() { return _key; }
+	public long getKey() { return _ifaceKey; }
 	
 	/** This method generates a random long value which can be used for Interface
 	 * keys to track them as they get "copied" but we need unique values for them
@@ -242,6 +251,19 @@ public class Interface implements Parcelable {
   		macBytes[5] = (byte) addr;
   		return macBytes;
   	}
+
+	/**
+	 * Mainly returns the name of the child class
+	 * @param c the class to pass
+	 * @return a simplified class name as a string
+	 */
+	public static String simplifiedClassName(Class<?> c) {
+		String fullName = c.getName();
+		String[] topName = fullName.split("\\.");
+		if(topName.length==0)
+			return fullName;
+		return topName[topName.length-1];
+	}
   	
   	/** This function helps convert a byte representation of an IEEE MAC address to a string.
   	 * @param macBytes the byte representation of the MAC
@@ -284,7 +306,7 @@ public class Interface implements Parcelable {
     	dest.writeString(_ouiName);
     	dest.writeString(_ifaceName);
     	dest.writeString(_type.getName());
-    	dest.writeLong(_key);
+    	dest.writeLong(_ifaceKey);
 	}
 
 	public void readInterfaceParcel(Parcel source) {
@@ -295,6 +317,6 @@ public class Interface implements Parcelable {
         try {
         _type = Class.forName(source.readString());
         } catch(Exception e) { Log.e("Interface", "Error getting class in Interface parcel"); }
-        _key = source.readLong();
+        _ifaceKey = source.readLong();
 	}	
 }
