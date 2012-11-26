@@ -7,6 +7,8 @@ import java.util.Random;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.gnychis.awmon.HardwareHandlers.Wifi;
+
 
 /**
  * A device is a physical thing.  Like a laptop, an access point, etc.  It can have multiple radios attached
@@ -48,6 +50,28 @@ public class Device implements Parcelable {
 		for(Interface iface : interfaces)
 			result += " ... " + iface.toString() + "\n";
 		return  result;
+	}
+	
+	/**
+	 * Checks if the device has a Wifi interface
+	 * @return true if the device has Wifi interface, false otherwise.
+	 */
+	public boolean hasWifiInterface() {
+		for(Interface iface : _interfaces)
+			if(iface._type==Wifi.class)
+				return true;
+		return false;
+	}
+	
+	/** 
+	 * Get the IP address of any of the interfaces that aren't null.
+	 * @return the IP of the first active interface with an IP.
+	 */
+	public String getIP() {
+		for(Interface iface : _interfaces)
+			if(iface.hasValidIP())
+				return iface._IP;
+		return null;
 	}
 	
 	/**

@@ -246,7 +246,7 @@ public class YourDevices extends Activity {
 			String additional = (_deviceList.get(position).get("additional")==null) ? "" : _deviceList.get(position).get("additional").toString();
 			
 			// For long additional description, truncate it
-			if(_deviceList.get(position).get("additional").toString().length()>37)
+			if(additional.length()>37)
 				additional = additional.substring(0, 37) + "...";
 			
 			// Set the actual items in the list with name and any additional info

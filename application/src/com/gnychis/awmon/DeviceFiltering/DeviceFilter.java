@@ -23,11 +23,11 @@ public abstract class DeviceFilter extends AsyncTask<ArrayList<Device>, Integer,
 	public static final boolean VERBOSE = true;
 	
 	public enum FilterStrength {
-		LIKELY,			// The device should likely be filtered
-		UNLIKELY,		// It is unlikely that the device should be filtered
-		UNDETERMINED,	// Cannot determine
-		DEFINITELY,		// Definitely filter it out
-		DEFINITELY_NOT,	// Definitely do not filter the device out
+		LIKELY_FILTER_OUT,		// The device should likely be filtered
+		UNLIKELY_FILTER_OUT,	// It is unlikely that the device should be filtered
+		UNDETERMINED,			// Cannot determine
+		FILTER_OUT,				// Definitely filter it out
+		DO_NOT_FILTER,			// Definitely do not filter the device out
 	}
 	
 	Context _parent;		// Need the parent to do things like send broadcasts.
@@ -46,7 +46,7 @@ public abstract class DeviceFilter extends AsyncTask<ArrayList<Device>, Integer,
 		debugOut("Running the filter for " + this.getClass().getName());
 		for(Device device : devices) {
 			switch(getFilterResult(device)) {
-				case DEFINITELY:
+				case FILTER_OUT:
 					filteredDevices.add(device);
 				break;
 			}
@@ -55,7 +55,8 @@ public abstract class DeviceFilter extends AsyncTask<ArrayList<Device>, Integer,
 
 		// Now, apply the classification done by the heuristic to the graph
 		debugOut("Updating the device list based on the classifications done by " + this.getClass().getName());
-		devices.remove(filteredDevices);
+		for(Device filteredDev : filteredDevices)
+			devices.remove(filteredDev);
 		debugOut("... done");
 
 		return devices;
