@@ -14,6 +14,7 @@
             <li>Laptops and desktops (on and awake)\n</li>
             <li>Wireless printers, telivisions, and tablets\n</li>
             <li>Other mobile or cordless phones\n</li>
+            <li>Turn on Wi-Fi/Bluetooth on tablets\n</li>
         </ul>
     </string>
     <string name="hello">Hello World, CoexiSyst!</string>

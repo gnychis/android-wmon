@@ -65,6 +65,13 @@ public class WifiResultParser extends ScanResultParser {
 	    			wiface._frequency=frequency;
 	    		}
 	    	}
+	    	
+	    	// The signal strength value belongs to the true wireless transmitter if it is not null.  I really
+	    	// don't think we have to check for wiface being null here because it should be impossible for the
+	    	// transmitter_addr to not be in the wireless_clients above.
+	    	String transmitter_addr = Wifi.getTransmitterAddress(pkt);
+	    	if(transmitter_addr!=null && Wifi.validClientAddress(transmitter_addr) && pkt.getField("radiotap.dbm_antsignal")!=null)
+	    		getInterfaceFromMAC(devices, transmitter_addr)._RSSI.add(Integer.parseInt(pkt.getField("radiotap.dbm_antsignal")));
 	    }
 		
 		return devices;

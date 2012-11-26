@@ -32,7 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="17dp"
         android:layout_marginLeft="5dp"
         android:layout_below="@+id/heading2"
         android:text="@string/deviceson"
@@ -58,11 +58,12 @@
         android:background="@android:color/transparent" >
 
         <Button
-            android:id="@+id/devicesOnClicked"
+            android:id="@+id/buttonDevicesOn"
             android:layout_width="250dip"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_gravity="bottom|right"
+            android:onClick="devicesOnClicked"
             android:text="My devices are on, let's continue..." />
     </RelativeLayout>
 
