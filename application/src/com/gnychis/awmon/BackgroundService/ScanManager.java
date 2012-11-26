@@ -11,6 +11,7 @@ import android.util.Log;
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.DeviceFiltering.DeviceFilteringManager;
 import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
 import com.gnychis.awmon.InterfaceMerging.InterfaceMergingManager;
 import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
@@ -28,6 +29,7 @@ public class ScanManager {
 	ScanRequest _workingRequest;					// The most recent scan request we are working on
 	InterfaceScanManager _ifaceScanManager;			// Scan for interfaces.
 	InterfaceMergingManager _ifaceMergingManager;	// To merge interfaces in to devices
+	DeviceFilteringManager _deviceFilteringManager;	// To filter devices that definitely do not belong to the user
 	
 	public static final String SCAN_REQUEST = "awmon.scanmanager.scan_request";
 	public static final String SCAN_RESPONSE = "awmon.scanmanager.scan_response";
@@ -38,6 +40,7 @@ public class ScanManager {
 		SCANNING,
 		NAME_RESOLUTION,
 		INTERFACE_MERGING,
+		DEVICE_FILTERING,
 	}
 	
 	public enum ResultType {
@@ -60,12 +63,13 @@ public class ScanManager {
 		_nameResolutionManager = new NameResolutionManager(_parent);
 		_ifaceScanManager = new InterfaceScanManager(dh);
 		_ifaceMergingManager = new InterfaceMergingManager(_parent);
+		_deviceFilteringManager = new DeviceFilteringManager(_parent);
 		
 		_parent.registerReceiver(incomingEvent, new IntentFilter(ScanManager.SCAN_REQUEST));
 		_parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
 		_parent.registerReceiver(incomingEvent, new IntentFilter(NameResolutionManager.NAME_RESOLUTION_RESPONSE));
 		_parent.registerReceiver(incomingEvent, new IntentFilter(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE));
-
+		_parent.registerReceiver(incomingEvent, new IntentFilter(DeviceFilteringManager.DEVICE_FILTERING_RESPONSE));
 	}
 	
 	private void broadcastResults(ScanManager.ResultType type, ArrayList<?> results) {
@@ -169,16 +173,38 @@ public class ScanManager {
         				
         				debugOut("Receveived the devices from interface merging manager");
         				
-        				// Finally, send out the result which is devices after merging the interfaces together
-        				broadcastResults(ScanManager.ResultType.DEVICES, devices);
-        				_state = State.IDLE;
-        				return;
+        				if(!_workingRequest.doFiltering()) {
+	        				broadcastResults(ScanManager.ResultType.DEVICES, devices);
+	        				_state = State.IDLE;
+	        				return;
+        				}
+        				_deviceFilteringManager.requestFiltering(devices);
+        				
+        				_state=ScanManager.State.DEVICE_FILTERING;
+        				debugOut("Device filtering was set was set, let's try to filter some junk");
+        			}
+        			
+        		break;
+        		
+        		/**************************** FILTERING *********************************/
+        		case DEVICE_FILTERING:
+        			
+        			if(intent.getAction().equals(DeviceFilteringManager.DEVICE_FILTERING_RESPONSE)) {
+        				ArrayList<Device> devices = (ArrayList<Device>) intent.getExtras().get("result");
+        				
+        				debugOut("Receveived the devices from filtering manager");
+        				
+	        			broadcastResults(ScanManager.ResultType.DEVICES, devices);
+        				
+	        			debugOut("Done with the chain, heading back to idle");
+	        			_state = State.IDLE;
+	        			
+	        			return;
         			}
         			
         		break;
         		
         	}
-        	
     	}
     };
     

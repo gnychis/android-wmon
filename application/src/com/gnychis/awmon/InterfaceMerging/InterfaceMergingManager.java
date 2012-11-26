@@ -50,7 +50,7 @@ public class InterfaceMergingManager {
 		_parent.sendBroadcast(i);
 	}
 	
-	private void registerHeuristic(List<Class<? extends MergeHeuristic>> heuristics) {
+	private void registerHeuristic(List<? extends Class<? extends MergeHeuristic>> heuristics) {
 		_heuristicQueue = new Stack<Class<?>>();
 		_pendingResults = new LinkedList < Class<?> >();
 		for(Class<?> heuristic : heuristics) {

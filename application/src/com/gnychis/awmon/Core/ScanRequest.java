@@ -11,16 +11,20 @@ public class ScanRequest implements Parcelable  {
 	
 	boolean _doNameResoution;
 	boolean _doMerging;
+	boolean _doFiltering;
 
 	public ScanRequest() {
 		_doNameResoution=false;
 		_doMerging=false;
+		_doFiltering=false;
 	}
 	
 	public void setNameResolution(boolean value) { _doNameResoution=value; }
 	public void setMerging(boolean value) { _doMerging=value; }
 	public boolean doNameResolution() { return _doNameResoution; }
 	public boolean doMerging() { return _doMerging; }
+	public void setFiltering(boolean value) { _doFiltering=value; }
+	public boolean doFiltering() { return _doFiltering; }
 	
 	public void send(Context parent) {
 		Intent i = new Intent();
@@ -51,12 +55,14 @@ public class ScanRequest implements Parcelable  {
 	public void writeToParcel(Parcel dest, int parcelableFlags) {
 		dest.writeInt(_doNameResoution ? 1 : 0 );
 		dest.writeInt(_doMerging ? 1 : 0 );
+		dest.writeInt(_doFiltering ? 1 : 0 );
 	}
 	
 	//@SuppressWarnings("unchecked")
 	private ScanRequest(Parcel source) {
 		_doNameResoution = ((source.readInt()==1) ? true : false );
 		_doMerging = ((source.readInt()==1) ? true : false );
+		_doFiltering = ((source.readInt()==1) ? true : false );
 	}
 
 }
