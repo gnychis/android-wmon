@@ -68,11 +68,27 @@ public class YourDevices extends Activity {
 
 		// Pop up a progress dialog and register receivers for progress being made by the scanning service
 		_pd = ProgressDialog.show(this, "", "Scanning for devices", true, false);
+	}
+	
+	public void registerReceivers() {
 		registerReceiver(_deviceScanReceiver, new IntentFilter(ScanManager.SCAN_RESPONSE));
 		registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
 		registerReceiver(incomingEvent, new IntentFilter(NameResolutionManager.NAME_RESOLUTION_RESPONSE));
 		registerReceiver(incomingEvent, new IntentFilter(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE));
 	}
+	
+	@Override
+	public void onResume() {
+		super.onPause();
+		registerReceivers();
+	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		unregisterReceiver(_deviceScanReceiver);
+		unregisterReceiver(incomingEvent);
+	}	
 	
     /**
      *   The purpose of this function is to listen for progress being made by the background service in scanning
