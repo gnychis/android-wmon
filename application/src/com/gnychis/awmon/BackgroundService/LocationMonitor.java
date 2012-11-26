@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -22,7 +21,6 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.HardwareHandlers.Wifi;
 
@@ -44,6 +42,7 @@ public class LocationMonitor {
 	}
 	
     public static final int LOCATION_TOLERANCE=150;			// in meters
+    public static final int LUI_BEFORE_HOME_SET=1000;
     public static final int LOCATION_UPDATE_INTERVAL=120000; //900000;	// in milliseconds (15 minutes)
     
     private static BackgroundService _backgroundService;
@@ -81,6 +80,8 @@ public class LocationMonitor {
 		mNextLocIsHome=false;			// The next "location" update would be the user's home location
 		mDisableWifiAS=false;			// Initialize "disable wifi after scan"
 		mScansLeft=0;					// Do not initialize with any scans
+		
+		Location _lastLocation;			// The last location that we received
 		
         // If we have already determined the location of the user's home (NEVER shared with us, and only
         // stored locally on your phone), then we read it from the application settings.
@@ -125,8 +126,9 @@ public class LocationMonitor {
 	               for(ScanResult result : scan_result) {
 	            	   if(result.SSID.replaceAll("^\"|\"$", "").equals(home_ssid)) {
 	            		   if(mHomeLoc==null) {
+	            			   debugOut("Next location will be home");
 		            		   mNextLocIsHome=true;
-		            		   changeUpdateInterval(60000);
+		            		   changeUpdateInterval(LUI_BEFORE_HOME_SET);
 	            		   }
 	            		   
 	            		   if(_settings.getHomeWifiMAC()!=null && _settings.getHomeWifiMAC().equals(result.BSSID))
@@ -151,7 +153,12 @@ public class LocationMonitor {
 
         mLocationTimer.scheduleAtFixedRate(new PeriodicUpdate(), 0, LOCATION_UPDATE_INTERVAL);
         mPowerManager = (PowerManager) _backgroundService.getSystemService(Context.POWER_SERVICE);
-        changeUpdateInterval(LOCATION_UPDATE_INTERVAL);   
+        
+        // If we don't have the home location, let's get updates faster
+        if(!_settings.haveHomeLocation())
+        	changeUpdateInterval(LUI_BEFORE_HOME_SET);
+        else
+        	changeUpdateInterval(LOCATION_UPDATE_INTERVAL);   
     }
     
     
@@ -176,7 +183,6 @@ public class LocationMonitor {
     	locationManager.removeUpdates(mPendingIntent);
     	locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, interval, 0, mPendingIntent);
     }
-    
 
 
     /**This triggers a wifi scan.  If the wifi is disabled, it enables it for the duration of

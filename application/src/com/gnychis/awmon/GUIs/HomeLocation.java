@@ -14,8 +14,11 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
@@ -42,6 +45,7 @@ public class HomeLocation extends MapActivity {
     UserSettings _settings;
     ProgressDialog _pd;
     Handler _handler;
+    LocationManager _locationManager;
 	
 	@Override
 	protected boolean isRouteDisplayed() {
@@ -60,11 +64,15 @@ public class HomeLocation extends MapActivity {
         mapView.setBuiltInZoomControls(true);
         _settings = new UserSettings(this);
         _handler = new Handler();
+        _locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         // Try to get the location of the user's home, if it is set we zoom
         // in on it and then we return.
         if(setHomeLocationIfKnown())
         	return;
+        
+        // Otherwise, let's request a single update to speed up things
+        _locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListenerGps, Looper.myLooper());
         
         // We don't have the home location, so we wait for it to be broadcast from the background service
         _pd = ProgressDialog.show(this, "", "Retrieving your current location", true, false);  
@@ -86,15 +94,40 @@ public class HomeLocation extends MapActivity {
         debugOut("done loading Home Location activity");
     }
     
+    LocationListener locationListenerGps = new LocationListener() {
+        public void onLocationChanged(Location location) {
+        	debugOut("Forced a location update");
+        }
+        public void onProviderDisabled(String provider) {}
+        public void onProviderEnabled(String provider) {}
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
+    };
+    
+    /** 
+     * This sets the home location on the map if it is known (the box in the Activity)
+     * @return true if we knew the home's location, and set it.  False otherwise.
+     */
     public boolean setHomeLocationIfKnown() {
         Location homeLoc = _settings.getHomeLocation();
+        
         if(homeLoc != null) {
+        	
         	zoomAndMarkLocation(homeLoc);
+            
+            if(_pd!=null)
+            	_pd.dismiss();
+            
+            _locationManager.removeUpdates(locationListenerGps);
+            
         	return true;
         }
         return false;
     }
     
+    /**
+     * Zoom's in on the map to the specified location, marks it, and draws the accuracy around it.
+     * @param l the location to zoom in on and mark
+     */
     public void zoomAndMarkLocation(Location l) {
         GeoPoint point = new GeoPoint((int)(l.getLatitude() * 1E6), (int) (l.getLongitude() * 1E6));
         mapView.getController().setCenter(point);
@@ -110,9 +143,6 @@ public class HomeLocation extends MapActivity {
         
         CircleOverlay errorRadius = new CircleOverlay(this.getApplicationContext(), l.getLatitude(), l.getLongitude(), (float)l.getAccuracy());
         mapOverlays.add(errorRadius);
-        
-        if(_pd!=null)
-        	_pd.dismiss();
     }
     
     public class CircleOverlay extends Overlay {

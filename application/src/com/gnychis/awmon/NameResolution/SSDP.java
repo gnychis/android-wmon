@@ -94,7 +94,7 @@ public class SSDP extends NameResolver {
         	// Go through our list of interfaces and look for a matching IP, if we find one, then we name it.
 	    	for(Interface iface : _supportedInterfaces) {
 	    		
-	    		if(iface._IP!=null && iface._IP.equals(IP) && iface._ifaceName==null) {
+	    		if(iface._IP!=null && iface._IP.equals(IP)) {
 	    			
 	    			iface._ifaceName = device.getDetails().getFriendlyName();
 
