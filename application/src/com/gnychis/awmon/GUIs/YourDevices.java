@@ -1,6 +1,7 @@
 package com.gnychis.awmon.GUIs;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import android.app.Activity;
@@ -124,6 +125,7 @@ public class YourDevices extends Activity {
 	private void updateListWithInterfaces(ArrayList<Interface> interfaces, boolean useNames) {
 		HashMap<String , Object> tempListItem;
 		_deviceList=new ArrayList<HashMap<String,Object>>();
+		Collections.shuffle(interfaces);
 		for(Interface iface : interfaces) {
 			tempListItem=new HashMap<String, Object>();
 			
