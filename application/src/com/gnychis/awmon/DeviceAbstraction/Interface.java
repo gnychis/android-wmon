@@ -78,7 +78,7 @@ public class Interface implements Parcelable {
 		String cleanName = _ouiName;
 		for(String k : kill)
 			cleanName = cleanName.replace(k, "");
-		return WordUtils.capitalize(cleanName);
+		return WordUtils.capitalize(cleanName.toLowerCase());
 	}
 	
 	/** This merges the information from Interface 'i' in to the current interface,
