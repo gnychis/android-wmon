@@ -27,6 +27,7 @@ import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
+import com.gnychis.awmon.DeviceFiltering.DeviceFilteringManager;
 import com.gnychis.awmon.InterfaceMerging.InterfaceMergingManager;
 import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
@@ -64,6 +65,7 @@ public class YourDevices extends Activity {
 		ScanRequest request = new ScanRequest();	// Instantiate a scan request
 		request.setNameResolution(true);			// Enable name resolution
 		request.setMerging(true);					// Merge interfaces in to devices
+		request.setFiltering(true);					// Try to filter out devices that definitely do not belong to the user
 		request.send(this);							// Send the request to the background service
 
 		// Pop up a progress dialog and register receivers for progress being made by the scanning service
@@ -75,6 +77,7 @@ public class YourDevices extends Activity {
 		registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
 		registerReceiver(incomingEvent, new IntentFilter(NameResolutionManager.NAME_RESOLUTION_RESPONSE));
 		registerReceiver(incomingEvent, new IntentFilter(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE));
+		registerReceiver(incomingEvent, new IntentFilter(DeviceFilteringManager.DEVICE_FILTERING_RESPONSE));
 	}
 	
 	@Override
@@ -106,6 +109,11 @@ public class YourDevices extends Activity {
         		updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), true);
         		_pd.dismiss();
         		_pd = ProgressDialog.show(_context, "", "Merging interfaces to devices", true, false);
+        	}
+        	if(intent.getAction().equals(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE)) {
+        		updateListWithDevices((ArrayList<Device>) intent.getExtras().get("result"));
+        		_pd.dismiss();
+        		_pd = ProgressDialog.show(_context, "", "Filtering devices we strongly believe are not yours (to make this easier for you!)", true, false);
         	}
         }
     };
