@@ -30,7 +30,10 @@ public class Zeroconf extends NameResolver {
 	static final String TAG = "Zeroconf";
 	static final boolean VERBOSE = true;
 	
-	static final int RESPONSE_WAIT_TIME = 5000; // in milliseconds
+	static final int NUM_TARGETTED_SCANS = 3;		// Just the target scans
+	static final int TARGETTED_WAIT_TIME = 2000; 	// in milliseconds
+	static final int NUM_FULL_SCANS = 2;			// the number of scans
+	static final int FULL_WAIT_TIME = 2000; 		// in milliseconds
 
 	ArrayList<Interface> _supportedInterfaces;
 
@@ -48,18 +51,28 @@ public class Zeroconf extends NameResolver {
 	public ArrayList<Interface> resolveSupportedInterfaces(ArrayList<Interface> supportedInterfaces) {
 		debugOut("Started Zeroconf resolution");
 		_supportedInterfaces = supportedInterfaces;  // make them accessible
+		
+		int targetted_scans = NUM_TARGETTED_SCANS;
+		while(targetted_scans>0) {
+			setUp(false);
+			try { Thread.sleep(TARGETTED_WAIT_TIME); } catch(Exception e) {}
+			tearDown();	// tear down the search for services
+			targetted_scans--;
+		}
 
-		setUp();
-
-		try { Thread.sleep(RESPONSE_WAIT_TIME); } catch(Exception e) {}
-
-		tearDown();	// tear down the search for services
+		int full_scans = NUM_FULL_SCANS;
+		while(full_scans>0) {
+			setUp(true);
+			try { Thread.sleep(FULL_WAIT_TIME); } catch(Exception e) {}
+			tearDown();	// tear down the search for services
+			full_scans--;
+		}
 
 		debugOut("Finished Zeroconf resolution");
 		return _supportedInterfaces;	// Make sure to return the _ version.
 	}
 
-	private boolean setUp() {
+	private boolean setUp(boolean fullScan) {
 		WifiManager wifi = (WifiManager) _nr_manager._parent.getSystemService(Context.WIFI_SERVICE);
 
 		WifiInfo wifiinfo = wifi.getConnectionInfo();
@@ -102,7 +115,7 @@ public class Zeroconf extends NameResolver {
 			zeroConf = JmDNS.create(addr, "awmon");
 
 			// Build the list of services we are listening for
-			_serviceListeners = buildServiceListenerList();
+			_serviceListeners = buildServiceListenerList(fullScan);
 			debugOut("Adding in the service listeners..." + Calendar.getInstance().getTime());
 			for(String service : _serviceListeners) 
 				zeroConf.addServiceListener(service, _jmdnsListener);
@@ -129,7 +142,7 @@ public class Zeroconf extends NameResolver {
 
 	// This function reads through the services listed in the mdns_sevice_types.txt, as well
 	// as adds some services dynamically.
-	List<String> buildServiceListenerList() {
+	List<String> buildServiceListenerList(boolean fullScan) {
 		List<String> services = new ArrayList<String>();
 
 		// Now go through each of the supported interfaces and add an ARPA request which will get us
@@ -142,6 +155,9 @@ public class Zeroconf extends NameResolver {
 				debugOut("Adding in a query for " + iface._IP + " as: " + iface.getReverseIP() + ".in-addr.arpa."); 
 			}
 		}
+		
+		if(!fullScan)
+			return services;
 
 		try {	// First go through the list of known service types and add each of them
 			DataInputStream in = new DataInputStream(new FileInputStream("/data/data/" + MainInterface._app_name + "/files/mdns_service_types.txt"));
@@ -149,7 +165,7 @@ public class Zeroconf extends NameResolver {
 
 			String service;	// Get the service, append a "_" to it and make it end with "._tcp.local."
 			while ((service = br.readLine()) != null) {
-				services.add("_" + service.replace("\n", "").replace("\r", "") + "._tcp.local.");
+				services.add(service.replace("\n", "").replace("\r", "") + "local.");
 			}
 			in.close();
 		} catch(Exception e) { Log.e(TAG, "Error opening MDNS service types text file"); }

@@ -7,6 +7,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.lang3.text.WordUtils;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -76,7 +78,7 @@ public class Interface implements Parcelable {
 		String cleanName = _ouiName;
 		for(String k : kill)
 			cleanName = cleanName.replace(k, "");
-		return cleanName;
+		return WordUtils.capitalize(cleanName);
 	}
 	
 	/** This merges the information from Interface 'i' in to the current interface,

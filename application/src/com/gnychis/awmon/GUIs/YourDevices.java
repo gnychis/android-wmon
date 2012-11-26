@@ -162,7 +162,7 @@ public class YourDevices extends Activity {
 			} else {
 				if(iface.getClass() != WirelessInterface.class)	// For the sake of demonstration
 					continue;
-				tempListItem.put("name", Interface.simplifiedClassName(iface._type) + " Radio");
+				tempListItem.put("name", Interface.simplifiedClassName(iface._type) + " Radio @ " + ((WirelessInterface)iface).averageRSSI() + "dBm");
 				tempListItem.put("additional", "Signal strength: " + ((WirelessInterface)iface).averageRSSI() + "dBm");
 			}
 			tempListItem.put("key", iface.getKey());
@@ -233,7 +233,7 @@ public class YourDevices extends Activity {
 
 				//cache the views
 				viewHolder.name=(TextView) convertView.findViewById(R.id.name);
-				viewHolder.additional=(TextView) convertView.findViewById(R.id.additional);
+				//viewHolder.additional=(TextView) convertView.findViewById(R.id.additional);
 				viewHolder.checkBox=(CheckBox) convertView.findViewById(R.id.checkBox);
 
 				//link the cached views to the convertview
@@ -251,7 +251,7 @@ public class YourDevices extends Activity {
 			
 			// Set the actual items in the list with name and any additional info
 			viewHolder.name.setText(name);
-			viewHolder.additional.setText(additional);
+			//viewHolder.additional.setText(additional);
 			viewHolder.checkBox.setChecked(checkBoxState[position]);
 
 			viewHolder.checkBox.setOnClickListener(new View.OnClickListener() {
@@ -269,7 +269,7 @@ public class YourDevices extends Activity {
 
 	@Override
 	public void onBackPressed() {
-		Intent i = new Intent(YourDevices.this, HomeLocation.class);
+		Intent i = new Intent(YourDevices.this, TurnDevicesOn.class);
 		startActivity(i);
 		finish();
 	}
