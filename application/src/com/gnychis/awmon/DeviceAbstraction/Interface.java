@@ -13,8 +13,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 import com.gnychis.awmon.HardwareHandlers.LAN;
 import com.gnychis.awmon.HardwareHandlers.Wifi;
+import com.gnychis.awmon.HardwareHandlers.ZigBee;
 
 public class Interface implements Parcelable {
 	
@@ -56,7 +58,8 @@ public class Interface implements Parcelable {
 		return simplifiedClassName(_type) + " Interface: <br />" 
 				+ "&nbsp;&nbsp;&nbsp;&nbsp;* <u>MAC</u>: " + _MAC + "<br />" 
 				+ ((_type==Wifi.class || _type==LAN.class) ? "&nbsp;&nbsp;&nbsp;&nbsp;* <u>IP</u>: " + _IP + "<br />" : "")
-				+ "&nbsp;&nbsp;&nbsp;&nbsp;* <u>Name</u>: " + ((_ifaceName!=null) ? _ifaceName : "") + "<br /><br />";
+				+ ((_ifaceName!=null) ? "&nbsp;&nbsp;&nbsp;&nbsp;* <u>Name</u>: " + _ifaceName + "<br />": "") 
+				+ "<br />";
 	}
 	
 	@Override
@@ -88,7 +91,11 @@ public class Interface implements Parcelable {
 		String cleanName = _ouiName;
 		for(String k : kill)
 			cleanName = cleanName.replace(k, "");
-		return WordUtils.capitalize(cleanName.split(" ")[0].toLowerCase());
+		String[] split = cleanName.split(" ");
+		if(split.length>0)
+			return WordUtils.capitalize(cleanName.split(" ")[0].toLowerCase());
+		else
+			return WordUtils.capitalize(cleanName.toLowerCase());
 	}
 	
 	/** This merges the information from Interface 'i' in to the current interface,
@@ -206,6 +213,24 @@ public class Interface implements Parcelable {
     	}
       };
       
+      /** A sorter for interfaces by a rank of how we want names to be prioritized.  E.g., give Bluetooth names the highest
+       * rank when considering how to name an interface
+      */
+      static List<? extends Class<?>> interfaceNamingRanks = Arrays.asList(Bluetooth.class, Wifi.class, LAN.class, ZigBee.class);
+      public static Comparator<Object> byNameRank = new Comparator<Object>() {
+    	  public int compare(Object arg0, Object arg1) {
+    		  int arg0Rank = (interfaceNamingRanks.contains(((Interface)arg0)._type)) ? interfaceNamingRanks.indexOf(((Interface)arg0)._type) : -1;
+    		  int arg1Rank = (interfaceNamingRanks.contains(((Interface)arg1)._type)) ? interfaceNamingRanks.indexOf(((Interface)arg1)._type) : -1;
+    		  
+    		  if(arg1Rank < arg0Rank)
+    			  return 1;
+    		  else if(arg1Rank > arg0Rank)
+    			  return -1;
+    		  else
+    			  return 0;
+    	  }
+      };
+
   	
   	/** Converts a string representation of an IEEE MAC address to a byte array
   	 * @param macString the string representation of the MAC

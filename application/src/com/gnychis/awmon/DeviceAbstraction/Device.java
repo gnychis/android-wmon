@@ -1,12 +1,15 @@
 package com.gnychis.awmon.DeviceAbstraction;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.HardwareHandlers.Wifi;
 
 
@@ -41,6 +44,79 @@ public class Device implements Parcelable {
 		_name = null;
 		_mobile=Device.Mobility.UNKNOWN;
 		_deviceKey = generateKey();
+	}
+	
+	/** The purpose of this function is to retrieve some additional or useful information about the device
+	 * that might help the user recognize or separate it from other devices.  We need a context to access settings.
+	 * @return additional information as a string.
+	 */
+	public String getAdditional(Context c) {
+		String additional="";
+		UserSettings _settings = new UserSettings(c);
+		
+		// If this device has an interface with the same MAC address as the phone's (the thing the user is holding)
+		// MAC, we say: "Hey, this is the device in your hand"
+		if(hasInterfaceWithMAC(_settings.getPhoneWifiMAC()))
+			return "The phone you're using right now!";
+		
+		// To check if this device is the home access point, you could check for Wifi interfaces, but an easy and guaranteed
+		// one is to check whether it has the Gateway IP address
+		if(hasGatewayInterface())
+			return "Your access point (\"" + _settings.getHomeSSID() + "\")";
+		
+		// If it is associated to their Wifi network
+		if(associatedToWifiNetwork(_settings.getHomeWifiMAC()))
+			return "Connected to your Wifi network";
+		
+		// If the device is wired to their home network
+		if(wiredToNetwork(_settings.getHomeWifiMAC()))
+			return "On your network via an Ethernet cable";
+		
+		return additional;
+	}
+	
+	/** This checks to see if the device is wired to the home network.  For this to be true, it
+	 * must have an IP address belonging to the network and it must not be associated to the Wifi network.
+	 * @return true if wired to the home network, false otherwise.
+	 */
+	public boolean wiredToNetwork(String homeWifiNetworkMAC) {
+		for(Interface iface : _interfaces)
+			if(iface.hasValidIP() && !associatedToWifiNetwork(homeWifiNetworkMAC))
+				return true;
+		return false;
+	}
+	
+	/** Checks to see if the device has a wireless interface and is associated to the
+	 * home Wifi network.
+	 * @return true if associated to the Wifi network, false otherwise.
+	 */
+	public boolean associatedToWifiNetwork(String networkMAC) {
+		for(Interface iface : _interfaces)
+			if(iface.getClass()==WirelessInterface.class 
+				&& ((WirelessInterface)iface)._BSSID!=null && ((WirelessInterface)iface)._BSSID.equals(networkMAC))
+				return true;
+		return false;
+	}
+	
+	/** Checks to see if this device has the wired gateway interface (e.g., 192.168.1.1)
+	 * @return true if it has the gateway interface, false otherwise.
+	 */
+	public boolean hasGatewayInterface() {
+		for(Interface iface : _interfaces)
+			if(iface.getClass()==WiredInterface.class && ((WiredInterface)iface)._gateway)
+				return true;
+		return false;
+	}
+	
+	/** Checks if this device has an interface that matches a specific MAC
+	 * @param MAC the MAC to check for
+	 * @return true if this device has an interface with 'MAC', false otherwise.
+	 */
+	public boolean hasInterfaceWithMAC(String MAC) {
+		for(Interface iface : _interfaces)
+			if(iface._MAC!=null && iface._MAC.equals(MAC))
+				return true;
+		return false;
 	}
 	
 	public String toFormattedString() {
@@ -90,6 +166,7 @@ public class Device implements Parcelable {
 	 * @return returns the manufacturer name.
 	 */
 	public String getManufacturer() {
+		Collections.sort(_interfaces, Interface.byNameRank);
 		// If we are still in this function, there were no interface names.  Return an OUI name.
 		for(Interface iface : _interfaces)
 			if(iface._ouiName != null)
@@ -120,6 +197,8 @@ public class Device implements Parcelable {
 	public String getName() {
 		if(_name!=null)
 			return _name;
+		
+		Collections.sort(_interfaces, Interface.byNameRank);
 		
 		for(Interface iface : _interfaces) {
 			

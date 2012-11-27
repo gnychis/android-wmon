@@ -66,15 +66,6 @@ public class YourDevices extends Activity {
 
 		_deviceList=new ArrayList<HashMap<String,Object>>();
 		_handler = new Handler();
-
-		ScanRequest request = new ScanRequest();	// Instantiate a scan request
-		request.setNameResolution(true);			// Enable name resolution
-		request.setMerging(true);					// Merge interfaces in to devices
-		request.setFiltering(true);					// Try to filter out devices that definitely do not belong to the user
-		request.send(this);							// Send the request to the background service
-
-		// Pop up a progress dialog and register receivers for progress being made by the scanning service
-		_pd = ProgressDialog.show(this, "", "Scanning for devices", true, false);
 	}
 	
 	public void registerReceivers() {
@@ -86,8 +77,22 @@ public class YourDevices extends Activity {
 	}
 	
 	@Override
+	public void onStart() {
+		super.onStart();
+
+		ScanRequest request = new ScanRequest();	// Instantiate a scan request
+		request.setNameResolution(true);			// Enable name resolution
+		request.setMerging(true);					// Merge interfaces in to devices
+		request.setFiltering(true);					// Try to filter out devices that definitely do not belong to the user
+		request.send(this);							// Send the request to the background service
+
+		// Pop up a progress dialog and register receivers for progress being made by the scanning service
+		_pd = ProgressDialog.show(this, "", "Scanning for devices", true, false);
+	}
+	
+	@Override
 	public void onResume() {
-		super.onPause();
+		super.onResume();		
 		registerReceivers();
 	}
 	
@@ -154,7 +159,7 @@ public class YourDevices extends Activity {
 	private void updateListWithDevices(ArrayList<Device> devices) {
 		_deviceList=new ArrayList<HashMap<String,Object>>();
 		for(Device device : devices) {
-			_deviceList.add(createListItem(device.getName(), device.getManufacturer(), device));  
+			_deviceList.add(createListItem(device.getName(), device.getAdditional(_context), device));  
 			debugOut(device.toString());
 		}
 		updateDeviceList();
@@ -183,7 +188,7 @@ public class YourDevices extends Activity {
 				
 				if(iface.getClass() != WirelessInterface.class)	// For the sake of demonstration
 					continue;
-				name = Interface.simplifiedClassName(iface._type) + " Radio @ " + ((WirelessInterface)iface).averageRSSI() + "dBm";
+				name = Interface.simplifiedClassName(iface._type) + " Radio";
 				additional = "Signal strength: " + ((WirelessInterface)iface).averageRSSI() + "dBm";
 			}
 			
@@ -288,7 +293,7 @@ public class YourDevices extends Activity {
 
 				//cache the views
 				viewHolder.name=(TextView) convertView.findViewById(R.id.name);
-				//viewHolder.additional=(TextView) convertView.findViewById(R.id.additional);
+				viewHolder.additional=(TextView) convertView.findViewById(R.id.additional);
 				viewHolder.checkBox=(CheckBox) convertView.findViewById(R.id.checkBox);
 
 				//link the cached views to the convertview
@@ -306,7 +311,7 @@ public class YourDevices extends Activity {
 			
 			// Set the actual items in the list with name and any additional info
 			viewHolder.name.setText(name);
-			//viewHolder.additional.setText(additional);
+			viewHolder.additional.setText(additional);
 			viewHolder.checkBox.setChecked(checkBoxState[position]);
 			
 			viewHolder.name.setOnClickListener(new View.OnClickListener() {

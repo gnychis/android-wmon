@@ -77,6 +77,12 @@ public class UserSettings {
     public String getHomeWifiMAC() { return settings.getString("homeWifiMAC", null); }
     public void setHomeWifiMAC(String mac) { sEditor.putString("homeWifiMAC", mac); sEditor.commit(); }
     
+    // Store some local device information
+    public String getPhoneWifiMAC() { return settings.getString("phoneWifiMAC", null); }
+    public void storePhoneWifiMAC(String mac) { sEditor.putString("phoneWifiMAC", mac); sEditor.commit(); }
+    public String getGatewayIP() { return settings.getString("gatewayIP", null); }
+    public void storeGatewayIP(String IP) { sEditor.putString("gatewayIP", IP); sEditor.commit(); }
+    
     // Survey related Settings
     public int getAgeRange() { return settings.getInt("ageRange", -1); }
     public boolean getSurveyKitchen() { return settings.getBoolean("kitchen", false); }

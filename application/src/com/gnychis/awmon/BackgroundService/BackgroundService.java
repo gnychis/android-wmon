@@ -9,13 +9,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.UserSettings;
+import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.GUIs.MainInterface;
 import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
+import com.gnychis.awmon.HardwareHandlers.LAN;
 import com.stericson.RootTools.RootTools;
 
 @SuppressWarnings("unused")
@@ -82,6 +86,15 @@ public class BackgroundService extends Service {
 		_hardwareHandler = new HardwareHandler(this);
 		_scanManager = new ScanManager(this, _hardwareHandler);
 		_serviceState=ServiceState.IDLE;
+		setDeviceInformation();
+    }
+    
+    public void setDeviceInformation() {
+		// Let's get the Gateway IP, so that we can mark the interface as the "gateway" in our LAN
+		WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		DhcpInfo d = wifi.getDhcpInfo();
+		String MAC=wifi.getConnectionInfo().getMacAddress();
+		_settings.storePhoneWifiMAC(MAC);
     }
     
     public ServiceState getSystemState() { return _serviceState; }
