@@ -63,13 +63,9 @@ public class DNSHostName extends NameResolver {
 			              for (int i = 0; i < records.length; i++) {
 			            	  
 			                if(records[i] instanceof PTRRecord) {		// Get the record
-			                	
+			                
 			                  PTRRecord ptr = (PTRRecord) records[i];
 			                  String hostname = ptr.rdataToString().substring(0, ptr.rdataToString().length()-6);
-			                  
-					          if(hostname.matches("^android-.*") && iface.cleanOUIname()!=null)  // Do some magic for Android
-					        	  hostname= iface.cleanOUIname().split(" ")[0] + " Android Device";
-					        	  
 					          iface._ifaceName=hostname;	// Otherwise, you get the basic hostname
 					          
 			                  debugOut("Mapped " + iface._IP + " <---> " + hostname);

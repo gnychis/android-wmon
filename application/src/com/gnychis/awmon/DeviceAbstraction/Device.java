@@ -43,13 +43,17 @@ public class Device implements Parcelable {
 		_deviceKey = generateKey();
 	}
 	
-	@Override
-	public String toString() {
-		String result = "Device: " + getName() + "\n";
+	public String toFormattedString() {
+		String result = "<b>Device: " + getName() + "<b>\n";
 		List<Interface> interfaces = getInterfaces();
 		for(Interface iface : interfaces)
 			result += " ... " + iface.toString() + "\n";
-		return  result;
+		return result;
+	}
+	
+	@Override
+	public String toString() {
+		return toFormattedString().toString();
 	}
 	
 	/**
@@ -117,9 +121,17 @@ public class Device implements Parcelable {
 		if(_name!=null)
 			return _name;
 		
-		for(Interface iface : _interfaces)
-			if(iface._ifaceName != null)
+		for(Interface iface : _interfaces) {
+			
+			if(iface._ifaceName != null) {
+                
+		          if(iface._ifaceName.matches("^android-.*") && iface.cleanOUIname()!=null)  // Do some magic for Android
+		        	  return iface.cleanOUIname().split(" ")[0] + " Android Device";
+		        	  
 				return iface._ifaceName;
+			}
+			
+		}
 		
 		// If we are still in this function, there were no interface names.  Return an OUI name.
 		for(Interface iface : _interfaces)

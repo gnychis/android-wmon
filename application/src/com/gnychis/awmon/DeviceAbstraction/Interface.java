@@ -13,6 +13,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.gnychis.awmon.HardwareHandlers.LAN;
+import com.gnychis.awmon.HardwareHandlers.Wifi;
+
 public class Interface implements Parcelable {
 	
 	public String _MAC;							// The MAC address of the interface, or some address.
@@ -49,13 +52,20 @@ public class Interface implements Parcelable {
 		_ifaceKey=i._ifaceKey;
 	}
 	
+	public String toFormattedString() {
+		return simplifiedClassName(_type) + " Interface: <br />" 
+				+ "&nbsp;&nbsp;&nbsp;&nbsp;* <u>MAC</u>: " + _MAC + "<br />" 
+				+ ((_type==Wifi.class || _type==LAN.class) ? "&nbsp;&nbsp;&nbsp;&nbsp;* <u>IP</u>: " + _IP + "<br />" : "")
+				+ "&nbsp;&nbsp;&nbsp;&nbsp;* <u>Name</u>: " + ((_ifaceName!=null) ? _ifaceName : "") + "<br /><br />";
+	}
+	
 	@Override
 	public String toString()  {
-		return 	"Got an interface (" + simplifiedClassName(getClass()) + " - " + simplifiedClassName(_type) + "): " 
-				+ _MAC 
-				+ " - " + _IP
-				+ " - " + _ifaceName
-				+ " - " + _ouiName;
+		return simplifiedClassName(getClass()) + " - " + simplifiedClassName(_type) + ": " 
+				+ "  MAC: " + _MAC 
+				+ "  IP: " + _IP
+				+ "  Name:" + _ifaceName
+				+ "  OUI:" + _ouiName;
 	}
 	
 	/** This let's us know if the device belongs on the home LAN.  We make the assumption
@@ -78,7 +88,7 @@ public class Interface implements Parcelable {
 		String cleanName = _ouiName;
 		for(String k : kill)
 			cleanName = cleanName.replace(k, "");
-		return WordUtils.capitalize(cleanName.toLowerCase());
+		return WordUtils.capitalize(cleanName.split(" ")[0].toLowerCase());
 	}
 	
 	/** This merges the information from Interface 'i' in to the current interface,

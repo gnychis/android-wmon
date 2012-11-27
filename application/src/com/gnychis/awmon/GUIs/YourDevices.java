@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,11 +13,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -142,47 +147,97 @@ public class YourDevices extends Activity {
 		}
 	}; 
 	
+	
+	/** This updates the list with a set of devices
+	 * @param devices The devices to populate the list with
+	 */
+	private void updateListWithDevices(ArrayList<Device> devices) {
+		_deviceList=new ArrayList<HashMap<String,Object>>();
+		for(Device device : devices) {
+			_deviceList.add(createListItem(device.getName(), device.getManufacturer(), device));  
+			debugOut(device.toString());
+		}
+		updateDeviceList();
+	}
+	
 	/** 
 	 * This updates the list with a set of interfaces.
 	 * @param interfaces the interfaces to add to the list
 	 */
 	private void updateListWithInterfaces(ArrayList<Interface> interfaces, boolean useNames) {
-		HashMap<String , Object> tempListItem;
 		_deviceList=new ArrayList<HashMap<String,Object>>();
 		Collections.shuffle(interfaces);
-		for(Interface iface : interfaces) {
-			tempListItem=new HashMap<String, Object>();
+		
+		for(Interface iface : interfaces) {		// For each interface
 			
-			// If we are using names, we use all devices in the list.
-			if(useNames) {
+			String name = "";			// We need a name
+			String additional = "";		// And some additional information
+			
+			if(useNames) {							// If we are using names, we use all devices in the list.
 				if(iface._ifaceName!=null)
-					tempListItem.put("name", iface._ifaceName);
+					name = iface._ifaceName;		// Use the specified interface name
 				if(iface._ouiName!=null)
-					tempListItem.put("additional", iface._ouiName); 
-			} else {
+					additional =  iface._ouiName; 	// And list the OUI name also for the sake of it
+				
+			} else {			// If we are not using names, we add some basic info about wireless xmitters
+				
 				if(iface.getClass() != WirelessInterface.class)	// For the sake of demonstration
 					continue;
-				tempListItem.put("name", Interface.simplifiedClassName(iface._type) + " Radio @ " + ((WirelessInterface)iface).averageRSSI() + "dBm");
-				tempListItem.put("additional", "Signal strength: " + ((WirelessInterface)iface).averageRSSI() + "dBm");
+				name = Interface.simplifiedClassName(iface._type) + " Radio @ " + ((WirelessInterface)iface).averageRSSI() + "dBm";
+				additional = "Signal strength: " + ((WirelessInterface)iface).averageRSSI() + "dBm";
 			}
-			tempListItem.put("key", iface.getKey());
-			_deviceList.add(tempListItem);	
+			
+			_deviceList.add(createListItem(name, additional, iface));
 			debugOut(iface.toString());
 		}
 		updateDeviceList();		// Update and populate the actual device list
 	}
 	
-	private void updateListWithDevices(ArrayList<Device> devices) {
-		HashMap<String , Object> tempListItem;
-		_deviceList=new ArrayList<HashMap<String,Object>>();
-		for(Device device : devices) {
-			tempListItem=new HashMap<String, Object>();
-			tempListItem.put("name", device.getName());
-			tempListItem.put("additional", device.getManufacturer()); 
-			_deviceList.add(tempListItem);  
-			debugOut(device.toString());
+	/** This checks the list to see if this name is already used.
+	 * @param name The name to check
+	 * @return true if the name is in use, false otherwise.
+	 */
+	private boolean isListNameUsed(String name) {
+		for(HashMap<String, Object> item : _deviceList)
+			if(item.get("name").equals(name))
+				return true;
+		return false;
+	}
+	
+	/** Returns an item in the device list based on the name.
+	 * @param name The name of the item
+	 * @return the list item
+	 */
+	private HashMap<String,Object> getListItemByName(String name) {
+		for(HashMap<String, Object> item : _deviceList)
+			if(item.get("name").equals(name))
+				return item;
+		return null;
+	}
+	
+	/** This method takes a name of a device or interface that would be inserted
+	 * in to the list, and makes sure it is un ique by returning a new name if it is not
+	 * unique.  Otherwise, it uses that name and puts it in the hash map.
+	 * @param name The name that wishes to be inserted.
+	 * @param o The object to be inserted corresponding to the name
+	 * @return The actual name used in String format
+	 */
+	private HashMap<String,Object> createListItem(String name, String additional, Object o) {
+		HashMap<String , Object> listItem = new HashMap<String, Object>();
+		int i = 1;
+		
+		String uniqueName = name;
+		while(isListNameUsed(uniqueName)) {
+			uniqueName = name + " (" + i +")";
+			i++;
 		}
-		updateDeviceList();
+		
+		listItem.put("name", uniqueName);
+		listItem.put("additional", additional);
+		listItem.put("object", o);
+		listItem.put("objectType", o.getClass());
+		
+		return listItem;
 	}
 	
 	/** Gets a handle to the custom list, sets the data, and then notifies it that data is ready.*/
@@ -253,6 +308,46 @@ public class YourDevices extends Activity {
 			viewHolder.name.setText(name);
 			//viewHolder.additional.setText(additional);
 			viewHolder.checkBox.setChecked(checkBoxState[position]);
+			
+			viewHolder.name.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					
+					if(_resultType != ScanManager.ResultType.DEVICES)
+						return;
+
+					// First, let's get the device that the user clicked on and its name
+					String name = ((TextView)v).getText().toString();
+					HashMap<String,Object> item = getListItemByName(name);
+					Device device = (Device) item.get("object");
+					
+					final Dialog dialog = new Dialog(_context);
+					dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+					dialog.setContentView(R.layout.device_info_box);
+					
+					// Set the device name
+					TextView deviceNameText = (TextView) dialog.findViewById(R.id.deviceName);
+					deviceNameText.setText(Html.fromHtml("<h2>" + name + "</h2>"));
+					
+					// Set the manufacturer
+					TextView manufacturerText = (TextView) dialog.findViewById(R.id.deviceManufacturer);
+					manufacturerText.setText(Html.fromHtml(device.getManufacturer()));
+					
+					// Add all of the devices to the text box
+					TextView deviceInfo = (TextView) dialog.findViewById(R.id.deviceInfo);
+					deviceInfo.setText("");
+					for(Interface iface : device.getInterfaces())
+						deviceInfo.append(Html.fromHtml(iface.toFormattedString() + "\n"));
+					
+					Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOK);
+					dialogButton.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							dialog.dismiss();
+						}
+					});
+					dialog.show();
+				}
+			});
 
 			viewHolder.checkBox.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {

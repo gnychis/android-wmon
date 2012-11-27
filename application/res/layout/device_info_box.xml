@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+ 
+     <TextView
+        android:id="@+id/deviceName"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:textColor="#FFF" 
+     />
+     
+     <TextView
+        android:id="@+id/deviceManufacturer"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="25dp"
+        android:layout_below="@+id/deviceName"
+        android:layout_marginTop="-35dp"
+        android:textColor="#FFF" 
+     />
+    
+    <TextView
+        android:id="@+id/deviceInfo"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_below="@+id/deviceManufacturer"
+        android:textColor="#FFF" 
+     />
+ 
+     <Button
+         android:id="@+id/dialogButtonOK"
+         android:layout_width="100dp"
+         android:layout_height="40dp"
+         android:layout_below="@+id/deviceInfo"
+         android:layout_centerHorizontal="true"
+         android:layout_marginRight="5dp"
+         android:layout_marginTop="10dp"
+         android:text=" Ok " />
+ 
+</RelativeLayout>

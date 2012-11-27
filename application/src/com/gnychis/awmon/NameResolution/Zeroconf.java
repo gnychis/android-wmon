@@ -30,9 +30,9 @@ public class Zeroconf extends NameResolver {
 	static final String TAG = "Zeroconf";
 	static final boolean VERBOSE = true;
 	
-	static final int NUM_TARGETTED_SCANS = 3;		// Just the target scans
+	static final int NUM_TARGETTED_SCANS = 2;		// Just the target scans
 	static final int TARGETTED_WAIT_TIME = 2000; 	// in milliseconds
-	static final int NUM_FULL_SCANS = 2;			// the number of scans
+	static final int NUM_FULL_SCANS = 1;			// the number of scans
 	static final int FULL_WAIT_TIME = 2000; 		// in milliseconds
 
 	ArrayList<Interface> _supportedInterfaces;
