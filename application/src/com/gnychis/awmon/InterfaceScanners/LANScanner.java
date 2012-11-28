@@ -19,7 +19,7 @@ public class LANScanner extends InterfaceScanner {
 	private static String TAG = "LANScanner";
 	private static boolean VERBOSE = true;
 	
-	private final int NUM_ARP_SCANS = 3;
+	private final int NUM_ARP_RETRIES = 6;
 
 	public LANScanner(Context c) {
 		super(c, LAN.class);
@@ -32,10 +32,7 @@ public class LANScanner extends InterfaceScanner {
 		_hw_device = params[0];		
 		ArrayList<String> scanResult = new ArrayList<String>();
 		
-		// Do multiple scans and then take the unique
-		int i;
-		for(i=NUM_ARP_SCANS; i>0; i--)
-			scanResult.addAll(BackgroundService.runCommand("arp_scan --interface=wlan0 -l -q 2> /dev/null"));
+		scanResult.addAll(BackgroundService.runCommand("arp_scan --retry=" + NUM_ARP_RETRIES + " --interface=wlan0 -l -q 2> /dev/null"));
 		HashSet<String> hs = new HashSet<String>();
 		hs.addAll(scanResult);
 		scanResult.clear();
@@ -49,7 +46,8 @@ public class LANScanner extends InterfaceScanner {
 	//**********************************************************************************************//
 	// The purpose of this function is to create a background ARP scan that generates traffic to all
 	// Wifi devices that are connected to the home network.  Useful to get some quick RSSI values.
-	public static void backgroundARPScan(int num_scans) {
+	public static void backgroundARPScan(int num_scans, String hosts) {
+		debugOut("Trigger " + num_scans + " background ARP scans");
 		BackgroundARPScan arp_scanner = new BackgroundARPScan();
 		arp_scanner.execute(num_scans);
 	}
@@ -65,7 +63,7 @@ public class LANScanner extends InterfaceScanner {
 	}
 	//**********************************************************************************************//
 	
-	private void debugOut(String msg) {
+	private static void debugOut(String msg) {
 		if(VERBOSE)
 			Log.d(TAG, msg);
 	}

@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WiredInterface;
+import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.HardwareHandlers.LAN;
 
 public class LANResultParser extends ScanResultParser {
@@ -50,7 +51,7 @@ public class LANResultParser extends ScanResultParser {
 		
 		// Now, we add in the phone that is currently in use.  For some reason, it's skipped in the ARP scan.
 		// Create a new interface from this result
-		Interface iface = new Interface(LAN.class);  // At this point, we don't know if it's wired or wireless
+		Interface iface = new WirelessInterface(LAN.class);  // At this point, we don't know if it's wired or wireless
 		iface._MAC=wifi.getConnectionInfo().getMacAddress();
 		iface._IP=Interface.reverseIPAddress(Interface.intIPtoString(wifi.getConnectionInfo().getIpAddress()).substring(1));
 		interfaces.add(iface);

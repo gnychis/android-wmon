@@ -3,6 +3,8 @@ package com.gnychis.awmon.GUIs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -66,6 +68,28 @@ public class YourDevices extends Activity {
 
 		_deviceList=new ArrayList<HashMap<String,Object>>();
 		_handler = new Handler();
+		
+		// Pop up a progress dialog and register receivers for progress being made by the scanning service
+		_pd = ProgressDialog.show(_context, "", "Scanning for devices", true, false);
+		
+		// Wait a small period of time before triggering the scans.  This allows the GUI to kind of bring itself up
+		// and show all of the items before we lock up some resources.
+		Timer scan_timer = new Timer();
+		scan_timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				_handler.post(new Runnable() {	// Must do this on the main UI thread...
+					@Override
+					public void run() {						
+						ScanRequest request = new ScanRequest();	// Instantiate a scan request
+						request.setNameResolution(true);			// Enable name resolution
+						request.setMerging(true);					// Merge interfaces in to devices
+						request.setFiltering(true);					// Try to filter out devices that definitely do not belong to the user
+						request.send(_context);						// Send the request to the background service
+					}
+				});
+			}
+		}, 500);		// Wait one scan time on the home AP's channel
 	}
 	
 	public void registerReceivers() {
@@ -74,20 +98,6 @@ public class YourDevices extends Activity {
 		registerReceiver(incomingEvent, new IntentFilter(NameResolutionManager.NAME_RESOLUTION_RESPONSE));
 		registerReceiver(incomingEvent, new IntentFilter(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE));
 		registerReceiver(incomingEvent, new IntentFilter(DeviceFilteringManager.DEVICE_FILTERING_RESPONSE));
-	}
-	
-	@Override
-	public void onStart() {
-		super.onStart();
-
-		ScanRequest request = new ScanRequest();	// Instantiate a scan request
-		request.setNameResolution(true);			// Enable name resolution
-		request.setMerging(true);					// Merge interfaces in to devices
-		request.setFiltering(true);					// Try to filter out devices that definitely do not belong to the user
-		request.send(this);							// Send the request to the background service
-
-		// Pop up a progress dialog and register receivers for progress being made by the scanning service
-		_pd = ProgressDialog.show(this, "", "Scanning for devices", true, false);
 	}
 	
 	@Override

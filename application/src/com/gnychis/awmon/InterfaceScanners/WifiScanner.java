@@ -28,7 +28,7 @@ import com.gnychis.awmon.HardwareHandlers.Wifi;
 public class WifiScanner extends InterfaceScanner {
 
 	final String TAG = "WifiScanner";
-	private static final boolean VERBOSE = false;
+	private static final boolean VERBOSE = true;
 	public static final String WIFI_SCAN_RESULT = MainInterface._app_name + ".WIFI_SCAN_RESULT";
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	static int WTAP_ENCAP_ETHERNET = 1;
@@ -84,7 +84,7 @@ public class WifiScanner extends InterfaceScanner {
 	}
 	
 	// Opens a the moni0 device as a pcap interface for packet capture
-	public boolean openDev() {
+	public boolean openDev(boolean setFilter) {
 		
 		// Try to use jnetpcap straight up to open the interface
 		List<PcapIf> alldevs = new ArrayList<PcapIf>();
@@ -123,27 +123,32 @@ public class WifiScanner extends InterfaceScanner {
         _moni0_pcap =  
                 Pcap.openLive(_moni0_dev.getName(), snaplen, flags, timeout, errbuf);
         
-        // We want to filter out all packets that our phone sends/receives.  This is to avoid picking up
-        // our ARP scan requests which generates too much traffic for the phone to parse.
-        // and (not wlan addr1 00:26:bb:74:5f:e5 and not type ctl subtype cts)
-        PcapBpfProgram program = new PcapBpfProgram();  
-        String expression = "not (wlan addr1 " + ((Wifi)_hw_device)._wlan_mac 
-        				   + " or wlan addr2 "+ ((Wifi)_hw_device)._wlan_mac
-        				   + " or wlan addr3 " + ((Wifi)_hw_device)._wlan_mac
-        				   + " or (wlan addr1 " + _settings.getHomeWifiMAC() + " and type ctl subtype cts))";
-        int optimize = 0;         // 0 = false  
-        int netmask = 0xFFFFFFFF; // 255.255.255.255 ... not sure this is actually used
-        
-        if (_moni0_pcap.compile(program, expression, optimize, netmask) != Pcap.OK) {
-        	Log.d(TAG, "Error while compiling filter for capture");
-        	return false;
+        if(setFilter) {
+        	debugOut("Setting the filter on moni0");
+	        // We want to filter out all packets that our phone sends/receives.  This is to avoid picking up
+	        // our ARP scan requests which generates too much traffic for the phone to parse.
+	        // and (not wlan addr1 00:26:bb:74:5f:e5 and not type ctl subtype cts)
+	        PcapBpfProgram program = new PcapBpfProgram();  
+	        String expression = "not (wlan addr1 " + ((Wifi)_hw_device)._wlan_mac 
+	        				   + " or wlan addr2 "+ ((Wifi)_hw_device)._wlan_mac
+	        				   + " or wlan addr3 " + ((Wifi)_hw_device)._wlan_mac
+	        				   + " or (wlan addr1 " + _settings.getHomeWifiMAC() + " and type ctl subtype cts))";
+	        int optimize = 0;         // 0 = false  
+	        int netmask = 0xFFFFFFFF; // 255.255.255.255 ... not sure this is actually used
+	        
+	        if (_moni0_pcap.compile(program, expression, optimize, netmask) != Pcap.OK) {
+	        	Log.d(TAG, "Error while compiling filter for capture");
+	        	return false;
+	        }
+	        
+	        if (_moni0_pcap.setFilter(program) != Pcap.OK) {  
+	        	Log.d(TAG, "Error setting the filter on the capture");
+	        	return false;
+	        }
+        } else {
+        	debugOut("The filter was not set on moni0");
         }
-        
-        if (_moni0_pcap.setFilter(program) != Pcap.OK) {  
-        	Log.d(TAG, "Error setting the filter on the capture");
-        	return false;
-        }
-                
+                        
         if (_moni0_pcap == null) {  
             debugOut("Error while opening device for capture: "  
                 + errbuf.toString());  
@@ -174,7 +179,7 @@ public class WifiScanner extends InterfaceScanner {
 		}, SCAN_WAIT_TIME, SCAN_WAIT_TIME);		// Wait one scan time on the home AP's channel
 		
 		// Trigger some ARP scans to get local traffic as we sit on the home AP's channel
-		LANScanner.backgroundARPScan(3);
+		LANScanner.backgroundARPScan(3, null);
 		
 		_timer_counts = NUMBER_OF_SCANS;			
 	}
@@ -203,48 +208,53 @@ public class WifiScanner extends InterfaceScanner {
 		_settings = new UserSettings(_hw_device._parent);
 		ArrayList<Packet> scanResult = new ArrayList<Packet>();
 
-		openDev();
+		openDev(false);
 		setupChannelTimer();
 		
 		debugOut("Waiting for packets in scan thread...");
 					
 		// Loop and read headers and packets
 		while(!_scan_timer_expired) {
-				
-			Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
-		    PcapHeader ph = new PcapHeader();
-	        JBuffer jb = new JBuffer(PCAP_HDR_SIZE);
-	        JBuffer data;
-	        
-	        // Pull in a packet
-	        if((data = _moni0_pcap.next(ph, jb))==null) // returns null if fails
-	        	continue;
-	        
-	        // Get the raw bytes of the header
-	        byte[] hdr = new byte[PCAP_HDR_SIZE];
-	        ph.transferTo(hdr, 0);
-	        rpkt._rawHeader = hdr;
-			rpkt._headerLen = rpkt._rawHeader.length;
-							
-			// Get the raw data now from the wirelen in the pcap header
-			rpkt._rawData = new byte[ph.wirelen()];
-			data.getByteArray(0, rpkt._rawData);
-			rpkt._dataLen = rpkt._rawData.length;
-			
-			// Dump it if we have the debug enabled
-			if(PCAP_DUMP) {
-				try {
-					_pcap_dump.write(rpkt._rawHeader);
-					_pcap_dump.write(rpkt._rawData);
-					_pcap_dump.flush();
-				} catch(Exception e) { Log.e("WifiScan", "Error writing pcap packet", e); }
-			}
-			
-			scanResult.add(rpkt);
+			Packet rpkt = readPacket();
+			if(rpkt!=null)
+				scanResult.add(rpkt);
 		}
+		
 		debugOut("Finished with scan thread, exiting now");
 		closeDev();
 		return _result_parser.returnInterfaces(scanResult);
+	}
+	
+	public Packet readPacket() {
+		Packet rpkt = new Packet(WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP);
+	    PcapHeader ph = new PcapHeader();
+        JBuffer jb = new JBuffer(PCAP_HDR_SIZE);
+        JBuffer data;
+        
+        // Pull in a packet
+        if((data = _moni0_pcap.next(ph, jb))==null) // returns null if fails
+        	return null;
+        
+        // Get the raw bytes of the header
+        byte[] hdr = new byte[PCAP_HDR_SIZE];
+        ph.transferTo(hdr, 0);
+        rpkt._rawHeader = hdr;
+		rpkt._headerLen = rpkt._rawHeader.length;
+						
+		// Get the raw data now from the wirelen in the pcap header
+		rpkt._rawData = new byte[ph.wirelen()];
+		data.getByteArray(0, rpkt._rawData);
+		rpkt._dataLen = rpkt._rawData.length;
+		
+		// Dump it if we have the debug enabled
+		if(PCAP_DUMP) {
+			try {
+				_pcap_dump.write(rpkt._rawHeader);
+				_pcap_dump.write(rpkt._rawData);
+				_pcap_dump.flush();
+			} catch(Exception e) { Log.e("WifiScan", "Error writing pcap packet", e); }
+		}
+		return rpkt;
 	}
 	
 	private void debugOut(String msg) {
