@@ -78,6 +78,7 @@ public class InterfaceMergingManager {
     				registerHeuristic(Arrays.asList(SimilarInterfaceNames.class,
     													AdjacentMACs.class,
     													SameMAC.class,
+    													ThisPhone.class,
     													APGatewayInterface.class));
     				
     				// Set the state to scanning, then clear the scan results.
@@ -136,6 +137,8 @@ public class InterfaceMergingManager {
 			heuristic = new SameMAC(_parent);
 		if(heuristicRequest == APGatewayInterface.class)
 			heuristic = new APGatewayInterface(_parent);
+		if(heuristicRequest == ThisPhone.class)
+			heuristic = new ThisPhone(_parent);
 		
 		if(heuristic == null)
 			return false;

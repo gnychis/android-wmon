@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 
@@ -93,7 +94,8 @@ public class InterfaceScanManager extends Activity {
         	        	for(Interface iface : scanResult._interfaces) 
         	        		_interfaceScanResults.add(iface);
         	        	
-        	        	if(!OVERLAP_SCANS)				// If we are not overlapping scans, we do it when we get
+        	        	// If we are not overlapping scans, we do it when we get
+        	        	if(!OVERLAP_SCANS)
         	        		triggerNextInterfaceScan();	// results of the previous scan
         	        	
         	        	// If we have all of the results we need, we can set it to complete
@@ -124,8 +126,12 @@ public class InterfaceScanManager extends Activity {
 		dev.startDeviceScan();
 		debugOut("Triggering the next scan on: " + dev.deviceType().getName());
 		
-		if(OVERLAP_SCANS)				// If we are overlapping scans, just go ahead and
+		if(OVERLAP_SCANS) {				// If we are overlapping scans, just go ahead and
 			triggerNextInterfaceScan();	// trigger the next one.
+		} else if(_scanQueue.peek()!=null && _scanQueue.peek().getClass()==Bluetooth.class) {
+			debugOut("Starting Bluetooth in parallel");
+			triggerNextInterfaceScan();
+		}
 	}
 	
 	private void debugOut(String msg) {

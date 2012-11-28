@@ -65,7 +65,7 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 		graph.applyHeuristicClassification(classifications);
 		debugOut("... done");
 
-		try { Thread.sleep(2500); } catch(Exception e) { }   // FIXME
+		//try { Thread.sleep(2500); } catch(Exception e) { }   // FIXME
 		return graph;
 	}
 	

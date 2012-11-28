@@ -25,7 +25,7 @@ import com.gnychis.awmon.HardwareHandlers.Wifi;
 public class SameMAC extends MergeHeuristic {
 
 	private static final String TAG = "SameMAC";
-	private static final boolean VERBOSE = true;
+	private static final boolean VERBOSE = false;
 	
 	@SuppressWarnings("unchecked")
 	public SameMAC(Context p) {
@@ -66,7 +66,6 @@ public class SameMAC extends MergeHeuristic {
 		return MergeStrength.UNDETERMINED;
 	}
 	
-	@SuppressWarnings("unused")
 	private void debugOut(String msg) {
 		if(VERBOSE)
 			Log.d(TAG, msg);

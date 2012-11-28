@@ -59,7 +59,7 @@ public abstract class DeviceFilter extends AsyncTask<ArrayList<Device>, Integer,
 			devices.remove(filteredDev);
 		debugOut("... done");
 		
-		try { Thread.sleep(10000); } catch(Exception e) {} // FIXME 
+		//try { Thread.sleep(10000); } catch(Exception e) {} // FIXME 
 
 		return devices;
 	}

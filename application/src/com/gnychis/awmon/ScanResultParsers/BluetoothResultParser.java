@@ -1,6 +1,5 @@
 package com.gnychis.awmon.ScanResultParsers;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -35,19 +34,17 @@ public class BluetoothResultParser extends ScanResultParser {
 	    	}
 	    }
 	    
-	    /*
+	    
 	    // Now, create a Bluetooth interface for our local phone
 	    BluetoothAdapter btAdapt= null; 
     	btAdapt = BluetoothAdapter.getDefaultAdapter();
     	String address= btAdapt.getAddress();
+    	String name = btAdapt.getName();
     	Interface localIface = new WirelessInterface(Bluetooth.class);
     	localIface._MAC = address;
-    	try {
-    		String localhostname = InetAddress.getLocalHost().getHostName();
-    		localIface._ifaceName=localhostname;
-    	} catch(Exception e) { }
-		interfaces.add(localIface);
-		*/
+    	localIface._ifaceName = name;
+    	interfaces.add(localIface);
+		
 		return interfaces;
 	}
 }
