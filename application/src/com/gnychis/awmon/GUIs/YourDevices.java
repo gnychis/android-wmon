@@ -38,6 +38,8 @@ import com.gnychis.awmon.DeviceFiltering.DeviceFilteringManager;
 import com.gnychis.awmon.InterfaceMerging.InterfaceMergingManager;
 import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
 import com.gnychis.awmon.NameResolution.NameResolutionManager;
+import com.gnychis.awmon.NameResolution.NameResolver;
+import com.gnychis.awmon.NameResolution.SSDP;
 
 /**
  * The purpose of this GUI interface is to do a bulk scan for devices in range and then
@@ -96,6 +98,7 @@ public class YourDevices extends Activity {
 		registerReceiver(_deviceScanReceiver, new IntentFilter(ScanManager.SCAN_RESPONSE));
 		registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
 		registerReceiver(incomingEvent, new IntentFilter(NameResolutionManager.NAME_RESOLUTION_RESPONSE));
+		registerReceiver(incomingEvent, new IntentFilter(NameResolver.NAME_RESOLVER_RESPONSE));
 		registerReceiver(incomingEvent, new IntentFilter(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE));
 		registerReceiver(incomingEvent, new IntentFilter(DeviceFilteringManager.DEVICE_FILTERING_RESPONSE));
 	}
@@ -121,12 +124,12 @@ public class YourDevices extends Activity {
     	@SuppressWarnings("unchecked")
         public void onReceive(Context context, Intent intent) {
         	if(intent.getAction().equals(InterfaceScanManager.INTERFACE_SCAN_RESULT)) {
-        		updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), false);
+        		updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), 0);
         		_pd.dismiss();
         		_pd = ProgressDialog.show(_context, "", "Resolving device names", true, false);
         	}
         	if(intent.getAction().equals(NameResolutionManager.NAME_RESOLUTION_RESPONSE)) {
-        		updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), true);
+        		updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), 2);
         		_pd.dismiss();
         		_pd = ProgressDialog.show(_context, "", "Merging interfaces to devices", true, false);
         	}
@@ -134,6 +137,9 @@ public class YourDevices extends Activity {
         		updateListWithDevices((ArrayList<Device>) intent.getExtras().get("result"));
         		_pd.dismiss();
         		_pd = ProgressDialog.show(_context, "", "Filtering devices we strongly believe are not yours (to make this easier for you!)", true, false);
+        	}
+        	if(intent.getAction().equals(NameResolver.NAME_RESOLVER_RESPONSE) && (Class<?>) intent.getExtras().get("resolver") == SSDP.class) {
+        		updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), 1);
         	}
         }
     };
@@ -151,7 +157,7 @@ public class YourDevices extends Activity {
 
 			//************************ INTERFACE RESULTS *************************//
 			if(_resultType == ScanManager.ResultType.INTERFACES)
-				updateListWithInterfaces((ArrayList<Interface>) _scanResult, false);
+				updateListWithInterfaces((ArrayList<Interface>) _scanResult, 0);
 
 			//************************** DEVICE RESULTS *************************//
 			if(_resultType == ScanManager.ResultType.DEVICES)
@@ -179,7 +185,7 @@ public class YourDevices extends Activity {
 	 * This updates the list with a set of interfaces.
 	 * @param interfaces the interfaces to add to the list
 	 */
-	private void updateListWithInterfaces(ArrayList<Interface> interfaces, boolean useNames) {
+	private void updateListWithInterfaces(ArrayList<Interface> interfaces, int useNames) {
 		_deviceList=new ArrayList<HashMap<String,Object>>();
 		Collections.shuffle(interfaces);
 		
@@ -188,18 +194,23 @@ public class YourDevices extends Activity {
 			String name = "";			// We need a name
 			String additional = "";		// And some additional information
 			
-			if(useNames) {							// If we are using names, we use all devices in the list.
-				if(iface._ifaceName!=null)
-					name = iface._ifaceName;		// Use the specified interface name
-				if(iface._ouiName!=null)
-					additional =  iface._ouiName; 	// And list the OUI name also for the sake of it
-				
-			} else {			// If we are not using names, we add some basic info about wireless xmitters
-				
+			if(useNames==0) {
 				if(iface.getClass() != WirelessInterface.class)	// For the sake of demonstration
 					continue;
 				name = Interface.simplifiedClassName(iface._type) + " Radio";
 				additional = "Signal strength: " + ((WirelessInterface)iface).averageRSSI() + "dBm";
+			}
+			
+			if(useNames==1) {
+				name = Interface.simplifiedClassName(iface._type);
+				additional = iface._ouiName;
+			}
+			
+			if(useNames==2) {							// If we are using names, we use all devices in the list.
+				if(iface._ifaceName!=null)
+					name = iface._ifaceName;		// Use the specified interface name
+				if(iface._ouiName!=null)
+					additional =  iface._ouiName; 	// And list the OUI name also for the sake of it
 			}
 			
 			_deviceList.add(createListItem(name, additional, iface));

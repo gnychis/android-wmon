@@ -1,13 +1,16 @@
 package com.gnychis.awmon.ScanResultParsers;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
+import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 
 public class BluetoothResultParser extends ScanResultParser {
 	
@@ -31,7 +34,20 @@ public class BluetoothResultParser extends ScanResultParser {
 	    		tdev._RSSI.add(iface.averageRSSI());	// There is only 1 in the average list for BT
 	    	}
 	    }
-		
+	    
+	    /*
+	    // Now, create a Bluetooth interface for our local phone
+	    BluetoothAdapter btAdapt= null; 
+    	btAdapt = BluetoothAdapter.getDefaultAdapter();
+    	String address= btAdapt.getAddress();
+    	Interface localIface = new WirelessInterface(Bluetooth.class);
+    	localIface._MAC = address;
+    	try {
+    		String localhostname = InetAddress.getLocalHost().getHostName();
+    		localIface._ifaceName=localhostname;
+    	} catch(Exception e) { }
+		interfaces.add(localIface);
+		*/
 		return interfaces;
 	}
 }

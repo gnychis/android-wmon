@@ -25,7 +25,7 @@ import com.gnychis.awmon.HardwareHandlers.Wifi;
 public class SameMAC extends MergeHeuristic {
 
 	private static final String TAG = "SameMAC";
-	private static final boolean VERBOSE = false;
+	private static final boolean VERBOSE = true;
 	
 	@SuppressWarnings("unchecked")
 	public SameMAC(Context p) {
@@ -36,19 +36,33 @@ public class SameMAC extends MergeHeuristic {
 		Interface left = pair.getLeft();
 		Interface right = pair.getRight();
 		
+		debugOut("Left MAC: " + left._MAC + "  Right MAC: " + right._MAC);
+		
 		// If the MACs are equal, we are merging one way or the other!
 		if(left._MAC.equals(right._MAC)) {
 			
-			if(left._type==Wifi.class && right._type==LAN.class)
+			if(left._type==Wifi.class && right._type==LAN.class) {
+				debugOut("... FLATTEN_LEFT");
 				return MergeStrength.FLATTEN_LEFT;
+			}
 			
-			if(left._type==LAN.class && right._type==Wifi.class)
+			if(left._type==LAN.class && right._type==Wifi.class) {
+				debugOut("... FLATTEN RIGHT");
 				return MergeStrength.FLATTEN_RIGHT;
+			}
+			
+			if(left._type==Wifi.class && right._type==Wifi.class) {
+				debugOut("... Shouldn't matter, let's go LEFT");
+				return MergeStrength.FLATTEN_LEFT;
+			}
 			
 			// If for some reason we got a BT duplicate, just merge it either way
-			if(left._type==Bluetooth.class && right._type==Bluetooth.class)
+			if(left._type==Bluetooth.class && right._type==Bluetooth.class) {
+				debugOut("... FLATTEN LEFT");
 				return MergeStrength.FLATTEN_LEFT;
+			}
 		}
+		debugOut("... UNDETERMINED");
 		return MergeStrength.UNDETERMINED;
 	}
 	
