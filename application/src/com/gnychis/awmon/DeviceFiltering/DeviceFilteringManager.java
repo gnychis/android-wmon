@@ -90,6 +90,7 @@ public class DeviceFilteringManager {
 	    	        	triggerNextFilter(devices);
 	    	        	
 	    	        	if(_pendingResults.size()==0) {
+	    	        		try { Thread.sleep(7000); } catch(Exception e) {} // FIXME 
 	    	        		// Broadcast out the list of devices that came from our interface scan, naming, and merging.
 	    	        		Intent i = new Intent();
 	    	        		i.setAction(DEVICE_FILTERING_RESPONSE);

@@ -23,7 +23,7 @@ public class InterfaceScanManager extends Activity {
 	private static final String TAG = "InterfaceScanManager";
 	private static final boolean VERBOSE = true;
 	
-	private static final boolean OVERLAP_SCANS = true;
+	private static final boolean OVERLAP_SCANS = false;
 	
 	public static final String INTERFACE_SCAN_REQUEST = "awmon.scanmanager.interface_scan_request";
 	public static final String INTERFACE_SCAN_RESULT = "awmon.scanmanager.interface_scan_result";

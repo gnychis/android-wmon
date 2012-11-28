@@ -129,7 +129,7 @@ public class MainInterface extends Activity implements OnClickListener {
         	switch(tm) {
         		case SHOW_TOAST:
         			msg = (String) intent.getExtras().get("msg");
-        			Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+        			Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
         			break;
         		
         		case SHOW_PROGRESS_DIALOG:

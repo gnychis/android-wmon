@@ -10,6 +10,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.gnychis.awmon.Core.UserSettings;
+import com.gnychis.awmon.HardwareHandlers.LAN;
 import com.gnychis.awmon.HardwareHandlers.Wifi;
 
 
@@ -95,6 +96,12 @@ public class Device implements Parcelable {
 			if(iface.getClass()==WirelessInterface.class 
 				&& ((WirelessInterface)iface)._BSSID!=null && ((WirelessInterface)iface)._BSSID.equals(networkMAC))
 				return true;
+		
+		// Else, if one of the wireless interfaces has a valid IP
+		for(Interface iface : _interfaces)
+			if(iface.getClass()==WirelessInterface.class && iface.hasValidIP())
+				return true;
+		
 		return false;
 	}
 	

@@ -25,7 +25,9 @@ public class DNSHostName extends NameResolver {
 	static final boolean VERBOSE = true;
 	
 	private static final int LOOKUP_TIMEOUT_SECS = 0;
-	private static final int LOOKUP_TIMEOUT_MS = 200;
+	private static final int LOOKUP_TIMEOUT_MS = 250;
+	
+	private static final int NUM_LOOKUPS_PER_HOST = 3;
 
 	@SuppressWarnings("unchecked")
 	public DNSHostName(NameResolutionManager nrm) {
@@ -53,27 +55,30 @@ public class DNSHostName extends NameResolver {
 			for(Interface iface : supportedInterfaces) {
 
 				if(iface.hasValidIP()) {  // If the interface has a valid IP address
-					Lookup lookup = new Lookup(Interface.reverseIPAddress(iface._IP) + "." + "in-addr.arpa", Type.PTR);
-					lookup.setResolver(resolver);
-					Record[] records = lookup.run();
-					
-					// If we had a successful hostname lookup
-			        if(lookup.getResult() == Lookup.SUCCESSFUL) {
-			        	
-			              for (int i = 0; i < records.length; i++) {
-			            	  
-			                if(records[i] instanceof PTRRecord) {		// Get the record
-			                
-			                  PTRRecord ptr = (PTRRecord) records[i];
-			                  String hostname = ptr.rdataToString().substring(0, ptr.rdataToString().length()-6);
-					          iface._ifaceName=hostname;	// Otherwise, you get the basic hostname
-					          
-			                  debugOut("Mapped " + iface._IP + " <---> " + hostname);
-			                }
-			              }
-			        } else {
-			            debugOut("Could not map " + iface._IP);
-			        }
+					int j = NUM_LOOKUPS_PER_HOST;
+					while(j-- > 0) { 
+						Lookup lookup = new Lookup(Interface.reverseIPAddress(iface._IP) + "." + "in-addr.arpa", Type.PTR);
+						lookup.setResolver(resolver);
+						Record[] records = lookup.run();
+						
+						// If we had a successful hostname lookup
+				        if(lookup.getResult() == Lookup.SUCCESSFUL) {
+				        	
+				              for (int i = 0; i < records.length; i++) {
+				            	  
+				                if(records[i] instanceof PTRRecord) {		// Get the record
+				                
+				                  PTRRecord ptr = (PTRRecord) records[i];
+				                  String hostname = ptr.rdataToString().substring(0, ptr.rdataToString().length()-6);
+						          iface._ifaceName=hostname;	// Otherwise, you get the basic hostname
+						          
+				                  debugOut("Mapped " + iface._IP + " <---> " + hostname);
+				                }
+				              }
+				        } else {
+				            debugOut("Could not map " + iface._IP);
+				        }
+					}
 				}
 			}
 		} catch(Exception e) {

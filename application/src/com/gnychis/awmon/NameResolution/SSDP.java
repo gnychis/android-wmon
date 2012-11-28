@@ -35,7 +35,8 @@ public class SSDP extends NameResolver {
 	static final String TAG = "SSDP";
 	static final boolean VERBOSE = true;
 	
-	static final int RESPONSE_WAIT_TIME = 15000; // in milliseconds
+	static final int RESPONSE_WAIT_TIME = 3000; // in milliseconds
+	static final int NUM_SCANS = 3;
 	
 	private UpnpService _upnpService;
 	
@@ -54,9 +55,12 @@ public class SSDP extends NameResolver {
         _upnpService = new UpnpServiceImpl(new AndroidUpnpServiceConfiguration((WifiManager) _parent.getSystemService(Context.WIFI_SERVICE)));
         
         _upnpService.getRegistry().addListener(_listener);
-        _upnpService.getControlPoint().search(new STAllHeader());
         
-        try { Thread.sleep(RESPONSE_WAIT_TIME); } catch(Exception e) {}
+        int i = NUM_SCANS;
+        while(i-- > 0) {          // Do the scans
+	        _upnpService.getControlPoint().search(new STAllHeader());
+	        try { Thread.sleep(RESPONSE_WAIT_TIME); } catch(Exception e) {}
+        }
         
         _upnpService.getRegistry().removeListener(_listener);
 		

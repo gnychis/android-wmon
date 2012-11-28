@@ -178,9 +178,6 @@ public class WifiScanner extends InterfaceScanner {
 
 		}, SCAN_WAIT_TIME, SCAN_WAIT_TIME);		// Wait one scan time on the home AP's channel
 		
-		// Trigger some ARP scans to get local traffic as we sit on the home AP's channel
-		LANScanner.backgroundARPScan(3, null);
-		
 		_timer_counts = NUMBER_OF_SCANS;			
 	}
 	
@@ -207,9 +204,23 @@ public class WifiScanner extends InterfaceScanner {
 		_hw_device = params[0];
 		_settings = new UserSettings(_hw_device._parent);
 		ArrayList<Packet> scanResult = new ArrayList<Packet>();
+		
+		// First, get the attached hosts.  This is done before we open the dev so as to not get flooded
+		// with an entire ARP scan.
+		debugOut("Getting active interfaces...");
+		ArrayList<Interface> activeInterfaces = LANScanner.getActiveInterfaces(_hw_device._parent);
+		debugOut("Done getting the active interfaces");
 
 		openDev(false);
 		setupChannelTimer();
+		
+		// Trigger a little ARP scan on the active hosts to get some Wifi traffic from them.
+		String hosts = "";
+		for(Interface iface : activeInterfaces)
+			if(iface.hasValidIP())
+				hosts += iface._IP + " ";
+		debugOut("Going to scan active hosts: " + hosts);
+		LANScanner.backgroundARPScan(6, hosts);
 		
 		debugOut("Waiting for packets in scan thread...");
 					
