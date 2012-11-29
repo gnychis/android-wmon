@@ -24,7 +24,6 @@ import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
 import com.gnychis.awmon.BackgroundService.ScanManager;
-import com.gnychis.awmon.Core.DBAdapter;
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.Device;
@@ -38,7 +37,6 @@ public class MainInterface extends Activity implements OnClickListener {
 	public static final boolean VERBOSE = true;
 	
 	// Internal Android mechanisms for settings/storage
-	public DBAdapter _db;
 	public UserSettings _settings;
 	
 	// Related to communication and tracking of the background service
@@ -61,10 +59,6 @@ public class MainInterface extends Activity implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-           	
-        // Setup the database
-    	_db = new DBAdapter(this);
-    	_db.open();
     	
     	// Initialize the user settings
     	_settings = new UserSettings(this);
