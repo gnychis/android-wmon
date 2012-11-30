@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.text.WordUtils;
 
 import android.os.Parcel;
@@ -52,6 +53,30 @@ public class Interface implements Parcelable {
 		_ifaceName=i._ifaceName;
 		_type=i._type;
 		_ifaceKey=i._ifaceKey;
+	}
+	
+	
+	@Override
+	public boolean equals(Object obj) {
+		
+        if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+        
+        Interface iface = (Interface) obj;
+        
+        return new EqualsBuilder().
+                //appendSuper(super.equals(obj)).
+                append(_MAC, iface._MAC).
+                append(_IP, iface._IP).
+                append(_ouiName, iface._ouiName).
+                append(_ifaceName, iface._ifaceName).
+                append(_type, iface._type).
+                append(_ifaceKey, iface._ifaceKey).
+                isEquals();
 	}
 	
 	public String toFormattedString() {
@@ -115,6 +140,12 @@ public class Interface implements Parcelable {
 	 * @return
 	 */
 	public long getKey() { return _ifaceKey; }
+	
+	/** Set the key for the interface.  This should really only be used when reading/creating
+	 * from the database.  Otherwise it should be set using generateKey();
+	 * @param value the value to force the key to.
+	 */
+	public void setKey(long value) { _ifaceKey=value; }
 	
 	/** This method generates a random long value which can be used for Interface
 	 * keys to track them as they get "copied" but we need unique values for them

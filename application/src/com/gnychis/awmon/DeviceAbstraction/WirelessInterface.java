@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -23,6 +25,26 @@ public class WirelessInterface extends Interface implements Parcelable {
 		_frequency = -1;
 		_SSID = null;
 		_BSSID = null;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		
+        if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+        
+        WirelessInterface iface = (WirelessInterface) obj;
+        
+        return new EqualsBuilder().
+                appendSuper(super.equals(obj)).
+                append(_frequency, iface._frequency).
+                append(_SSID, iface._SSID).
+                append(_BSSID, iface._BSSID).
+                isEquals();
 	}
 
 	// Report the average RSSI

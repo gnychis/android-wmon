@@ -1,5 +1,7 @@
 package com.gnychis.awmon.DeviceAbstraction;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -15,6 +17,24 @@ public class WiredInterface extends Interface implements Parcelable {
 
 	public WiredInterface() { super(); initVars(); }
 	public WiredInterface(Interface i) { super(i); initVars(); }
+	
+	@Override
+	public boolean equals(Object obj) {
+		
+        if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+        
+        WiredInterface iface = (WiredInterface) obj;
+        
+        return new EqualsBuilder().
+                appendSuper(super.equals(obj)).
+                append(_gateway,iface._gateway).
+                isEquals();
+	}
 
 	// ********************************************************************* //
 	// This code is to make this class parcelable and needs to be updated if
