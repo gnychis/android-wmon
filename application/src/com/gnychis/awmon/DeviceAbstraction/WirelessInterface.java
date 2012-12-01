@@ -62,6 +62,17 @@ public class WirelessInterface extends Interface implements Parcelable {
 
 		return sum / _RSSI.size();
 	}
+	
+	public ArrayList<Integer> rssiValues() {
+		return _RSSI;
+	}
+	
+	/** Add an RSSI value to the interface
+	 * @param rssi the value to add
+	 */
+	public void addRSSI(int rssi) {
+		_RSSI.add(rssi);
+	}
 
 	static public Comparator<Object> compareRSSI = new Comparator<Object>() {
 		public int compare(Object arg0, Object arg1) {

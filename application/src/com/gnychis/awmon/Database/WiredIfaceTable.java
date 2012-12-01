@@ -17,7 +17,7 @@ public class WiredIfaceTable extends DBTable {
 	
 	static List<Field> FIELDS = Arrays.asList(
     		new Field("gateway", 	Boolean.class,	false),
-    		new Field("ifaceKey", 	Long.class,		false)
+    		new Field("ifaceKey", 	Integer.class,	false)
     		);
 		
 	public WiredIfaceTable(DBAdapter dba) {
@@ -30,10 +30,10 @@ public class WiredIfaceTable extends DBTable {
 		if(cursor!=null)
 			cursor.moveToFirst();
 		else
-			return null;
+			return interfaces;
 		
 		do {
-			long ifaceKey = cursor.getInt(1);
+			int ifaceKey = cursor.getInt(1);
 			Interface iface = _dbAdapter.getInterfaceFromKey(ifaceKey);
 			WiredInterface wiface = new WiredInterface(iface);
 			wiface._gateway = 	cursor.getInt(0)>0;
@@ -44,12 +44,13 @@ public class WiredIfaceTable extends DBTable {
 	}
 	
 	@Override
-	public ContentValues getInsertContentValues(Object obj) {
+	public ArrayList<ContentValues> getInsertContentValues(Object obj) {
 		
 		if(obj.getClass()!=WiredInterface.class)
 			return null;
 			
 		WiredInterface iface = (WiredInterface) obj;
+		ArrayList<ContentValues> list = new ArrayList<ContentValues>();
 		ContentValues values = new ContentValues();
     	
     	for(Field field : _fields) {
@@ -61,8 +62,8 @@ public class WiredIfaceTable extends DBTable {
     		if(field._fieldName=="ifaceKey")
     			values.put(key, iface.getKey());
     	}
-    	
-    	return values;
+    	list.add(values);
+    	return list;
 	}
 
 }

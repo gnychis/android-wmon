@@ -18,7 +18,7 @@ public class DevicesTable extends DBTable {
 	static List<Field> FIELDS = Arrays.asList(
     		new Field("name",		String.class, 	false),
     		new Field("mobile",		Mobility.class, true),
-    		new Field("deviceKey",	Long.class, 	true),
+    		new Field("deviceKey",	Integer.class, 	true),
     		new Field("internal",	Boolean.class,	true)
     		);
 		
@@ -26,15 +26,35 @@ public class DevicesTable extends DBTable {
 		super(dba, TABLE_NAME, FIELDS, TABLE_KEY);
 	}
 	
-	public ArrayList<Object> resultsToObjects(Cursor cursor) { return null;}
+	public ArrayList<Object> resultsToObjects(Cursor cursor) {
+		ArrayList<Object> devices = new ArrayList<Object>();
+		
+		if(cursor!=null)
+			cursor.moveToFirst();
+		else
+			return devices;
+		
+		do {
+			Device device = new Device();
+			device.setUserName(cursor.getString(0));
+			device.setMobility(Device.Mobility.values()[cursor.getInt(1)]);
+			device.setKey(cursor.getInt(2));
+			device.setInternal(((cursor.getInt(3)==1) ? true : false)); 
+			device.addInterfaces(_dbAdapter.getInterfaces(device.getKey()));
+			devices.add(device);
+		} while (cursor.moveToNext());
+		
+		return devices;
+	}
 
 	@Override
-	public ContentValues getInsertContentValues(Object obj) {
+	public ArrayList<ContentValues> getInsertContentValues(Object obj) {
 		
 		if(obj.getClass()!=Device.class)
 			return null;
 			
 		Device device = (Device) obj;
+		ArrayList<ContentValues> list = new ArrayList<ContentValues>();
 		ContentValues values = new ContentValues();
     	
     	for(Field field : _fields) {
@@ -50,9 +70,10 @@ public class DevicesTable extends DBTable {
     			values.put(key, device.getKey());
     		
     		if(field._fieldName=="internal")
-    			values.put(key, device.getInternal());
+    			values.put(key, (device.getInternal()) ? 1 : 0);
     	}
     	
-    	return values;
+    	list.add(values);
+    	return list;
 	}
 }

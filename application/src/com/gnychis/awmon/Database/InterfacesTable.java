@@ -21,7 +21,8 @@ public class InterfacesTable extends DBTable {
     		new Field("ouiName", 	String.class, 	false),
     		new Field("ifaceName", 	String.class, 	false),
     		new Field("type", 		String.class, 	false),
-    		new Field("ifaceKey", 	Long.class,		true)
+    		new Field("ifaceKey", 	Integer.class,	true),
+    		new Field("deviceKey",	Integer.class,	false)
     		);
 		
 	public InterfacesTable(DBAdapter dba) {
@@ -34,7 +35,7 @@ public class InterfacesTable extends DBTable {
 		if(cursor!=null)
 			cursor.moveToFirst();
 		else
-			return null;
+			return interfaces;
 		
 		do {
 			Interface iface = new Interface();
@@ -47,7 +48,8 @@ public class InterfacesTable extends DBTable {
 				if(type!=null)
 					iface._type =		Class.forName(type);
 			} catch(Exception e) { Log.e("DATABASE", "Error getting the Interface class", e); }
-			iface.setKey(cursor.getLong(5));
+			iface.setKey(cursor.getInt(5));
+			
 			interfaces.add(iface);
 		} while (cursor.moveToNext());
 		
@@ -55,12 +57,13 @@ public class InterfacesTable extends DBTable {
 	}
 	
 	@Override
-	public ContentValues getInsertContentValues(Object obj) {
+	public ArrayList<ContentValues> getInsertContentValues(Object obj) {
 		
 		if(obj.getClass()!=Interface.class && obj.getClass().getSuperclass()!=Interface.class)
 			return null;
 					
 		Interface iface = (Interface) obj;
+		ArrayList<ContentValues> list = new ArrayList<ContentValues>();
 		ContentValues values = new ContentValues();
     	
     	for(Field field : _fields) {
@@ -84,7 +87,7 @@ public class InterfacesTable extends DBTable {
     		if(field._fieldName=="ifaceKey")
     			values.put(key, iface.getKey());
     	}
-    	
-    	return values;
+    	list.add(values);
+    	return list;
 	}
 }

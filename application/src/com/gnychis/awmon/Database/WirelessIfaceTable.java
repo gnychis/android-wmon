@@ -7,7 +7,6 @@ import java.util.List;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
@@ -20,7 +19,7 @@ public class WirelessIfaceTable extends DBTable {
     		new Field("frequency",	Integer.class,	false),
     		new Field("SSID",		String.class,	false),
     		new Field("BSSID", 		String.class,	false),
-    		new Field("ifaceKey",	Long.class,		true)
+    		new Field("ifaceKey",	Integer.class,	true)
     		);
 		
 	public WirelessIfaceTable(DBAdapter dba) {
@@ -33,10 +32,10 @@ public class WirelessIfaceTable extends DBTable {
 		if(cursor!=null)
 			cursor.moveToFirst();
 		else
-			return null;
+			return interfaces;
 		
 		do {
-			long ifaceKey = cursor.getInt(3);
+			int ifaceKey = cursor.getInt(3);
 			Interface iface = _dbAdapter.getInterfaceFromKey(ifaceKey);
 			WirelessInterface wiface = new WirelessInterface(iface);
 			wiface._frequency = cursor.getInt(0);
@@ -49,12 +48,13 @@ public class WirelessIfaceTable extends DBTable {
 	}
 
 	@Override
-	public ContentValues getInsertContentValues(Object obj) {
+	public ArrayList<ContentValues> getInsertContentValues(Object obj) {
 		
 		if(obj.getClass()!=WirelessInterface.class)
 			return null;
 			
 		WirelessInterface iface = (WirelessInterface) obj;
+		ArrayList<ContentValues> list = new ArrayList<ContentValues>();
 		ContentValues values = new ContentValues();
     	
     	for(Field field : _fields) {
@@ -72,7 +72,7 @@ public class WirelessIfaceTable extends DBTable {
     		if(field._fieldName=="ifaceKey")
     			values.put(key, iface.getKey());
     	}
-    	
-    	return values;
+    	list.add(values);
+    	return list;
 	}
 }

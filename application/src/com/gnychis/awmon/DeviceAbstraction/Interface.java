@@ -26,7 +26,7 @@ public class Interface implements Parcelable {
 	public String _ouiName;						// The associated manufacturer OUI name (null if none)
 	public String _ifaceName;					// A name associated with the specific interface
 	public Class<?> _type;						// The interface type (should be a class in HardwareHandlers that extended InternalRadio)
-	private long _ifaceKey;						// This is a random long to denote a unique Interface that we can track, ask George for importance
+	private int _ifaceKey;						// This is a random long to denote a unique Interface that we can track, ask George for importance
 
 	public Interface() {
 		_MAC=null;
@@ -139,22 +139,22 @@ public class Interface implements Parcelable {
 	 * with broadcasts, merged in to devices, etc.
 	 * @return
 	 */
-	public long getKey() { return _ifaceKey; }
+	public int getKey() { return _ifaceKey; }
 	
 	/** Set the key for the interface.  This should really only be used when reading/creating
 	 * from the database.  Otherwise it should be set using generateKey();
 	 * @param value the value to force the key to.
 	 */
-	public void setKey(long value) { _ifaceKey=value; }
+	public void setKey(int value) { _ifaceKey=value; }
 	
 	/** This method generates a random long value which can be used for Interface
 	 * keys to track them as they get "copied" but we need unique values for them
 	 * that are persistent.
-	 * @return returns a random long for use as a key
+	 * @return returns a random int for use as a key
 	 */
-	public static long generateKey() {
+	public static int generateKey() {
 		Random r = new Random();
-		return r.nextLong();
+		return r.nextInt();
 	}
 	
 	/** Checks whether the instance of the interface has a valid IP address
@@ -374,7 +374,7 @@ public class Interface implements Parcelable {
     	dest.writeString(_ouiName);
     	dest.writeString(_ifaceName);
     	dest.writeString(_type.getName());
-    	dest.writeLong(_ifaceKey);
+    	dest.writeInt(_ifaceKey);
 	}
 
 	public void readInterfaceParcel(Parcel source) {
@@ -385,6 +385,6 @@ public class Interface implements Parcelable {
         try {
         _type = Class.forName(source.readString());
         } catch(Exception e) { Log.e("Interface", "Error getting class in Interface parcel"); }
-        _ifaceKey = source.readLong();
+        _ifaceKey = source.readInt();
 	}	
 }

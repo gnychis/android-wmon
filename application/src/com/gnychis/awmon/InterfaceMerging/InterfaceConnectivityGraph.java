@@ -169,9 +169,9 @@ public class InterfaceConnectivityGraph implements Parcelable {
 		if(keyPair.length!=2)
 			return false;
 		
-		if(Long.parseLong(keyPair[0]) == iface.getKey())
+		if(Integer.parseInt(keyPair[0]) == iface.getKey())
 			return true;
-		if(Long.parseLong(keyPair[1]) == iface.getKey())
+		if(Integer.parseInt(keyPair[1]) == iface.getKey())
 			return true;
 			
 		return false;
@@ -328,9 +328,9 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	public static String hashKey(Interface i1, Interface i2) {
 		String key=null;
 		if(i1.getKey()<i2.getKey())
-			key = Long.toString(i1.getKey()) + "," + Long.toString(i2.getKey());
+			key = Integer.toString(i1.getKey()) + "," + Integer.toString(i2.getKey());
 		else
-			key = Long.toString(i2.getKey()) + "," + Long.toString(i1.getKey());
+			key = Integer.toString(i2.getKey()) + "," + Integer.toString(i1.getKey());
 		return key;
 	}
 	
@@ -342,9 +342,9 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	public static String hashKey(InterfacePair ifacePair) {
 		String key=null;
 		if(ifacePair.getLeft().getKey()<ifacePair.getRight().getKey())
-			key = Long.toString(ifacePair.getLeft().getKey()) + "," + Long.toString(ifacePair.getRight().getKey());
+			key = Integer.toString(ifacePair.getLeft().getKey()) + "," + Integer.toString(ifacePair.getRight().getKey());
 		else
-			key = Long.toString(ifacePair.getRight().getKey()) + "," + Long.toString(ifacePair.getLeft().getKey());
+			key = Integer.toString(ifacePair.getRight().getKey()) + "," + Integer.toString(ifacePair.getLeft().getKey());
 		return key;
 	}
 		
