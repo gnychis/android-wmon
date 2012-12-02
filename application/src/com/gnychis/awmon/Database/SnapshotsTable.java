@@ -20,7 +20,7 @@ public class SnapshotsTable extends DBTable {
 	static List<Field> FIELDS = Arrays.asList(
     		new Field("date",			Date.class,		true),		// The date/time this information was recorded
     		new Field("anchorMAC",		String.class,	false),		// Interface MAC
-    		new Field("MAC",			Integer.class,	false),		// The interface that this data is for
+    		new Field("MAC",			String.class,	false),		// The interface that this data is for
     		new Field("RSSI",			Integer.class,	false)		// The RSSI of the interface specified by ifaceKey
     		);	// "anchor" is a key from an interface
 		
@@ -52,9 +52,9 @@ public class SnapshotsTable extends DBTable {
 			
 			// Set the anchor to null if the MAC is null, otherwise grab the interface from the MAC
 			if(cursor.isNull(1))
-				snapshot.setAnchor(null);
+				snapshot.forceAnchor((String)null);
 			else
-				snapshot.setAnchor(_dbAdapter.getInterface(cursor.getString(1)));
+				snapshot.forceAnchor(cursor.getString(1));
 			
 			// The interface that this data is for.  If it's null, you don't add an interface or RSSI values.
 			if(cursor.isNull(2))

@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.ScanRequest;
+import com.gnychis.awmon.Core.Snapshot;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceFiltering.DeviceFilteringManager;
@@ -84,6 +85,25 @@ public class ScanManager {
 	 * scan is being requested.*/
     private BroadcastReceiver incomingEvent = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
+        	
+        	// Before we do ANYTHING about scan states, etc.  We ALWAYS save incoming interface scans
+        	// as snapshots and then rebroadcast out "HEY WE GOT A SNAPSHOT!"  This is so any other
+        	// activities can use this data.
+        	final int ANCHOR_RSSI_THRESHOLD = -30;
+			if(intent.getAction().equals(InterfaceScanManager.INTERFACE_SCAN_RESULT)) {
+				ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("result");
+				
+				// If a manual anchor was specified in the ScanRequest, save that with the snapshot
+				if(_workingRequest.getAnchor()!=null)
+				
+				// Determine the anchor if there is one
+				for(Interface iface : interfaces) {
+					
+				}
+				
+				Snapshot snapshot = new Snapshot();
+				snapshot.add(interfaces);
+			}
         	
         	switch(_state) {	// Based on the current state, decide what next to do
         	
