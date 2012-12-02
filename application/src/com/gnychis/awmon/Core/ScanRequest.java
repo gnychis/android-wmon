@@ -6,28 +6,27 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.gnychis.awmon.BackgroundService.ScanManager;
-import com.gnychis.awmon.DeviceAbstraction.Interface;
 
 public class ScanRequest implements Parcelable  {
 	
 	boolean _doNameResoution;
 	boolean _doMerging;
 	boolean _doFiltering;
-	Interface _anchor;
+	String _anchorMAC;
 
 	public ScanRequest() {
 		_doNameResoution=false;
 		_doMerging=false;
 		_doFiltering=false;
-		_anchor=null;
+		_anchorMAC=null;
 	}
 	
-	public Interface getAnchor() {
-		return _anchor;
+	public String getAnchor() {
+		return _anchorMAC;
 	}
 	
-	public void setAnchor(Interface anchor) {
-		_anchor = anchor;
+	public void setAnchor(String anchorMAC) {
+		_anchorMAC = anchorMAC;
 	}
 	
 	public void setNameResolution(boolean value) { _doNameResoution=value; }
@@ -72,7 +71,7 @@ public class ScanRequest implements Parcelable  {
 		dest.writeInt(_doNameResoution ? 1 : 0 );
 		dest.writeInt(_doMerging ? 1 : 0 );
 		dest.writeInt(_doFiltering ? 1 : 0 );
-		dest.writeParcelable(_anchor, 0);
+		dest.writeString(_anchorMAC);
 	}
 	
 	//@SuppressWarnings("unchecked")
@@ -80,7 +79,7 @@ public class ScanRequest implements Parcelable  {
 		_doNameResoution = ((source.readInt()==1) ? true : false );
 		_doMerging = ((source.readInt()==1) ? true : false );
 		_doFiltering = ((source.readInt()==1) ? true : false );
-		_anchor = source.readParcelable(_anchor.getClass().getClassLoader());
+		_anchorMAC = source.readString();
 	}
 
 }

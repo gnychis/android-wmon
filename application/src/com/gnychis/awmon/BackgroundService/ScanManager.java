@@ -10,8 +10,10 @@ import android.util.Log;
 
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.Snapshot;
+import com.gnychis.awmon.Database.DBAdapter;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.DeviceFiltering.DeviceFilteringManager;
 import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
 import com.gnychis.awmon.InterfaceMerging.InterfaceMergingManager;
@@ -89,20 +91,9 @@ public class ScanManager {
         	// Before we do ANYTHING about scan states, etc.  We ALWAYS save incoming interface scans
         	// as snapshots and then rebroadcast out "HEY WE GOT A SNAPSHOT!"  This is so any other
         	// activities can use this data.
-        	final int ANCHOR_RSSI_THRESHOLD = -30;
 			if(intent.getAction().equals(InterfaceScanManager.INTERFACE_SCAN_RESULT)) {
 				ArrayList<Interface> interfaces = (ArrayList<Interface>) intent.getExtras().get("result");
-				
-				// If a manual anchor was specified in the ScanRequest, save that with the snapshot
-				if(_workingRequest.getAnchor()!=null)
-				
-				// Determine the anchor if there is one
-				for(Interface iface : interfaces) {
-					
-				}
-				
-				Snapshot snapshot = new Snapshot();
-				snapshot.add(interfaces);
+				makeSnapshot(interfaces);
 			}
         	
         	switch(_state) {	// Based on the current state, decide what next to do
@@ -227,6 +218,55 @@ public class ScanManager {
         	}
     	}
     };
+    
+	
+	/** This should only be accessed privately, and only accessed by the event manager
+	 * @param interfaces
+	 */
+	private void makeSnapshot(ArrayList<Interface> interfaces) {
+    	final int ANCHOR_RSSI_THRESHOLD = -30;   // dBm
+    	
+		Snapshot snapshot = new Snapshot();
+		snapshot.add(interfaces);
+
+		
+		// If a manual anchor was specified in the ScanRequest, save that with the snapshot
+		if(_workingRequest.getAnchor()!=null) {
+			snapshot.forceAnchor(_workingRequest.getAnchor());
+		} else {
+			Interface anchor=null;
+			// Determine the anchor if there is one
+			for(Interface iface : interfaces) {
+				
+				// Go through all of the wireless interfaces and see if one exceeds our threshold
+				if(iface.getClass()==WirelessInterface.class) {
+					
+					boolean exceeded=false;
+					
+					for(int rssiVal : ((WirelessInterface)iface).rssiValues())
+						if(rssiVal > ANCHOR_RSSI_THRESHOLD)
+							exceeded=true;
+					
+					if(exceeded) {
+						anchor=iface;
+						break;
+					}
+					
+				} // end if
+			} // end for
+			
+			if(anchor!=null)
+				snapshot.setAnchor(anchor);
+		}
+		
+		// Let's store this badboy in the database now
+		DBAdapter dbAdapter = new DBAdapter(_parent);
+		dbAdapter.open();
+		dbAdapter.storeSnapshot(snapshot);
+		dbAdapter.close();
+		
+		snapshot.broadcast(_parent);
+	}
     
 	private void debugOut(String msg) {
 		if(VERBOSE)

@@ -208,6 +208,7 @@ public class Snapshot implements Parcelable {
 	
 	//@SuppressWarnings("unchecked")
 	private Snapshot(Parcel source) {
+		setSnapshotTime(source.readString());
 		_interfaces = new ArrayList<Interface>();
     	source.readList(_interfaces, this.getClass().getClassLoader());
     	_anchor = source.readString();

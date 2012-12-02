@@ -22,9 +22,8 @@ import android.widget.Button;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.MotionDetector;
-import com.gnychis.awmon.BackgroundService.ScanManager.State;
 import com.gnychis.awmon.Core.ScanRequest;
-import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
+import com.gnychis.awmon.Core.Snapshot;
 
 public class Measurements extends Activity {
 	
@@ -66,7 +65,7 @@ public class Measurements extends Activity {
 	@Override
 	public void onResume() { 
 		super.onResume(); 
-		registerReceiver(incomingEvent, new IntentFilter(InterfaceScanManager.INTERFACE_SCAN_RESULT));
+		registerReceiver(incomingEvent, new IntentFilter(Snapshot.SNAPSHOT_DATA));
 		
 	}
 	public void onPause() { 
@@ -79,10 +78,11 @@ public class Measurements extends Activity {
         public void onReceive(Context context, Intent intent) {
         	
         	// If we sent a snapshot request and are getting one in
-        	if(_state.equals(State.SNAPSHOT) && intent.getAction().equals(InterfaceScanManager.INTERFACE_SCAN_RESULT)) {
+        	if(_state.equals(State.SNAPSHOT) && intent.getAction().equals(Snapshot.SNAPSHOT_DATA)) {
+        		Snapshot snapshot = (Snapshot) intent.getExtras().get("snapshot");
+        		
         		if(_pd!=null)
         			_pd.dismiss();
-        		
         	}
         }
     };
