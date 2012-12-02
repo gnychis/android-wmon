@@ -75,7 +75,6 @@ public class Interface implements Parcelable {
                 append(_ouiName, iface._ouiName).
                 append(_ifaceName, iface._ifaceName).
                 append(_type, iface._type).
-                append(_ifaceKey, iface._ifaceKey).
                 isEquals();
 	}
 	

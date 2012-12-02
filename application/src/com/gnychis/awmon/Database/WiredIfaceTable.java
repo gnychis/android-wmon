@@ -13,11 +13,11 @@ import com.gnychis.awmon.DeviceAbstraction.WiredInterface;
 public class WiredIfaceTable extends DBTable {
 
 	public static String TABLE_NAME = "WIRED_IFACE_DATA";
-	private static String TABLE_KEY = "ifaceKey";
+	private static String TABLE_KEY = "MAC";
 	
 	static List<Field> FIELDS = Arrays.asList(
     		new Field("gateway", 	Boolean.class,	false),
-    		new Field("ifaceKey", 	Integer.class,	false)
+    		new Field("MAC", 		String.class,	true)
     		);
 		
 	public WiredIfaceTable(DBAdapter dba) {
@@ -33,8 +33,8 @@ public class WiredIfaceTable extends DBTable {
 			return interfaces;
 		
 		do {
-			int ifaceKey = cursor.getInt(1);
-			Interface iface = _dbAdapter.getInterfaceFromKey(ifaceKey);
+			String MAC = cursor.getString(1);
+			Interface iface = _dbAdapter.getRawInterface(MAC);
 			WiredInterface wiface = new WiredInterface(iface);
 			wiface._gateway = 	cursor.getInt(0)>0;
 			interfaces.add(wiface);
@@ -59,8 +59,8 @@ public class WiredIfaceTable extends DBTable {
     		if(field._fieldName=="gateway")
     			values.put(key, (iface.isGateway()) ? 1 : 0);
     		
-    		if(field._fieldName=="ifaceKey")
-    			values.put(key, iface.getKey());
+    		if(field._fieldName=="MAC")
+    			values.put(key, iface._MAC);
     	}
     	list.add(values);
     	return list;

@@ -13,13 +13,13 @@ import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 public class WirelessIfaceTable extends DBTable {
 
 	public static String TABLE_NAME = "WIRELESS_IFACE_DATA";
-	private static String TABLE_KEY = "ifaceKey";
+	private static String TABLE_KEY = "MAC";
 	
 	static List<Field> FIELDS = Arrays.asList(
     		new Field("frequency",	Integer.class,	false),
     		new Field("SSID",		String.class,	false),
     		new Field("BSSID", 		String.class,	false),
-    		new Field("ifaceKey",	Integer.class,	true)
+    		new Field("MAC",		String.class,	true)
     		);
 		
 	public WirelessIfaceTable(DBAdapter dba) {
@@ -35,8 +35,8 @@ public class WirelessIfaceTable extends DBTable {
 			return interfaces;
 		
 		do {
-			int ifaceKey = cursor.getInt(3);
-			Interface iface = _dbAdapter.getInterfaceFromKey(ifaceKey);
+			String ifaceMAC = cursor.getString(3);
+			Interface iface = _dbAdapter.getRawInterface(ifaceMAC);
 			WirelessInterface wiface = new WirelessInterface(iface);
 			wiface._frequency = cursor.getInt(0);
 			wiface._SSID = 		cursor.getString(1);
@@ -69,8 +69,8 @@ public class WirelessIfaceTable extends DBTable {
     		if(field._fieldName=="BSSID")
     			values.put(key, iface._BSSID);
     		
-    		if(field._fieldName=="ifaceKey")
-    			values.put(key, iface.getKey());
+    		if(field._fieldName=="MAC")
+    			values.put(key, iface._MAC);
     	}
     	list.add(values);
     	return list;

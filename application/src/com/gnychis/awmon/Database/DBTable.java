@@ -85,6 +85,40 @@ abstract public class DBTable {
     	return create;
 	}
 	
+	public boolean delete(ContentValues conditions) {
+		
+		if(conditions==null)
+			return false;
+		
+		if(conditions.size()==0)
+			return false;
+		
+    	DBTable table = this;
+    	
+    	String qry = "DELETE * FROM " + table._tableName;
+    	
+    	if(conditions!=null && conditions.size()>0) {
+    		
+    		qry += " WHERE ";
+    		Set<Entry<String, Object>> s=conditions.valueSet();
+    		Iterator itr = s.iterator();
+    		while(itr.hasNext()) {
+    			Map.Entry me = (Map.Entry)itr.next(); 
+    			String key = me.getKey().toString();
+    			Object value =  me.getValue();
+    			qry += key + "='" + value.toString().replace("'", "''") + "'";
+    			if(itr.hasNext())
+    				qry += " and ";
+    		}
+    	}
+
+    	qry += ";";
+    	
+    	_dbAdapter.db.rawQuery(qry,null);
+    	
+        return true;
+	}
+	
     public boolean update(ContentValues values, ContentValues condition) {
     	if(values==null)
     		return false;
@@ -97,12 +131,12 @@ abstract public class DBTable {
 			Map.Entry me = (Map.Entry)itr.next(); 
 			String key = me.getKey().toString();
 			Object value =  me.getValue();
-			qry += key + "=" + ((value==null) ? "NULL" : "'" + value.toString()+ "'");
+			qry += key + "=" + ((value==null) ? "NULL" : "'" + value.toString().replace("'", "''") + "'");
 			if(itr.hasNext())
 				qry += ", ";
 		}
 		
-    	if(condition!=null) {
+    	if(condition!=null && condition.size()>0) {
     		
     		qry += " WHERE ";
     		s=condition.valueSet();
@@ -111,7 +145,7 @@ abstract public class DBTable {
     			Map.Entry me = (Map.Entry)itr.next(); 
     			String key = me.getKey().toString();
     			Object value =  me.getValue();
-    			qry += key + "='" + value.toString() + "'";
+    			qry += key + "='" + value.toString().replace("'", "''") + "'";
     			if(itr.hasNext())
     				qry += " and ";
     		}
@@ -141,7 +175,7 @@ abstract public class DBTable {
     	
     	String qry = "SELECT " + fieldName + " FROM " + table._tableName;
     	
-    	if(conditions!=null) {
+    	if(conditions!=null && conditions.size()>0) {
     		
     		qry += " WHERE ";
     		Set<Entry<String, Object>> s=conditions.valueSet();
@@ -150,7 +184,7 @@ abstract public class DBTable {
     			Map.Entry me = (Map.Entry)itr.next(); 
     			String key = me.getKey().toString();
     			Object value =  me.getValue();
-    			qry += key + "='" + value.toString() + "'";
+    			qry += key + "='" + value.toString().replace("'", "''") + "'";
     			if(itr.hasNext())
     				qry += " and ";
     		}
@@ -194,7 +228,7 @@ abstract public class DBTable {
     	
     	String qry = "SELECT * FROM " + table._tableName;
     	
-    	if(conditions!=null) {
+    	if(conditions!=null && conditions.size()>0) {
     		
     		qry += " WHERE ";
     		Set<Entry<String, Object>> s=conditions.valueSet();
@@ -203,7 +237,7 @@ abstract public class DBTable {
     			Map.Entry me = (Map.Entry)itr.next(); 
     			String key = me.getKey().toString();
     			Object value =  me.getValue();
-    			qry += key + "='" + value.toString() + "'";
+    			qry += key + "='" + value.toString().replace("'", "''") + "'";
     			if(itr.hasNext())
     				qry += " and ";
     		}
@@ -237,7 +271,7 @@ abstract public class DBTable {
     	}
     	return true;
     }
-    
+        
     public boolean insert(Object o) {
     	DBTable table = this;
     	ArrayList<ContentValues> insertions = table.getInsertContentValues(o);

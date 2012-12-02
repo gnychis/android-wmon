@@ -121,6 +121,10 @@ public class SnapshotsTable extends DBTable {
     		list.add(header);
     		return list;
     	}
+    	
+    	// This stores any interfaces that do not yet exist in the database.  It will NOT update interfaces
+    	// that do already exist.
+    	_dbAdapter.insertInterfaces(snapshot.getInterfaces());
     
 		// Otherwise, if there are interfaces, we record an entry for each of them and one entry for each 
     	// RSSI value if it is a wireless interface
@@ -131,10 +135,6 @@ public class SnapshotsTable extends DBTable {
 				header.put("MAC", iface._MAC);
 			else
 				header.putNull("MAC");
-			
-			// If the interface does not exist at all in the database, need to add it.  We do NOT update interfaces here.
-			if(_dbAdapter.getInterface(iface._MAC)==null)
-				_dbAdapter.storeInterface(iface);
 		
 			ContentValues values = new ContentValues(header);	// Copy the header in to each one
 			

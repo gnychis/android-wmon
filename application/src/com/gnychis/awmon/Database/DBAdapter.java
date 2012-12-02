@@ -31,6 +31,12 @@ public class DBAdapter {
     private static final String DATABASE_NAME = "awmon";
     private static final int DATABASE_VERSION = 1;
     
+    public enum NameUpdate {
+    	DO_NOT_UPDATE,	// Leave the naming alone
+    	SAFE_UPDATE,	// Update the name if it is stored as null
+    	UPDATE,			// Overwrite the name, regardless
+    }
+    
     HashMap<String,DBTable> _tables;
     
     void populateTables() {
@@ -80,24 +86,53 @@ public class DBAdapter {
     		return (Snapshot) o;
     	return null;
     }
+    
+    //******* SNAPSHOT *************** DELETE HELPER FUNCTIONS ****************************//
+    public boolean deleteSnapshot(Date d) {
+    	if(d==null)
+    		return false;
+    	ContentValues conditions = new ContentValues();
+    	conditions.put("date", DBTable.dateFormat.format(d));
+    	return _tables.get(SnapshotsTable.TABLE_NAME).delete(conditions);	
+    }
          
     //******* DEVICE *************** WRITE HELPER FUNCTIONS ****************************//
     /** Stores the given device in the database, this will either insert or update it.
      * @param d the Device to be inserted/updated.
+     * @param nameUpdate this is whether or not the deviceName should be updated.  Interface names
+     * will not change.
      */
-    public void storeDevice(Device d) {
-    	updateDevice(d);
+    public void storeDevice(Device d, NameUpdate nameUpdate) {
+    	updateDevice(d, nameUpdate);
     }
     
     /** Updates the specified device in the database, inserting it if it doesn't exist.
      * @param d the device to be updated/inserted.
+     * @nameUpdate this specifies whether the device name should be updated.  This does NOT touch
+     * interface names.  If you want to update interface names, you should call updateInterfaces(device.getInterfaces(), BLAH).
      */
-    public void updateDevice(Device d) {
+    public void updateDevice(Device d, NameUpdate nameUpdate) {
     	Device exists = getDevice(d.getKey());
     	
     	if(exists==null) {		// If it doesn't exist, just insert it
     		_tables.get(DevicesTable.TABLE_NAME).insert(d);
     	} else {  	
+    		
+    		switch(nameUpdate) {
+    			case UPDATE:			// If we are updating the device name, do not do anything.
+    				break;
+    				
+    			case DO_NOT_UPDATE:		// If not updating the name, use the one from the database
+    				d.setUserName(exists.getUserName());
+    				break;
+    				
+    			case SAFE_UPDATE:		// If playing it safe, only update it if its null
+    				if(exists.getUserName()!=null)
+    					d.setUserName(exists.getUserName());
+    				break;
+    		}
+    		
+    		
 	    	// We never ever want to accidentally overwrite the key of a device
 	    	// in the database with another key.  So, make sure to overwrite it.
 	    	d.setKey(exists.getKey());
@@ -106,7 +141,7 @@ public class DBAdapter {
     	
     	// Now, we need to take care of all interfaces
     	for(Interface i : d.getInterfaces()) {
-    		storeInterface(i);	// This will insert it, or update it.
+    		storeInterface(i, NameUpdate.DO_NOT_UPDATE);		// This will insert it, or update it.
     		associateInterfaceWithDevice(i._MAC, d.getKey());
     	}
     }
@@ -115,9 +150,9 @@ public class DBAdapter {
      * them if they do not exists, and updates them if they do.
      * @param devices the devices to insert/update
      */
-    public void updateDevices(ArrayList<Device> devices) {
+    public void updateDevices(ArrayList<Device> devices, NameUpdate nameUpdate) {
     	for(Device d : devices)
-    		updateDevice(d);
+    		updateDevice(d, nameUpdate);
     }
     
     
@@ -219,18 +254,44 @@ public class DBAdapter {
         
     //****** INTERFACE *********** WRITE HELPER FUNCTIONS ****************************//
     
-    public void storeInterface(Interface i) {
-    	updateInterface(i);
+    /** This will insert the interface if it doesn't exist, and will update it if it does
+     * exist.  Must specify whether the interface name should be updated if it does exist.
+     * @param i
+     * @param nameUpdate this is whether or not the name should be updated for the interface
+     */
+    public void storeInterface(Interface i, NameUpdate nameUpdate) {
+    	updateInterface(i, nameUpdate);
+    }
+    
+    /** Unlike storeInterface, this will only insert it if it doesn't yet exist.
+     * @param i
+     * @return
+     */
+    public boolean insertInterface(Interface i) {
+    	if(getInterface(i._MAC)==null) {
+    		storeInterface(i, NameUpdate.UPDATE);
+    		return true;
+    	}
+    	return false;
+    }
+    
+    /** This will go through the list of interfaces and only insert the interfaces that
+     * are not yet in the database.  Otherwise, nothing will happen.
+     * @param ifaces
+     */
+    public void insertInterfaces(ArrayList<Interface> ifaces) {
+    	for(Interface i : ifaces)
+    		insertInterface(i);
     }
     
     /**  This will update an interface in the database, or store this interface
      * if it doesn't yet exist.
      * @param i	the Interface to update or insert.
      */
-    public void updateInterface(Interface i) {
-    	Interface exists = getInterface(i._MAC);
+    public void updateInterface(Interface i, NameUpdate nameUpdate) {
+    	Interface existing = getInterface(i._MAC);
     	
-    	if(exists==null) {		// If it doesn't exist, just insert it
+    	if(existing==null) {		// If it doesn't exist, just insert it
     		_tables.get(InterfacesTable.TABLE_NAME).insert(i);
     		if(i.getClass()==WirelessInterface.class)
     			_tables.get(WirelessIfaceTable.TABLE_NAME).insert(i);
@@ -239,111 +300,133 @@ public class DBAdapter {
     		return;
     	}
     	
-    	// We never ever want to accidentally overwrite the key of an interface
-    	// in the database with another key.  So, make sure to overwrite it.
-    	i.setKey(exists.getKey());
-    	_tables.get(InterfacesTable.TABLE_NAME).update(i);
+    	// If we get to this point, the Interface must exist, let's update it.
+    	// First, we must mangle the name appropriately.
+    	switch(nameUpdate) {
+    		case UPDATE:		// If the case is to update it, we leave it alone and allow the overwrite
+    			break;
+    		
+    		case DO_NOT_UPDATE:	// If we do not want to update it, we pull the name in from the database instance
+    			i._ifaceName = existing._ifaceName;
+    			break;
+    			
+    		case SAFE_UPDATE:	// Safe updates mean to save the name only if one didn't exist
+    			if(existing._ifaceName != null)
+    				i._ifaceName = existing._ifaceName;
+    			break;    				
+    	}
     	
-    	if(i.getClass()==WirelessInterface.class)
+    	// Now that we've manged names, now we can actually update the interface
+    	_tables.get(InterfacesTable.TABLE_NAME).update(i);
+    
+    	// Now, if the interface that was passed to us is Wireless and it is stored as
+    	// a raw Interface, then let's insert the wireless data
+    	if(i.getClass()==WirelessInterface.class && existing.getClass()==Interface.class) {
+    		_tables.get(WirelessIfaceTable.TABLE_NAME).insert(i);
+    		return;
+    	}
+    	
+    	// If the existing interface was a WiredInterface, and the one that was passed was
+    	// a WirelessInterface, we upgrade it!
+    	if(i.getClass()==WirelessInterface.class && existing.getClass()==WiredInterface.class) {
+    		_tables.get(WirelessIfaceTable.TABLE_NAME).insert(i);
+    		removeWiredData(i._MAC);
+    		return;
+    	}
+    	
+    	// If the Interface passed was wireless, and it is a wireless interface, then we also update that
+    	if(i.getClass()==WirelessInterface.class && existing.getClass()==WirelessInterface.class) {
     		_tables.get(WirelessIfaceTable.TABLE_NAME).update(i);
-    	if(i.getClass()==WiredInterface.class)
+    		return;
+    	}
+    	
+    	// If the Interface passed was wired, and it is stored as wired, we update that
+    	if(i.getClass()==WiredInterface.class && existing.getClass()==WiredInterface.class) {
     		_tables.get(WiredIfaceTable.TABLE_NAME).update(i);
+    		return;
+    	}
+    	
+    	// Note that if the interface passed was wired, and it is stored as a wireless interface, we do
+    	// NOT downgrade wireless to wired.
     }
     
-    /** Given a set of interfaces, update them in the data.
+    /** Given a set of interfaces, update them in the data.  We play it safe with naming in this case.
      * @param interfaces
      */
-    public void updateInterfaces(ArrayList<Interface> interfaces) {
+    public void updateInterfaces(ArrayList<Interface> interfaces, NameUpdate nameUpdate) {
     	for(Interface iface : interfaces)
-    		updateInterface(iface);
+    		updateInterface(iface, nameUpdate);
+    }
+    
+    //******* INTERFACE *************** DELETE HELPER FUNCTIONS ****************************//
+    // YOU CANNOT DELETE INTERFACES!!  This could break snapshots.
+    public boolean removeWiredData(String MAC) {
+    	if(MAC==null)
+    		return false;
+    	ContentValues conditions = new ContentValues();
+    	conditions.put("MAC", MAC);
+    	return _tables.get(WiredIfaceTable.TABLE_NAME).delete(conditions);	
     }
     
     //******* INTERFACE ********** READ HELPER FUNCTIONS ****************************//
-    /** This is mainly a helper function which allows you to get an ifaceKey given a MAC
-     * address.
-     * @param MAC the MAC address the interface must match
-     * @return the ifaceKey of the given interface with MAC address
-     */
-    private int getInterfaceKeyFromMAC(String MAC) {
-    	ContentValues conditions = new ContentValues();
-    	conditions.put("MAC", MAC);
-    	for(Object o : _tables.get(InterfacesTable.TABLE_NAME).retrieve(conditions))
-    		return ((Interface)o).getKey();
-    	throw new SQLException("Could not find ifaceKey");
-    }
-    
     /** Given a MAC address, return an Interface, WiredInterface, or WirelessInterface
      * which matches this MAC address.
      * @param MAC the given MAC address it must match
      * @return an Interface which can be either WirelessInterface or WiredInterface, also
      */
     public Interface getInterface(String MAC) {
-    	int ifaceKey;
-    	// First, get the interface key
-    	try {
-    		ifaceKey = getInterfaceKeyFromMAC(MAC);
-    	} catch(Exception e) {
-    		Log.e(TAG, "Could not get interface key", e);
+    	Interface iface=getRawInterface(MAC);
+    	if(iface==null)
     		return null;
-    	}
-    	return getInterface(ifaceKey);
-    }
-    
-    /** Given an interface key, return an Interface which will actually be a
-     * WirelessInterface, WiredInterface, or Interface depending on its type. This
-     * is the most top-level and rich function.
-     * @param ifaceKey must match this key
-     * @return a WirelessInterface, WiredInterface, Interface or null.
-     */
-    public Interface getInterface(int ifaceKey) {
+    	
     	// If it's a wireless interface, go ahead and return that.
-    	WirelessInterface wiface = getWirelessInterfaceFromKey(ifaceKey);
+    	WirelessInterface wiface = getWirelessInterface(iface._MAC);
     	if(wiface!=null)
     		return wiface;
     	
     	// If it's a wired interface, go ahead and return that
-    	WiredInterface wiredface = getWiredInterfaceFromKey(ifaceKey);
+    	WiredInterface wiredface = getWiredInterface(iface._MAC);
     	if(wiredface!=null)
     		return wiredface;
     	
-    	return getInterfaceFromKey(ifaceKey);
+    	return iface;
     }
     
-    /** Gets the parent Interface class representation of an interface with the
-     * specified key.
-     * @param ifaceKey the key the interface must match
-     * @return an Interface if one existed with the associated ifaceKey
+    /** This will return the raw superclass Interface, and will NOT return a WiredInterface
+     * or a WirelessInterface.  This should really only be used internally.
+     * @param MAC
+     * @return
      */
-    public Interface getInterfaceFromKey(int ifaceKey) {
+    public Interface getRawInterface(String MAC) {
     	ContentValues conditions = new ContentValues();
-    	conditions.put("ifaceKey", ifaceKey);
-    	for(Object o : _tables.get(InterfacesTable.TABLE_NAME).retrieve(conditions))
+    	conditions.put("MAC", MAC);
+    	for(Object o : _tables.get(InterfacesTable.TABLE_NAME).retrieve(conditions)) 
     		return (Interface)o;
     	return null;
     }
 
-    /** Given a specific interface key, return a wired interface *if* there is a
+    /** Given a specific interface MAC, return a wired interface *if* there is a
      * wired interface associated with this key.
-     * @param ifaceKey the interface key
+     * @param MAC the interface MAC
      * @return a WiredInterface if there was one associated with this key, null otherwise.
      */
-    private WiredInterface getWiredInterfaceFromKey(int ifaceKey) {
+    private WiredInterface getWiredInterface(String MAC) {
     	ContentValues conditions = new ContentValues();
-    	conditions.put("ifaceKey", ifaceKey);
+    	conditions.put("MAC", MAC);
     	for(Object o : _tables.get(WiredIfaceTable.TABLE_NAME).retrieve(conditions))
     		return (WiredInterface)o;
     	return null;
     }
     
-    /** Given a specific interface key, return a wireless interface *if* there
+    /** Given a specific inter MMAC, return a wireless interface *if* there
      * is a wireless interface associated with this key.
-     * @param ifaceKey the interface key
+     * @param MAC the MAC of the interface
      * @return a WirelessInterface if there was one associated with this key, null
      * otherwise.
      */
-    private WirelessInterface getWirelessInterfaceFromKey(int ifaceKey) {
+    private WirelessInterface getWirelessInterface(String MAC) {
     	ContentValues conditions = new ContentValues();
-    	conditions.put("ifaceKey", ifaceKey);
+    	conditions.put("MAC", MAC);
     	for(Object o : _tables.get(WirelessIfaceTable.TABLE_NAME).retrieve(conditions))
     		return (WirelessInterface)o;
     	return null;
@@ -383,7 +466,7 @@ public class DBAdapter {
     public ArrayList<Interface> getInterfaces(ContentValues conditions) {
     	ArrayList<Interface> interfaces = new ArrayList<Interface>();
     	for(Object o : _tables.get(InterfacesTable.TABLE_NAME).retrieve(conditions))
-    		interfaces.add(getInterface(((Interface)o).getKey()));
+    		interfaces.add(getInterface(((Interface)o)._MAC));
     	return interfaces;
     }
     

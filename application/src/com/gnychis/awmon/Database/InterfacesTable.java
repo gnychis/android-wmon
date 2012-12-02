@@ -21,7 +21,6 @@ public class InterfacesTable extends DBTable {
     		new Field("ouiName", 	String.class, 	false),
     		new Field("ifaceName", 	String.class, 	false),
     		new Field("type", 		String.class, 	false),
-    		new Field("ifaceKey", 	Integer.class,	true),
     		new Field("deviceKey",	Integer.class,	false)
     		);
 		
@@ -48,7 +47,6 @@ public class InterfacesTable extends DBTable {
 				if(type!=null)
 					iface._type =		Class.forName(type);
 			} catch(Exception e) { Log.e("DATABASE", "Error getting the Interface class", e); }
-			iface.setKey(cursor.getInt(5));
 			
 			interfaces.add(iface);
 		} while (cursor.moveToNext());
@@ -83,9 +81,6 @@ public class InterfacesTable extends DBTable {
     		
     		if(field._fieldName=="type" && iface._type!=null)
     			values.put(key, iface._type.getName());
-    		
-    		if(field._fieldName=="ifaceKey")
-    			values.put(key, iface.getKey());
     	}
     	list.add(values);
     	return list;
