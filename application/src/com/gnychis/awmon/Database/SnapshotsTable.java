@@ -46,7 +46,7 @@ public class SnapshotsTable extends DBTable {
 			
 			// If there is no snapshot for this date yet, create one
 			if(!snapshotMap.containsKey(snapshotDate))
-				snapshotMap.put(snapshotDate, new Snapshot());
+				snapshotMap.put(snapshotDate, new Snapshot(snapshotDate));
 			
 			Snapshot snapshot = snapshotMap.get(snapshotDate);	// Get the snapshot instance
 			

@@ -28,13 +28,13 @@ public class SnapshotDetails extends Activity {
 		Bundle extras = getIntent().getExtras();
 		String date = extras.getString("date");
 		
-		TextView dateTextView = (TextView)findViewById(R.id.date);
-		dateTextView.append(" " + date);
+		((TextView)findViewById(R.id.date)).append(" " + date);
 		
 		DBAdapter dbAdapter = new DBAdapter(this);
 		dbAdapter.open();
 		
 		Snapshot snapshot = dbAdapter.getSnapshot(Snapshot.getDateFromString(date));
+		((TextView)findViewById(R.id.anchor)).append( (snapshot.getAnchorMAC()!=null) ? " " + snapshot.getAnchorMAC() : " <None>" );
 
 		TableLayout table = (TableLayout)findViewById(R.id.maintable);
 
@@ -46,7 +46,7 @@ public class SnapshotDetails extends Activity {
 			String internalString="No";
 			String protocolString=(iface._type!=null) ? Interface.simplifiedClassName(iface._type) : "";
 			String macString=iface._MAC;
-			String signalString=(iface.getClass()==WirelessInterface.class) ? ((WirelessInterface)iface).averageRSSI() + "dBm" : "-";
+			String signalString=(iface.getClass()==WirelessInterface.class && ((WirelessInterface)iface).averageRSSI()!=-500) ? ((WirelessInterface)iface).averageRSSI() + "dBm" : "-";
 			
 			TableRow row = (TableRow)inflater.inflate(R.layout.snapshot_table_row, table, false);
 			
