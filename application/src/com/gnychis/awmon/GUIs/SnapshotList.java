@@ -161,7 +161,14 @@ public class SnapshotList extends Activity {
 			
 			viewHolder.date.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-
+					String date = ((TextView)v).getText().toString();
+					debugOut("Clicked on snapshot: " + date);
+					
+					Intent i = new Intent(SnapshotList.this, SnapshotDetails.class);
+					i.putExtra("date", date);
+					startActivity(i);
+					finish();
+					
 				}
 			});
 			return convertView;

@@ -88,6 +88,14 @@ public class Snapshot implements Parcelable {
 		} catch(Exception e) {  }
 	}
 	
+	public static Date getDateFromString(String timeString) {
+		try { 
+			Date snapshotDate = dateFormat.parse(timeString);
+			return snapshotDate;
+		} catch(Exception e) {  }
+		return null;
+	}
+	
 	/** Get the date/time of the snapshot.
 	 * @return a Date representation of the snapshot time
 	 */

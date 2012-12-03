@@ -1,0 +1,34 @@
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android">
+   <TextView
+    android:id="@+id/name"
+    android:layout_margin="1dp"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_width="80dp"
+    android:text="" />
+   <TextView
+    android:id="@+id/internal"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_margin="1dp"
+    android:layout_width="80dp"
+    android:text="" />
+   <TextView
+    android:id="@+id/protocol"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_margin="1dp"
+    android:text="" />
+   <TextView
+    android:id="@+id/mac"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_margin="1dp"
+    android:text="" />
+   <TextView
+    android:id="@+id/signal"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_margin="1dp"
+    android:text="" />
+</TableRow>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="right"
+    android:orientation="vertical" >
+ 
+    <TextView
+	     android:id="@+id/heading"
+	     android:layout_marginTop="5dp"
+	     android:layout_marginLeft="5dp"
+	     android:layout_width="wrap_content"
+	     android:layout_height="wrap_content"
+	     android:text="Snapshot"
+	     android:textSize="35sp"
+	     android:textStyle="italic"
+	     />
+       
+    <TextView
+        android:id="@+id/date"
+        android:layout_below="@+id/heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+       	android:layout_marginLeft="10dp"
+	    android:layout_marginTop="7dp"
+	    android:textSize="15sp"
+        android:text="    Date:  "
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+        <TextView
+        android:id="@+id/anchor"
+        android:layout_below="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+       	android:layout_marginLeft="10dp"
+	    android:layout_marginTop="0dp"
+	    android:textSize="15sp"
+        android:text="    Anchor:  "
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+        <TableLayout
+  android:id="@+id/tableHeader"
+  android:layout_width="fill_parent"
+  android:layout_marginRight="2dp"
+  android:layout_marginLeft="2dp"
+  android:layout_marginTop="10dp"
+  android:layout_below="@+id/anchor"
+  android:layout_height="wrap_content"
+  android:background="@android:color/black">
+  <TableRow>
+   <TextView
+    android:textColor="@android:color/black"
+    android:layout_margin="1dp"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_width="40dp"
+    android:background="#ffcccccc"
+    android:text="Name" />
+   <TextView
+    android:textColor="@android:color/black"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_margin="1dp"
+    android:layout_width="3dp"
+    android:background="@android:color/white"
+    android:text="Internal" />
+   <TextView
+    android:textColor="@android:color/black"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_margin="1dp"
+    android:layout_width="30dp"
+    android:background="@android:color/white"
+    android:text="Protocol" />
+   <TextView
+    android:textColor="@android:color/black"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_margin="1dp"
+    android:background="@android:color/white"
+    android:text="MAC" />
+   <TextView
+    android:textColor="@android:color/black"
+    android:gravity="center_horizontal"
+    android:layout_weight="1"
+    android:layout_width="5dp"
+    android:layout_margin="1dp"
+    android:background="@android:color/white"
+    android:text="Signal" />
+  </TableRow>
+ </TableLayout>
+        
+<ScrollView
+  android:id="@+id/table_scroll"
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content"
+  android:layout_below="@+id/tableHeader"
+  android:layout_marginRight="2dp"
+  android:layout_marginLeft="2dp">
+  <TableLayout
+   android:id="@+id/maintable"
+   android:layout_width="fill_parent"
+   android:layout_height="wrap_content"
+   android:background="@android:color/black">
+  <TableRow>
+   <TextView
+     android:layout_height="0dp"
+     android:layout_weight="1"
+     android:layout_marginRight="1dp"
+     android:layout_marginLeft="1dp"
+    android:text="Name" />
+   <TextView
+     android:layout_height="0dp"
+     android:layout_weight="1"
+     android:layout_marginRight="1dp"
+     android:layout_marginLeft="1dp"
+    android:text="Int." />
+   <TextView
+     android:layout_height="0dp"
+     android:layout_weight="1"
+     android:layout_marginRight="1dp"
+     android:layout_marginLeft="1dp"
+    android:text="Protocol" />
+   <TextView
+     android:layout_height="0dp"
+     android:layout_weight="1"
+     android:layout_marginRight="1dp"
+     android:layout_marginLeft="1dp"
+    android:text="MAC" />
+   <TextView
+     android:layout_height="0dp"
+     android:layout_weight="1"
+     android:layout_marginRight="1dp"
+     android:layout_marginLeft="1dp"
+    android:text="Signal" />
+  </TableRow>
+  </TableLayout>
+ </ScrollView>
+
+</RelativeLayout>
