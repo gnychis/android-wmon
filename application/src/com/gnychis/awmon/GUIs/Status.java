@@ -105,6 +105,14 @@ public class Status extends Activity implements OnClickListener {
 		Intent i;
 		i = new Intent(Status.this, Measurements.class);
         startActivity(i);
+        finish();
+	}
+	
+	public void clickedSnapshots(View v) {
+		Intent i;
+		i = new Intent(Status.this, SnapshotList.class);
+		startActivity(i);
+		finish();
 	}
 
 	// Check for clicks on various things on the status view

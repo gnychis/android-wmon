@@ -175,6 +175,8 @@ public class DBAdapter {
      * @return the Device if it exists, null otherwise
      */
     public Device getDevice(String MAC) {
+    	if(MAC==null)
+    		return null;
     	int deviceKey;
     	// First, get the interface key
     	try {

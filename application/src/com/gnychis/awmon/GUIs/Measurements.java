@@ -46,6 +46,7 @@ public class Measurements extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		  super.onCreate(savedInstanceState);
+		  _state = State.IDLE;
 		  setContentView(R.layout.measurements);
 		  _active_orientationRSSI=false;
 		  _measuring=false;
@@ -55,7 +56,8 @@ public class Measurements extends Activity {
 		  ((Button) findViewById(R.id.Measurements_btn_OrientationRSSI)).setBackgroundColor(Color.GRAY);
 	}
 	
-	public void clickedSnapshot() {
+	public void clickedSnapshot(View v) {
+		_state = State.SNAPSHOT;
 		_pd = ProgressDialog.show(Measurements.this, "", "Taking a snapshot, please wait...", true, false); 
 		ScanRequest scanRequest = new ScanRequest();
 		scanRequest.makeSnapshot();
@@ -83,6 +85,8 @@ public class Measurements extends Activity {
         		
         		if(_pd!=null)
         			_pd.dismiss();
+        		
+        		_state = State.IDLE;
         	}
         }
     };
