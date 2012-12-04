@@ -47,7 +47,7 @@ public class SnapshotList extends Activity {
 		
 		_snapshotList=new ArrayList<HashMap<String,Object>>();
 		
-		_pd = ProgressDialog.show(_context, "", "Scanning for devices", true, false);
+		_pd = ProgressDialog.show(_context, "", "Retrieving the list of snapshots", true, false);
 		
 		SnapshotGrab thread = new SnapshotGrab();
 		thread.execute(this);
@@ -61,9 +61,13 @@ public class SnapshotList extends Activity {
 		protected ArrayList<Snapshot> doInBackground(Context... params) {
 			mainActivity=(SnapshotList)params[0];
 			dbAdapter = new DBAdapter(mainActivity);
+			debugOut("Opening the database...");
 			dbAdapter.open();
-			ArrayList<Snapshot> snapshots = dbAdapter.getSnapshots();			
+			debugOut("Getting the snapshots");
+			ArrayList<Snapshot> snapshots = dbAdapter.getSnapshots();	
+			debugOut("Closing the database...");
 			dbAdapter.close();
+			debugOut("...closed");
 			return snapshots;
 		}
 		
@@ -84,19 +88,21 @@ public class SnapshotList extends Activity {
 		_snapshotList=new ArrayList<HashMap<String,Object>>();
 		for(Snapshot snapshot : snapshots) {
 			String snapshotTime = snapshot.getSnapshotTimeString();
+			String snapshotName = snapshot.getName();
 			String anchorName=null;
 			Device anchorDevice = dbAdapter.getDevice(snapshot.getAnchorMAC());
 			if(anchorDevice!=null)
 				anchorName = anchorDevice.getName();
-			_snapshotList.add(createListItem(snapshotTime, anchorName, snapshot));  
+			_snapshotList.add(createListItem(snapshotTime, snapshotName, anchorName, snapshot));  
 			debugOut("Snapshot: " + snapshotTime + "  Anchor: " + anchorName);
 		}
 		dbAdapter.close();
 		updateSnapshotList();
 	}
 	
-	private HashMap<String,Object> createListItem(String date, String anchor, Object o) {
-		HashMap<String , Object> listItem = new HashMap<String, Object>();		
+	private HashMap<String,Object> createListItem(String date, String name, String anchor, Object o) {
+		HashMap<String , Object> listItem = new HashMap<String, Object>();	
+		listItem.put("name", name);
 		listItem.put("date", date);
 		listItem.put("anchor", anchor);
 		return listItem;
@@ -131,7 +137,7 @@ public class SnapshotList extends Activity {
 		//class for caching the views in a row  
 		private class ViewHolder
 		{
-			TextView date,anchor;
+			TextView date,name,anchor;
 		}
 
 		@Override
@@ -145,6 +151,7 @@ public class SnapshotList extends Activity {
 
 				//cache the views
 				viewHolder.date=(TextView) convertView.findViewById(R.id.date);
+				viewHolder.name=(TextView) convertView.findViewById(R.id.name);
 				viewHolder.anchor=(TextView) convertView.findViewById(R.id.anchor);
 
 				//link the cached views to the convertview
@@ -154,9 +161,11 @@ public class SnapshotList extends Activity {
 				viewHolder=(ViewHolder) convertView.getTag();
 			
 			String date = (_snapshotList.get(position).get("date")==null) ? "" : _snapshotList.get(position).get("date").toString();
+			String name = (_snapshotList.get(position).get("name")==null) ? "Name: <None>" : "Name: " + _snapshotList.get(position).get("name").toString();
 			String anchor = (_snapshotList.get(position).get("anchor")==null) ? "Anchor: <None>" : "Anchor: " + _snapshotList.get(position).get("anchor").toString();
 			
 			viewHolder.date.setText(date);
+			viewHolder.name.setText(name);
 			viewHolder.anchor.setText(anchor);
 			
 			viewHolder.date.setOnClickListener(new View.OnClickListener() {
@@ -183,7 +192,7 @@ public class SnapshotList extends Activity {
 		finish();
 	}
 
-	private void debugOut(String msg) {
+	private static void debugOut(String msg) {
 		if(VERBOSE)
 			Log.d(TAG, msg);
 	}

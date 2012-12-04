@@ -36,11 +36,13 @@ abstract public class DBTable {
 		public String _fieldName;
 		public Class<?> _type;
 		public boolean _notNull;
+		public boolean _autoIncrement;
 		
-		public Field(String name, Class<?> type, boolean notNull) {
+		public Field(String name, Class<?> type, boolean notNull, boolean autoinc) {
 			_fieldName = name;
 			_type = type;
 			_notNull=notNull;
+			_autoIncrement=autoinc;
 		}
 	}
 	
@@ -73,7 +75,11 @@ abstract public class DBTable {
     		if(field._type == Date.class)
     			fieldString += "datetime";
     		
-    		fieldString += ((field._notNull) ? " not null, " : ", ");
+    		if(field._autoIncrement)
+    			fieldString += " not null AUTO_INCREMENT, ";
+    		else
+    			fieldString += ((field._notNull) ? " not null, " : ", ");
+    		
     		create += fieldString;
     	}
     	if(_key!=null) {
@@ -160,7 +166,7 @@ abstract public class DBTable {
     	return true;
     }
     
-    public ArrayList<Object> retrieveField(String fieldName, ContentValues conditions) {
+    public ArrayList<Object> retrieveField(String fieldName, ContentValues conditions, boolean unique) {
     	
     	Field field=null;
     	
@@ -173,7 +179,7 @@ abstract public class DBTable {
     	
     	DBTable table = this;
     	
-    	String qry = "SELECT " + fieldName + " FROM " + table._tableName;
+    	String qry = "SELECT " + ((unique) ? "DISTINCT " : "" ) + fieldName + " FROM " + table._tableName;
     	
     	if(conditions!=null && conditions.size()>0) {
     		
@@ -275,6 +281,7 @@ abstract public class DBTable {
     public boolean insert(Object o) {
     	DBTable table = this;
     	ArrayList<ContentValues> insertions = table.getInsertContentValues(o);
+    	_dbAdapter.db.beginTransaction();
     	for(ContentValues values : insertions) {
 	    	try {
 	    	    _dbAdapter.db.insertOrThrow(_tableName, null, values);
@@ -283,6 +290,8 @@ abstract public class DBTable {
 	    	    return false;
 	    	}
     	}
+    	_dbAdapter.db.setTransactionSuccessful();
+    	_dbAdapter.db.endTransaction();
     	return true;
     }
     

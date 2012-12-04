@@ -16,10 +16,10 @@ public class WirelessIfaceTable extends DBTable {
 	private static String TABLE_KEY = "MAC";
 	
 	static List<Field> FIELDS = Arrays.asList(
-    		new Field("frequency",	Integer.class,	false),
-    		new Field("SSID",		String.class,	false),
-    		new Field("BSSID", 		String.class,	false),
-    		new Field("MAC",		String.class,	true)
+    		new Field("frequency",	Integer.class,	false, false),
+    		new Field("SSID",		String.class,	false, false),
+    		new Field("BSSID", 		String.class,	false, false),
+    		new Field("MAC",		String.class,	true, false)
     		);
 		
 	public WirelessIfaceTable(DBAdapter dba) {

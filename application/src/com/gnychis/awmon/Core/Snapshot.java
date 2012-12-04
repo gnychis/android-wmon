@@ -16,9 +16,11 @@ public class Snapshot implements Parcelable {
 		
 	public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
 	
+	private String _name;						// A name for the snapshot, which doesn't have to be unique
 	private Date _snapshotDateTime; 			// The date/time of the snapshot
 	private ArrayList<Interface> _interfaces;	// The interfaces that were "sensed" during the snapshot
 	private String _anchor;						// The MAC of the interface that wast the anchor
+	private int _snapshotKey;					// Key for the snapshot
 	
 	public static final String SNAPSHOT_DATA = "awmon.scanmanager.snapshot";
 	
@@ -33,31 +35,63 @@ public class Snapshot implements Parcelable {
 		_interfaces = new ArrayList<Interface>();	// The interfaces are not initialized
 		_anchor=null;								// Anchor not initially set in this case
 		_snapshotDateTime = new Date();				// The snapshot takes the current time
+		_name=null;
+		_snapshotKey=-1;
 	}
 	
 	public Snapshot(Date timeOfSnapshot) {
 		_interfaces = new ArrayList<Interface>();
 		_anchor = null;
 		_snapshotDateTime=timeOfSnapshot;
+		_snapshotKey=-1;
+		_name=null;
 	}
 	
 	public Snapshot(Date timeofSnapshot, ArrayList<? extends Object> devicesOrInterfaces, String anchor) {
 		_snapshotDateTime=timeofSnapshot;
 		_anchor = anchor;
+		_name=null;
 		_interfaces = new ArrayList<Interface>();
+		_snapshotKey=-1;
 		add(devicesOrInterfaces);
 	}
 	
 	public Snapshot(ArrayList<? extends Object> devicesOrInterfaces, String anchor) {
 		_snapshotDateTime = new Date();					// The snapshot takes the current time
 		_anchor = anchor;
+		_name=null;
 		_interfaces = new ArrayList<Interface>();
+		_snapshotKey=-1;
 		add(devicesOrInterfaces);
 	}
 	public Snapshot(ArrayList<? extends Object> devicesOrInterfaces) {
 		_snapshotDateTime = new Date();					// The snapshot takes the current time
 		_interfaces = new ArrayList<Interface>();
+		_name=null;
+		_snapshotKey=-1;
 		add(devicesOrInterfaces);
+	}
+	
+	public void setSnapshotKey(int key) {
+		_snapshotKey=key;
+	}
+	
+	public int getSnapshotKey() {
+		return _snapshotKey;
+	}
+	
+	/** Set the name of a snapshot 
+	 * @param name the specified name.
+	 */
+	public void setName(String name) {
+		_name = name;
+	}
+	
+	/** Get the name of the snapshot
+	 * @return the name
+	 */
+	public String getName() {
+		return _name;
 	}
 
 	/** Get the specific interface from the snapshot if it exists
@@ -209,16 +243,20 @@ public class Snapshot implements Parcelable {
 	};
 
 	public void writeToParcel(Parcel dest, int parcelableFlags) {
+		dest.writeString(_name);
 		dest.writeString(this.getSnapshotTimeString());
 		dest.writeList(_interfaces);
 		dest.writeString(_anchor);
+		dest.writeInt(_snapshotKey);
 	}
 	
 	//@SuppressWarnings("unchecked")
 	private Snapshot(Parcel source) {
+		_name = source.readString();
 		setSnapshotTime(source.readString());
 		_interfaces = new ArrayList<Interface>();
     	source.readList(_interfaces, this.getClass().getClassLoader());
     	_anchor = source.readString();
+    	_snapshotKey = source.readInt();
 	}
 }

@@ -16,8 +16,8 @@ public class WiredIfaceTable extends DBTable {
 	private static String TABLE_KEY = "MAC";
 	
 	static List<Field> FIELDS = Arrays.asList(
-    		new Field("gateway", 	Boolean.class,	false),
-    		new Field("MAC", 		String.class,	true)
+    		new Field("gateway", 	Boolean.class,	false, false),
+    		new Field("MAC", 		String.class,	true, false)
     		);
 		
 	public WiredIfaceTable(DBAdapter dba) {

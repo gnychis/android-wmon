@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.Snapshot;
 import com.gnychis.awmon.Database.DBAdapter;
+import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
@@ -35,14 +36,17 @@ public class SnapshotDetails extends Activity {
 		
 		Snapshot snapshot = dbAdapter.getSnapshot(Snapshot.getDateFromString(date));
 		((TextView)findViewById(R.id.anchor)).append( (snapshot.getAnchorMAC()!=null) ? " " + snapshot.getAnchorMAC() : " <None>" );
-
+		((TextView)findViewById(R.id.name)).append( (snapshot.getName()!=null) ? " " + snapshot.getName() : " <None>" );
+		
 		TableLayout table = (TableLayout)findViewById(R.id.maintable);
 
 		LayoutInflater inflater = getLayoutInflater();
 		int i=0;
 		for(Interface iface : snapshot.getInterfaces())
 		{
-			String nameString=(iface._ifaceName!=null) ? iface._ifaceName : "";
+			Device device = dbAdapter.getDevice(iface._MAC);
+			
+			String nameString=(device!=null && device.getName()!=null) ? device.getName() : (iface.getName()!=null) ? iface.getName() : "";
 			String internalString="No";
 			String protocolString=(iface._type!=null) ? Interface.simplifiedClassName(iface._type) : "";
 			String macString=iface._MAC;

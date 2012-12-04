@@ -56,4 +56,32 @@ public class OUI extends NameResolver {
 		}
 		return supportedInterfaces;
 	}
+	
+	public static String getOUI(String MAC) {
+		Map<String,String> ouiTable = new HashMap<String,String>();
+		
+		// Read in the OUI list
+		try {
+			// Open the file first
+			DataInputStream in = new DataInputStream(new FileInputStream("/data/data/" + MainInterface._app_name + "/files/oui.txt"));
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			
+			// Go through and read each of the IDs and store them
+			String strLine;
+			 while ((strLine = br.readLine()) != null) {
+				 String macPrefix = strLine.substring(0, 5);
+				 String companyName = strLine.substring(22);
+				 ouiTable.put(macPrefix, companyName);
+			 }
+			in.close();
+		} 
+		catch(Exception e) { Log.e(TAG, "Error opening OUI text file"); return null; }
+		
+		String macPrefix = MAC.replace("-", "").replace(":", "").substring(0, 5).toUpperCase();
+		String companyName = ouiTable.get(macPrefix);
+		if(companyName!=null)
+			return companyName; 
+		
+		return null;
+	}
 }

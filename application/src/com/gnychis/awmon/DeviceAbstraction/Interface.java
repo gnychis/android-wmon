@@ -18,6 +18,7 @@ import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 import com.gnychis.awmon.HardwareHandlers.LAN;
 import com.gnychis.awmon.HardwareHandlers.Wifi;
 import com.gnychis.awmon.HardwareHandlers.ZigBee;
+import com.gnychis.awmon.NameResolution.OUI;
 
 public class Interface implements Parcelable {
 	
@@ -111,6 +112,8 @@ public class Interface implements Parcelable {
 	 * @return returns the clean OUI name.
 	 */
 	public String cleanOUIname() {
+		if(_ouiName==null)
+			return null;
 		List<String> kill = Arrays.asList(" INC.", " CORP.", " LTD.", ",", " Ltd.", " Inc.", " CO.");
 		String cleanName = _ouiName;
 		for(String k : kill)
@@ -120,6 +123,19 @@ public class Interface implements Parcelable {
 			return WordUtils.capitalize(cleanName.split(" ")[0].toLowerCase());
 		else
 			return WordUtils.capitalize(cleanName.toLowerCase());
+	}
+	
+	/** Get the name of the interface, which is usually just returning the OUI lookup.
+	 * @return
+	 */
+	public String getName() {
+		if(_MAC==null)
+			return null;
+		
+		if(_ouiName==null)
+			_ouiName = OUI.getOUI(_MAC);
+			
+		return cleanOUIname();
 	}
 	
 	/** This merges the information from Interface 'i' in to the current interface,

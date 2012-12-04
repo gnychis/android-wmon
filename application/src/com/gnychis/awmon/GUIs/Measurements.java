@@ -8,9 +8,11 @@ import java.util.Date;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -19,6 +21,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.MotionDetector;
@@ -57,10 +60,40 @@ public class Measurements extends Activity {
 	}
 	
 	public void clickedSnapshot(View v) {
+		
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle("Snapshot Name");
+		alert.setMessage("Choose a name for the snapshot");
+
+		// Set an EditText view to get user input 
+		final EditText input = new EditText(this);
+		alert.setView(input);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface dialog, int whichButton) {
+		String value = input.getText().toString();
+		 	triggerSnapshot(value);
+		 }
+		});
+
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		 public void onClick(DialogInterface dialog, int whichButton) {
+		     triggerSnapshot(null);
+		}
+		});
+
+		 alert.show();
+	}
+	
+	public void triggerSnapshot(String name) {
 		_state = State.SNAPSHOT;
 		_pd = ProgressDialog.show(Measurements.this, "", "Taking a snapshot, please wait...", true, false); 
 		ScanRequest scanRequest = new ScanRequest();
 		scanRequest.makeSnapshot();
+		if(name.equals(""))
+			name=null;
+		scanRequest.setSnapshotName(name);
 		scanRequest.send(this);
 	}
 	
@@ -134,4 +167,11 @@ public class Measurements extends Activity {
         	} catch(Exception e) {finish();}
         }
     };   
+    
+	@Override
+	public void onBackPressed() {
+		Intent i = new Intent(Measurements.this, Status.class);
+		startActivity(i);
+		finish();
+	}
 }

@@ -3,87 +3,63 @@ package com.gnychis.awmon.Database;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
 import com.gnychis.awmon.Core.Snapshot;
-import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 public class SnapshotsTable extends DBTable {
 
 	public static String TABLE_NAME = "SNAPSHOTS";
+	private static String TABLE_KEY = "snapshotKey";
 	
 	static List<Field> FIELDS = Arrays.asList(
-    		new Field("date",			Date.class,		true),		// The date/time this information was recorded
-    		new Field("anchorMAC",		String.class,	false),		// Interface MAC
-    		new Field("MAC",			String.class,	false),		// The interface that this data is for
-    		new Field("RSSI",			Integer.class,	false)		// The RSSI of the interface specified by ifaceKey
+    		new Field("date",			Date.class,		true, false),		// The date/time this information was recorded
+    		new Field("name",			String.class,   false, false),		// A name for the snapshot
+    		new Field("anchorMAC",		String.class,	false, false),		// Interface MAC
+    		new Field("snapshotKey",	Integer.class,  true, false)		// Auto increment
     		);	// "anchor" is a key from an interface
 		
 	public SnapshotsTable(DBAdapter dba) {
-		super(dba, TABLE_NAME, FIELDS, null);
+		super(dba, TABLE_NAME, FIELDS, TABLE_KEY);
 	}
 	
 	// This function is a little bit tricky because you need to first get the unique dates,
 	// then for each unique date you need to separate the results in to their respective snapshots.
 	public ArrayList<Object> resultsToObjects(Cursor cursor) { 
 		
-		HashMap<Date, Snapshot> snapshotMap = new HashMap<Date,Snapshot>();
-		
+		ArrayList<Snapshot> snapshots = new ArrayList<Snapshot>();
+				
 		if(cursor!=null)
 			cursor.moveToFirst();
 		else
-			return new ArrayList<Object>(snapshotMap.values());
+			return new ArrayList<Object>(snapshots);
 		
 		do {
 			Date snapshotDate;
 			try { snapshotDate = dateFormat.parse(cursor.getString(0));
 					} catch(Exception e) { continue; }
+
+			Snapshot snapshot = new Snapshot(snapshotDate);
+			snapshot.setSnapshotKey(cursor.getInt(3));
 			
-			// If there is no snapshot for this date yet, create one
-			if(!snapshotMap.containsKey(snapshotDate))
-				snapshotMap.put(snapshotDate, new Snapshot(snapshotDate));
-			
-			Snapshot snapshot = snapshotMap.get(snapshotDate);	// Get the snapshot instance
+			// Get the name of the snapshot
+			if(cursor.isNull(1))
+				snapshot.setName(null);
+			else
+				snapshot.setName(cursor.getString(1));
 			
 			// Set the anchor to null if the MAC is null, otherwise grab the interface from the MAC
-			if(cursor.isNull(1))
+			if(cursor.isNull(2))
 				snapshot.forceAnchor((String)null);
 			else
-				snapshot.forceAnchor(cursor.getString(1));
-			
-			// The interface that this data is for.  If it's null, you don't add an interface or RSSI values.
-			if(cursor.isNull(2))
-				continue;
-			
-			// The MAC of the interface we are working with, should not be null since tested already
-			String ifaceMAC = cursor.getString(2);
-			
-			// If the snapshot already contains an interface instance for this interface, grab it, otherwise
-			// get it from the database and add it to the snapshot.
-			Interface iface;
-			if(snapshot.getInterface(ifaceMAC)!=null) {
-				iface = snapshot.getInterface(ifaceMAC);
-			} else {
-				iface = _dbAdapter.getInterface(ifaceMAC);
-				snapshot.add(iface);
-			}
-			
-			// If the snapshot row has an RSSI value, then record it.  The Interface *should* be a wireless
-			// interface but we double check it just to be sure.
-			if(cursor.isNull(3) || iface.getClass()!=WirelessInterface.class)
-				continue;
-			
-			int rssiVal = cursor.getInt(3);
-			((WirelessInterface)iface).addRSSI(rssiVal);
+				snapshot.forceAnchor(cursor.getString(2));
 			
 		} while (cursor.moveToNext());
 		
-		return new ArrayList<Object>(snapshotMap.values());
+		return new ArrayList<Object>(snapshots);
 	}
 
 	@Override
@@ -112,44 +88,16 @@ public class SnapshotsTable extends DBTable {
     				header.put(key, snapshot.getAnchor()._MAC);
     			else
     				header.putNull(key);
-    		}    				
+    		}   
+    		
+    		if(field._fieldName=="name") {
+    			if(snapshot.getName()!=null)
+    				header.put(key, snapshot.getName());
+    			else
+    				header.putNull(key);
+    		}
     	}
     	
-    	// If there were no interfaces sensed and absolutely no devices were on (very rare), but we need
-    	// to at least record the header.  The rest will be null.
-    	if(snapshot.getInterfaces().size()==0) {
-    		list.add(header);
-    		return list;
-    	}
-    	
-    	// This stores any interfaces that do not yet exist in the database.  It will NOT update interfaces
-    	// that do already exist.
-    	_dbAdapter.insertInterfaces(snapshot.getInterfaces());
-    
-		// Otherwise, if there are interfaces, we record an entry for each of them and one entry for each 
-    	// RSSI value if it is a wireless interface
-		for(Interface iface : snapshot.getInterfaces()) {
-			
-			// Regardless of what it is, you always put the MAC value
-			if(iface._MAC != null)
-				header.put("MAC", iface._MAC);
-			else
-				header.putNull("MAC");
-		
-			ContentValues values = new ContentValues(header);	// Copy the header in to each one
-			
-			// It is a wireless interface, and it has RSSI values to be recorded, we record an RSSI value for each
-			if((iface.getClass() == WirelessInterface.class) && ((WirelessInterface)iface).rssiValues().size()!=0) {
-				for(Integer i : ((WirelessInterface)iface).rssiValues()) {
-					ContentValues rssiValue = new ContentValues(values);
-					rssiValue.put("RSSI", i);
-					list.add(rssiValue);
-				}
-			} else {
-				list.add(values);
-			}
-		}
-		
 		return list;
 	}
 }

@@ -29,7 +29,7 @@ public class DBAdapter {
     
     private static final String TAG = "DBAdapter";	// for debugging
     private static final String DATABASE_NAME = "awmon";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     
     public enum NameUpdate {
     	DO_NOT_UPDATE,	// Leave the naming alone
@@ -59,7 +59,21 @@ public class DBAdapter {
     
     //******* SNAPSHOT *************** WRITE HELPER FUNCTIONS ****************************//
     public void storeSnapshot(Snapshot s) {  // We only insert snapshots, no updates.
+    	
+    	// First, we store the snapshot header data    	
     	_tables.get(SnapshotsTable.TABLE_NAME).insert(s);
+    	
+    	// Then, we read back the unique key that the database assigned
+    	ContentValues conditions = new ContentValues();
+    	conditions.put("date", s.getSnapshotTimeString());
+    	int key=-1;
+    	for(Object obj : _tables.get(SnapshotsTable.TABLE_NAME).retrieveField("snapshotKey", conditions, false)) {
+    		key = (Integer)obj;
+    		break;
+    	}
+    	
+    	s.setSnapshotKey(key);
+    	_tables.get(SnapshotsDataTable.TABLE_NAME).insert(s);
     }
     
     //******* SNAPSHOT *************** READ HELPER FUNCTIONS ****************************//
@@ -67,9 +81,22 @@ public class DBAdapter {
      * @return an ArrayList of snapshots from the database, no restrictions.
      */
     public ArrayList<Snapshot> getSnapshots() {
+    	
+    	// First, get the bare snapshots without their interface data
     	ArrayList<Snapshot> snapshots = new ArrayList<Snapshot>();
     	for(Object o : _tables.get(SnapshotsTable.TABLE_NAME).retrieve(null))
     		snapshots.add((Snapshot)o);
+    	
+    	// Now, get the interface data for each snapshot
+    	for(Snapshot snapshot : snapshots) {
+    		ArrayList<Interface> interfaces = new ArrayList<Interface>();
+	    	ContentValues conditions = new ContentValues();
+	    	conditions.put("snapshotKey", snapshot.getSnapshotKey());
+	    	for(Object o : _tables.get(SnapshotsDataTable.TABLE_NAME).retrieve(conditions))
+	    		interfaces.add((Interface)o);
+	    	snapshot.add(interfaces);
+    	}
+    	
     	return snapshots;
     }
     
@@ -80,10 +107,27 @@ public class DBAdapter {
     public Snapshot getSnapshot(Date d) {
     	if(d==null)
     		return null;
+    	
+    	Snapshot snapshot = null;
+    	
+    	// First, get the snapshot header data
     	ContentValues conditions = new ContentValues();
     	conditions.put("date", DBTable.dateFormat.format(d));
-    	for(Object o : _tables.get(SnapshotsTable.TABLE_NAME).retrieve(conditions))
-    		return (Snapshot) o;
+    	for(Object o : _tables.get(SnapshotsTable.TABLE_NAME).retrieve(conditions)) {
+    		snapshot = ((Snapshot)o);
+    		break;
+    	}
+    	
+    	if(snapshot==null)
+    		return null;
+    	
+		ArrayList<Interface> interfaces = new ArrayList<Interface>();
+    	conditions = new ContentValues();
+    	conditions.put("snapshotKey", snapshot.getSnapshotKey());
+    	for(Object o : _tables.get(SnapshotsDataTable.TABLE_NAME).retrieve(conditions))
+    		interfaces.add((Interface)o);
+    	snapshot.add(interfaces);
+    	
     	return null;
     }
     
@@ -156,20 +200,7 @@ public class DBAdapter {
     }
     
     
-    //******** DEVICE ************ READ HELPER FUNCTIONS ****************************//
-    /** Gets a deviceKey from the database for the device that contains an interface
-     * with the specified MAC
-     * @param MAC the MAC that an interface in the device must match
-     * @return the deviceKey
-     */
-    private int getDeviceKeyFromMAC(String MAC) {
-    	ContentValues conditions = new ContentValues();
-    	conditions.put("MAC", MAC);
-    	for(Object o : _tables.get(InterfacesTable.TABLE_NAME).retrieveField("deviceKey", conditions))
-    		return ((Integer)o);
-    	throw new SQLException("Could not find deviceKey");
-    }
-    
+    //******** DEVICE ************ READ HELPER FUNCTIONS ****************************//    
     /** Get a device from the database who has an interface with the specified MAC.
      * @param MAC the MAC that the device must match
      * @return the Device if it exists, null otherwise
@@ -177,15 +208,14 @@ public class DBAdapter {
     public Device getDevice(String MAC) {
     	if(MAC==null)
     		return null;
-    	int deviceKey;
-    	// First, get the interface key
-    	try {
-    		deviceKey = getDeviceKeyFromMAC(MAC);
-    	} catch(Exception e) {
-    		Log.e(TAG, "Could not get interface key", e);
-    		return null;
-    	}
-    	return getDevice(deviceKey);
+
+    	ContentValues conditions = new ContentValues();
+    	conditions.put("MAC", MAC);
+    	for(Object o : _tables.get(InterfacesTable.TABLE_NAME).retrieveField("deviceKey", conditions, false))
+    		if(o!=null)
+    			return getDevice(((Integer)o));
+        	
+    	return null;
     }
     
     /** Gets a device based on a device key

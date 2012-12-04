@@ -1,6 +1,7 @@
 package com.gnychis.awmon.BackgroundService;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.util.Log;
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.Snapshot;
 import com.gnychis.awmon.Database.DBAdapter;
+import com.gnychis.awmon.Database.DBAdapter.NameUpdate;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
@@ -206,6 +208,8 @@ public class ScanManager {
         				debugOut("Receveived the devices from filtering manager");
         				
 	        			broadcastResults(ScanManager.ResultType.DEVICES, devices);
+	
+	        			updateDevices(devices);
         				
 	        			debugOut("Done with the chain, heading back to idle");
 	        			_state = State.IDLE;
@@ -227,8 +231,8 @@ public class ScanManager {
     	final int ANCHOR_RSSI_THRESHOLD = -30;   // dBm
     	
 		Snapshot snapshot = new Snapshot();
+		snapshot.setName(_workingRequest.getSnapshotName());
 		snapshot.add(interfaces);
-
 		
 		// If a manual anchor was specified in the ScanRequest, save that with the snapshot
 		if(_workingRequest.getAnchor()!=null) {
@@ -259,13 +263,64 @@ public class ScanManager {
 				snapshot.setAnchor(anchor);
 		}
 		
-		// Let's store this badboy in the database now
-		DBAdapter dbAdapter = new DBAdapter(_parent);
-		dbAdapter.open();
-		dbAdapter.storeSnapshot(snapshot);
-		dbAdapter.close();
+		storeSnapshot(snapshot);
 		
 		snapshot.broadcast(_parent);
+	}
+	
+	public void storeSnapshot(Snapshot snapshot) {
+		class StoreSnapshotThread implements Runnable { 
+			Snapshot _snapshot;
+			
+			public StoreSnapshotThread(Snapshot snapshot) {
+				_snapshot=snapshot;
+			}
+			
+			@Override
+			public void run() {
+				// Let's store this badboy in the database now
+				Date before = new Date();
+				debugOut("Opening the database to write interfaces");
+				DBAdapter dbAdapter = new DBAdapter(_parent);
+				dbAdapter.open();
+				debugOut("Now, storing the snapshots");
+				dbAdapter.storeSnapshot(_snapshot);
+				debugOut("Closing the database...");
+				dbAdapter.close();
+    			Date after = new Date();
+    			debugOut("..done: " + (after.getTime()-before.getTime())/1000);			}
+		}
+		
+		StoreSnapshotThread arpThread = new StoreSnapshotThread(snapshot);
+		new Thread(arpThread).start();
+	}
+	
+	public void updateDevices(ArrayList<Device> devices) {
+		class UpdateDevicesThread implements Runnable { 
+			ArrayList<Device> _devices;
+			
+			public UpdateDevicesThread(ArrayList<Device> devices) {
+				_devices = devices;
+			}
+			
+			@Override
+			public void run() {
+				Date before = new Date();
+				// Let's store this badboy in the database now
+    			debugOut("Opening the database");
+    			DBAdapter dbAdapter = new DBAdapter(_parent);
+    			dbAdapter.open();
+    			debugOut("Updating the devices...");
+    			dbAdapter.updateDevices(_devices, NameUpdate.SAFE_UPDATE);
+    			debugOut("Closing the database...");
+    			dbAdapter.close();
+    			Date after = new Date();
+    			debugOut("..done: " + (after.getTime()-before.getTime())/1000);
+			}
+		}
+		
+		UpdateDevicesThread arpThread = new UpdateDevicesThread(devices);
+		new Thread(arpThread).start();
 	}
     
 	private void debugOut(String msg) {

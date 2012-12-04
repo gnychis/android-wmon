@@ -16,12 +16,12 @@ public class InterfacesTable extends DBTable {
 	private static String TABLE_KEY = "MAC";
 	
 	static List<Field> FIELDS = Arrays.asList(
-    		new Field("MAC", 		String.class, 	true),
-    		new Field("IP", 		String.class, 	false),
-    		new Field("ouiName", 	String.class, 	false),
-    		new Field("ifaceName", 	String.class, 	false),
-    		new Field("type", 		String.class, 	false),
-    		new Field("deviceKey",	Integer.class,	false)
+    		new Field("MAC", 		String.class, 	true, false),
+    		new Field("IP", 		String.class, 	false, false),
+    		new Field("ouiName", 	String.class, 	false, false),
+    		new Field("ifaceName", 	String.class, 	false, false),
+    		new Field("type", 		String.class, 	false, false),
+    		new Field("deviceKey",	Integer.class,	false, false)
     		);
 		
 	public InterfacesTable(DBAdapter dba) {

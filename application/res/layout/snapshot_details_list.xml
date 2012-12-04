@@ -7,7 +7,7 @@
  
     <TextView
 	     android:id="@+id/heading"
-	     android:layout_marginTop="5dp"
+	     android:layout_marginTop="0dp"
 	     android:layout_marginLeft="5dp"
 	     android:layout_width="wrap_content"
 	     android:layout_height="wrap_content"
@@ -15,14 +15,25 @@
 	     android:textSize="35sp"
 	     android:textStyle="italic"
 	     />
-       
+    
     <TextView
-        android:id="@+id/date"
+        android:id="@+id/name"
         android:layout_below="@+id/heading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
        	android:layout_marginLeft="10dp"
 	    android:layout_marginTop="7dp"
+	    android:textSize="15sp"
+        android:text="    Name:  "
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+       
+    <TextView
+        android:id="@+id/date"
+        android:layout_below="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+       	android:layout_marginLeft="10dp"
+	    android:layout_marginTop="0dp"
 	    android:textSize="15sp"
         android:text="    Date:  "
         android:textAppearance="?android:attr/textAppearanceMedium" />

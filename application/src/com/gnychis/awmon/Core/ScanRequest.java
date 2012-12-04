@@ -13,12 +13,21 @@ public class ScanRequest implements Parcelable  {
 	boolean _doMerging;
 	boolean _doFiltering;
 	String _anchorMAC;
+	String _snapshotName;
 
 	public ScanRequest() {
 		_doNameResoution=false;
 		_doMerging=false;
 		_doFiltering=false;
 		_anchorMAC=null;
+	}
+	
+	public void setSnapshotName(String name) {
+		_snapshotName = name;
+	}
+	
+	public String getSnapshotName() {
+		return _snapshotName;
 	}
 	
 	public String getAnchor() {
@@ -72,6 +81,7 @@ public class ScanRequest implements Parcelable  {
 		dest.writeInt(_doMerging ? 1 : 0 );
 		dest.writeInt(_doFiltering ? 1 : 0 );
 		dest.writeString(_anchorMAC);
+		dest.writeString(_snapshotName);
 	}
 	
 	//@SuppressWarnings("unchecked")
@@ -80,6 +90,7 @@ public class ScanRequest implements Parcelable  {
 		_doMerging = ((source.readInt()==1) ? true : false );
 		_doFiltering = ((source.readInt()==1) ? true : false );
 		_anchorMAC = source.readString();
+		_snapshotName = source.readString();
 	}
 
 }

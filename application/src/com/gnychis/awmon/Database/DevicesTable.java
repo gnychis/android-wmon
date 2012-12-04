@@ -16,10 +16,10 @@ public class DevicesTable extends DBTable {
 	private static String TABLE_KEY = "deviceKey";
 	
 	static List<Field> FIELDS = Arrays.asList(
-    		new Field("name",		String.class, 	false),
-    		new Field("mobile",		Mobility.class, true),
-    		new Field("deviceKey",	Integer.class, 	true),
-    		new Field("internal",	Boolean.class,	true)
+    		new Field("name",		String.class, 	false, false),
+    		new Field("mobile",		Mobility.class, true, false),
+    		new Field("deviceKey",	Integer.class, 	true, false),
+    		new Field("internal",	Boolean.class,	true, false)
     		);
 		
 	public DevicesTable(DBAdapter dba) {
