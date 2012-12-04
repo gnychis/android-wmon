@@ -76,9 +76,22 @@ public class WirelessInterface extends Interface implements Parcelable {
 
 	static public Comparator<Object> compareRSSI = new Comparator<Object>() {
 		public int compare(Object arg0, Object arg1) {
-			if(((WirelessInterface)arg0).averageRSSI() < ((WirelessInterface)arg1).averageRSSI())
+			int left_rssi;
+			int right_rssi;
+			
+			if(arg0.getClass()==WirelessInterface.class)
+				left_rssi=((WirelessInterface)arg0).averageRSSI();
+			else
+				left_rssi=-500;
+			
+			if(arg1.getClass()==WirelessInterface.class)
+				right_rssi=((WirelessInterface)arg1).averageRSSI();
+			else
+				right_rssi=-500;
+			
+			if(left_rssi < right_rssi)
 				return 1;
-			else if( ((WirelessInterface)arg0).averageRSSI() > ((WirelessInterface)arg1).averageRSSI())
+			else if( left_rssi > right_rssi)
 				return -1;
 			else
 				return 0;

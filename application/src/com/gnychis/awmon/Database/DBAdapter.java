@@ -3,6 +3,7 @@ package com.gnychis.awmon.Database;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -397,7 +398,7 @@ public class DBAdapter {
     /** Given a set of interfaces, update them in the data.  We play it safe with naming in this case.
      * @param interfaces
      */
-    public void updateInterfaces(ArrayList<Interface> interfaces, NameUpdate nameUpdate) {
+    public void updateInterfaces(List<Interface> interfaces, NameUpdate nameUpdate) {
     	for(Interface iface : interfaces)
     		updateInterface(iface, nameUpdate);
     }

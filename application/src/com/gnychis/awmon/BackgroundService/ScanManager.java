@@ -2,6 +2,7 @@ package com.gnychis.awmon.BackgroundService;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -210,6 +211,10 @@ public class ScanManager {
 	        			broadcastResults(ScanManager.ResultType.DEVICES, devices);
 	
 	        			updateDevices(devices);
+	        			
+	        			for(Device device : devices)
+	        				updateInterfaces(device.getInterfaces());
+	        			
         				
 	        			debugOut("Done with the chain, heading back to idle");
 	        			_state = State.IDLE;
@@ -291,8 +296,8 @@ public class ScanManager {
     			debugOut("..done: " + (after.getTime()-before.getTime())/1000);			}
 		}
 		
-		StoreSnapshotThread arpThread = new StoreSnapshotThread(snapshot);
-		new Thread(arpThread).start();
+		StoreSnapshotThread thread = new StoreSnapshotThread(snapshot);
+		new Thread(thread).start();
 	}
 	
 	public void updateDevices(ArrayList<Device> devices) {
@@ -319,8 +324,36 @@ public class ScanManager {
 			}
 		}
 		
-		UpdateDevicesThread arpThread = new UpdateDevicesThread(devices);
-		new Thread(arpThread).start();
+		UpdateDevicesThread thread = new UpdateDevicesThread(devices);
+		new Thread(thread).start();
+	}
+	
+	public void updateInterfaces(List<Interface> interfaces) {
+		class UpdateInterfacesThread implements Runnable { 
+			List<Interface> _interfaces;
+			
+			public UpdateInterfacesThread(List<Interface> interfaces) {
+				_interfaces = interfaces;
+			}
+			
+			@Override
+			public void run() {
+				Date before = new Date();
+				// Let's store this badboy in the database now
+    			debugOut("Opening the database");
+    			DBAdapter dbAdapter = new DBAdapter(_parent);
+    			dbAdapter.open();
+    			debugOut("Updating the devices...");
+    			dbAdapter.updateInterfaces(_interfaces, NameUpdate.SAFE_UPDATE);
+    			debugOut("Closing the database...");
+    			dbAdapter.close();
+    			Date after = new Date();
+    			debugOut("..done: " + (after.getTime()-before.getTime())/1000);
+			}
+		}
+		
+		UpdateInterfacesThread thread = new UpdateInterfacesThread(interfaces);
+		new Thread(thread).start();
 	}
     
 	private void debugOut(String msg) {

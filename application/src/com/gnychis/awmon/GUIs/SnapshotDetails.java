@@ -1,8 +1,16 @@
 package com.gnychis.awmon.GUIs;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.TableLayout;
@@ -20,53 +28,109 @@ public class SnapshotDetails extends Activity {
 	
 	private static final String TAG = "SnapshotDetails";
 	private static final boolean VERBOSE = true;
+    private Context _context;
+	
+	public String _date;
+	
+    Handler _handler;									// A handler to make sure certain things are un on the main UI thread 
+    
+	ProgressDialog _pd;									// To show background service progress in scanning
+	
+	int _row;
+	
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.snapshot_details_list);
 		
+		_context = this;
+		_handler = new Handler();
+		
 		Bundle extras = getIntent().getExtras();
-		String date = extras.getString("date");
+		_date = extras.getString("date");
 		
-		((TextView)findViewById(R.id.date)).append(" " + date);
+		_pd = ProgressDialog.show(_context, "", "Reading in the snapshot...", true, false);
 		
-		DBAdapter dbAdapter = new DBAdapter(this);
-		dbAdapter.open();
+		SnapshotGrab thread = new SnapshotGrab();
+		thread.execute(this);
+	}
+	
+	static final class SnapshotGrab extends AsyncTask<Context, Boolean, Boolean> {
+		SnapshotDetails mainActivity;
+		DBAdapter dbAdapter;
+		ArrayList<HashMap<String,String>> _tableRows;
 		
-		Snapshot snapshot = dbAdapter.getSnapshot(Snapshot.getDateFromString(date));
-		((TextView)findViewById(R.id.anchor)).append( (snapshot.getAnchorMAC()!=null) ? " " + snapshot.getAnchorMAC() : " <None>" );
-		((TextView)findViewById(R.id.name)).append( (snapshot.getName()!=null) ? " " + snapshot.getName() : " <None>" );
-		
-		TableLayout table = (TableLayout)findViewById(R.id.maintable);
+		@Override
+		protected Boolean doInBackground(Context... params) {
+			mainActivity=(SnapshotDetails)params[0];
+			dbAdapter = new DBAdapter(mainActivity);
+			
+			_tableRows = new ArrayList<HashMap<String,String>>();
+			
+			DBAdapter dbAdapter = new DBAdapter(mainActivity);
+			dbAdapter.open();
+			
+			Snapshot snapshot = dbAdapter.getSnapshot(Snapshot.getDateFromString(mainActivity._date));
+			final String anchor = (snapshot.getAnchorMAC()!=null) ? " " + dbAdapter.getDevice(snapshot.getAnchorMAC()).getName() + " (" + snapshot.getAnchorMAC() + ")" : " <None>";
+			final String name = (snapshot.getName()!=null) ? " " + snapshot.getName() : " <None>";
+			
+	        mainActivity._handler.post(new Runnable() {	// Must do this on the main UI thread...
+	            @Override
+	            public void run() {
+					((TextView)mainActivity.findViewById(R.id.anchor)).append( anchor );
+					((TextView)mainActivity.findViewById(R.id.name)).append( name );
+	            	((TextView)mainActivity.findViewById(R.id.date)).append(" " + mainActivity._date);
+	            }
+	        });
+			
+			final TableLayout table = (TableLayout)mainActivity.findViewById(R.id.maintable);
 
-		LayoutInflater inflater = getLayoutInflater();
-		int i=0;
-		for(Interface iface : snapshot.getInterfaces())
-		{
-			Device device = dbAdapter.getDevice(iface._MAC);
-			
-			String nameString=(device!=null && device.getName()!=null) ? device.getName() : (iface.getName()!=null) ? iface.getName() : "";
-			String internalString="No";
-			String protocolString=(iface._type!=null) ? Interface.simplifiedClassName(iface._type) : "";
-			String macString=iface._MAC;
-			String signalString=(iface.getClass()==WirelessInterface.class && ((WirelessInterface)iface).averageRSSI()!=-500) ? ((WirelessInterface)iface).averageRSSI() + "dBm" : "-";
-			
-			TableRow row = (TableRow)inflater.inflate(R.layout.snapshot_table_row, table, false);
-			
-			((TextView)row.findViewById(R.id.name)).setText(nameString);
-			((TextView)row.findViewById(R.id.internal)).setText(internalString);
-			((TextView)row.findViewById(R.id.protocol)).setText(protocolString);
-			((TextView)row.findViewById(R.id.mac)).setText(macString);
-			((TextView)row.findViewById(R.id.signal)).setText(signalString);
-			
-			if(i%2==0)
-				row.setBackgroundColor(0xff222222);
+			final LayoutInflater inflater = mainActivity.getLayoutInflater();
+			mainActivity._row=0;
+			ArrayList<Interface> interfaces = snapshot.getInterfaces();
+			Collections.sort(interfaces, WirelessInterface.compareRSSI);
+			for(Interface iface : interfaces)
+			{
+				Device device = dbAdapter.getDevice(iface._MAC);
+				
+				final String nameString=(device!=null && device.getName()!=null) ? device.getName() : (iface.getName()!=null) ? iface.getName() : "";
+				final String internalString="No";
+				final String protocolString=(iface._type!=null) ? Interface.simplifiedClassName(iface._type) : "";
+				final String macString=iface._MAC;
+				final String signalString=(iface.getClass()==WirelessInterface.class && ((WirelessInterface)iface).averageRSSI()!=-500) ? ((WirelessInterface)iface).averageRSSI() + "dBm" : "-";
 
-			table.addView(row);
-			i++;
+		        mainActivity._handler.post(new Runnable() {	// Must do this on the main UI thread...
+		            @Override
+		            public void run() {
+		            	
+						final TableRow row = (TableRow)inflater.inflate(R.layout.snapshot_table_row, table, false);
+						
+						if(mainActivity._row%2==0)
+							row.setBackgroundColor(0xff222222);
+						
+						((TextView)row.findViewById(R.id.name)).setText(nameString);
+						((TextView)row.findViewById(R.id.internal)).setText(internalString);
+						((TextView)row.findViewById(R.id.protocol)).setText(protocolString);
+						((TextView)row.findViewById(R.id.mac)).setText(macString);
+						((TextView)row.findViewById(R.id.signal)).setText(signalString);
+		            			            	
+						table.addView(row);
+						mainActivity._row++;
+		            }
+		          });				
+			}
+			dbAdapter.close();
+			
+			return true;
 		}
-		dbAdapter.close();
+		
+	    @Override
+	    protected void onPostExecute(Boolean success) {  
+	    	//mainActivity.updateListWithSnapshots(snapshots);
+	    	if(mainActivity._pd != null)
+	    		mainActivity._pd.cancel();
+	    }
 	}
 	
 	@Override
