@@ -13,7 +13,7 @@ import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 public class SnapshotsDataTable extends DBTable {
 
-	public static String TABLE_NAME = "SNAPSHOT_DATA_TABLE";
+	public static String TABLE_NAME = "SNAPSHOT_DATA";
 	
 	static List<Field> FIELDS = Arrays.asList(
     		new Field("snapshotKey",	Integer.class,  true, false),		// Snapshot key
@@ -76,6 +76,9 @@ public class SnapshotsDataTable extends DBTable {
 			
 		Snapshot snapshot = (Snapshot) obj;
 		ArrayList<ContentValues> list = new ArrayList<ContentValues>();
+		
+		// This stores any interfaces that do not yet exist in the database.  It will NOT update interfaces that already exist.
+		_dbAdapter.insertInterfaces(snapshot.getInterfaces());
 		
 		// If there are interfaces, we record an entry for each of them and one entry for each 
     	// RSSI value if it is a wireless interface

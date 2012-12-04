@@ -57,6 +57,7 @@ public class SnapshotsTable extends DBTable {
 			else
 				snapshot.forceAnchor(cursor.getString(2));
 			
+			snapshots.add(snapshot);
 		} while (cursor.moveToNext());
 		
 		return new ArrayList<Object>(snapshots);
@@ -97,6 +98,8 @@ public class SnapshotsTable extends DBTable {
     				header.putNull(key);
     		}
     	}
+    	
+    	list.add(header);
     	
 		return list;
 	}

@@ -46,6 +46,7 @@ public class DBAdapter {
     	_tables.put(SnapshotsTable.TABLE_NAME,		new SnapshotsTable(this));
     	_tables.put(WiredIfaceTable.TABLE_NAME,		new WiredIfaceTable(this));
     	_tables.put(WirelessIfaceTable.TABLE_NAME,	new WirelessIfaceTable(this));
+    	_tables.put(SnapshotsDataTable.TABLE_NAME,	new SnapshotsDataTable(this));
     }
     
     public DBAdapter(Context ctx) 
@@ -83,9 +84,7 @@ public class DBAdapter {
     public ArrayList<Snapshot> getSnapshots() {
     	
     	// First, get the bare snapshots without their interface data
-    	ArrayList<Snapshot> snapshots = new ArrayList<Snapshot>();
-    	for(Object o : _tables.get(SnapshotsTable.TABLE_NAME).retrieve(null))
-    		snapshots.add((Snapshot)o);
+    	ArrayList<Snapshot> snapshots = getSnapshotsMetadata();
     	
     	// Now, get the interface data for each snapshot
     	for(Snapshot snapshot : snapshots) {
@@ -96,6 +95,19 @@ public class DBAdapter {
 	    		interfaces.add((Interface)o);
 	    	snapshot.add(interfaces);
     	}
+    	
+    	return snapshots;
+    }
+    
+    /** Get all snapshots from the database, but only get the metadata without interfaces
+     * @return an ArrayList of snapshots from the database, no restrictions.
+     */
+    public ArrayList<Snapshot> getSnapshotsMetadata() {
+    	
+    	// First, get the bare snapshots without their interface data
+    	ArrayList<Snapshot> snapshots = new ArrayList<Snapshot>();
+    	for(Object o : _tables.get(SnapshotsTable.TABLE_NAME).retrieve(null))
+    		snapshots.add((Snapshot)o);
     	
     	return snapshots;
     }
@@ -128,7 +140,7 @@ public class DBAdapter {
     		interfaces.add((Interface)o);
     	snapshot.add(interfaces);
     	
-    	return null;
+    	return snapshot;
     }
     
     //******* SNAPSHOT *************** DELETE HELPER FUNCTIONS ****************************//

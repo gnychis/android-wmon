@@ -64,7 +64,7 @@ public class SnapshotList extends Activity {
 			debugOut("Opening the database...");
 			dbAdapter.open();
 			debugOut("Getting the snapshots");
-			ArrayList<Snapshot> snapshots = dbAdapter.getSnapshots();	
+			ArrayList<Snapshot> snapshots = dbAdapter.getSnapshotsMetadata();	
 			debugOut("Closing the database...");
 			dbAdapter.close();
 			debugOut("...closed");
@@ -162,7 +162,7 @@ public class SnapshotList extends Activity {
 			
 			String date = (_snapshotList.get(position).get("date")==null) ? "" : _snapshotList.get(position).get("date").toString();
 			String name = (_snapshotList.get(position).get("name")==null) ? "Name: <None>" : "Name: " + _snapshotList.get(position).get("name").toString();
-			String anchor = (_snapshotList.get(position).get("anchor")==null) ? "Anchor: <None>" : "Anchor: " + _snapshotList.get(position).get("anchor").toString();
+			String anchor = (_snapshotList.get(position).	get("anchor")==null) ? "Anchor: <None>" : "Anchor: " + _snapshotList.get(position).get("anchor").toString();
 			
 			viewHolder.date.setText(date);
 			viewHolder.name.setText(name);
