@@ -435,9 +435,10 @@ public class YourDevices extends Activity {
 		_pd = ProgressDialog.show(_context, "", "Storing your selections, please wait...", true, false);
 		
 		for(int i=0; i<_adapter.checkBoxState.length; i++) {
-			if(_adapter.checkBoxState[i]) {
+			if(_adapter.checkBoxState[i])
 				_devices.get(i).setInternal(true);
-			}
+			else
+				_devices.get(i).setInternal(false);					
 		}
 		
 		class UpdateDevicesThread implements Runnable { 
