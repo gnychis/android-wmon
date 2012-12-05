@@ -242,6 +242,9 @@ public class WifiScanner extends InterfaceScanner {
         JBuffer jb = new JBuffer(PCAP_HDR_SIZE);
         JBuffer data;
         
+        if(_moni0_pcap==null)
+        	return null;
+        
         // Pull in a packet
         if((data = _moni0_pcap.next(ph, jb))==null) // returns null if fails
         	return null;

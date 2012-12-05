@@ -328,7 +328,7 @@ public class ScanManager {
 			
 			// These interfaces already agree, just update the interfaces
 			if(devsInDB.size()==1)		 {
-				newDevices.add(d);
+				newDevices.add(devsInDB.get(0));	// Add the version from the DB to keep device keys consistent
     			continue;
 			}
 			
