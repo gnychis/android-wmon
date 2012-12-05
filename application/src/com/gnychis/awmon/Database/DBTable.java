@@ -121,7 +121,9 @@ abstract public class DBTable {
     	qry += ";";
     	
     	debugOut("Running delete query: " + qry);
-    	_dbAdapter.db.rawQuery(qry,null);
+    	Cursor cu = _dbAdapter.db.rawQuery(qry,null);
+    	cu.moveToFirst();
+    	cu.close();
     	
         return true;
 	}
