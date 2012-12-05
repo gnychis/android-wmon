@@ -29,11 +29,30 @@
 	<ListView
         android:id="@android:id/list"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="0dp"
+        android:layout_marginBottom="70dp"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:fadeScrollbars="false"
         android:layout_below="@+id/description"
 		/>
 
+	<RelativeLayout
+        android:id="@+id/bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="47dip"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight = "true"
+        android:background="@android:drawable/bottom_bar" >
+
+        <Button
+            android:id="@+id/buttonExport"
+            android:layout_marginTop="5dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:onClick="clickedExport"
+            android:text="Export Selected Snapshots" />
+
+    </RelativeLayout>
+	
 </RelativeLayout>

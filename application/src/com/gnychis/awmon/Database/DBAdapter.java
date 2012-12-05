@@ -88,16 +88,23 @@ public class DBAdapter {
     	ArrayList<Snapshot> snapshots = getSnapshotsMetadata();
     	
     	// Now, get the interface data for each snapshot
-    	for(Snapshot snapshot : snapshots) {
-    		ArrayList<Interface> interfaces = new ArrayList<Interface>();
-	    	ContentValues conditions = new ContentValues();
-	    	conditions.put("snapshotKey", snapshot.getSnapshotKey());
-	    	for(Object o : _tables.get(SnapshotsDataTable.TABLE_NAME).retrieve(conditions))
-	    		interfaces.add((Interface)o);
-	    	snapshot.add(interfaces);
-    	}
+    	for(Snapshot snapshot : snapshots)
+	    	snapshot.add(getSnapshotInterfaces(snapshot.getSnapshotKey()));
     	
     	return snapshots;
+    }
+    
+    /** Get the interfaces from the database which belong to a snapshot with the given key.
+     * @param snapshotKey
+     * @return the interfaces
+     */
+    public ArrayList<Interface> getSnapshotInterfaces(int snapshotKey) {
+		ArrayList<Interface> interfaces = new ArrayList<Interface>();
+    	ContentValues conditions = new ContentValues();
+    	conditions.put("snapshotKey", snapshotKey);
+    	for(Object o : _tables.get(SnapshotsDataTable.TABLE_NAME).retrieve(conditions))
+    		interfaces.add((Interface)o);
+    	return interfaces;
     }
     
     /** Get all snapshots from the database, but only get the metadata without interfaces

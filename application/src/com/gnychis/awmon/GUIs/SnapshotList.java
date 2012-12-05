@@ -1,7 +1,13 @@
 package com.gnychis.awmon.GUIs;
 
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -15,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -22,6 +29,8 @@ import com.gnychis.awmon.R;
 import com.gnychis.awmon.Core.Snapshot;
 import com.gnychis.awmon.Database.DBAdapter;
 import com.gnychis.awmon.DeviceAbstraction.Device;
+import com.gnychis.awmon.DeviceAbstraction.Interface;
+import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 public class SnapshotList extends Activity {
 
@@ -84,6 +93,7 @@ public class SnapshotList extends Activity {
 	 */
 	private void updateListWithSnapshots(ArrayList<Snapshot> snapshots) {
 		DBAdapter dbAdapter = new DBAdapter(this);
+		_snapshots = new ArrayList<Snapshot>();
 		dbAdapter.open();
 		_snapshotList=new ArrayList<HashMap<String,Object>>();
 		for(Snapshot snapshot : snapshots) {
@@ -94,6 +104,7 @@ public class SnapshotList extends Activity {
 			if(anchorDevice!=null)
 				anchorName = anchorDevice.getName();
 			_snapshotList.add(createListItem(snapshotTime, snapshotName, anchorName, snapshot));  
+			_snapshots.add(snapshot);
 			debugOut("Snapshot: " + snapshotTime + "  Anchor: " + anchorName);
 		}
 		dbAdapter.close();
@@ -126,18 +137,21 @@ public class SnapshotList extends Activity {
 	 */
 	private class CustomAdapter extends ArrayAdapter<HashMap<String, Object>>
 	{
+		boolean[] checkBoxState;	// Keep track of each checkbox state for each item
 		ViewHolder viewHolder;
 
 		// On initialization, make sure to instantiate the checkbox resource
 		public CustomAdapter(Context context, int textViewResourceId,
 				ArrayList<HashMap<String, Object>> devices) {
 			super(context, textViewResourceId, devices); 
+			checkBoxState=new boolean[devices.size()];
 		}
 
 		//class for caching the views in a row  
 		private class ViewHolder
 		{
 			TextView date,name,anchor;
+			CheckBox checkBox;
 		}
 
 		@Override
@@ -153,6 +167,7 @@ public class SnapshotList extends Activity {
 				viewHolder.date=(TextView) convertView.findViewById(R.id.date);
 				viewHolder.name=(TextView) convertView.findViewById(R.id.name);
 				viewHolder.anchor=(TextView) convertView.findViewById(R.id.anchor);
+				viewHolder.checkBox=(CheckBox) convertView.findViewById(R.id.checkBox);
 
 				//link the cached views to the convertview
 				convertView.setTag( viewHolder);
@@ -167,6 +182,7 @@ public class SnapshotList extends Activity {
 			viewHolder.date.setText(date);
 			viewHolder.name.setText(name);
 			viewHolder.anchor.setText(anchor);
+			viewHolder.checkBox.setChecked(checkBoxState[position]);
 			
 			viewHolder.date.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
@@ -180,10 +196,114 @@ public class SnapshotList extends Activity {
 					
 				}
 			});
+			
+			viewHolder.checkBox.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					if(((CheckBox)v).isChecked())
+						checkBoxState[position]=true;
+					else
+						checkBoxState[position]=false;
+				}
+			});
 			return convertView;
 		}
 
 	}
+	
+	public void clickedExport(View v) {
+		debugOut("Got a click on export snapshot");
+		
+		_pd = ProgressDialog.show(_context, "", "Exporting, please wait...", true, false);
+		
+		ArrayList<Snapshot> exportSnapshots = new ArrayList<Snapshot>();
+		for(int i=0; i<_adapter.checkBoxState.length; i++)
+			if(_adapter.checkBoxState[i])
+				exportSnapshots.add(_snapshots.get(i));
+		
+		class ExportThread implements Runnable { 
+			ArrayList<Snapshot> _exportSnapshots;
+			private FileOutputStream data_ostream;
+			Context _context;
+			
+			public ExportThread(Context c, ArrayList<Snapshot> snapshots) {
+				_context = c;
+				_exportSnapshots=snapshots;
+				SimpleDateFormat format = new SimpleDateFormat("EEE-MMM-dd-HH:mm:ss-zzz-yyyy");
+				try {
+				data_ostream = openFileOutput("snapshot_export_" + format.format(new Date()) + ".json", Context.MODE_WORLD_READABLE);
+				} catch(Exception e) { debugOut("Unable to open output file on sdcard" + e); }
+			}
+
+			@Override
+			public void run() {
+				DBAdapter dbAdapter = new DBAdapter(_context);
+				dbAdapter.open();
+				JSONArray snapshotArray = new JSONArray();
+				for(Snapshot snapshot : _exportSnapshots) {
+
+					JSONObject json = new JSONObject();
+					
+					try {
+						json.put("name", (snapshot.getName()!=null) ? snapshot.getName() : JSONObject.NULL);
+						json.put("date", snapshot.getSnapshotTimeString());
+						
+						JSONArray jsonInterfaces = new JSONArray();
+						
+						for(Interface iface : dbAdapter.getSnapshotInterfaces(snapshot.getSnapshotKey())) {
+							JSONObject ifaceObj = new JSONObject();
+							
+							Device device = dbAdapter.getDevice(iface._MAC);
+							
+							ifaceObj.put("name", (device!=null && device.getName()!=null) ? device.getName() : (iface.getName()!=null) ? iface.getName() : JSONObject.NULL);
+							ifaceObj.put("internal", (device!=null && device.getInternal()) ? true : false);
+							ifaceObj.put("protocol", Interface.simplifiedClassName(iface._type));
+							ifaceObj.put("mac", iface._MAC);
+							
+							JSONArray RSSIVals = new JSONArray();
+							if(iface.getClass()==WirelessInterface.class)
+								for(int rssiVal : ((WirelessInterface)iface).rssiValues())
+									RSSIVals.put(rssiVal);
+
+							ifaceObj.put("RSSI", RSSIVals);
+							jsonInterfaces.put(ifaceObj);
+						}
+						
+						json.put("interfaces", jsonInterfaces);
+						json.put("anchor", (snapshot.getAnchorMAC()!=null) ? snapshot.getAnchorMAC() : JSONObject.NULL);
+						json.put("snapshotKey", snapshot.getSnapshotKey());
+
+					} catch(Exception e) { Log.e("Snapshot", "Exception trying to load json object: ", e); }
+					snapshotArray.put(json);
+				}
+				
+		        try {
+					data_ostream.write(snapshotArray.toString().getBytes());
+					data_ostream.write("\n".getBytes()); 
+		        	data_ostream.close();
+		        } catch(Exception e) { Log.e("Snapshot", "Exception trying to write json object ", e); } 
+		        
+		        dbAdapter.close();
+		        
+		        _handler.post(new Runnable() {	// Must do this on the main UI thread...
+		            @Override
+		            public void run() {
+		        		if(_pd!=null)
+		        			_pd.cancel();
+		            }
+		          });
+			}
+		}
+
+		Runnable thread = new ExportThread(this, exportSnapshots);
+		new Thread(thread).start();
+	}
+	
+	
+	/*public JSONObject makeJSON() {
+
+		
+		return json;
+	}*/
 	
 	@Override
 	public void onBackPressed() {

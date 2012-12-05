@@ -3,27 +3,34 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
      
+        <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_alignParentLeft="true"
+        />
+    
     <TextView
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="30dp"
+        android:layout_marginLeft="45dp"
         android:textSize="20sp"/>
-        <!-- android:layout_marginTop="10dp" -->
-        
+        <!-- android:layout_marginTop="10dp" --> 
             
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="45dp"
+        android:layout_marginLeft="50dp"
         android:layout_below="@id/date"/>    
     
     <TextView
         android:id="@+id/anchor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="45dp"
+        android:layout_marginLeft="50dp"
         android:layout_below="@id/name"/>    
      
 </RelativeLayout>

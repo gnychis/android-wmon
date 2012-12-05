@@ -210,6 +210,7 @@ abstract public class DBTable {
 		do {
 			objects.add(fieldToObject(res, 0));
 		} while (res.moveToNext());
+		res.close();
 		return objects;
     }
     
@@ -258,8 +259,9 @@ abstract public class DBTable {
     	
         if(!res.moveToFirst())
         	return new ArrayList<Object>();
-        
-        return table.resultsToObjects(res);
+        ArrayList<Object> results = table.resultsToObjects(res);
+        res.close();
+        return results;
     }
     
     public boolean update(Object o) {
