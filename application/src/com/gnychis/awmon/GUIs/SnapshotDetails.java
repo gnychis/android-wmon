@@ -95,7 +95,7 @@ public class SnapshotDetails extends Activity {
 				Device device = dbAdapter.getDevice(iface._MAC);
 				
 				final String nameString=(device!=null && device.getName()!=null) ? device.getName() : (iface.getName()!=null) ? iface.getName() : "";
-				final String internalString="No";
+				final String internalString=(device!=null && device.getInternal()) ? "Yes" : "No";
 				final String protocolString=(iface._type!=null) ? Interface.simplifiedClassName(iface._type) : "";
 				final String macString=iface._MAC;
 				final String signalString=(iface.getClass()==WirelessInterface.class && ((WirelessInterface)iface).averageRSSI()!=-500) ? ((WirelessInterface)iface).averageRSSI() + "dBm" : "-";

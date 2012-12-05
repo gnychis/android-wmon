@@ -303,6 +303,15 @@ public class DBAdapter {
     		interfaces.addAll(d.getInterfaces());
     	return interfaces;
     }
+    
+    //******** DEVICE ************ DELETE HELPER FUNCTIONS ****************************//    
+    public boolean deleteDevice(Device d) {
+    	if(d==null)
+    		return false;
+    	ContentValues conditions = new ContentValues();
+    	conditions.put("deviceKey", d.getKey());
+    	return _tables.get(DevicesTable.TABLE_NAME).delete(conditions);	
+    }
         
     //****** INTERFACE *********** WRITE HELPER FUNCTIONS ****************************//
     
@@ -496,6 +505,25 @@ public class DBAdapter {
     	condition.put("MAC", MAC);
     	values.put("deviceKey", deviceKey);
     	return _tables.get(InterfacesTable.TABLE_NAME).update(values, condition);
+    }
+    
+    /** Associates the interface with the a device
+     * labeled with deviceKey.
+     * @param i the Interface
+     * @param deviceKey the key of the device
+     * @return whether we were successful or not
+     */
+    public boolean associateInterfaceWithDevice(Interface i, int deviceKey) {
+    	return associateInterfaceWithDevice(i._MAC, deviceKey);
+    }
+    
+    /** Associates the passed interfaces with the specified deviceKey
+     * @param interfaces the interfaces
+     * @param deviceKey the device key of the device to associate it with
+     */
+    public void associateInterfacesWithDevice(ArrayList<Interface> interfaces, int deviceKey) {
+    	for(Interface iface : interfaces)
+    		associateInterfaceWithDevice(iface, deviceKey);
     }
     
     /** Removes a device association from an interface.

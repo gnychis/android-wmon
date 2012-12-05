@@ -42,14 +42,16 @@
         android:layout_height="54dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight = "true"
-        android:background="@android:color/transparent" >
+        android:background="@android:drawable/bottom_bar" >
 
         <Button
             android:id="@+id/buttonSettings"
-            android:layout_width="300dip"
+            android:layout_marginTop="5dp"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
             android:layout_alignParentRight = "true"
+            android:onClick="clickedFinish"
             android:text="Done, let&apos;s take care of missing devices..." />
 
     </RelativeLayout>

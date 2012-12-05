@@ -207,7 +207,6 @@ public class SnapshotList extends Activity {
 			});
 			return convertView;
 		}
-
 	}
 	
 	public void clickedExport(View v) {

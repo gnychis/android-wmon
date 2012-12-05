@@ -15,6 +15,7 @@ import com.gnychis.awmon.Core.Snapshot;
 import com.gnychis.awmon.Database.DBAdapter;
 import com.gnychis.awmon.Database.DBAdapter.NameUpdate;
 import com.gnychis.awmon.DeviceAbstraction.Device;
+import com.gnychis.awmon.DeviceAbstraction.Device.Mobility;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.DeviceFiltering.DeviceFilteringManager;
@@ -210,11 +211,7 @@ public class ScanManager {
         				
 	        			broadcastResults(ScanManager.ResultType.DEVICES, devices);
 	
-	        			updateDevices(devices);
-	        			
-	        			for(Device device : devices)
-	        				updateInterfaces(device.getInterfaces());
-	        			
+	        			updateDevices(devices);	        			
         				
 	        			debugOut("Done with the chain, heading back to idle");
 	        			_state = State.IDLE;
@@ -300,32 +297,70 @@ public class ScanManager {
 		new Thread(thread).start();
 	}
 	
-	public void updateDevices(ArrayList<Device> devices) {
-		class UpdateDevicesThread implements Runnable { 
-			ArrayList<Device> _devices;
+	public ArrayList<Device> updateDevices(ArrayList<Device> devices) {
+		
+		ArrayList<Device> newDevices = new ArrayList<Device>();
+		
+		Date before = new Date();
+		debugOut("Opening the database");
+		DBAdapter dbAdapter = new DBAdapter(_parent);
+		dbAdapter.open();
+		
+		debugOut("Updating the devices...");
+		for(Device d : devices) {
+			ArrayList<Device> devsInDB = new ArrayList<Device>();
 			
-			public UpdateDevicesThread(ArrayList<Device> devices) {
-				_devices = devices;
+			// First, update the interfaces
+			updateInterfaces(d.getInterfaces());
+			
+			for(Interface iface : d.getInterfaces()) {
+				Device tmpDev = dbAdapter.getDevice(iface._MAC);
+				if(tmpDev!=null)
+					devsInDB.add( tmpDev );
 			}
 			
-			@Override
-			public void run() {
-				Date before = new Date();
-				// Let's store this badboy in the database now
-    			debugOut("Opening the database");
-    			DBAdapter dbAdapter = new DBAdapter(_parent);
-    			dbAdapter.open();
-    			debugOut("Updating the devices...");
-    			dbAdapter.updateDevices(_devices, NameUpdate.SAFE_UPDATE);
-    			debugOut("Closing the database...");
-    			dbAdapter.close();
-    			Date after = new Date();
-    			debugOut("..done: " + (after.getTime()-before.getTime())/1000);
+			// There are no devices for this, we can go ahead and "update" which will insert it
+			if(devsInDB.size()==0) {
+				dbAdapter.updateDevice(d, NameUpdate.SAFE_UPDATE);
+				newDevices.add(d);
+				continue;
 			}
+			
+			// These interfaces already agree, just update the interfaces
+			if(devsInDB.size()==1)		 {
+				newDevices.add(d);
+    			continue;
+			}
+			
+			// If it's greater than 1, we need to merge them
+			if(devsInDB.size()>1) {
+				Device mergedDev = new Device();
+
+				ArrayList<Interface> interfaces = new ArrayList<Interface>();
+				for(Device d2 : devsInDB) {
+					
+					// Save the important data and merge it from the devices
+					if(d2.getInternal())
+						mergedDev.setInternal(true);
+					if(d2.getUserName()!=null)
+						mergedDev.setUserName(d2.getUserName());
+					if(d2.getMobility()!=Mobility.UNKNOWN)
+						mergedDev.setMobility(d2.getMobility());
+					
+					interfaces.addAll(d2.getInterfaces());	// save this device's interfaces
+					dbAdapter.deleteDevice(d2);				// Remove the old device
+				}
+				
+				mergedDev.addInterfaces(interfaces);	// Add the merged interfaces
+				dbAdapter.updateDevice(mergedDev, NameUpdate.UPDATE);
+				newDevices.add(mergedDev);
+			}	
 		}
 		
-		UpdateDevicesThread thread = new UpdateDevicesThread(devices);
-		new Thread(thread).start();
+		dbAdapter.close();
+		Date after = new Date();
+		debugOut("..done: " + (after.getTime()-before.getTime())/1000);
+		return newDevices;
 	}
 	
 	public void updateInterfaces(List<Interface> interfaces) {
@@ -343,7 +378,7 @@ public class ScanManager {
     			debugOut("Opening the database");
     			DBAdapter dbAdapter = new DBAdapter(_parent);
     			dbAdapter.open();
-    			debugOut("Updating the devices...");
+    			debugOut("Updating the interfaces...");
     			dbAdapter.updateInterfaces(_interfaces, NameUpdate.SAFE_UPDATE);
     			debugOut("Closing the database...");
     			dbAdapter.close();

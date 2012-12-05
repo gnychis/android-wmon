@@ -101,7 +101,7 @@ abstract public class DBTable {
 		
     	DBTable table = this;
     	
-    	String qry = "DELETE * FROM " + table._tableName;
+    	String qry = "DELETE FROM " + table._tableName;
     	
     	if(conditions!=null && conditions.size()>0) {
     		

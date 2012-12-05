@@ -2,6 +2,7 @@ package com.gnychis.awmon.GUIs;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,6 +32,8 @@ import android.widget.TextView;
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.ScanManager;
 import com.gnychis.awmon.Core.ScanRequest;
+import com.gnychis.awmon.Database.DBAdapter;
+import com.gnychis.awmon.Database.DBAdapter.NameUpdate;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
@@ -54,7 +57,8 @@ public class YourDevices extends Activity {
 	public static final boolean VERBOSE = true;
     private Context _context;
 
-	ArrayList<HashMap<String, Object>> _deviceList;		// This is bound to the actual list						
+	ArrayList<HashMap<String, Object>> _deviceList;		// This is bound to the actual list			
+	ArrayList<Device> _devices;							// To keep track of our current device list
 	ProgressDialog _pd;									// To show background service progress in scanning
 	CustomAdapter _adapter;								// An adapter to our device list
     Handler _handler;									// A handler to make sure certain things are un on the main UI thread 
@@ -174,7 +178,9 @@ public class YourDevices extends Activity {
 	 */
 	private void updateListWithDevices(ArrayList<Device> devices) {
 		_deviceList=new ArrayList<HashMap<String,Object>>();
+		_devices = new ArrayList<Device>();
 		for(Device device : devices) {
+			_devices.add(device);
 			_deviceList.add(createListItem(device.getName(), device.getAdditional(_context), device));  
 			debugOut(device.toString());
 		}
@@ -326,6 +332,15 @@ public class YourDevices extends Activity {
 			String name = (_deviceList.get(position).get("name")==null) ? "" : _deviceList.get(position).get("name").toString();
 			String additional = (_deviceList.get(position).get("additional")==null) ? "" : _deviceList.get(position).get("additional").toString();
 			
+			HashMap<String,Object> item = getListItemByName(name);
+			if(item.get("object").getClass()==Device.class) {
+				Device device = (Device) item.get("object");
+				if(device!=null && device.getInternal())
+					checkBoxState[position]=true;
+				else
+					checkBoxState[position]=false;
+			}
+			
 			// For long additional description, truncate it
 			if(additional.length()>37)
 				additional = additional.substring(0, 37) + "...";
@@ -386,6 +401,46 @@ public class YourDevices extends Activity {
 			return convertView;
 		}
 
+	}
+	
+	public void clickedFinish(View v) {
+		debugOut("Got a click on finished");
+		
+		_pd = ProgressDialog.show(_context, "", "Storing your selections, please wait...", true, false);
+		
+		for(int i=0; i<_adapter.checkBoxState.length; i++) {
+			if(_adapter.checkBoxState[i]) {
+				_devices.get(i).setInternal(true);
+			}
+		}
+		
+		class UpdateDevicesThread implements Runnable { 
+			ArrayList<Device> _devices;
+			
+			public UpdateDevicesThread(ArrayList<Device> devices) {
+				_devices = devices;
+			}
+			
+			@Override
+			public void run() {
+				Date before = new Date();
+				// Let's store this badboy in the database now
+    			debugOut("Opening the database");
+    			DBAdapter dbAdapter = new DBAdapter(_context);
+    			dbAdapter.open();
+    			debugOut("Updating the devices...");
+    			dbAdapter.updateDevices(_devices, NameUpdate.SAFE_UPDATE);
+    			debugOut("Closing the database...");
+    			dbAdapter.close();
+    			Date after = new Date();
+    			debugOut("..done: " + (after.getTime()-before.getTime())/1000);
+    			if(_pd!=null)
+    				_pd.cancel();
+			}
+		}
+		
+		UpdateDevicesThread thread = new UpdateDevicesThread(_devices);
+		new Thread(thread).start();
 	}
 
 	@Override
