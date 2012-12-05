@@ -55,11 +55,12 @@
         android:layout_height="54dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:background="@android:color/transparent" >
+        android:background="@android:drawable/bottom_bar" >
 
         <Button
             android:id="@+id/buttonDevicesOn"
-            android:layout_width="250dip"
+            android:layout_marginTop="5dp"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_gravity="bottom|right"

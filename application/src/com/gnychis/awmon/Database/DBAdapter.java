@@ -265,8 +265,9 @@ public class DBAdapter {
     	ArrayList<Device> devices = new ArrayList<Device>();
     	ContentValues conditions = new ContentValues();
     	conditions.put("internal", 1);
-    	for(Object o : _tables.get(DevicesTable.TABLE_NAME).retrieve(conditions))
-    		devices.add((Device)o);
+    	for(Object o : _tables.get(DevicesTable.TABLE_NAME).retrieveField("deviceKey", conditions, false))
+    		if(o!=null)
+    			devices.add(getDevice(((Integer)o)));	
     	return devices;
     }
     
@@ -277,8 +278,9 @@ public class DBAdapter {
     	ArrayList<Device> devices = new ArrayList<Device>();
     	ContentValues conditions = new ContentValues();
     	conditions.put("internal", 0);
-    	for(Object o : _tables.get(DevicesTable.TABLE_NAME).retrieve(conditions))
-    		devices.add((Device)o);
+    	for(Object o : _tables.get(DevicesTable.TABLE_NAME).retrieveField("deviceKey", conditions, false))
+    		if(o!=null)
+    			devices.add(getDevice(((Integer)o)));	
     	return devices;
     }
     

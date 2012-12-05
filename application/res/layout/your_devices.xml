@@ -36,24 +36,31 @@
         android:layout_below="@+id/description"
 		/>
 	
-	<RelativeLayout
+	<LinearLayout
         android:id="@+id/bottom"
         android:layout_width="fill_parent"
         android:layout_height="54dip"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight = "true"
         android:background="@android:drawable/bottom_bar" >
 
+	   <Button
+	       android:id="@+id/buttonRescan"
+	       android:layout_width="250dip"
+	       android:layout_height="wrap_content"
+	       android:layout_gravity="bottom|right"
+	       android:layout_weight="1"
+	       android:onClick="clickedRescan"
+	       android:text="Save &amp; Rescan" />
+	    
         <Button
-            android:id="@+id/buttonSettings"
-            android:layout_marginTop="5dp"
+            android:id="@+id/buttonContinue"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
-            android:layout_alignParentRight = "true"
+            android:layout_weight="1"
             android:onClick="clickedFinish"
-            android:text="Done, let&apos;s take care of missing devices..." />
+            android:text="Save and continue ..." />
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </RelativeLayout>

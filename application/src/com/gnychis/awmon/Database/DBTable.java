@@ -120,6 +120,7 @@ abstract public class DBTable {
 
     	qry += ";";
     	
+    	debugOut("Running delete query: " + qry);
     	_dbAdapter.db.rawQuery(qry,null);
     	
         return true;

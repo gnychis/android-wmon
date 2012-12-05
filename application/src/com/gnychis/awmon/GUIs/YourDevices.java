@@ -65,6 +65,8 @@ public class YourDevices extends Activity {
     
     Object _scanResult;									// The result from scanning with the background service
     ScanManager.ResultType _resultType;					// The result type (INTERFACES or DEVICES)
+    
+    ArrayList<Device> _internalDevices;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -72,11 +74,27 @@ public class YourDevices extends Activity {
 		setContentView(R.layout.your_devices);
 		_context = this;
 
-		_deviceList=new ArrayList<HashMap<String,Object>>();
 		_handler = new Handler();
+				
+		DBAdapter dbAdapter = new DBAdapter(this);
+		dbAdapter.open();
+		_internalDevices = dbAdapter.getInternalDevices();
+		dbAdapter.close();
 		
-		// Pop up a progress dialog and register receivers for progress being made by the scanning service
-		_pd = ProgressDialog.show(_context, "", "Scanning for devices", true, false);
+		if(_internalDevices.size()==0)
+			startScan();
+		else
+			updateListWithDevices(_internalDevices);
+	}
+	
+	public void startScan() {
+		_handler.post(new Runnable() {	// Must do this on the main UI thread...
+			@Override
+			public void run() {						
+				// Pop up a progress dialog and register receivers for progress being made by the scanning service
+				_pd = ProgressDialog.show(_context, "", "Scanning for devices", true, false);
+			}
+		});
 		
 		// Wait a small period of time before triggering the scans.  This allows the GUI to kind of bring itself up
 		// and show all of the items before we lock up some resources.
@@ -403,9 +421,17 @@ public class YourDevices extends Activity {
 
 	}
 	
+	public void clickedRescan(View v) {
+		debugOut("Got a reclick");
+		saveDeviceSelections(true);
+	}
+	
 	public void clickedFinish(View v) {
 		debugOut("Got a click on finished");
-		
+		saveDeviceSelections(false);
+	}
+	
+	void saveDeviceSelections(boolean triggerScan) {
 		_pd = ProgressDialog.show(_context, "", "Storing your selections, please wait...", true, false);
 		
 		for(int i=0; i<_adapter.checkBoxState.length; i++) {
@@ -416,9 +442,11 @@ public class YourDevices extends Activity {
 		
 		class UpdateDevicesThread implements Runnable { 
 			ArrayList<Device> _devices;
+			boolean _triggerScan;
 			
-			public UpdateDevicesThread(ArrayList<Device> devices) {
+			public UpdateDevicesThread(ArrayList<Device> devices, boolean triggerScan) {
 				_devices = devices;
+				_triggerScan=triggerScan;
 			}
 			
 			@Override
@@ -436,10 +464,12 @@ public class YourDevices extends Activity {
     			debugOut("..done: " + (after.getTime()-before.getTime())/1000);
     			if(_pd!=null)
     				_pd.cancel();
+    			if(_triggerScan)
+    				startScan();
 			}
 		}
 		
-		UpdateDevicesThread thread = new UpdateDevicesThread(_devices);
+		UpdateDevicesThread thread = new UpdateDevicesThread(_devices, triggerScan);
 		new Thread(thread).start();
 	}
 
