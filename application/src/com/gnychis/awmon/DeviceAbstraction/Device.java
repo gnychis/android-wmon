@@ -83,7 +83,6 @@ public class Device implements Parcelable {
 	 * @return additional information as a string.
 	 */
 	public String getAdditional(Context c) {
-		String additional="";
 		UserSettings _settings = new UserSettings(c);
 		
 		// If this device has an interface with the same MAC address as the phone's (the thing the user is holding)
@@ -104,7 +103,8 @@ public class Device implements Parcelable {
 		if(wiredToNetwork(_settings.getHomeWifiMAC()))
 			return "On your network via an Ethernet cable";
 		
-		return additional;
+		// Otherwise, return a manufacturer...
+		return "Manufacturer: " + getManufacturer();		
 	}
 	
 	/** This checks to see if the device is wired to the home network.  For this to be true, it
