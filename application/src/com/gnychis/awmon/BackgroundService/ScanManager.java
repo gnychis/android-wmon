@@ -208,10 +208,10 @@ public class ScanManager {
         				ArrayList<Device> devices = (ArrayList<Device>) intent.getExtras().get("result");
         				
         				debugOut("Receveived the devices from filtering manager");
-        				
+        					
+	        			devices = updateDevices(devices);	        
+	        			
 	        			broadcastResults(ScanManager.ResultType.DEVICES, devices);
-	
-	        			updateDevices(devices);	        			
         				
 	        			debugOut("Done with the chain, heading back to idle");
 	        			_state = State.IDLE;
