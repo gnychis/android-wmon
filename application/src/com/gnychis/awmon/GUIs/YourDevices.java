@@ -81,10 +81,12 @@ public class YourDevices extends Activity {
 		_internalDevices = dbAdapter.getInternalDevices();
 		dbAdapter.close();
 		
-		if(_internalDevices.size()==0)
+		if(_internalDevices.size()==0) {
 			startScan();
-		else
+		} else {
+			_resultType = ScanManager.ResultType.DEVICES;
 			updateListWithDevices(_internalDevices);
+		}
 	}
 	
 	public void startScan() {

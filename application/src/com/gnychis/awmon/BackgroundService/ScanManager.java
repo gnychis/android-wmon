@@ -1,6 +1,7 @@
 package com.gnychis.awmon.BackgroundService;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import android.util.Log;
 
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.Snapshot;
+import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.Database.DBAdapter;
 import com.gnychis.awmon.Database.DBAdapter.NameUpdate;
 import com.gnychis.awmon.DeviceAbstraction.Device;
@@ -19,6 +21,7 @@ import com.gnychis.awmon.DeviceAbstraction.Device.Mobility;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
 import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 import com.gnychis.awmon.DeviceFiltering.DeviceFilteringManager;
+import com.gnychis.awmon.HardwareHandlers.Bluetooth;
 import com.gnychis.awmon.HardwareHandlers.HardwareHandler;
 import com.gnychis.awmon.InterfaceMerging.InterfaceMergingManager;
 import com.gnychis.awmon.InterfaceScanners.InterfaceScanManager;
@@ -230,11 +233,15 @@ public class ScanManager {
 	 * @param interfaces
 	 */
 	private void makeSnapshot(ArrayList<Interface> interfaces) {
-    	final int ANCHOR_RSSI_THRESHOLD = -30;   // dBm
+    	final int ANCHOR_RSSI_THRESHOLD = -40;   // dBm
     	
 		Snapshot snapshot = new Snapshot();
 		snapshot.setName(_workingRequest.getSnapshotName());
 		snapshot.add(interfaces);
+		
+		UserSettings settings = new UserSettings(_parent);
+		
+		Collections.sort(interfaces, WirelessInterface.compareRSSI);
 		
 		// If a manual anchor was specified in the ScanRequest, save that with the snapshot
 		if(_workingRequest.getAnchor()!=null) {
@@ -250,10 +257,10 @@ public class ScanManager {
 					boolean exceeded=false;
 					
 					for(int rssiVal : ((WirelessInterface)iface).rssiValues())
-						if(rssiVal > ANCHOR_RSSI_THRESHOLD)
+						if(rssiVal > ((iface._type==Bluetooth.class) ? (ANCHOR_RSSI_THRESHOLD-10) : ANCHOR_RSSI_THRESHOLD))
 							exceeded=true;
 					
-					if(exceeded) {
+					if(exceeded && !iface._MAC.equals(settings.getPhoneWifiMAC()) && !iface._MAC.equals(settings.getPhoneBluetoothMAC())) {
 						anchor=iface;
 						break;
 					}
@@ -328,6 +335,7 @@ public class ScanManager {
 			
 			// These interfaces already agree, just update the interfaces
 			if(devsInDB.size()==1)		 {
+				dbAdapter.associateInterfacesWithDevice(d.getInterfaces(), devsInDB.get(0).getKey());
 				newDevices.add(devsInDB.get(0));	// Add the version from the DB to keep device keys consistent
     			continue;
 			}
@@ -350,8 +358,8 @@ public class ScanManager {
 					interfaces.addAll(d2.getInterfaces());	// save this device's interfaces
 					dbAdapter.deleteDevice(d2);				// Remove the old device
 				}
-				
 				mergedDev.addInterfaces(interfaces);	// Add the merged interfaces
+				dbAdapter.associateInterfacesWithDevice(d.getInterfaces(), mergedDev.getKey());
 				dbAdapter.updateDevice(mergedDev, NameUpdate.UPDATE);
 				newDevices.add(mergedDev);
 			}	

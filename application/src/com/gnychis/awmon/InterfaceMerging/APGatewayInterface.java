@@ -3,6 +3,7 @@ package com.gnychis.awmon.InterfaceMerging;
 import java.util.Arrays;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
@@ -22,6 +23,9 @@ import com.gnychis.awmon.HardwareHandlers.Wifi;
  *
  */
 public class APGatewayInterface extends MergeHeuristic {
+	
+	private static final String TAG = "APGatewayInterface";
+	private static final boolean VERBOSE = true;
 	
 	UserSettings _settings;
 	
@@ -50,12 +54,20 @@ public class APGatewayInterface extends MergeHeuristic {
 			return MergeStrength.UNDETERMINED;
 		
 		// Let's see if the other one in the pair is the wireless interface to our AP
-		if(right.getClass()==WirelessInterface.class && right._MAC.equals(_settings.getHomeWifiMAC()))
+		if(right.getClass()==WirelessInterface.class && right._MAC.equals(_settings.getHomeWifiMAC())) {
+			debugOut("Likely merging " + left._MAC + " and " + right._MAC);
 			return MergeStrength.LIKELY;
-		if(left.getClass()==WirelessInterface.class && left._MAC.equals(_settings.getHomeWifiMAC()))
+		}
+		if(left.getClass()==WirelessInterface.class && left._MAC.equals(_settings.getHomeWifiMAC())) {
+			debugOut("Likely merging " + left._MAC + " and " + right._MAC);
 			return MergeStrength.LIKELY;
+		}
 
 		return MergeStrength.UNDETERMINED;	
 	}
-
+	
+	private void debugOut(String msg) {
+		if(VERBOSE)
+			Log.d(TAG, msg);
+	}
 }

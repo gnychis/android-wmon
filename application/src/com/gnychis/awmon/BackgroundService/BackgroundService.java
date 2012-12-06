@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -95,6 +96,12 @@ public class BackgroundService extends Service {
 		DhcpInfo d = wifi.getDhcpInfo();
 		String MAC=wifi.getConnectionInfo().getMacAddress();
 		_settings.storePhoneWifiMAC(MAC);
+		
+	    // Now, create a Bluetooth interface for our local phone
+	    BluetoothAdapter btAdapt= null; 
+    	btAdapt = BluetoothAdapter.getDefaultAdapter();
+    	String address= btAdapt.getAddress();
+    	_settings.storePhoneBluetoothMAC(address);
     }
     
     public ServiceState getSystemState() { return _serviceState; }

@@ -82,6 +82,8 @@ public class UserSettings {
     public void storePhoneWifiMAC(String mac) { sEditor.putString("phoneWifiMAC", mac); sEditor.commit(); }
     public String getGatewayIP() { return settings.getString("gatewayIP", null); }
     public void storeGatewayIP(String IP) { sEditor.putString("gatewayIP", IP); sEditor.commit(); }
+    public String getPhoneBluetoothMAC() { return settings.getString("phoneBluetoothMAC", null); }
+    public void storePhoneBluetoothMAC(String mac) { sEditor.putString("phoneBluetoothMAC", mac); sEditor.commit(); }
     
     // Survey related Settings
     public int getAgeRange() { return settings.getInt("ageRange", -1); }

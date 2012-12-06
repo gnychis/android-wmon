@@ -390,8 +390,9 @@ public class DBAdapter {
     	}
     	
     	// If the existing interface was a WiredInterface, and the one that was passed was
-    	// a WirelessInterface, we upgrade it!
+    	// a WirelessInterface, we upgrade it (and its type).
     	if(i.getClass()==WirelessInterface.class && existing.getClass()==WiredInterface.class) {
+    		debugOut("upgrading: " + i._MAC + "  Type: " + i._type + "... existing: " + existing._type);
     		_tables.get(WirelessIfaceTable.TABLE_NAME).insert(i);
     		removeWiredData(i._MAC);
     		return;
@@ -523,7 +524,7 @@ public class DBAdapter {
      * @param interfaces the interfaces
      * @param deviceKey the device key of the device to associate it with
      */
-    public void associateInterfacesWithDevice(ArrayList<Interface> interfaces, int deviceKey) {
+    public void associateInterfacesWithDevice(List<Interface> interfaces, int deviceKey) {
     	for(Interface iface : interfaces)
     		associateInterfaceWithDevice(iface, deviceKey);
     }
