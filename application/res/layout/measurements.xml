@@ -21,5 +21,15 @@
         android:layout_marginTop="20dp"
         android:onClick="clickedSnapshot"
         android:text="Take a Snapshot" />
+    
+        <Button
+        android:id="@+id/Measurements_btn_SnapshotDelay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/Measurements_btn_Snapshot"
+        android:layout_marginTop="20dp"
+        android:onClick="clickedSnapshotDelayed"
+        android:text="Take a 5 Second Delayed Snapshot" />
 
 </RelativeLayout>
