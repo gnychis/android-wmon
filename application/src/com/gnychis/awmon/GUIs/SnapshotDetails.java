@@ -72,7 +72,7 @@ public class SnapshotDetails extends Activity {
 			dbAdapter.open();
 			
 			Snapshot snapshot = dbAdapter.getSnapshot(Snapshot.getDateFromString(mainActivity._date));
-			final String anchor = (snapshot.getAnchorMAC()!=null) ? " " + dbAdapter.getDevice(snapshot.getAnchorMAC()).getName() + " (" + snapshot.getAnchorMAC() + ")" : " <None>";
+			final String anchor = (snapshot.getAnchorMAC()!=null && dbAdapter.getDevice(snapshot.getAnchorMAC())!=null) ? " " + dbAdapter.getDevice(snapshot.getAnchorMAC()).getName() + " (" + snapshot.getAnchorMAC() + ")" : " <None>";
 			final String name = (snapshot.getName()!=null) ? " " + snapshot.getName() : " <None>";
 			
 	        mainActivity._handler.post(new Runnable() {	// Must do this on the main UI thread...

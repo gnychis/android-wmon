@@ -237,7 +237,6 @@ public class SnapshotList extends Activity {
 			public void run() {
 				DBAdapter dbAdapter = new DBAdapter(_context);
 				dbAdapter.open();
-				JSONArray snapshotArray = new JSONArray();
 				for(Snapshot snapshot : _exportSnapshots) {
 
 					JSONObject json = new JSONObject();
@@ -270,14 +269,13 @@ public class SnapshotList extends Activity {
 						json.put("interfaces", jsonInterfaces);
 						json.put("anchor", (snapshot.getAnchorMAC()!=null) ? snapshot.getAnchorMAC() : JSONObject.NULL);
 						json.put("snapshotKey", snapshot.getSnapshotKey());
+						data_ostream.write(json.toString().getBytes());
+						data_ostream.write("\n".getBytes()); 
 
 					} catch(Exception e) { Log.e("Snapshot", "Exception trying to load json object: ", e); }
-					snapshotArray.put(json);
 				}
 				
 		        try {
-					data_ostream.write(snapshotArray.toString().getBytes());
-					data_ostream.write("\n".getBytes()); 
 		        	data_ostream.close();
 		        } catch(Exception e) { Log.e("Snapshot", "Exception trying to write json object ", e); } 
 		        
