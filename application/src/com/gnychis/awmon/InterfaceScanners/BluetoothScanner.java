@@ -18,6 +18,7 @@ import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 public class BluetoothScanner extends InterfaceScanner {
 	
 	private static final String TAG = "BluetoothDeviceScanner";
+	private static boolean VERBOSE=true;
 	
 	public BluetoothAdapter _bluetooth;
 	
@@ -62,6 +63,7 @@ public class BluetoothScanner extends InterfaceScanner {
     			BluetoothDevice bt_dev = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
     			WirelessInterface dev = new WirelessInterface(Bluetooth.class);
     			short rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+    			debugOut("Device: " + bt_dev.getAddress() + " " + bt_dev.getName() + " " + rssi);
     			dev._RSSI.add((int)rssi);
     			dev._MAC=bt_dev.getAddress();
     			dev._ifaceName=bt_dev.getName();
@@ -73,5 +75,8 @@ public class BluetoothScanner extends InterfaceScanner {
     		}
     	}
     };  
-
+    public static void debugOut(String msg) {
+    	if(VERBOSE)
+    		Log.d(TAG, msg);
+    }
 }

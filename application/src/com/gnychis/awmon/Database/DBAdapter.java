@@ -1,6 +1,7 @@
 package com.gnychis.awmon.Database;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -378,9 +379,6 @@ public class DBAdapter {
     				i._ifaceName = existing._ifaceName;
     			break;    				
     	}
-    	
-    	// Now that we've manged names, now we can actually update the interface
-    	_tables.get(InterfacesTable.TABLE_NAME).update(i);
     
     	// Now, if the interface that was passed to us is Wireless and it is stored as
     	// a raw Interface, then let's insert the wireless data
@@ -411,7 +409,8 @@ public class DBAdapter {
     	}
     	
     	// Note that if the interface passed was wired, and it is stored as a wireless interface, we do
-    	// NOT downgrade wireless to wired.
+    	// NOT downgrade wireless to wired.  Therefore, rip out the
+    	_tables.get(InterfacesTable.TABLE_NAME).update(i, Arrays.asList("type"));
     }
     
     /** Given a set of interfaces, update them in the data.  We play it safe with naming in this case.

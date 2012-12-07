@@ -318,7 +318,7 @@ public class ScanManager {
 			ArrayList<Device> devsInDB = new ArrayList<Device>();
 			
 			// First, update the interfaces
-			updateInterfaces(d.getInterfaces());
+			updateInterfacesCore(d.getInterfaces());
 			
 			for(Interface iface : d.getInterfaces()) {
 				Device tmpDev = dbAdapter.getDevice(iface._MAC);
@@ -371,6 +371,20 @@ public class ScanManager {
 		return newDevices;
 	}
 	
+	public void updateInterfacesCore(List<Interface> interfaces) {
+		Date before = new Date();
+		// Let's store this badboy in the database now
+		debugOut("Opening the database");
+		DBAdapter dbAdapter = new DBAdapter(_parent);
+		dbAdapter.open();
+		debugOut("Updating the interfaces...");
+		dbAdapter.updateInterfaces(interfaces, NameUpdate.SAFE_UPDATE);
+		debugOut("Closing the database...");
+		dbAdapter.close();
+		Date after = new Date();
+		debugOut("..done: " + (after.getTime()-before.getTime())/1000);
+	}
+	
 	public void updateInterfaces(List<Interface> interfaces) {
 		class UpdateInterfacesThread implements Runnable { 
 			List<Interface> _interfaces;
@@ -381,17 +395,7 @@ public class ScanManager {
 			
 			@Override
 			public void run() {
-				Date before = new Date();
-				// Let's store this badboy in the database now
-    			debugOut("Opening the database");
-    			DBAdapter dbAdapter = new DBAdapter(_parent);
-    			dbAdapter.open();
-    			debugOut("Updating the interfaces...");
-    			dbAdapter.updateInterfaces(_interfaces, NameUpdate.SAFE_UPDATE);
-    			debugOut("Closing the database...");
-    			dbAdapter.close();
-    			Date after = new Date();
-    			debugOut("..done: " + (after.getTime()-before.getTime())/1000);
+				updateInterfacesCore(_interfaces);
 			}
 		}
 		

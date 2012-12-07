@@ -282,6 +282,25 @@ abstract public class DBTable {
     	}
     	return true;
     }
+    
+    public boolean update(Object o, List<String> ignores) {
+    	DBTable table = this;
+    	ArrayList<ContentValues> insertions = table.getInsertContentValues(o);
+    	for(ContentValues values : insertions) {
+	    	ContentValues condition = new ContentValues(values);
+	    	
+	    	// I wish there was a better way to do this... this gets the key
+	    	for(String vkey : values.keySet())
+	    		if(vkey!=table._key)
+	    			condition.remove(vkey);
+	    	
+	    	for(String ignore : ignores)
+	    		values.remove(ignore);
+	    	
+	    	update(values, condition);
+    	}
+    	return true;
+    }
         
     public boolean insert(Object o) {
     	DBTable table = this;

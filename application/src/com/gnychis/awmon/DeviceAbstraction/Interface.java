@@ -82,8 +82,9 @@ public class Interface implements Parcelable {
 	public String toFormattedString() {
 		return simplifiedClassName(_type) + " Interface: <br />" 
 				+ "&nbsp;&nbsp;&nbsp;&nbsp;* <u>MAC</u>: " + _MAC + "<br />" 
-				+ ((_type==Wifi.class || _type==LAN.class) ? "&nbsp;&nbsp;&nbsp;&nbsp;* <u>IP</u>: " + _IP + "<br />" : "")
+				+ (((_type==Wifi.class || _type==LAN.class) && _IP!=null) ? "&nbsp;&nbsp;&nbsp;&nbsp;* <u>IP</u>: " + _IP + "<br />" : "")
 				+ ((_ifaceName!=null) ? "&nbsp;&nbsp;&nbsp;&nbsp;* <u>Name</u>: " + _ifaceName + "<br />": "") 
+				+ ((_type==Wifi.class) ? "&nbsp;&nbsp;&nbsp;&nbsp;* <u>Frequency</u>: " + ((WirelessInterface)this)._frequency + "MHz<br />" : "")
 				+ "<br />";
 	}
 	
@@ -120,9 +121,14 @@ public class Interface implements Parcelable {
 			cleanName = cleanName.replace(k, "");
 		String[] split = cleanName.split(" ");
 		if(split.length>0)
-			return WordUtils.capitalize(cleanName.split(" ")[0].toLowerCase());
+			cleanName = WordUtils.capitalize(cleanName.split(" ")[0].toLowerCase());
 		else
-			return WordUtils.capitalize(cleanName.toLowerCase());
+			cleanName = WordUtils.capitalize(cleanName.toLowerCase());
+		
+		if(cleanName.equals("Shenzhen"))
+				cleanName="Apple";
+		
+		return cleanName;
 	}
 	
 	/** Get the name of the interface, which is usually just returning the OUI lookup.

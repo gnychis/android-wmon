@@ -91,7 +91,6 @@ public class Measurements extends Activity {
 
 		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
-				triggerSnapshot("");
 			}
 		});
 
@@ -119,7 +118,6 @@ public class Measurements extends Activity {
 
 		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
-				triggerSnapshotDelayed("");
 			}
 		});
 
@@ -128,6 +126,7 @@ public class Measurements extends Activity {
 
 	public void triggerSnapshot(String name) {
 		_state = State.SNAPSHOT;
+		_name=name;
 		_pd = ProgressDialog.show(Measurements.this, "", "Taking a snapshot, please wait...", true, false); 
 		ScanRequest scanRequest = new ScanRequest();
 		scanRequest.makeSnapshot();
