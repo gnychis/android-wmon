@@ -379,11 +379,17 @@ public class DBAdapter {
     				i._ifaceName = existing._ifaceName;
     			break;    				
     	}
+    	
+    	
+    	// Note that if the interface passed was wired, and it is stored as a wireless interface, we do
+    	// NOT downgrade wireless to wired.  Therefore, rip out the
+    	_tables.get(InterfacesTable.TABLE_NAME).update(i, Arrays.asList("type"));
     
     	// Now, if the interface that was passed to us is Wireless and it is stored as
     	// a raw Interface, then let's insert the wireless data
     	if(i.getClass()==WirelessInterface.class && existing.getClass()==Interface.class) {
     		_tables.get(WirelessIfaceTable.TABLE_NAME).insert(i);
+    		_tables.get(InterfacesTable.TABLE_NAME).update(i);
     		return;
     	}
     	
@@ -393,6 +399,7 @@ public class DBAdapter {
     		debugOut("upgrading: " + i._MAC + "  Type: " + i._type + "... existing: " + existing._type);
     		_tables.get(WirelessIfaceTable.TABLE_NAME).insert(i);
     		removeWiredData(i._MAC);
+    		_tables.get(InterfacesTable.TABLE_NAME).update(i);
     		return;
     	}
     	
@@ -407,10 +414,6 @@ public class DBAdapter {
     		_tables.get(WiredIfaceTable.TABLE_NAME).update(i);
     		return;
     	}
-    	
-    	// Note that if the interface passed was wired, and it is stored as a wireless interface, we do
-    	// NOT downgrade wireless to wired.  Therefore, rip out the
-    	_tables.get(InterfacesTable.TABLE_NAME).update(i, Arrays.asList("type"));
     }
     
     /** Given a set of interfaces, update them in the data.  We play it safe with naming in this case.
