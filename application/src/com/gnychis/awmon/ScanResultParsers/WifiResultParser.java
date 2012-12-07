@@ -60,7 +60,7 @@ public class WifiResultParser extends ScanResultParser {
 	    		
 	    		// Can save the associated BSSID and frequency if this is not a probe request/response
 	    		if(pkt.getField("wlan.fc.type_subtype")!="0x04" && pkt.getField("wlan.fc.type_subtype")!="0x05") {
-	    			if(pkt.getField("wlan.bssid")!=null)
+	    			if(Wifi.validClientAddress(pkt.getField("wlan.bssid")))
 	    				wiface._BSSID=pkt.getField("wlan.bssid");
 	    			wiface._frequency=frequency;
 	    		}

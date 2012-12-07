@@ -160,7 +160,8 @@ public class WifiScanner extends InterfaceScanner {
 	}
 	
 	public boolean closeDev() {
-		_moni0_pcap.close();
+		if(_moni0_pcap!=null)
+			_moni0_pcap.close();
 		return true;
 	}
 	

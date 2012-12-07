@@ -56,28 +56,39 @@ public class SnapshotList extends Activity {
 		
 		_snapshotList=new ArrayList<HashMap<String,Object>>();
 		
-		_pd = ProgressDialog.show(_context, "", "Retrieving the list of snapshots", true, false);
-		
 		SnapshotGrab thread = new SnapshotGrab();
 		thread.execute(this);
+	}
+	
+	public ArrayList<Snapshot> getSnapshotsBlocking(Context c) {
+		DBAdapter dbAdapter;
+		dbAdapter = new DBAdapter(c);
+		debugOut("Opening the database...");
+		dbAdapter.open();
+		debugOut("Getting the snapshots");
+		ArrayList<Snapshot> snapshots = dbAdapter.getSnapshotsMetadata();	
+		debugOut("Closing the database...");
+		dbAdapter.close();
+		debugOut("...closed");
+		return snapshots;
 	}
     
 	static final class SnapshotGrab extends AsyncTask<Context, ArrayList<Snapshot>, ArrayList<Snapshot>> {
 		SnapshotList mainActivity;
-		DBAdapter dbAdapter;
 		
 		@Override
 		protected ArrayList<Snapshot> doInBackground(Context... params) {
+			
 			mainActivity=(SnapshotList)params[0];
-			dbAdapter = new DBAdapter(mainActivity);
-			debugOut("Opening the database...");
-			dbAdapter.open();
-			debugOut("Getting the snapshots");
-			ArrayList<Snapshot> snapshots = dbAdapter.getSnapshotsMetadata();	
-			debugOut("Closing the database...");
-			dbAdapter.close();
-			debugOut("...closed");
-			return snapshots;
+			
+	        mainActivity._handler.post(new Runnable() {	// Must do this on the main UI thread...
+	            @Override
+	            public void run() {
+	            	mainActivity._pd = ProgressDialog.show(mainActivity, "", "Retrieving the list of snapshots", true, false);
+	            }
+	          });
+			
+        	return mainActivity.getSnapshotsBlocking(mainActivity);
 		}
 		
 	    @Override
@@ -209,6 +220,59 @@ public class SnapshotList extends Activity {
 		}
 	}
 	
+	public void clickedDelete(View v) {
+		debugOut("Got a click on export snapshot");
+		
+		_pd = ProgressDialog.show(_context, "", "Deleting snapshots, please wait...", true, false);
+		
+		ArrayList<Snapshot> deleteSnapshots = new ArrayList<Snapshot>();
+		for(int i=0; i<_adapter.checkBoxState.length; i++)
+			if(_adapter.checkBoxState[i])
+				deleteSnapshots.add(_snapshots.get(i));
+		
+		class DeleteThread implements Runnable { 
+			ArrayList<Snapshot> _deleteSnapshots;
+			SnapshotList mainActivity;
+			
+			public DeleteThread(Context c, ArrayList<Snapshot> snapshots) {
+				mainActivity = (SnapshotList) c;
+				_deleteSnapshots=snapshots;
+			}
+
+			@Override
+			public void run() {
+				DBAdapter dbAdapter = new DBAdapter(mainActivity);
+				dbAdapter.open();
+				for(Snapshot snapshot : _deleteSnapshots)
+					dbAdapter.deleteSnapshot(snapshot.getSnapshotTime(), snapshot.getSnapshotKey());
+		        dbAdapter.close();
+		        
+		        _handler.post(new Runnable() {	// Must do this on the main UI thread...
+		            @Override
+		            public void run() {
+		        		if(_pd!=null)
+		        			_pd.cancel();
+		        		_pd = ProgressDialog.show(mainActivity, "", "Refreshing list, please wait...", true, false);
+		            }
+		          });
+		        
+		    	mainActivity.updateListWithSnapshots(mainActivity.getSnapshotsBlocking(_context));
+		       
+		        _handler.post(new Runnable() {	// Must do this on the main UI thread...
+		            @Override
+		            public void run() {
+		        		if(_pd!=null)
+		        			_pd.cancel();
+		            }
+		          });
+			}
+		}
+
+		Runnable thread = new DeleteThread(this, deleteSnapshots);
+		new Thread(thread).start();
+	}
+	
+	
 	public void clickedExport(View v) {
 		debugOut("Got a click on export snapshot");
 		
@@ -222,10 +286,10 @@ public class SnapshotList extends Activity {
 		class ExportThread implements Runnable { 
 			ArrayList<Snapshot> _exportSnapshots;
 			private FileOutputStream data_ostream;
-			Context _context;
+			SnapshotList mainActivity;
 			
 			public ExportThread(Context c, ArrayList<Snapshot> snapshots) {
-				_context = c;
+				mainActivity = (SnapshotList) c;
 				_exportSnapshots=snapshots;
 				SimpleDateFormat format = new SimpleDateFormat("EEE-MMM-dd-HH:mm:ss-zzz-yyyy");
 				try {
@@ -235,7 +299,7 @@ public class SnapshotList extends Activity {
 
 			@Override
 			public void run() {
-				DBAdapter dbAdapter = new DBAdapter(_context);
+				DBAdapter dbAdapter = new DBAdapter(mainActivity);
 				dbAdapter.open();
 				for(Snapshot snapshot : _exportSnapshots) {
 
@@ -288,6 +352,7 @@ public class SnapshotList extends Activity {
 		        			_pd.cancel();
 		            }
 		          });
+
 			}
 		}
 

@@ -36,23 +36,31 @@
         android:layout_below="@+id/description"
 		/>
 
-	<RelativeLayout
+	<LinearLayout
         android:id="@+id/bottom"
         android:layout_width="fill_parent"
-        android:layout_height="47dip"
+        android:layout_height="54dip"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight = "true"
         android:background="@android:drawable/bottom_bar" >
 
-        <Button
-            android:id="@+id/buttonExport"
-            android:layout_marginTop="5dp"
+	    <Button
+            android:id="@+id/buttonDelete"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
+            android:layout_gravity="bottom|left"
+            android:layout_weight="1"
+            android:onClick="clickedDelete"
+            android:text="Delete Snapshots" />
+	    
+        <Button
+            android:id="@+id/buttonExport"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_weight="1"
             android:onClick="clickedExport"
-            android:text="Export Selected Snapshots" />
+            android:text="Export Snapshots" />
 
-    </RelativeLayout>
+    </LinearLayout>
 	
 </RelativeLayout>

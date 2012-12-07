@@ -153,12 +153,19 @@ public class DBAdapter {
     }
     
     //******* SNAPSHOT *************** DELETE HELPER FUNCTIONS ****************************//
-    public boolean deleteSnapshot(Date d) {
+    public void deleteSnapshot(Date d, int snapshotKey) {
     	if(d==null)
-    		return false;
+    		return;
+    	
+    	// First delete the metadata
     	ContentValues conditions = new ContentValues();
     	conditions.put("date", DBTable.dateFormat.format(d));
-    	return _tables.get(SnapshotsTable.TABLE_NAME).delete(conditions);	
+    	_tables.get(SnapshotsTable.TABLE_NAME).delete(conditions);
+    	
+    	// Now delete the entries
+    	conditions = new ContentValues();
+    	conditions.put("snapshotKey", snapshotKey);
+    	_tables.get(SnapshotsDataTable.TABLE_NAME).delete(conditions);
     }
          
     //******* DEVICE *************** WRITE HELPER FUNCTIONS ****************************//
