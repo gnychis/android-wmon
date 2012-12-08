@@ -219,8 +219,26 @@ public class MissingDevices extends Activity {
 				updateListWithInterfaces((ArrayList<Interface>) _scanResult, 0);
 
 			//************************** DEVICE RESULTS *************************//
-			if(_resultType == ScanManager.ResultType.DEVICES)
-				updateListWithDevices((ArrayList<Device>) _scanResult);
+			if(_resultType == ScanManager.ResultType.DEVICES) {
+				ArrayList<Device> activeDevices = (ArrayList<Device>) _scanResult;
+				ArrayList<Device> allDevices = new ArrayList<Device>(activeDevices);
+				DBAdapter dbAdapter = new DBAdapter(_context);
+				dbAdapter.open();
+				_internalDevices = dbAdapter.getInternalDevices();
+				dbAdapter.close();
+				
+				// Now, for each internal device that is not in the activeDevices, add it
+				for(Device internal : _internalDevices) {
+					boolean alreadyInList=false;
+					for(Device active : activeDevices)
+						if(active.getKey()==internal.getKey())
+							alreadyInList=true;
+					if(!alreadyInList)
+						allDevices.add(internal);
+				}
+				
+				updateListWithDevices(allDevices);	
+			}
 			
 			if(_pd!=null)			// If there is a progress dialog up, cancel it
 				_pd.dismiss();

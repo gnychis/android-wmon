@@ -56,12 +56,12 @@
 
 	   <Button
 	       android:id="@+id/buttonRescan"
-	       android:layout_width="250dip"
+	       android:layout_width="400dip"
 	       android:layout_height="wrap_content"
 	       android:layout_gravity="bottom|right"
 	       android:layout_weight="1"
 	       android:onClick="clickedRescan"
-	       android:text="Save &amp; Rescan" />
+	       android:text="Scan For Nearby Device" />
 	    
         <Button
             android:id="@+id/buttonContinue"
@@ -70,7 +70,7 @@
             android:layout_gravity="bottom|right"
             android:layout_weight="1"
             android:onClick="clickedFinish"
-            android:text="Save and continue ..." />
+            android:text="My list is complete!" />
 
     </LinearLayout>
 

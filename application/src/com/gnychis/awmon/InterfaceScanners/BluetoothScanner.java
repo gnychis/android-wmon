@@ -20,9 +20,12 @@ public class BluetoothScanner extends InterfaceScanner {
 	private static final String TAG = "BluetoothDeviceScanner";
 	private static boolean VERBOSE=true;
 	
+	private static final int NUM_SCANS=3;
+	
 	public BluetoothAdapter _bluetooth;
 	
 	boolean _bt_scan_complete;
+	int _scansLeft;
 	ArrayList<Interface> _scanResult;
 	
 	public BluetoothScanner(Context c) {
@@ -41,6 +44,7 @@ public class BluetoothScanner extends InterfaceScanner {
 		_hw_device._parent.registerReceiver(bluetoothReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
 		_hw_device._parent.registerReceiver(bluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		_bluetooth.startDiscovery();
+		_scansLeft=NUM_SCANS-1;
 		
 		_scanResult = new ArrayList<Interface>();
 		
@@ -70,8 +74,13 @@ public class BluetoothScanner extends InterfaceScanner {
     			_scanResult.add(dev);
     		}
     		
-    		if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
-    			_bt_scan_complete=true;
+    		if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {	
+    			if(_scansLeft>0) {
+    				_bluetooth.startDiscovery();
+    				_scansLeft--;
+    			} else {
+    				_bt_scan_complete=true;
+    			}
     		}
     	}
     };  
