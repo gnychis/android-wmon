@@ -100,6 +100,11 @@ public class SSDP extends NameResolver {
 	    		
 	    		if(iface._IP!=null && iface._IP.equals(IP)) {
 	    			
+	    			if(iface._ifaceName==null) {
+	    				_manufacturers.add(iface.cleanOUIname());
+	    				_resolved++;
+	    			}
+	    			
 	    			iface._ifaceName = device.getDetails().getFriendlyName();
 
 	    			// If it happens to be a gateway device (AP), give it the DisplayString...

@@ -51,8 +51,11 @@ public class OUI extends NameResolver {
 		for(Interface iface : supportedInterfaces) {
 			String macPrefix = iface._MAC.replace("-", "").replace(":", "").substring(0, 5).toUpperCase();
 			String companyName = _ouiTable.get(macPrefix);
-			if(companyName!=null)
-				iface._ouiName = companyName; 
+			if(companyName!=null) {
+				if(iface._ouiName==null)
+					_resolved++;
+				iface._ouiName = companyName;
+			}
 		}
 		return supportedInterfaces;
 	}

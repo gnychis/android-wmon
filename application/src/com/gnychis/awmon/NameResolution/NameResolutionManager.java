@@ -1,11 +1,17 @@
 package com.gnychis.awmon.NameResolution;
 
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,6 +23,8 @@ import com.gnychis.awmon.DeviceAbstraction.Interface;
 
 @SuppressWarnings("unchecked")
 public class NameResolutionManager {
+	
+	public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); 
 
 	private static final String TAG = "NameResolutionManager";
 	private static final boolean VERBOSE = true;
@@ -28,6 +36,10 @@ public class NameResolutionManager {
 	Queue<Class<?>> _pendingResults;
 	Stack<Class<?>> _nameResolverQueue;	// These should be kept in a heirarchy such that
 										// it would be OK if the next resolver overwrote previous.
+	
+	FileOutputStream _data_ostream;
+	JSONArray _resolutionStats;
+	JSONObject _overallStats;
 	
 	State _state;
 	public enum State {
@@ -80,6 +92,12 @@ public class NameResolutionManager {
         													DNSHostName.class,
         													OUI.class));
         				
+        				try {
+        					_resolutionStats = new JSONArray(); 
+    	    				_overallStats = new JSONObject();
+    	    				_overallStats.put("interfaces", interfaces.size());
+        				} catch(Exception e) {}
+        				
         				triggerNextNameResolver(interfaces);
         			}
         		break;
@@ -95,7 +113,33 @@ public class NameResolutionManager {
         	        	_pendingResults.remove(resolverType);
         	        	triggerNextNameResolver(interfaces);
         	        	
+        	        	// Add the stats for this merge
+        	        	try {
+    	    	        	JSONObject mergeStat = new JSONObject();
+    	    	        	mergeStat.put("name", resolverType.toString());
+    	    	        	mergeStat.put("resolved", (Integer)intent.getExtras().get("resolved"));
+    	    	        	mergeStat.put("given", (Integer)intent.getExtras().get("given"));
+    	    	        	mergeStat.put("supported", (Integer)intent.getExtras().get("supported"));
+    	    	        	ArrayList<String> manufacturers = (ArrayList<String>)intent.getExtras().get("manufacturers");
+    	    	        	JSONArray jsonManus = new JSONArray();
+    	    	        	for(String manu : manufacturers)
+    	    	        		if(manu!=null)
+    	    	        			jsonManus.put(manu);
+    	    	        	mergeStat.put("manufacturers", jsonManus);
+    	    	        	_resolutionStats.put(mergeStat);
+        	        	} catch(Exception e) { }
+        	        	
         	        	if(_pendingResults.size()==0) {
+        	        		
+            				try {
+            					_data_ostream = _parent.openFileOutput("naming_activity.json", Context.MODE_WORLD_READABLE | Context.MODE_APPEND);
+            					_overallStats.put("date", dateFormat.format(new Date()));
+            					_overallStats.put("resolvers", _resolutionStats);
+            					_data_ostream.write(_overallStats.toString().getBytes());
+            					_data_ostream.write("\n".getBytes()); 
+            					_data_ostream.close();
+            				} catch(Exception e) {  }	
+        	        		
         	        		Intent i = new Intent();
         	        		i.setAction(NAME_RESOLUTION_RESPONSE);
         	        		i.putExtra("result", interfaces);

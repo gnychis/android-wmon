@@ -1,11 +1,15 @@
 package com.gnychis.awmon.GUIs;
 
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -53,6 +57,8 @@ import com.gnychis.awmon.NameResolution.SSDP;
  * @author George Nychis (gnychis)
  */
 public class YourDevices extends Activity {
+	
+	public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); 
 
 	public static final String TAG = "YourDevices";
 	public static final boolean VERBOSE = true;
@@ -478,6 +484,32 @@ public class YourDevices extends Activity {
     				startScan();
     			
     			if(_nextWindow) {
+    				
+    				FileOutputStream data_ostream;
+    				try {
+    					data_ostream = _context.openFileOutput("your_devices_activity.json", Context.MODE_WORLD_READABLE | Context.MODE_APPEND);
+    				
+    					JSONObject json = new JSONObject();
+    					
+    					json.put("date", dateFormat.format(new Date()));
+    					
+    					int checked=0;
+    					int unchecked=0;
+    					for(int i=0; i<_adapter.checkBoxState.length; i++)
+    						if(_adapter.checkBoxState[i])
+    							checked++;
+    						else
+    							unchecked++;				
+    					json.put("checked", checked);
+    					json.put("unchecked", unchecked);
+    					json.put("total", checked+unchecked);
+    					
+    					data_ostream.write(json.toString().getBytes());
+    					data_ostream.write("\n".getBytes()); 
+    					data_ostream.close();
+    				
+    				} catch(Exception e) {  }	
+    				
 	    			_handler.post(new Runnable() {	// Must do this on the main UI thread...
 	    				@Override
 	    				public void run() {						

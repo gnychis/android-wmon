@@ -16,14 +16,14 @@
         android:textStyle="italic" />
        
         <TextView
-        android:id="@+id/description"
-        android:layout_below="@+id/heading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-       	android:layout_marginLeft="10dp"
-	    android:layout_marginTop="10dp"
-        android:text="    Place a checkmark next to devices that belong to you.  We will address devices missing from this list in the next step!"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:id="@+id/description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/heading"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:text="    For each device, set the phone down next to it and then click the device in the list.  It will perform a short scan and allow you to rename the device.  Once you have done this for each device, training is complete!"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
       
 	<ListView
         android:id="@android:id/list"

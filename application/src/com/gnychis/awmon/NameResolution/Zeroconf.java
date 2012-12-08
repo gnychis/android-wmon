@@ -135,9 +135,15 @@ public class Zeroconf extends NameResolver {
 	private void namingResponse(String name, String IP) {
 		debugOut("Resolved Name: " + name + "  Address: " + IP);
 
-		for(Interface iface : _supportedInterfaces)
-			if(iface._IP!=null && iface._IP.equals(IP) && iface._ifaceName==null)	// we found the interface, and the name is null
+		for(Interface iface : _supportedInterfaces) {
+			if(iface._IP!=null && iface._IP.equals(IP) && iface._ifaceName==null) {	// we found the interface, and the name is null
+				if(iface._ifaceName==null) {
+					_manufacturers.add(iface.cleanOUIname());
+					_resolved++;
+				}
 				iface._ifaceName = name;	// name it
+			}
+		}
 	}
 
 	// This function reads through the services listed in the mdns_sevice_types.txt, as well

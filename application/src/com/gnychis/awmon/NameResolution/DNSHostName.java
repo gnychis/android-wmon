@@ -70,8 +70,11 @@ public class DNSHostName extends NameResolver {
 				                
 				                  PTRRecord ptr = (PTRRecord) records[i];
 				                  String hostname = ptr.rdataToString().substring(0, ptr.rdataToString().length()-6);
+						          if(iface._ifaceName==null) {
+						        	  _manufacturers.add(iface.cleanOUIname());
+						        	  _resolved++;
+						          }
 						          iface._ifaceName=hostname;	// Otherwise, you get the basic hostname
-						          
 				                  debugOut("Mapped " + iface._IP + " <---> " + hostname);
 				                }
 				              }

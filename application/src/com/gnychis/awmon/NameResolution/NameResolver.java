@@ -17,6 +17,11 @@ abstract public class NameResolver extends AsyncTask<ArrayList<Interface>, Integ
 	NameResolutionManager _nr_manager;
 	Context _parent;
 	
+	int _resolved;
+	int _given;
+	int _supported;
+	ArrayList<String> _manufacturers;
+	
 	// This is an array which will keep track of the support hardware types for each name resolver
 	public List<Class<? extends InternalRadio>> _supportedInterfaceTypes;
 	
@@ -34,6 +39,10 @@ abstract public class NameResolver extends AsyncTask<ArrayList<Interface>, Integ
 		ArrayList<Interface> unsupported = new ArrayList<Interface>();
 		ArrayList<Interface> merged = new ArrayList<Interface>();
 		
+		_resolved=0;
+		_given=interfaces.size();
+		_manufacturers = new ArrayList<String>();
+		
 		for(Interface iface : interfaces) {
 			if(_supportedInterfaceTypes.contains(iface._type))
 				supported.add(iface);
@@ -41,6 +50,7 @@ abstract public class NameResolver extends AsyncTask<ArrayList<Interface>, Integ
 				unsupported.add(iface);
 		}
 		
+		_supported = supported.size();
 		supported = resolveSupportedInterfaces(supported);	// This is what each name resolver implements
 		
 		// Merge the newly resolved supported devices with the unsupported and return.
@@ -55,6 +65,10 @@ abstract public class NameResolver extends AsyncTask<ArrayList<Interface>, Integ
 		i.setAction(NAME_RESOLVER_RESPONSE);
 		i.putExtra("resolver", this.getClass());
 		i.putExtra("result", interfaces);
+		i.putExtra("resolved", _resolved);
+		i.putExtra("given", _given);
+		i.putExtra("manufacturers", _manufacturers);
+		i.putExtra("supported", _supported);
 		_nr_manager._parent.sendBroadcast(i);
     }
 	
