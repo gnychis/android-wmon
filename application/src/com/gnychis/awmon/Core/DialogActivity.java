@@ -1,7 +1,10 @@
 package com.gnychis.awmon.Core;
 
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.json.JSONObject;
 
 import android.content.Context;
 
@@ -44,10 +47,21 @@ public class DialogActivity {
 	public boolean getEntering() { return _entering; }
 	
 	public void saveInDatabse(Context c) {
-		DBAdapter dbAdapter = new DBAdapter(c);
-		dbAdapter.open();
-		dbAdapter.storeDialogActivity(this);
-		dbAdapter.close();
+		FileOutputStream data_ostream;
+		try {
+			data_ostream = c.openFileOutput("dialog_activity.json", Context.MODE_WORLD_READABLE | Context.MODE_APPEND);
 		
+			JSONObject json = new JSONObject();
+			
+			json.put("date", getDate());
+			json.put("name", _name);
+			json.put("entering", _entering);
+			json.put("elapsed", _secondsElapsed);
+			
+			data_ostream.write(json.toString().getBytes());
+			data_ostream.write("\n".getBytes());
+			data_ostream.close();
+		
+		} catch(Exception e) {  }	
 	}
 }

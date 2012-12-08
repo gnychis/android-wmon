@@ -34,7 +34,7 @@ public class DBAdapter {
     
     private static final String TAG = "DBAdapter";	// for debugging
     private static final String DATABASE_NAME = "awmon";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     
     public enum NameUpdate {
     	DO_NOT_UPDATE,	// Leave the naming alone
@@ -52,8 +52,6 @@ public class DBAdapter {
     	_tables.put(WiredIfaceTable.TABLE_NAME,		new WiredIfaceTable(this));
     	_tables.put(WirelessIfaceTable.TABLE_NAME,	new WirelessIfaceTable(this));
     	_tables.put(SnapshotsDataTable.TABLE_NAME,	new SnapshotsDataTable(this));
-    	_tables.put(DialogActivityTable.TABLE_NAME, new DialogActivityTable(this));
-    	_tables.put(FilterActivityTable.TABLE_NAME, new FilterActivityTable(this));
     }
     
     public DBAdapter(Context ctx) 
@@ -171,17 +169,6 @@ public class DBAdapter {
     	conditions = new ContentValues();
     	conditions.put("snapshotKey", snapshotKey);
     	_tables.get(SnapshotsDataTable.TABLE_NAME).delete(conditions);
-    }
-    
-    // STATS
-    public void storeDialogActivity(DialogActivity activity) {
-    	_tables.get(DialogActivityTable.TABLE_NAME).insert(activity);
-    }
-    public void storeFilterActivity(FilterActivity activity) {
-    	_tables.get(FilterActivityTable.TABLE_NAME).insert(activity);
-    }
-    public void storeMergeActivity(MergeActivity activity) {
-    	_tables.get(MergeActivityTable.TABLE_NAME).insert(activity);
     }
          
     //******* DEVICE *************** WRITE HELPER FUNCTIONS ****************************//

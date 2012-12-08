@@ -45,6 +45,8 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 		_parent = c;
 	}
 	
+	int _connected;
+	
 	@Override
 	protected InterfaceConnectivityGraph doInBackground( InterfaceConnectivityGraph ... params )
 	{
@@ -63,8 +65,7 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 
 		// Now, apply the classification done by the heuristic to the graph
 		debugOut("Updating the graph from the classifications done by " + this.getClass().getName());
-		int connected = graph.applyHeuristicClassification(classifications);
-		(new MergeActivity(this.getClass().getName(), connected)).saveInDatabse(_parent);
+		_connected = graph.applyHeuristicClassification(classifications);
 		debugOut("... done");
 		
 		//try { Thread.sleep(2500); } catch(Exception e) { }   // FIXME
@@ -77,6 +78,7 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 		i.setAction(MERGE_HEURISTIC_RESPONSE);
 		i.putExtra("heuristic", this.getClass());
 		i.putExtra("result", graph);
+		i.putExtra("connected", _connected);
 		_parent.sendBroadcast(i);
     	debugOut("Finished the heuristic for " + this.getClass().getName() + ", sent broadcast");
     }
