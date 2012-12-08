@@ -1,6 +1,7 @@
 package com.gnychis.awmon.GUIs;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import android.app.Activity;
@@ -35,6 +36,8 @@ public class MainInterface extends Activity implements OnClickListener {
 	public static String _app_name = "com.gnychis.awmon";
 	public static final String THREAD_MESSAGE = "awmon.thread.message";
 	public static final boolean VERBOSE = true;
+	
+    Date _activityStartTime;
 	
 	// Internal Android mechanisms for settings/storage
 	public UserSettings _settings;

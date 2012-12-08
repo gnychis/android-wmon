@@ -58,6 +58,7 @@ public class MissingDevices extends Activity {
 	public static final String TAG = "YourDevices";
 	public static final boolean VERBOSE = true;
     private Context _context;
+    Date _activityStartTime;
 
 	ArrayList<HashMap<String, Object>> _deviceList;		// This is bound to the actual list			
 	ArrayList<Device> _devices;							// To keep track of our current device list

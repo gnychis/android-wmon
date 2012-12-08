@@ -31,6 +31,7 @@ import android.widget.TextView;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.ScanManager;
+import com.gnychis.awmon.Core.DialogActivity;
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Database.DBAdapter;
 import com.gnychis.awmon.Database.DBAdapter.NameUpdate;
@@ -56,6 +57,7 @@ public class YourDevices extends Activity {
 	public static final String TAG = "YourDevices";
 	public static final boolean VERBOSE = true;
     private Context _context;
+    Date _activityStartTime;
 
 	ArrayList<HashMap<String, Object>> _deviceList;		// This is bound to the actual list			
 	ArrayList<Device> _devices;							// To keep track of our current device list
@@ -129,13 +131,16 @@ public class YourDevices extends Activity {
 	
 	@Override
 	public void onResume() {
-		super.onResume();		
+		super.onResume();	
+		_activityStartTime = new Date();
+		(new DialogActivity(TAG, true)).saveInDatabse(this);
 		registerReceivers();
 	}
 	
 	@Override
 	public void onPause() {
 		super.onPause();
+		(new DialogActivity(TAG, false, _activityStartTime, new Date())).saveInDatabse(this);
 		unregisterReceiver(_deviceScanReceiver);
 		unregisterReceiver(incomingEvent);
 	}	

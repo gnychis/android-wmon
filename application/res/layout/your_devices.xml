@@ -43,6 +43,7 @@
         android:layout_alignParentBottom="true"
         android:background="@android:drawable/bottom_bar" >
 
+	    <!--
 	   <Button
 	       android:id="@+id/buttonRescan"
 	       android:layout_width="250dip"
@@ -51,7 +52,7 @@
 	       android:layout_weight="1"
 	       android:onClick="clickedRescan"
 	       android:text="Save &amp; Rescan" />
-	    
+	      -->
         <Button
             android:id="@+id/buttonContinue"
             android:layout_width="fill_parent"
@@ -59,7 +60,7 @@
             android:layout_gravity="bottom|right"
             android:layout_weight="1"
             android:onClick="clickedFinish"
-            android:text="Save and continue ..." />
+            android:text="Save selections and address missing devices ..." />
 
     </LinearLayout>
 

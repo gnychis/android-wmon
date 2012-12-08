@@ -19,6 +19,7 @@ public class DialogActivityTable extends DBTable {
     		new Field("date",			Date.class,		true, false),		// The date/time this information was recorded
     		new Field("name",			String.class,   true, false),		// A name for the snapshot
     		new Field("entering",		Integer.class,	true, false),
+    		new Field("elapsed", 		Integer.class,	false, false),
     		new Field("activityKey", 	Integer.class,  true, true)
     		);	// "anchor" is a key from an interface
 		
@@ -54,6 +55,9 @@ public class DialogActivityTable extends DBTable {
 
     		if(field._fieldName=="entering")
     			header.put(key, (dialogActivity.getEntering()) ? 1 : 0);
+    		
+    		if(field._fieldName=="elapsed")
+    			header.put(key, dialogActivity.getElapsed());
 
     	}
     	

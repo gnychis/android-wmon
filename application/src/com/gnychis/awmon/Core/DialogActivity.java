@@ -14,11 +14,24 @@ public class DialogActivity {
 	String _name;
 	boolean _entering;
 	Date _date;
+	int _secondsElapsed;
 	
 	public DialogActivity(String name, boolean entering) {
 		_name = name;
 		_entering = entering;
 		_date = new Date();
+		_secondsElapsed=-1;
+	}
+	
+	public DialogActivity(String name, boolean entering, Date start, Date end) {
+		_name = name;
+		_entering = entering;
+		_date = new Date();		
+		_secondsElapsed=(int)((end.getTime()-start.getTime())/1000);
+	}
+	
+	public int getElapsed() {
+		return _secondsElapsed;
 	}
 	
 	public String getDate() {

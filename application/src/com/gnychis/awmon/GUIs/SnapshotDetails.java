@@ -2,6 +2,7 @@ package com.gnychis.awmon.GUIs;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 
 import android.app.Activity;
@@ -29,6 +30,7 @@ public class SnapshotDetails extends Activity {
 	private static final String TAG = "SnapshotDetails";
 	private static final boolean VERBOSE = true;
     private Context _context;
+    Date _activityStartTime;
 	
 	public String _date;
 	

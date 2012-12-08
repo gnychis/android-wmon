@@ -26,10 +26,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.gnychis.awmon.R;
+import com.gnychis.awmon.Core.DialogActivity;
 import com.gnychis.awmon.Core.UserSettings;
 import com.nullwire.trace.ExceptionHandler;
 
 public class Welcome extends Activity {
+
+	private final String TAG = "Welcome";
 	
     Spinner netlist;
 	private UserSettings _settings;
@@ -236,10 +239,16 @@ public class Welcome extends Activity {
       };
       
       @Override
-      public void onPause() { super.onPause(); Log.d("AWMonWelcome", "onPause()"); }
+      public void onPause() { 
+    	  super.onPause(); 
+    	  Log.d("AWMonWelcome", "onPause()"); 
+    	  (new DialogActivity(TAG, false)).saveInDatabse(this);
+      }
+      
       @Override
       public void onResume() { super.onResume(); 
       	Log.d("AWMonWelcome", "onResume()");
+      	(new DialogActivity(TAG, true)).saveInDatabse(this);
       	if((_update_thread.getStatus() == AsyncTask.Status.RUNNING) || _update_thread.getStatus() == AsyncTask.Status.PENDING)
       		return;
         _update_thread = new UpdateInterface();

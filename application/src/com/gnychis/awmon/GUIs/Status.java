@@ -1,6 +1,7 @@
 package com.gnychis.awmon.GUIs;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -23,6 +24,7 @@ public class Status extends Activity implements OnClickListener {
 	
 	UserSettings _settings;
 	WifiManager _wifi;
+    Date _activityStartTime;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

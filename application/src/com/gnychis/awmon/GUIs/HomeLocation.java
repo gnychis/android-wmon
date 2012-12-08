@@ -1,6 +1,7 @@
 package com.gnychis.awmon.GUIs;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -37,6 +38,8 @@ public class HomeLocation extends MapActivity {
 	
 	static final String TAG = "HomeLocation";
 	static final boolean VERBOSE=true;
+	
+    Date _activityStartTime;
 	
     private MapView mapView;
     Drawable drawable;

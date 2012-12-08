@@ -37,6 +37,7 @@ public class SnapshotList extends Activity {
 	public static final String TAG = "SnapshotList";
 	public static final boolean VERBOSE = true;
     private Context _context;
+    Date _activityStartTime;
     
 	ArrayList<HashMap<String, Object>> _snapshotList;	// This is bound to the actual list		
 	CustomAdapter _adapter;								// An adapter to our device list

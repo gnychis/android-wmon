@@ -35,6 +35,7 @@ import com.gnychis.awmon.Core.Snapshot;
 public class Measurements extends Activity {
 
 	private static final String TAG = "Measurements";
+    Date _activityStartTime;
 
 	WifiManager _wifi;
 
