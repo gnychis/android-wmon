@@ -20,7 +20,7 @@ public class DialogActivityTable extends DBTable {
     		new Field("name",			String.class,   true, false),		// A name for the snapshot
     		new Field("entering",		Integer.class,	true, false),
     		new Field("elapsed", 		Integer.class,	false, false),
-    		new Field("activityKey", 	Integer.class,  true, true)
+    		new Field("activityKey", 	Integer.class,  true, false)
     		);	// "anchor" is a key from an interface
 		
 	public DialogActivityTable(DBAdapter dba) {

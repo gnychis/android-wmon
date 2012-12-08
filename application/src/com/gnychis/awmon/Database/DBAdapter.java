@@ -14,6 +14,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.gnychis.awmon.Core.DialogActivity;
+import com.gnychis.awmon.Core.FilterActivity;
+import com.gnychis.awmon.Core.MergeActivity;
 import com.gnychis.awmon.Core.Snapshot;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Interface;
@@ -51,6 +53,7 @@ public class DBAdapter {
     	_tables.put(WirelessIfaceTable.TABLE_NAME,	new WirelessIfaceTable(this));
     	_tables.put(SnapshotsDataTable.TABLE_NAME,	new SnapshotsDataTable(this));
     	_tables.put(DialogActivityTable.TABLE_NAME, new DialogActivityTable(this));
+    	_tables.put(FilterActivityTable.TABLE_NAME, new FilterActivityTable(this));
     }
     
     public DBAdapter(Context ctx) 
@@ -170,8 +173,15 @@ public class DBAdapter {
     	_tables.get(SnapshotsDataTable.TABLE_NAME).delete(conditions);
     }
     
+    // STATS
     public void storeDialogActivity(DialogActivity activity) {
     	_tables.get(DialogActivityTable.TABLE_NAME).insert(activity);
+    }
+    public void storeFilterActivity(FilterActivity activity) {
+    	_tables.get(FilterActivityTable.TABLE_NAME).insert(activity);
+    }
+    public void storeMergeActivity(MergeActivity activity) {
+    	_tables.get(MergeActivityTable.TABLE_NAME).insert(activity);
     }
          
     //******* DEVICE *************** WRITE HELPER FUNCTIONS ****************************//
@@ -582,7 +592,15 @@ public class DBAdapter {
     public DBAdapter open() throws SQLException 
     {
     	debugOut("Populated the tables, now creating the DatabaseHelper");
-        db = DBHelper.getWritableDatabase();
+    	while(true) {
+	    	try {
+	    		db = DBHelper.getWritableDatabase();
+	    		Thread.sleep(100);
+	    		break;
+	    	} catch(Exception e) {
+	    		Log.e("STUCK", "We are stuck!!!",e);
+	    	}
+    	}
         
         return this;
     }

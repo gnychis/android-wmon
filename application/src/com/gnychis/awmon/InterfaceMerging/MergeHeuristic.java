@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.gnychis.awmon.Core.MergeActivity;
 import com.gnychis.awmon.DeviceAbstraction.InterfacePair;
 import com.gnychis.awmon.HardwareHandlers.InternalRadio;
 
@@ -62,9 +63,10 @@ public abstract class MergeHeuristic extends AsyncTask<InterfaceConnectivityGrap
 
 		// Now, apply the classification done by the heuristic to the graph
 		debugOut("Updating the graph from the classifications done by " + this.getClass().getName());
-		graph.applyHeuristicClassification(classifications);
+		int connected = graph.applyHeuristicClassification(classifications);
+		(new MergeActivity(this.getClass().getName(), connected)).saveInDatabse(_parent);
 		debugOut("... done");
-
+		
 		//try { Thread.sleep(2500); } catch(Exception e) { }   // FIXME
 		return graph;
 	}

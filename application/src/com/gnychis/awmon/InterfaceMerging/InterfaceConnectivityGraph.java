@@ -71,7 +71,9 @@ public class InterfaceConnectivityGraph implements Parcelable {
 	 * and then modify the graph (connect/disconnect edges) based on it.
 	 * @param classifications a map of classifications that are returned from a merge heuristic
 	 */
-	public void applyHeuristicClassification(Map<InterfacePair,MergeStrength> classifications) {
+	public int applyHeuristicClassification(Map<InterfacePair,MergeStrength> classifications) {
+		
+		int num_connected=0;
 		
 		// For all hashKeys of all the interface pairs, update the links
 		for(InterfacePair pair : classifications.keySet()) {
@@ -85,6 +87,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 				case LIKELY:
 					incrementPositiveWeight(pair);
 					connect(pair);
+					num_connected++;
 					debugOut("Connecting " + left._ifaceName + " and " + right._ifaceName);
 				break;
 				
@@ -110,6 +113,7 @@ public class InterfaceConnectivityGraph implements Parcelable {
 				break;
 			}
 		}
+		return num_connected;
 	}
 	
 	/** Removes an interface from the connectivity graph.

@@ -117,7 +117,7 @@ public class YourDevices extends Activity {
 					}
 				});
 			}
-		}, 500);		// Wait one scan time on the home AP's channel
+		}, 1000);
 	}
 	
 	public void registerReceivers() {

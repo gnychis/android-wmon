@@ -28,7 +28,7 @@ import com.gnychis.awmon.HardwareHandlers.Wifi;
 public class WifiScanner extends InterfaceScanner {
 
 	final String TAG = "WifiScanner";
-	private static final boolean VERBOSE = true;
+	private static final boolean VERBOSE = false;
 	public static final String WIFI_SCAN_RESULT = MainInterface._app_name + ".WIFI_SCAN_RESULT";
 	static int WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP = 23;
 	static int WTAP_ENCAP_ETHERNET = 1;
@@ -38,7 +38,7 @@ public class WifiScanner extends InterfaceScanner {
 	private Pcap _moni0_pcap;
 	private int _timer_counts;		// to know how many timer ticks are left before scan over
 	
-	public static final boolean PCAP_DUMP = true;
+	public static final boolean PCAP_DUMP = false;
 	DataOutputStream _pcap_dump; 
 	
 	UserSettings _settings;

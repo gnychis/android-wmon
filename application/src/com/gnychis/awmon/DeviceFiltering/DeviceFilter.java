@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.gnychis.awmon.Core.FilterActivity;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 
 /**
@@ -55,9 +56,11 @@ public abstract class DeviceFilter extends AsyncTask<ArrayList<Device>, Integer,
 
 		// Now, apply the classification done by the heuristic to the graph
 		debugOut("Updating the device list based on the classifications done by " + this.getClass().getName());
+		int before = devices.size();
 		for(Device filteredDev : filteredDevices)
 			devices.remove(filteredDev);
 		debugOut("... done");
+		(new FilterActivity(before, before-devices.size())).saveInDatabse(_parent);
 		
 		//try { Thread.sleep(10000); } catch(Exception e) {} // FIXME 
 
