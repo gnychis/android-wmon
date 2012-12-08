@@ -103,6 +103,9 @@ public class Device implements Parcelable {
 		if(wiredToNetwork(_settings.getHomeWifiMAC()))
 			return "On your network via an Ethernet cable";
 		
+		if(getName().equals("Creative D200"))
+			return "Wireless Peripheral (Audio/Video)";
+		
 		// Otherwise, return a manufacturer...
 		return "Manufacturer: " + getManufacturer();		
 	}

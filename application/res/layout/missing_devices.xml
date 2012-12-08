@@ -23,7 +23,18 @@
         android:layout_height="wrap_content"
        	android:layout_marginLeft="10dp"
 	    android:layout_marginTop="10dp"
-        android:text="    Place a checkmark next to devices that belong to you.  We will address devices missing from this list in the next step!"
+        android:text="    If you believe any devices are missing from your list below, take the phone and set it down next to the device you think is missing and click re-scan."
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+       <TextView
+        android:id="@+id/bluetooth"
+        android:layout_below="@+id/description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+       	android:layout_marginLeft="10dp"
+	    android:layout_marginTop="10dp"
+	    android:onClick="clickedBluetooth"
+        android:text="    Click here about Bluetooth devices."
         android:textAppearance="?android:attr/textAppearanceMedium" />
       
 	<ListView
@@ -33,7 +44,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:fadeScrollbars="false"
-        android:layout_below="@+id/description"
+        android:layout_below="@+id/bluetooth"
 		/>
 	
 	<LinearLayout

@@ -8,10 +8,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -51,7 +53,7 @@ import com.gnychis.awmon.NameResolution.SSDP;
  * 
  * @author George Nychis (gnychis)
  */
-public class YourDevices extends Activity {
+public class MissingDevices extends Activity {
 
 	public static final String TAG = "YourDevices";
 	public static final boolean VERBOSE = true;
@@ -71,7 +73,7 @@ public class YourDevices extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.your_devices);
+		setContentView(R.layout.missing_devices);
 		_context = this;
 
 		_handler = new Handler();
@@ -81,12 +83,45 @@ public class YourDevices extends Activity {
 		_internalDevices = dbAdapter.getInternalDevices();
 		dbAdapter.close();
 		
+		final TextView view = (TextView) findViewById(R.id.bluetooth);
+		view.setOnClickListener(new View.OnClickListener() {
+
+		  @Override
+		  public void onClick(View v) {
+		    clickedBluetooth();
+		  }
+
+		});
+		
 		if(_internalDevices.size()==0) {
 			startScan();
 		} else {
 			_resultType = ScanManager.ResultType.DEVICES;
 			updateListWithDevices(_internalDevices);
 		}
+	}
+	
+	public void clickedBluetooth() {
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+		// set title
+		//alertDialogBuilder.setTitle("About Bluetooth Devices");
+
+		// set dialog message
+		alertDialogBuilder
+		.setMessage("If certain Bluetooth devices are missing from this list (e.g., keyboards, wireless headsets), please put them in to discovery mode and then click re-scan.  This usually involves holding down the power button (or pairing button) on the Bluetooth device until the power light on it starts flashing. Once the light starts flashing, click rescan.")
+		.setCancelable(false)
+		.setPositiveButton("OK",new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog,int id) {
+				dialog.cancel();
+			}
+		});
+
+		// create alert dialog
+		AlertDialog alertDialog = alertDialogBuilder.create();
+
+		// show it
+		alertDialog.show();
 	}
 	
 	public void startScan() {
@@ -425,15 +460,15 @@ public class YourDevices extends Activity {
 	
 	public void clickedRescan(View v) {
 		debugOut("Got a reclick");
-		saveDeviceSelections(true,false);
+		saveDeviceSelections(true);
 	}
 	
 	public void clickedFinish(View v) {
 		debugOut("Got a click on finished");
-		saveDeviceSelections(false, true);
+		saveDeviceSelections(false);
 	}
 	
-	void saveDeviceSelections(boolean triggerScan, boolean nextWindow) {
+	void saveDeviceSelections(boolean triggerScan) {
 		_pd = ProgressDialog.show(_context, "", "Storing your selections, please wait...", true, false);
 		
 		for(int i=0; i<_adapter.checkBoxState.length; i++) {
@@ -446,12 +481,10 @@ public class YourDevices extends Activity {
 		class UpdateDevicesThread implements Runnable { 
 			ArrayList<Device> _devices;
 			boolean _triggerScan;
-			boolean _nextWindow;
 			
-			public UpdateDevicesThread(ArrayList<Device> devices, boolean triggerScan, boolean nextWindow) {
+			public UpdateDevicesThread(ArrayList<Device> devices, boolean triggerScan) {
 				_devices = devices;
 				_triggerScan=triggerScan;
-				_nextWindow=nextWindow;
 			}
 			
 			@Override
@@ -471,27 +504,16 @@ public class YourDevices extends Activity {
     				_pd.cancel();
     			if(_triggerScan)
     				startScan();
-    			
-    			if(_nextWindow) {
-	    			_handler.post(new Runnable() {	// Must do this on the main UI thread...
-	    				@Override
-	    				public void run() {						
-	    	    			Intent i = new Intent(YourDevices.this, MissingDevices.class);
-	    	    	        startActivity(i);
-	    	    	    	finish();
-	    				}
-	    			});
-    			}
 			}
 		}
 		
-		UpdateDevicesThread thread = new UpdateDevicesThread(_devices, triggerScan, nextWindow);
+		UpdateDevicesThread thread = new UpdateDevicesThread(_devices, triggerScan);
 		new Thread(thread).start();
 	}
 
 	@Override
 	public void onBackPressed() {
-		Intent i = new Intent(YourDevices.this, TurnDevicesOn.class);
+		Intent i = new Intent(MissingDevices.this, TurnDevicesOn.class);
 		startActivity(i);
 		finish();
 	}

@@ -46,6 +46,9 @@ public class Measurements extends Activity {
 
 	Context _context;
 	String _name;
+	
+	int _scansLeft;
+	ScanRequest _workingRequest;
 
 	State _state;
 	public enum State {
@@ -123,17 +126,59 @@ public class Measurements extends Activity {
 
 		alert.show();
 	}
+	
+	public void clickedMultiSnapshot(View v) {
+
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+		alert.setTitle("Snapshot Name");
+		alert.setMessage("Choose a name for the snapshot");
+
+		// Set an EditText view to get user input 
+		final EditText input = new EditText(this);
+		alert.setView(input);
+		input.setText("5 " + _name);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				int numScans = Integer.parseInt(input.getText().toString().split(" ")[0]);
+				String name = input.getText().toString().substring(input.getText().toString().indexOf(" "));
+				triggerMultiSnapshot(name, numScans);
+			}
+		});
+
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+			}
+		});
+
+		alert.show();
+	}
 
 	public void triggerSnapshot(String name) {
 		_state = State.SNAPSHOT;
 		_name=name;
 		_pd = ProgressDialog.show(Measurements.this, "", "Taking a snapshot, please wait...", true, false); 
-		ScanRequest scanRequest = new ScanRequest();
-		scanRequest.makeSnapshot();
+		_workingRequest = new ScanRequest();
+		_workingRequest.makeSnapshot();
 		if(name.equals(""))
 			name=null;
-		scanRequest.setSnapshotName(name);
-		scanRequest.send(this);
+		_workingRequest.setSnapshotName(name);
+		_workingRequest.send(this);
+		_scansLeft=0;
+	}
+	
+	public void triggerMultiSnapshot(String name, int numScans) {
+		_state = State.SNAPSHOT;
+		_name=name;
+		_pd = ProgressDialog.show(Measurements.this, "", "Taking a snapshot, please wait...", true, false); 
+		_workingRequest = new ScanRequest();
+		_workingRequest.makeSnapshot();
+		if(name.equals(""))
+			name=null;
+		_workingRequest.setSnapshotName(name);
+		_workingRequest.send(this);
+		_scansLeft=numScans-1;
 	}
 
 	public void triggerSnapshotDelayed(String name) {
@@ -154,12 +199,13 @@ public class Measurements extends Activity {
 							_pd.cancel();
 						_pd = ProgressDialog.show(Measurements.this, "", "Taking a snapshot, please wait...", true, false); 
 
-						ScanRequest scanRequest = new ScanRequest();
-						scanRequest.makeSnapshot();
+						_workingRequest = new ScanRequest();
+						_workingRequest.makeSnapshot();
 						if(_name.equals(""))
 							_name=null;
-						scanRequest.setSnapshotName(_name);
-						scanRequest.send(_context);
+						_workingRequest.setSnapshotName(_name);
+						_workingRequest.send(_context);
+						_scansLeft=0;
 					}
 				});
 
@@ -187,14 +233,18 @@ public class Measurements extends Activity {
 			if(_state.equals(State.SNAPSHOT) && intent.getAction().equals(Snapshot.SNAPSHOT_DATA)) {
 				Snapshot snapshot = (Snapshot) intent.getExtras().get("snapshot");
 
-				if(_pd!=null)
-					_pd.dismiss();
-
 				Vibrator vibrator;
 				vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 				vibrator.vibrate(500);
-
-				_state = State.IDLE;
+				
+				if(_scansLeft>0) {
+					_workingRequest.send(_context);
+					_scansLeft--;
+				} else {
+					if(_pd!=null)
+						_pd.dismiss();
+					_state = State.IDLE;
+				}
 			}
 		}
 	};
