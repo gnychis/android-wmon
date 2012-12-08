@@ -29,6 +29,7 @@ import android.widget.EditText;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.MotionDetector;
+import com.gnychis.awmon.Core.DialogActivity;
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.Snapshot;
 
@@ -218,11 +219,14 @@ public class Measurements extends Activity {
 	@Override
 	public void onResume() { 
 		super.onResume(); 
+		_activityStartTime = new Date();
+		(new DialogActivity(TAG, true)).saveInDatabse(this);
 		registerReceiver(incomingEvent, new IntentFilter(Snapshot.SNAPSHOT_DATA));
 
 	}
 	public void onPause() { 
 		super.onPause(); 
+		(new DialogActivity(TAG, false, _activityStartTime, new Date())).saveInDatabse(this);
 		Log.d(TAG, "onPause()"); 
 		unregisterReceiver(incomingEvent);
 	}

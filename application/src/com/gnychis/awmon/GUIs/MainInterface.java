@@ -25,6 +25,7 @@ import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.BackgroundService;
 import com.gnychis.awmon.BackgroundService.BackgroundService.BackgroundServiceBinder;
 import com.gnychis.awmon.BackgroundService.ScanManager;
+import com.gnychis.awmon.Core.DialogActivity;
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Core.UserSettings;
 import com.gnychis.awmon.DeviceAbstraction.Device;
@@ -220,6 +221,8 @@ public class MainInterface extends Activity implements OnClickListener {
 	@Override
 	public void onResume() { 
 		super.onResume(); 
+		_activityStartTime = new Date();
+		(new DialogActivity(TAG, true)).saveInDatabse(this);
 		registerReceiver(_messageReceiver, new IntentFilter(MainInterface.THREAD_MESSAGE));
 		registerReceiver(_initializedReceiver, new IntentFilter(BackgroundService.SYSTEM_INITIALIZED));
 		registerReceiver(_deviceScanReceiver, new IntentFilter(ScanManager.SCAN_RESPONSE));
@@ -227,6 +230,7 @@ public class MainInterface extends Activity implements OnClickListener {
 	}
 	public void onPause() { 
 		super.onPause(); 
+		(new DialogActivity(TAG, false, _activityStartTime, new Date())).saveInDatabse(this);
 		Log.d(TAG, "onPause()"); 
 		unregisterReceiver(_messageReceiver);
 		unregisterReceiver(_initializedReceiver);

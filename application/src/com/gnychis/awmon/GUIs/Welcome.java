@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import android.app.Activity;
@@ -33,6 +34,7 @@ import com.nullwire.trace.ExceptionHandler;
 public class Welcome extends Activity {
 
 	private final String TAG = "Welcome";
+	Date _activityStartTime;
 	
     Spinner netlist;
 	private UserSettings _settings;
@@ -237,21 +239,23 @@ public class Welcome extends Activity {
 
       	}
       };
-      
+
       @Override
       public void onPause() { 
     	  super.onPause(); 
     	  Log.d("AWMonWelcome", "onPause()"); 
-    	  (new DialogActivity(TAG, false)).saveInDatabse(this);
+    	  (new DialogActivity(TAG, false, _activityStartTime, new Date())).saveInDatabse(this);
       }
-      
+
       @Override
-      public void onResume() { super.onResume(); 
-      	Log.d("AWMonWelcome", "onResume()");
-      	(new DialogActivity(TAG, true)).saveInDatabse(this);
-      	if((_update_thread.getStatus() == AsyncTask.Status.RUNNING) || _update_thread.getStatus() == AsyncTask.Status.PENDING)
-      		return;
-        _update_thread = new UpdateInterface();
-        _update_thread.execute(this);
+      public void onResume() { 
+    	  super.onResume(); 
+    	  Log.d("AWMonWelcome", "onResume()");
+    	  _activityStartTime = new Date();
+    	  (new DialogActivity(TAG, true)).saveInDatabse(this);
+    	  if((_update_thread.getStatus() == AsyncTask.Status.RUNNING) || _update_thread.getStatus() == AsyncTask.Status.PENDING)
+    		  return;
+    	  _update_thread = new UpdateInterface();
+    	  _update_thread.execute(this);
       }
 }

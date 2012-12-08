@@ -19,6 +19,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.gnychis.awmon.R;
+import com.gnychis.awmon.Core.DialogActivity;
 import com.gnychis.awmon.Core.Snapshot;
 import com.gnychis.awmon.Database.DBAdapter;
 import com.gnychis.awmon.DeviceAbstraction.Device;
@@ -141,6 +142,19 @@ public class SnapshotDetails extends Activity {
 		startActivity(i);
 		finish();
 	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();	
+		_activityStartTime = new Date();
+		(new DialogActivity(TAG, true)).saveInDatabse(this);
+	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		(new DialogActivity(TAG, false, _activityStartTime, new Date())).saveInDatabse(this);
+	}	
 
 	private void debugOut(String msg) {
 		if(VERBOSE)

@@ -25,6 +25,7 @@ import android.view.View;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.LocationMonitor;
+import com.gnychis.awmon.Core.DialogActivity;
 import com.gnychis.awmon.Core.UserSettings;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
@@ -96,6 +97,19 @@ public class HomeLocation extends MapActivity {
   
         debugOut("done loading Home Location activity");
     }
+    
+	@Override
+	public void onResume() {
+		super.onResume();	
+		_activityStartTime = new Date();
+		(new DialogActivity(TAG, true)).saveInDatabse(this);
+	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		(new DialogActivity(TAG, false, _activityStartTime, new Date())).saveInDatabse(this);
+	}
     
     LocationListener locationListenerGps = new LocationListener() {
         public void onLocationChanged(Location location) {

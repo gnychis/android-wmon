@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.gnychis.awmon.R;
+import com.gnychis.awmon.Core.DialogActivity;
 
 public class TurnDevicesOn extends Activity {
 	
@@ -33,4 +34,17 @@ public class TurnDevicesOn extends Activity {
         startActivity(i);
     	finish();
     }
+    
+	@Override
+	public void onResume() {
+		super.onResume();	
+		_activityStartTime = new Date();
+		(new DialogActivity(TAG, true)).saveInDatabse(this);
+	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		(new DialogActivity(TAG, false, _activityStartTime, new Date())).saveInDatabse(this);
+	}	
 }

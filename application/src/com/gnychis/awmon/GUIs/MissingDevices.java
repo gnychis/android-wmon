@@ -33,6 +33,7 @@ import android.widget.TextView;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.ScanManager;
+import com.gnychis.awmon.Core.DialogActivity;
 import com.gnychis.awmon.Core.ScanRequest;
 import com.gnychis.awmon.Database.DBAdapter;
 import com.gnychis.awmon.Database.DBAdapter.NameUpdate;
@@ -166,12 +167,15 @@ public class MissingDevices extends Activity {
 	@Override
 	public void onResume() {
 		super.onResume();		
+		_activityStartTime = new Date();
+		(new DialogActivity(TAG, true)).saveInDatabse(this);
 		registerReceivers();
 	}
 	
 	@Override
 	public void onPause() {
 		super.onPause();
+		(new DialogActivity(TAG, false, _activityStartTime, new Date())).saveInDatabse(this);
 		unregisterReceiver(_deviceScanReceiver);
 		unregisterReceiver(incomingEvent);
 	}	

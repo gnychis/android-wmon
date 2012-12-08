@@ -18,9 +18,12 @@ import android.widget.TextView;
 
 import com.gnychis.awmon.R;
 import com.gnychis.awmon.BackgroundService.MotionDetector;
+import com.gnychis.awmon.Core.DialogActivity;
 import com.gnychis.awmon.Core.UserSettings;
 
 public class Status extends Activity implements OnClickListener {
+	
+	private final String TAG = "Status";
 	
 	UserSettings _settings;
 	WifiManager _wifi;
@@ -94,12 +97,15 @@ public class Status extends Activity implements OnClickListener {
 	@Override
 	public void onPause() {
 		super.onPause();
+		(new DialogActivity(TAG, false, _activityStartTime, new Date())).saveInDatabse(this);
 		unregisterReceiver(sensorUpdate);
 	}	
 
 	@Override
 	public void onResume() {
 		super.onResume();		
+		_activityStartTime = new Date();
+		(new DialogActivity(TAG, true)).saveInDatabse(this);
 		registerReceiver(sensorUpdate, new IntentFilter(MotionDetector.SENSOR_UPDATE));
 	}
 	
