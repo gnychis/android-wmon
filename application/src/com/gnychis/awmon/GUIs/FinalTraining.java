@@ -305,16 +305,16 @@ public class FinalTraining extends Activity {
 				//cache the views
 				viewHolder.name=(TextView) convertView.findViewById(R.id.name);
 				viewHolder.additional=(TextView) convertView.findViewById(R.id.additional);
-				viewHolder.checkBox=(CheckBox) convertView.findViewById(R.id.checkBox);
-				viewHolder.checkBox.setClickable(false);
+				//viewHolder.checkBox=(CheckBox) convertView.findViewById(R.id.checkBox);
+				//viewHolder.checkBox.setClickable(false);
 
 				//link the cached views to the convertview
 				convertView.setTag( viewHolder);
 			}
 			else {
 				viewHolder=(ViewHolder) convertView.getTag();
-				viewHolder.checkBox=(CheckBox) convertView.findViewById(R.id.checkBox);
-				viewHolder.checkBox.setClickable(false);			
+				//viewHolder.checkBox=(CheckBox) convertView.findViewById(R.id.checkBox);
+				//viewHolder.checkBox.setClickable(false);			
 			}
 			
 			
@@ -343,8 +343,10 @@ public class FinalTraining extends Activity {
 			// Set the actual items in the list with name and any additional info
 			viewHolder.name.setText(name);
 			viewHolder.additional.setText(additional);
-			viewHolder.checkBox.setChecked(checkBoxState[position]);
-			viewHolder.checkBox.setClickable(false);
+			//viewHolder.checkBox.setChecked(checkBoxState[position]);
+			//viewHolder.checkBox.setClickable(false);
+			if(checkBoxState[position])
+				convertView.setBackgroundColor(0x60FFFF00);
 			
 			viewHolder.name.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
@@ -411,7 +413,7 @@ public class FinalTraining extends Activity {
 						}
 					});
 					
-					viewHolder.checkBox.setOnClickListener(new View.OnClickListener() {
+					/*viewHolder.checkBox.setOnClickListener(new View.OnClickListener() {
 						public void onClick(View v) {
 							if(((CheckBox)v).isChecked()) {
 								checkBoxState[position]=true;
@@ -419,7 +421,7 @@ public class FinalTraining extends Activity {
 								checkBoxState[position]=false;
 							}
 						}
-					});
+					});*/
 
 					alert.show();
 				}
