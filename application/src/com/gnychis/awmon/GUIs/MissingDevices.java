@@ -1,11 +1,16 @@
 package com.gnychis.awmon.GUIs;
 
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -55,11 +60,16 @@ import com.gnychis.awmon.NameResolution.SSDP;
  * @author George Nychis (gnychis)
  */
 public class MissingDevices extends Activity {
+	
+	public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); 
 
-	public static final String TAG = "YourDevices";
+	public static final String TAG = "MissingDevices";
 	public static final boolean VERBOSE = true;
     private Context _context;
     Date _activityStartTime;
+    
+    int _before;
+    ArrayList<Device> _beforeDevices;
 
 	ArrayList<HashMap<String, Object>> _deviceList;		// This is bound to the actual list			
 	ArrayList<Device> _devices;							// To keep track of our current device list
@@ -83,7 +93,9 @@ public class MissingDevices extends Activity {
 		DBAdapter dbAdapter = new DBAdapter(this);
 		dbAdapter.open();
 		_internalDevices = dbAdapter.getInternalDevices();
+		_beforeDevices = dbAdapter.getInternalDevices();
 		dbAdapter.close();
+		_before=_internalDevices.size();
 		
 		final TextView view = (TextView) findViewById(R.id.bluetooth);
 		view.setOnClickListener(new View.OnClickListener() {
@@ -483,15 +495,15 @@ public class MissingDevices extends Activity {
 	
 	public void clickedRescan(View v) {
 		debugOut("Got a reclick");
-		saveDeviceSelections(true);
+		saveDeviceSelections(true, false);
 	}
 	
 	public void clickedFinish(View v) {
 		debugOut("Got a click on finished");
-		saveDeviceSelections(false);
+		saveDeviceSelections(false, true);
 	}
 	
-	void saveDeviceSelections(boolean triggerScan) {
+	void saveDeviceSelections(boolean triggerScan, boolean nextWindow) {
 		_pd = ProgressDialog.show(_context, "", "Storing your selections, please wait...", true, false);
 		
 		for(int i=0; i<_adapter.checkBoxState.length; i++) {
@@ -504,10 +516,12 @@ public class MissingDevices extends Activity {
 		class UpdateDevicesThread implements Runnable { 
 			ArrayList<Device> _devices;
 			boolean _triggerScan;
+			boolean _nextWindow;
 			
-			public UpdateDevicesThread(ArrayList<Device> devices, boolean triggerScan) {
+			public UpdateDevicesThread(ArrayList<Device> devices, boolean triggerScan, boolean nextWindow) {
 				_devices = devices;
 				_triggerScan=triggerScan;
+				_nextWindow=nextWindow;
 			}
 			
 			@Override
@@ -527,10 +541,67 @@ public class MissingDevices extends Activity {
     				_pd.cancel();
     			if(_triggerScan)
     				startScan();
+    			
+    			if(_nextWindow) {
+    				
+    				FileOutputStream data_ostream;
+    				try {
+    					data_ostream = _context.openFileOutput("missing_devices_activity.json", Context.MODE_WORLD_READABLE | Context.MODE_APPEND);
+    				
+    					JSONObject json = new JSONObject();
+    					
+    					JSONArray addedDevices = new JSONArray();
+    					for(Device dAfter : _devices) {
+    						boolean hasDevice=false;
+    						for(Device dBefore : _beforeDevices)
+    							if(dBefore.getKey()==dAfter.getKey())
+    								hasDevice=true;
+    						if(!hasDevice)
+    							addedDevices.put(dAfter.getKey());
+    					}
+    					
+    					JSONArray devicesBefore = new JSONArray();
+    					JSONArray devicesAfter = new JSONArray();
+    					
+    					for(Device dAfter : _devices)
+    						devicesAfter.put(dAfter.getKey());
+    					for(Device dBefore : _beforeDevices)
+    						devicesBefore.put(dBefore.getKey());
+    					
+    					json.put("date", dateFormat.format(new Date()));
+    					
+    					int checked=0;
+    					int unchecked=0;
+    					for(int i=0; i<_adapter.checkBoxState.length; i++)
+    						if(_adapter.checkBoxState[i])
+    							checked++;
+    						else
+    							unchecked++;				
+    					json.put("numAfter", checked);
+    					json.put("numBefore", _before);
+    					json.put("added", addedDevices);
+    					json.put("devicesAfter", devicesBefore);
+    					json.put("devicesBefore", devicesAfter);
+    					
+    					data_ostream.write(json.toString().getBytes());
+    					data_ostream.write("\n".getBytes()); 
+    					data_ostream.close();
+    				
+    				} catch(Exception e) {  }	
+    				
+	    			_handler.post(new Runnable() {	// Must do this on the main UI thread...
+	    				@Override
+	    				public void run() {						
+	    	    			Intent i = new Intent(MissingDevices.this, FinalTraining.class);
+	    	    	        startActivity(i);
+	    	    	    	finish();
+	    				}
+	    			});
+    			}
 			}
 		}
 		
-		UpdateDevicesThread thread = new UpdateDevicesThread(_devices, triggerScan);
+		UpdateDevicesThread thread = new UpdateDevicesThread(_devices, triggerScan, nextWindow);
 		new Thread(thread).start();
 	}
 

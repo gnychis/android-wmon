@@ -47,7 +47,9 @@
 		<activity android:name="com.gnychis.awmon.GUIs.TurnDevicesOn" class=".TurnDevicesOn" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
 		<activity android:name="com.gnychis.awmon.GUIs.YourDevices" class=".YourDevices" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
 		<activity android:name="com.gnychis.awmon.GUIs.MissingDevices" class=".MissingDevices" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
-	
+		<activity android:name="com.gnychis.awmon.GUIs.FinalTraining" class=".FinalTraining" android:theme="@android:style/Theme.NoTitleBar" android:screenOrientation="portrait"></activity>
+		
+		
         <activity android:name=".Depricated.ManageNetworks" class=".ManageDevices" android:label="Device Management" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.AddNetwork" class=".AddNetwork" android:label="Add Network" android:screenOrientation="portrait"></activity>
         <activity android:name="com.gnychis.awmon.GUIs.GraphWispy" class=".GraphWispy" android:label="Graph Wispy" android:screenOrientation="portrait"></activity>
