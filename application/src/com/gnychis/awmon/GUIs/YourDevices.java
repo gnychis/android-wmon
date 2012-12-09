@@ -331,6 +331,11 @@ public class YourDevices extends Activity {
 				ArrayList<HashMap<String, Object>> devices) {
 			super(context, textViewResourceId, devices); 
 			checkBoxState=new boolean[devices.size()];
+			
+			if(_resultType==ScanManager.ResultType.DEVICES)
+				for(int i=0; i<checkBoxState.length; i++)
+					if(_devices.get(i).getInternal())
+						checkBoxState[i]=true;
 		}
 
 		//class for caching the views in a row  
@@ -360,17 +365,17 @@ public class YourDevices extends Activity {
 			else
 				viewHolder=(ViewHolder) convertView.getTag();
 			
+			viewHolder.checkBox.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					if(((CheckBox)v).isChecked())
+						checkBoxState[position]=true;
+					else
+						checkBoxState[position]=false;
+				}
+			});
+			
 			String name = (_deviceList.get(position).get("name")==null) ? "" : _deviceList.get(position).get("name").toString();
 			String additional = (_deviceList.get(position).get("additional")==null) ? "" : _deviceList.get(position).get("additional").toString();
-			
-			HashMap<String,Object> item = getListItemByName(name);
-			if(item.get("object").getClass()==Device.class) {
-				Device device = (Device) item.get("object");
-				if(device!=null && device.getInternal())
-					checkBoxState[position]=true;
-				else
-					checkBoxState[position]=false;
-			}
 			
 			// For long additional description, truncate it
 			if(additional.length()>37)
@@ -421,14 +426,6 @@ public class YourDevices extends Activity {
 				}
 			});
 
-			viewHolder.checkBox.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					if(((CheckBox)v).isChecked())
-						checkBoxState[position]=true;
-					else
-						checkBoxState[position]=false;
-				}
-			});
 			return convertView;
 		}
 

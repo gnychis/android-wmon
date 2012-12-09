@@ -363,8 +363,8 @@ public class FinalTraining extends Activity {
 					
 					AlertDialog.Builder alert = new AlertDialog.Builder(_context);
 
-					alert.setTitle("Snapshot Name");
-					alert.setMessage("Choose a name for the snapshot");
+					alert.setTitle("Device Name");
+					//alert.setMessage("Feel free to choose a different name for this device");
 
 					// Set an EditText view to get user input 
 					final EditText input = new EditText(_context);
@@ -372,7 +372,7 @@ public class FinalTraining extends Activity {
 					input.setText(name);
 					_lastName = name;
 					
-					alert.setPositiveButton("This Device is Always In This Location", new DialogInterface.OnClickListener() {
+					alert.setPositiveButton("Fixed: This Device is Always In This Location", new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
 							String value = input.getText().toString();	
 							if(value.equals(_lastName))
@@ -391,7 +391,7 @@ public class FinalTraining extends Activity {
 						}
 					});
 
-					alert.setNegativeButton("This Devices Changes Locations", new DialogInterface.OnClickListener() {
+					alert.setNegativeButton("Mobile: This Devices Changes Locations", new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
 							String value = input.getText().toString();
 							if(value.equals(_lastName))

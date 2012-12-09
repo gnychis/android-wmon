@@ -200,22 +200,22 @@ public class MissingDevices extends Activity {
     	@SuppressWarnings("unchecked")
         public void onReceive(Context context, Intent intent) {
         	if(intent.getAction().equals(InterfaceScanManager.INTERFACE_SCAN_RESULT)) {
-        		updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), 0);
+        		//updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), 0);
         		_pd.dismiss();
         		_pd = ProgressDialog.show(_context, "", "Resolving device names", true, false);
         	}
         	if(intent.getAction().equals(NameResolutionManager.NAME_RESOLUTION_RESPONSE)) {
-        		updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), 2);
+        		//updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), 2);
         		_pd.dismiss();
         		_pd = ProgressDialog.show(_context, "", "Merging interfaces to devices", true, false);
         	}
         	if(intent.getAction().equals(InterfaceMergingManager.INTERFACE_MERGING_RESPONSE)) {
-        		updateListWithDevices((ArrayList<Device>) intent.getExtras().get("result"));
+        		//updateListWithDevices((ArrayList<Device>) intent.getExtras().get("result"));
         		_pd.dismiss();
         		_pd = ProgressDialog.show(_context, "", "Filtering devices we strongly believe are not yours (to make this easier for you!)", true, false);
         	}
         	if(intent.getAction().equals(NameResolver.NAME_RESOLVER_RESPONSE) && (Class<?>) intent.getExtras().get("resolver") == SSDP.class) {
-        		updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), 1);
+        		//updateListWithInterfaces((ArrayList<Interface>) intent.getExtras().get("result"), 1);
         	}
         }
     };
@@ -232,8 +232,8 @@ public class MissingDevices extends Activity {
 			_scanResult = intent.getExtras().get("result");
 
 			//************************ INTERFACE RESULTS *************************//
-			if(_resultType == ScanManager.ResultType.INTERFACES)
-				updateListWithInterfaces((ArrayList<Interface>) _scanResult, 0);
+			//if(_resultType == ScanManager.ResultType.INTERFACES)
+			//	updateListWithInterfaces((ArrayList<Interface>) _scanResult, 0);
 
 			//************************** DEVICE RESULTS *************************//
 			if(_resultType == ScanManager.ResultType.DEVICES) {
@@ -390,6 +390,11 @@ public class MissingDevices extends Activity {
 				ArrayList<HashMap<String, Object>> devices) {
 			super(context, textViewResourceId, devices); 
 			checkBoxState=new boolean[devices.size()];
+			
+			if(_resultType==ScanManager.ResultType.DEVICES)
+				for(int i=0; i<checkBoxState.length; i++)
+					if(_devices.get(i).getInternal())
+						checkBoxState[i]=true;
 		}
 
 		//class for caching the views in a row  
@@ -421,16 +426,7 @@ public class MissingDevices extends Activity {
 			
 			String name = (_deviceList.get(position).get("name")==null) ? "" : _deviceList.get(position).get("name").toString();
 			String additional = (_deviceList.get(position).get("additional")==null) ? "" : _deviceList.get(position).get("additional").toString();
-			
-			HashMap<String,Object> item = getListItemByName(name);
-			if(item.get("object").getClass()==Device.class) {
-				Device device = (Device) item.get("object");
-				if(device!=null && device.getInternal())
-					checkBoxState[position]=true;
-				else
-					checkBoxState[position]=false;
-			}
-			
+
 			// For long additional description, truncate it
 			if(additional.length()>37)
 				additional = additional.substring(0, 37) + "...";
