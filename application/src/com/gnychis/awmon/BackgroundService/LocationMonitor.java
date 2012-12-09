@@ -28,7 +28,7 @@ public class LocationMonitor {
 	
     public static String TAG = "AWMonLocationMonitor";
     public static final String LOCATION_UPDATE = "awmon.location.update";
-    public static final boolean VERBOSE = false;
+    public static final boolean VERBOSE = true;
 
 	HomeState _homeState;
 	public static enum HomeState {
@@ -290,13 +290,15 @@ public class LocationMonitor {
     
 	
 	public boolean associatedToHomeAP() {
-    	WifiInfo currWifi = wifi.getConnectionInfo();
+		return true;
+    	/*WifiInfo currWifi = wifi.getConnectionInfo();
     	ConnectivityManager connManager = (ConnectivityManager) _backgroundService.getSystemService(Context.CONNECTIVITY_SERVICE);
     	NetworkInfo wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
     	if(wifiInfo.isConnected() && currWifi.getSSID().equals(_settings.getHomeSSID())) {
     		return true;
     	}
 		return false;
+		*/
 	}
 	
 	public String getAssociatedMAC() {
