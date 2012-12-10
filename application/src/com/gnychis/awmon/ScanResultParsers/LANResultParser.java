@@ -52,11 +52,15 @@ public class LANResultParser extends ScanResultParser {
 		
 		// Now, we add in the phone that is currently in use.  For some reason, it's skipped in the ARP scan.
 		// Create a new interface from this result
+		try {
 		Interface iface = new WirelessInterface(Wifi.class);  // At this point, we don't know if it's wired or wireless
 		iface._MAC=wifi.getConnectionInfo().getMacAddress();
 		iface._IP=Interface.reverseIPAddress(Interface.intIPtoString(wifi.getConnectionInfo().getIpAddress()).substring(1));
 		interfaces.add(iface);
 		debugOut("LAN Interface: " + iface._IP + "    " + iface._MAC);
+		} catch(Exception e) {
+			
+		}
 		
 		return interfaces;
 	}

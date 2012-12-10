@@ -59,7 +59,7 @@
             android:layout_gravity="bottom|right"
             android:layout_weight="1"
             android:onClick="clickedFinish"
-            android:text="You must complete all devices before finishing ..." />
+            android:text="You must click on each device before finishing ..." />
 
     </LinearLayout>
 
