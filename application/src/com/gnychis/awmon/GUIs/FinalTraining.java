@@ -1,10 +1,8 @@
 package com.gnychis.awmon.GUIs;
 
-import java.awt.Checkbox;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
@@ -41,8 +39,6 @@ import com.gnychis.awmon.Database.DBAdapter;
 import com.gnychis.awmon.Database.DBAdapter.NameUpdate;
 import com.gnychis.awmon.DeviceAbstraction.Device;
 import com.gnychis.awmon.DeviceAbstraction.Device.Mobility;
-import com.gnychis.awmon.DeviceAbstraction.Interface;
-import com.gnychis.awmon.DeviceAbstraction.WirelessInterface;
 
 /**
  * The purpose of this GUI interface is to do a bulk scan for devices in range and then
@@ -65,7 +61,7 @@ public class FinalTraining extends Activity {
     int _notRenamed;
     Device _thisDevice;
     int _lastPosition;
-    Checkbox _lastCheckbox;
+    CheckBox _lastCheckbox;
     int _mobile;
     
     String _snapshotName;
